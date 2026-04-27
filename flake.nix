@@ -33,9 +33,10 @@
         ]);
 
         # Tauri build-time deps (Linux only; pkg-config etc).
+        # nixpkgs unstable では wrapGAppsHook → wrapGAppsHook3 にリネーム済み。
         tauriBuildDeps = pkgs.lib.optionals pkgs.stdenv.isLinux (with pkgs; [
           pkg-config
-          wrapGAppsHook
+          wrapGAppsHook3
         ]);
       in
       {
