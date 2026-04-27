@@ -51,7 +51,8 @@
             pnpm
 
             # TypeScript CLI (pnpm でも入れられるが nix で揃えた方が再現性が高い)
-            nodePackages.typescript
+            # nodePackages.typescript は nixpkgs unstable でトップレベルに移行
+            typescript
 
             # Misc dev utilities
             jq
