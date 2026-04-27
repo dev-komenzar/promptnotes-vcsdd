@@ -2779,12 +2779,17 @@ dependencies = [
 name = "promptnotes"
 version = "0.1.0"
 dependencies = [
+ "promptnotes_domain",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
 ]
+
+[[package]]
+name = "promptnotes_domain"
+version = "0.1.0"
 
 [[package]]
 name = "quick-xml"

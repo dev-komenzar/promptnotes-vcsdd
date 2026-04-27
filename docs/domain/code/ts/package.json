@@ -6,5 +6,23 @@
   "description": "Domain model TypeScript type definitions generated from docs/domain/*.md (Phase 10).",
   "scripts": {
     "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    "./shared/*": {
+      "types": "./src/shared/*.ts",
+      "default": "./src/shared/*.ts"
+    },
+    "./util/*": {
+      "types": "./src/util/*.ts",
+      "default": "./src/util/*.ts"
+    },
+    "./capture/*": {
+      "types": "./src/capture/*.ts",
+      "default": "./src/capture/*.ts"
+    },
+    "./curate/*": {
+      "types": "./src/curate/*.ts",
+      "default": "./src/curate/*.ts"
+    }
   }
 }
