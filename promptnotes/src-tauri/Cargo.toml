@@ -27,3 +27,8 @@ serde_json = "1"
 # implementations live in this crate and import types from here.
 promptnotes_domain = { path = "../../docs/domain/code/rust" }
 
+[dev-dependencies]
+# Property-based testing for VCSDD Tier 1 proof obligations
+# (e.g., next_available_note_id purity / collision avoidance).
+proptest = "1"
+
