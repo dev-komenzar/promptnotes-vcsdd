@@ -10,8 +10,9 @@ target/
 **/*.rs.bk
 Cargo.lock.bak
 
-# Node / pnpm
+# Node / bun
 node_modules/
+.bun/
 .pnpm-store/
 .pnpm/
 npm-debug.log
@@ -24,12 +25,16 @@ build/
 *.tsbuildinfo
 
 # Tauri
-src-tauri/target/
-src-tauri/.cargo/
-src-tauri/Cargo.lock
+# 注: 個別の target/, gen/schemas は promptnotes/src-tauri/.gitignore が処理する。
+# Cargo.lock は Tauri アプリ（バイナリ）なのでコミット対象。
 
 # IDE / OS
-.vscode/
+# .vscode はリポジトリ共有設定だけ追跡、それ以外は無視する。
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea/
 *.swp
 .DS_Store
@@ -37,3 +42,6 @@ src-tauri/Cargo.lock
 # Project local
 .env.local
 *.log
+
+# MCP
+.playwright-mcp/
