@@ -1,0 +1,41 @@
+{
+  "currentPhase": "types",
+  "completedPhases": ["discover", "storming", "contexts", "mapping", "aggregates", "events", "validate", "glossary", "workflows"],
+  "lastUpdated": "2026-04-27",
+  "openQuestions": [
+    "frontmatter の固定スキーマ内容（タグ・作成日時・更新日時・モデル名・ステータス）",
+    "自動保存デバウンス秒数",
+    "空ノート判定基準（空白文字のみは空か）",
+    "ノート ID 衝突回避方法（ms / suffix / UUID）",
+    "フィルタ複数条件の組み合わせ（AND/OR）",
+    "Capture と Curate を 1 Context に統合するか分けるか",
+    "削除確認方式（モーダル / OS ゴミ箱 / Undo 付き即削除）",
+    "削除のショートカットキー",
+    "検索対象スコープ（本文のみ / 本文+frontmatter / タグのみ）",
+    "検索方式（部分一致 / 正規表現 / あいまい検索 / 大文字小文字）",
+    "検索インクリメンタル debounce",
+    "検索とフィルタの組み合わせ（AND/OR/排他）",
+    "検索起動 UX（ボタン / Cmd+F）",
+    "TagInventory は Aggregate か Read Model か",
+    "TagInventory にタグ使用回数を含めるか",
+    "未使用タグの扱い（自動削除 / 保持）"
+  ],
+  "decisions": {
+    "coreDomain": "Frictionless Capture × Stockable Structure",
+    "modes": ["Stream Mode (Capture)", "Stock Mode (Curate)"],
+    "outOfScope": ["used/unused state tracking", "user-defined frontmatter templates in MVP"],
+    "autoSave": true,
+    "autoSaveTriggers": ["idle", "blur"],
+    "autoTitle": "timestamp",
+    "obsidianCompatibility": "coexist via shared vault",
+    "obsidianSyncStrategy_MVP": "rescan-on-relaunch (no fs watch)",
+    "navigation": "single-page-feed (no page transition)",
+    "emptyNote": "discarded",
+    "newNoteTrigger": ["explicit-button", "ctrl-N"],
+    "aggregatesCandidate": ["Note", "Feed", "TagInventory", "Vault"],
+    "contextCandidates": ["Capture", "Curate", "Vault"],
+    "boundedContextsConfirmed": ["Capture (Core)", "Curate (Core)", "Vault (Supporting)"],
+    "tagInventoryDecision": "Read Model inside Curate (Phase 5 で再評価)",
+    "noteSharingStrategy": "Shared Kernel (Capture / Curate / Vault で Note 同一性を共有)"
+  }
+}
