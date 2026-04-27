@@ -1,0 +1,39 @@
+# Nix / direnv
+.direnv/
+result
+result-*
+
+# Rust
+target/
+.cargo/
+.rustup/
+**/*.rs.bk
+Cargo.lock.bak
+
+# Node / pnpm
+node_modules/
+.pnpm-store/
+.pnpm/
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+
+# TypeScript build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# Tauri
+src-tauri/target/
+src-tauri/.cargo/
+src-tauri/Cargo.lock
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Project local
+.env.local
+*.log
