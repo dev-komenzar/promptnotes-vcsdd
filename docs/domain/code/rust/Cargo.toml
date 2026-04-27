@@ -1,0 +1,21 @@
+[package]
+name = "promptnotes_domain"
+version = "0.1.0"
+edition = "2021"
+description = "Domain model type definitions generated from docs/domain/*.md (Phase 10)"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+# 型定義のみ。実装は本クレートには含めない。
+# 実プロジェクトで ts-rs を有効化する想定だが、Phase 10 の型定義段階では
+# unused-dep 回避のため optional feature にしておく。
+
+[features]
+default = []
+ts_rs = []
+
+[lints.rust]
+dead_code = "allow"
+unused_variables = "allow"

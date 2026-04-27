@@ -1,6 +1,6 @@
 {
-  "currentPhase": "types",
-  "completedPhases": ["discover", "storming", "contexts", "mapping", "aggregates", "events", "validate", "glossary", "workflows"],
+  "currentPhase": "simulate",
+  "completedPhases": ["discover", "storming", "contexts", "mapping", "aggregates", "events", "validate", "glossary", "workflows", "types"],
   "lastUpdated": "2026-04-27",
   "openQuestions": [
     "frontmatter の固定スキーマ内容（タグ・作成日時・更新日時・モデル名・ステータス）",
@@ -18,7 +18,12 @@
     "検索起動 UX（ボタン / Cmd+F）",
     "TagInventory は Aggregate か Read Model か",
     "TagInventory にタグ使用回数を含めるか",
-    "未使用タグの扱い（自動削除 / 保持）"
+    "未使用タグの扱い（自動削除 / 保持）",
+    "Settings 永続化の VO 化（aggregates.md 差し戻し候補）",
+    "Atomic Write のユビキタス言語追加（glossary.md 差し戻し候補）",
+    "Projection Update の用語化（glossary.md 差し戻し候補）",
+    "EventBus の同期/非同期セマンティクス（context-map.md 差し戻し候補）",
+    "Tauri IPC シリアライゼーション方針（serde + ts-rs tag 表現）"
   ],
   "decisions": {
     "coreDomain": "Frictionless Capture × Stockable Structure",
@@ -36,6 +41,30 @@
     "contextCandidates": ["Capture", "Curate", "Vault"],
     "boundedContextsConfirmed": ["Capture (Core)", "Curate (Core)", "Vault (Supporting)"],
     "tagInventoryDecision": "Read Model inside Curate (Phase 5 で再評価)",
-    "noteSharingStrategy": "Shared Kernel (Capture / Curate / Vault で Note 同一性を共有)"
+    "noteSharingStrategy": "Shared Kernel (Capture / Curate / Vault で Note 同一性を共有)",
+    "techStack": {
+      "shell": "Tauri",
+      "frontend": "Svelte (vanilla, no SvelteKit)",
+      "frontendBuild": "Vite",
+      "backend": "Rust",
+      "typeBindingGenerator": "ts-rs (Rust → TypeScript)",
+      "typeChecking": ["cargo check", "tsc --noEmit"]
+    },
+    "languageBoundary": {
+      "Vault Context": "Rust",
+      "Capture Context": "TypeScript (Svelte UI)",
+      "Curate Context": "TypeScript (Svelte UI)",
+      "shared types (NoteId, Tag, Frontmatter, NoteSnapshot, FsError, Public Domain Events)": "Rust as source of truth, .ts generated via ts-rs"
+    },
+    "phase10": {
+      "outputDirectory": "docs/domain/code/",
+      "rustCrate": "promptnotes_domain (rust/)",
+      "tsProject": "promptnotes-domain-types (ts/, type=module, strict + exactOptionalPropertyTypes)",
+      "smartConstructorLocation": "Rust only — TS から構築不能。Tauri command 経由で try_new_* を呼ぶ前提",
+      "verification": {
+        "rust": "cargo check passed (no warnings)",
+        "typescript": "tsc --noEmit -p . passed (strict + exactOptionalPropertyTypes + verbatimModuleSyntax)"
+      }
+    }
   }
 }
