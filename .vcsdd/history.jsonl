@@ -38,3 +38,6 @@
 {"timestamp":"2026-04-27T22:12:13.814Z","event":"gate_recorded","featureName":"app-startup","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-04-28T00:00:00.000Z","event":"spec_revised","featureName":"app-startup","phase":"1b","reason":"phase-1c-iteration-1-FAIL","findingsAddressed":["F-001","F-002","F-003","F-004","F-005"]}
 {"timestamp":"2026-04-27T22:26:05.207Z","event":"gate_recorded","featureName":"app-startup","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-27T22:53:10.494Z","event":"phase_transition","featureName":"app-startup","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-04-27T22:53:10.499Z","event":"phase_transition","featureName":"app-startup","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-04-27T22:53:10.499Z","event":"sprint_started","featureName":"app-startup","sprintNumber":1,"phase":"2a"}
