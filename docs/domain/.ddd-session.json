@@ -1,7 +1,7 @@
 {
   "currentPhase": "simulate",
-  "completedPhases": ["discover", "storming", "contexts", "mapping", "aggregates", "events", "validate", "glossary", "workflows", "types"],
-  "lastUpdated": "2026-04-27",
+  "completedPhases": ["discover", "storming", "contexts", "mapping", "aggregates", "events", "validate", "glossary", "workflows", "types", "simulate"],
+  "lastUpdated": "2026-04-28",
   "openQuestions": [
     "frontmatter の固定スキーマ内容（タグ・作成日時・更新日時・モデル名・ステータス）",
     "自動保存デバウンス秒数",
@@ -23,7 +23,11 @@
     "Atomic Write のユビキタス言語追加（glossary.md 差し戻し候補）",
     "Projection Update の用語化（glossary.md 差し戻し候補）",
     "EventBus の同期/非同期セマンティクス（context-map.md 差し戻し候補）",
-    "Tauri IPC シリアライゼーション方針（serde + ts-rs tag 表現）"
+    "Tauri IPC シリアライゼーション方針（serde + ts-rs tag 表現）",
+    "try_new_* Tauri command の引数名・エラー型（Phase 11 で抽出、実装フェーズで確定）",
+    "Frontmatter インライン編集 UX（自由テキスト YAML / フォーム式）の決定（Phase 11 で発見）",
+    "削除ショートカットキー（Del キー想定だが UI 仕様に未明記、Phase 11 で発見）",
+    "SearchQuery を判別ユニオン化するか（将来正規表現サポート向け、Phase 11 で発見）"
   ],
   "decisions": {
     "coreDomain": "Frictionless Capture × Stockable Structure",
@@ -65,6 +69,35 @@
         "rust": "cargo check passed (no warnings)",
         "typescript": "tsc --noEmit -p . passed (strict + exactOptionalPropertyTypes + verbatimModuleSyntax)"
       }
+    },
+    "phase11": {
+      "scope": "scenario verification + UI extraction (両方実施)",
+      "simulationsDirectory": "docs/domain/code/ts/src/simulations/",
+      "simulationFiles": [
+        "01_app_startup.spec.ts (validation シナリオ 1, 2)",
+        "03_capture_auto_save.spec.ts (validation シナリオ 3, Core)",
+        "04_edit_past_note_start.spec.ts (validation シナリオ 4, Core)",
+        "05_apply_filter_search.spec.ts (validation シナリオ 5, 6)",
+        "08_delete_note.spec.ts (validation シナリオ 8)",
+        "09_switch_boundary.spec.ts (validation シナリオ 9, 設計検証焦点)"
+      ],
+      "uiFieldsArtifact": "docs/domain/ui-fields.md",
+      "verification": {
+        "typescript": "tsc --noEmit -p . passed (2026-04-28)"
+      },
+      "verificationApproach": "vitest 等のランタイムテストフレームワークは導入せず、tsc --noEmit でシナリオが Phase 10 の型で組み立てられることを確認。Brand 型の Smart Constructor は Rust 側のため、_mock.ts で as 偽装。",
+      "screensExtracted": [
+        "Main Feed (Editor + Feed list + Tag filter + Search + Sort)",
+        "Vault Configuration Modal",
+        "Delete Confirmation Modal",
+        "Save Failure Banner"
+      ],
+      "feedbackToPriorPhases": [
+        "Phase 10: try_new_* Tauri command シグネチャ確定が実装フェーズ前に必要",
+        "Phase 5/8: SearchQuery を判別ユニオン化するか（将来要件）",
+        "Phase 5: Frontmatter インライン編集 UX（FrontmatterPatch 3 種をどの UI で出すか）",
+        "Phase 9: UI から Note への Command 経由限定方針を明記済み"
+      ]
     }
   }
 }
