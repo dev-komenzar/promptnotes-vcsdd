@@ -62,7 +62,9 @@ RawAppLaunch → ConfiguredVault → ScannedVault → HydratedFeed → InitialUI
 | 依存 | `Settings.load(): Result<VaultPath \| null>`、`FileSystem.statDir(path): Result<bool>` |
 | 副作用 | read-only |
 | エラー | `Unconfigured`（path 未設定）、`PathNotFound`、`PermissionDenied` |
-| 発行 Event | `VaultDirectoryNotConfigured`（失敗時）、`VaultDirectoryConfigured`（既存設定の確認時のみ任意） |
+| 発行 Event | `VaultDirectoryNotConfigured`（`Unconfigured` 時のみ） |
+
+> **`VaultDirectoryConfigured` は AppStartup では発火しない**：このイベントは `ConfigureVault`（Workflow 9）が、ユーザーの path 設定操作に対して発火する責務。AppStartup の正常系（既存設定が有効）では発火しない。因果整合性（domain-events.md §因果整合性）では `VaultDirectoryConfigured` **または既存設定** が `VaultScanned` の前提として認められている。
 
 #### Step 2: `scanVault`
 
@@ -73,7 +75,7 @@ RawAppLaunch → ConfiguredVault → ScannedVault → HydratedFeed → InitialUI
 | 責務 | vault 直下の `*.md` 走査、各ファイル読み込み + YAML パース |
 | 依存 | `FileSystem.listMarkdown(path): Result<string[]>`、`FileSystem.readFile(path): Result<string>`、`FrontmatterParser.parse(raw): Result<{body, fm}>` |
 | 副作用 | read-only（fs read） |
-| エラー | `ScanFailed`、各ファイル単位の `HydrationFailureReason` は `corruptedFiles` に蓄積（ワークフロー全体は失敗にしない） |
+| エラー | ディレクトリ全体の listing 失敗のみ `ScanError`（ワークフロー全体失敗）。**ファイル単位の失敗は `corruptedFiles[]` に蓄積し、ワークフロー全体は失敗にしない。** 各 `CorruptedFile` は `ScanFileFailure` で出所を区別する：`{kind:'read', fsError}`（`readFile` 失敗）または `{kind:'hydrate', reason: HydrationFailureReason}`（`parser.parse` 失敗、または snapshot → Note の変換失敗）。 |
 | 発行 Event | なし（次ステップの後で `VaultScanned` を発行） |
 
 #### Step 3: `hydrateFeed`
@@ -110,7 +112,8 @@ RawAppLaunch → ConfiguredVault → ScannedVault → HydratedFeed → InitialUI
 | `FileSystem.readFile` | `string → Result<string>` | OS fs | sync | scanVault |
 | `FrontmatterParser.parse` | `string → Result<{body, fm}, HydrationFailureReason>` | OSS（gray-matter 等） | sync (pure) | scanVault |
 | `Clock.now` | `() → Timestamp` | OS time | sync (purity-violating) | initializeCaptureSession |
-| `Vault.allocateNoteId` | `Timestamp → NoteId` | Vault Aggregate（既存ファイル名照合） | sync | initializeCaptureSession |
+| `Vault.allocateNoteId` | `Timestamp → NoteId` | Vault Aggregate method（effectful: 内部 NoteId 集合を読む） | sync | initializeCaptureSession |
+| `nextAvailableNoteId` | `(Timestamp, ReadonlySet<NoteId>) → NoteId` | Pure helper（副作用なし、property test 対象） | pure | initializeCaptureSession（`Vault.allocateNoteId` 内部から呼ばれる） |
 
 ### エラーカタログ
 
@@ -126,6 +129,11 @@ type VaultConfigError =
 
 type ScanError =
   | { kind: 'list-failed'; detail: string }
+
+// 個別ファイルの失敗は ScanError ではなく corruptedFiles[] に蓄積される
+type ScanFileFailure =
+  | { kind: 'read'; fsError: FsError }                  // readFile 失敗（permission/lock/not-found 等）
+  | { kind: 'hydrate'; reason: HydrationFailureReason } // parser.parse / snapshot→Note 変換失敗
 ```
 
 UI マッピング：
@@ -604,7 +612,8 @@ updateProjectionsAfterDelete [in-memory write]
 | `FrontmatterParser.parse` | `string → Result<{body, fm}, HydrationFailureReason>` | pure | AppStartup |
 | `FrontmatterSerializer.toYaml` | `Frontmatter → string` | pure | CaptureAutoSave, TagChipUpdate |
 | `Clock.now` | `() → Timestamp` | sync | 多数 |
-| `Vault.allocateNoteId` | `Timestamp → NoteId` | sync | AppStartup, NewNote |
+| `Vault.allocateNoteId` | `Timestamp → NoteId` | sync (effectful: Vault state read) | AppStartup, NewNote |
+| `nextAvailableNoteId` | `(Timestamp, ReadonlySet<NoteId>) → NoteId` | pure | AppStartup, NewNote（`Vault.allocateNoteId` 内部） |
 | `Clipboard.write` | `string → Result<void>` | sync | CopyBody |
 | `EventBus.publish` | `Event → void` | sync | 全ワークフロー |
 

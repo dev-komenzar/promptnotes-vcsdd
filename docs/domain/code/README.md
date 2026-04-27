@@ -34,7 +34,7 @@ docs/domain/code/
 │       ├── lib.rs
 │       ├── result.rs                ── DomainResult alias
 │       ├── value_objects.rs         ── Shared Kernel: NoteId/Tag/Body/Frontmatter/Timestamp/VaultPath/VaultId
-│       ├── snapshots.rs             ── NoteFileSnapshot / CorruptedFile / HydrationFailureReason
+│       ├── snapshots.rs             ── NoteFileSnapshot / CorruptedFile / ScanFileFailure / HydrationFailureReason
 │       ├── errors.rs                ── FsError / Workflow ごとのエラー OR 型
 │       ├── events.rs                ── Public Domain Events 12 種 + 全集約 enum
 │       └── vault/
@@ -89,6 +89,7 @@ docs/domain/code/
 | `VaultId` | `value_objects::VaultId` | `shared/value-objects.ts` `VaultId` | aggregates.md §4 |
 | `NoteFileSnapshot` | `snapshots::NoteFileSnapshot` | `shared/snapshots.ts` `NoteFileSnapshot` | glossary.md §3 / domain-events.md `VaultScanned` |
 | `CorruptedFile` | `snapshots::CorruptedFile` | `shared/snapshots.ts` `CorruptedFile` | domain-events.md `VaultScanned.corruptedFiles` |
+| `ScanFileFailure` | `snapshots::ScanFileFailure` | `shared/snapshots.ts` `ScanFileFailure` | glossary.md §3 / workflows.md Workflow 1 Step 2 |
 | `HydrationFailureReason` | `snapshots::HydrationFailureReason` | `shared/snapshots.ts` `HydrationFailureReason` | glossary.md §3 |
 | `FsError` | `errors::FsError` | `shared/errors.ts` `FsError` | workflows.md エラーカタログ統合 |
 | `AppStartupError` | `errors::AppStartupError` | `shared/errors.ts` `AppStartupError` | workflows.md Workflow 1 |

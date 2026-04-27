@@ -28,11 +28,18 @@ DDD Distilled の 4 ルールを本プロジェクトに適用：
 
 タイムスタンpの＋ミリ秒で衝突を実用上回避。同一ミリ秒で複数生成された場合は `-1`, `-2`... のサフィックスを付与。
 
-**衝突回避の責務**（Phase 7 / F9 で確定）：
-- **`Vault.allocateNoteId(preferredTimestamp): NoteId`** が衝突回避を担う
-- Capture は新規ノート作成時にまず Vault に ID 割り当てを依頼し、衝突なき NoteId を受け取って `Note.create(id, now)` を呼ぶ
+**衝突回避の責務**（Phase 7 / F9 で確定、Phase 1c F-001 で 2 層分離）：
+
+NoteId 割り当ては **pure helper** と **effectful Vault method** の 2 層で構成する：
+
+| 層 | シグネチャ | 性質 | 検証方法 |
+|----|-----------|------|---------|
+| Pure helper | `nextAvailableNoteId(preferred: Timestamp, existingIds: ReadonlySet<NoteId>): NoteId` | 純粋関数。同一入力 → 同一出力。副作用なし | fast-check（property: 戻り値 ∉ `existingIds`、suffix 付与の決定性） |
+| Effectful Vault method | `vault.allocateNoteId(now: Timestamp): NoteId` | Vault Aggregate の内部 NoteId 集合を読み取り、`nextAvailableNoteId` に委譲 | example-based test（モック state） |
+
+- Capture は新規ノート作成時に **Vault method** を呼び、衝突なき NoteId を受け取って `Note.create(id, now)` を呼ぶ
 - 理由：ファイル名と NoteId は 1:1 対応するため、ファイルシステム側の状態を知っている Vault が判定するのが自然
-- これにより Capture 内のロジックは衝突を意識せず単純なまま保たれる
+- 純粋性境界：衝突回避ロジックそのものは pure helper に閉じ込め、Vault state 読み取りは Aggregate method の責務として明確に分離する。これにより property test は pure helper のみを対象にできる
 
 #### 構成要素
 
@@ -218,7 +225,7 @@ Note は Shared Kernel なので、操作は呼び出し元 Context により意
 |------|---------|----------|
 | `vault.configure(path: VaultPath): Result<Vault>` | path 検証して設定 | `VaultDirectoryConfigured` |
 | `vault.scan(): Result<NoteFileSnapshot[]>` | Markdown 走査して snapshot を返す | `VaultScanned` |
-| `vault.allocateNoteId(preferredTimestamp): NoteId` | 既存ファイル名と衝突しない NoteId を返す（必要なら `-N` サフィックス付与） | — |
+| `vault.allocateNoteId(now: Timestamp): NoteId` | 内部 NoteId 集合を読み取り、pure helper `nextAvailableNoteId(now, existingIds)` に委譲。衝突時は `-N` サフィックス | — |
 | `vault.saveNote(cmd: SaveNoteCommand): Result<void>` | frontmatter+body を Markdown 化して書き込み | `NoteFileSaved` (内部) / `AutoSaveFailed` |
 | `vault.deleteNote(id: NoteId): Result<void>` | OS ゴミ箱へ送る（MVP 採用想定） | `NoteDeleted` / `NoteDeletionFailed` |
 

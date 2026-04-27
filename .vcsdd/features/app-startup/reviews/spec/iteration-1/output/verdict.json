@@ -1,0 +1,75 @@
+{
+  "feature": "app-startup",
+  "iteration": 1,
+  "phase": "1c",
+  "reviewer": "adversary",
+  "reviewedAt": "2026-04-28T00:00:00Z",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "summary": "All four stage transitions (RawAppLaunch -> ConfiguredVault -> ScannedVault -> HydratedFeed -> InitialUIState) are covered. Both corrected items are correctly reflected: VaultDirectoryConfigured non-emission on AppStartup happy path is explicitly stated (REQ-001 ACs at L35-36) and ScanFileFailure uses {kind:'read', fsError} | {kind:'hydrate', reason} with CorruptedFile.failure field (REQ-002 L46-56, L73). All AppStartupError variants from shared/errors.ts are referenced (REQ-003..REQ-007). FsError.kind and HydrationFailureReason exhaustive enums are stated (L74-75). EARS syntax used consistently. Scope boundary respected (no ConfigureVault content). Two minor wording issues are flagged below but neither is a blocker."
+    },
+    "verification_readiness": {
+      "verdict": "FAIL",
+      "summary": "The Vault.allocateNoteId port contract has a structural inconsistency: the signature in verification-architecture.md L77 takes only a Timestamp, yet PROP-003 requires checking that the result is not present in the scanned NoteId set. Without the existing-id set as an explicit parameter, the function is either implicitly stateful (reading Vault aggregate state and therefore not 'deterministic core' as labelled at L19) or the property as written is untestable as a pure property test. This is a purity_boundary defect that propagates into REQ-011's claim of in-memory determinism and makes PROP-003 unverifiable in fast-check without a workaround that the spec does not define. A second verification gap: PROP-014 maps to REQ-013 in the coverage matrix but PROP-014 only verifies VaultDirectoryNotConfigured emission (REQ-003 territory); REQ-013's three-event ordering claim (VaultScanned -> FeedRestored -> TagInventoryBuilt) has no dedicated proof obligation."
+    }
+  },
+  "overallVerdict": "FAIL",
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "blocker",
+      "dimension": "verification_readiness",
+      "artifactPath": "specs/verification-architecture.md",
+      "lineRefs": [19, 73, 74, 75, 76, 77, 90],
+      "title": "Vault.allocateNoteId port signature is incompatible with PROP-003 and the 'Deterministic core' classification",
+      "description": "The port declared at L73-78 has signature `type VaultAllocateNoteId = (preferredTimestamp: Timestamp) => NoteId` — it takes only a timestamp, no existing-id set. The Purity Boundary Map L19 classifies it as 'Deterministic core' with the rationale 'Given the scanned NoteId set and a timestamp, the result is deterministic (in-memory suffix search); no file I/O.' That rationale presupposes the scanned set is an input — which the signature contradicts. PROP-003 (L90) then asserts 'allocateNoteId(ts) ∉ set', but `set` is never an argument. As written this proof is untestable as a pure property test: fast-check cannot vary the existing-id set if the port doesn't accept it. Either (a) the signature is implicitly closed over Vault aggregate state (making it stateful, not 'deterministic core'), or (b) the signature is wrong. Behavioral-spec REQ-011 L183 inherits the same problem: 'Vault.allocateNoteId is an in-memory calculation' is incompatible with a parameter-free state-dependent call.",
+      "groundTruthCite": "docs/domain/workflows.md L115 (`Vault.allocateNoteId | Timestamp -> NoteId`); docs/domain/aggregates.md L221 (vault.allocateNoteId 既存ファイル名と衝突しない NoteId を返す — 注：Vault aggregate state を使う); docs/domain/code/rust/src/vault/ports.rs (canonical port shape)",
+      "suggestedFix": "Make the existing-id set explicit in the port signature so PROP-003 is verifiable as a pure property: `type VaultAllocateNoteId = (preferredTimestamp: Timestamp, existingIds: ReadonlySet<NoteId>) => NoteId`. Alternatively, split into a pure helper `nextAvailableNoteId(preferred, existing): NoteId` (target of PROP-003) and an effectful aggregate method `vault.allocateNoteId(now)` that wires the helper to its internal state. Update REQ-011 ACs and PROP-003 to reference the pure helper. This also resolves the Step 4 'Mixed' classification rationale: only Clock.now() is effectful, the id allocation is genuinely pure when given the set."
+    },
+    {
+      "id": "F-002",
+      "severity": "major",
+      "dimension": "verification_readiness",
+      "artifactPath": "specs/verification-architecture.md",
+      "lineRefs": [128, 142],
+      "title": "REQ-013 (Step 3 event ordering) has no dedicated proof obligation; coverage matrix entry is misleading",
+      "description": "Coverage Matrix L142 maps REQ-013 to 'PROP-014 (VaultScanned; FeedRestored/TagInventoryBuilt are internal)'. PROP-014 (L101) is defined as 'VaultDirectoryNotConfigured event is emitted exactly once on Unconfigured' — that is the REQ-003 unconfigured path, not REQ-013's Step 3 hydration emission. There is no PROP that asserts (a) VaultScanned is emitted with the corruptedFiles payload, (b) FeedRestored and TagInventoryBuilt fire after VaultScanned, or (c) the emission ordering specified in REQ-013 ACs L201-207. REQ-013 is therefore effectively unverified under the current PROP set despite the matrix claiming coverage.",
+      "groundTruthCite": "docs/domain/workflows.md L91 (Step 3 発行 Event: VaultScanned, FeedRestored, TagInventoryBuilt); docs/domain/domain-events.md L42-48 (VaultScanned payload); docs/domain/domain-events.md L177-178 (FeedRestored, TagInventoryBuilt as Curate internal events)",
+      "suggestedFix": "Add PROP-021 (Tier 2 example test, required:false) asserting the three events fire in the specified order with VaultScanned carrying `{vaultId, snapshots, corruptedFiles, occurredOn}` and CorruptedFile values using the `failure: ScanFileFailure` field shape. Update the coverage matrix L142 to point REQ-013 at the new PROP-021 (and PROP-013 if InitialUIState assertions cover the corruptedFiles passthrough). Remove the misleading mapping to PROP-014."
+    },
+    {
+      "id": "F-003",
+      "severity": "minor",
+      "dimension": "spec_fidelity",
+      "artifactPath": "specs/behavioral-spec.md",
+      "lineRefs": [200, 206, 207],
+      "title": "REQ-013 calls FeedRestored and TagInventoryBuilt 'internal Curate events' but the Vault Context emits VaultScanned — emitter responsibility is implicit",
+      "description": "REQ-013 EARS at L200 says 'the system SHALL emit VaultScanned, FeedRestored, and TagInventoryBuilt'. The EARS verb 'the system' obscures that these events have different emitters and contexts: VaultScanned is Vault-emitted Public Domain Event (domain-events.md L39-48), while FeedRestored/TagInventoryBuilt are Curate-internal (domain-events.md L177-178). In a verification context, 'the system SHALL emit' will be hard to test without naming the emitter. This is not a fidelity error — workflows.md does list all three under Step 3 — but the responsibility partition matters when wiring the test harness.",
+      "groundTruthCite": "docs/domain/domain-events.md L39 (VaultScanned 発生元 Aggregate: Vault), L177-178 (Curate internal: FeedRestored, TagInventoryBuilt); docs/domain/code/ts/src/shared/events.ts L42-48 (VaultScanned in PublicDomainEvent union); FeedRestored / TagInventoryBuilt are intentionally NOT in the PublicDomainEvent union",
+      "suggestedFix": "Reword REQ-013 EARS to: 'WHEN hydrateFeed completes THEN the Vault Context SHALL emit VaultScanned (public) AND the Curate Context SHALL emit FeedRestored and TagInventoryBuilt (internal) in that order.' Add an AC noting that FeedRestored and TagInventoryBuilt do NOT cross the bounded-context boundary and are not part of the PublicDomainEvent union (cross-ref shared/events.ts)."
+    },
+    {
+      "id": "F-004",
+      "severity": "minor",
+      "dimension": "spec_fidelity",
+      "artifactPath": "specs/behavioral-spec.md",
+      "lineRefs": [225, 228],
+      "title": "REQ-015 acceptance criterion conflates 'pure/sync' for FrontmatterParser.parse",
+      "description": "REQ-015 AC L228 says 'FrontmatterParser.parse is a pure/sync function with no side effects (source: workflows.md 依存（ポート）表)'. workflows.md L113 actually says 'sync (pure)' — purity and synchrony are separately stated. More importantly, verification-architecture.md L48-54 declares the parser as Result-returning and pure but does not explicitly close the door on async implementations. For lean MVP this is harmless, but stating 'pure/sync' as a single composite property weakens the proof obligation: only purity is property-testable, while sync-ness is an implementation choice deferred to Phase 2b per the manifest.",
+      "groundTruthCite": "docs/domain/workflows.md L113 (FrontmatterParser.parse | sync (pure)); .vcsdd/features/app-startup/reviews/spec/iteration-1/input/manifest.json L32 (Phase 1b defines port contracts only; implementation deferred to Phase 2b)",
+      "suggestedFix": "Split REQ-015 AC into two: (a) 'FrontmatterParser.parse is pure (no side effects, deterministic given input)' as the verifiable property, and (b) note that sync vs async is an implementation choice deferred to Phase 2b. Drop the bundled 'pure/sync' phrasing."
+    },
+    {
+      "id": "F-005",
+      "severity": "minor",
+      "dimension": "verification_readiness",
+      "artifactPath": "specs/verification-architecture.md",
+      "lineRefs": [40, 43],
+      "title": "FileSystem.statDir port returns Result<boolean, FsError> but the spec uses 'returns false' as a meaningful condition for PathNotFound",
+      "description": "Behavioral-spec REQ-001 L29 says 'FileSystem.statDir returns false or a not-found error: maps to PathNotFound'. But verification-architecture L40 declares `FileSystemStatDir = (path: string) => Result<boolean, FsError>`. With this signature, three outcomes exist: Ok(true), Ok(false), Err(FsError{kind:'not-found'}). The spec treats Ok(false) and Err(not-found) as equivalent, but this means an adapter that signals not-found-as-Ok-false vs not-found-as-Err is acceptable — that is contract-level ambiguity. listMarkdown (L43) and readFile (L46) by contrast return Result<_, FsError>/Result<_, ScanError> with no 'false' overload. The asymmetry should be resolved before Phase 2b.",
+      "groundTruthCite": "docs/domain/workflows.md L62 (FileSystem.statDir(path): Result<bool>); docs/domain/code/rust/src/vault/ports.rs (canonical statDir signature)",
+      "suggestedFix": "Either narrow statDir to `(path: string) => Result<{exists: boolean}, FsError>` and explicitly enumerate the three outcomes in REQ-001 ACs, or pick one canonical encoding (e.g., always return Err(FsError{kind:'not-found'}) on missing path and Ok(true) on existing readable directory) and state it. Update REQ-001 EDGE Cases L29 to match."
+    }
+  ]
+}

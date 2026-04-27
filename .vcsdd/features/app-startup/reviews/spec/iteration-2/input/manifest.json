@@ -1,0 +1,37 @@
+{
+  "reviewType": "spec",
+  "feature": "app-startup",
+  "iteration": 2,
+  "mode": "lean",
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": [
+    "spec_fidelity",
+    "verification_readiness"
+  ],
+  "priorIteration": "reviews/spec/iteration-1/output/verdict.json",
+  "changesAppliedFromIter1": {
+    "F-001": "PROP-003 retargeted to pure helper nextAvailableNoteId; ports split into NextAvailableNoteId (pure) + VaultAllocateNoteId (effectful); REQ-011 updated; PROP-022 added for suffix determinism",
+    "F-002": "PROP-021 added for REQ-013 event ordering; coverage matrix corrected",
+    "F-003": "REQ-013 split into REQ-013a (Public VaultScanned) + REQ-013b (Curate-internal FeedRestored/TagInventoryBuilt)",
+    "F-004": "REQ-015 ACs split into AC-1 purity + AC-2 sync (deferred to Phase 2b)",
+    "F-005": "FileSystemStatDir port enumerates Ok(true)/Ok(false)/Err(not-found) outcomes"
+  },
+  "domainGroundTruth": [
+    "docs/domain/workflows.md",
+    "docs/domain/aggregates.md",
+    "docs/domain/domain-events.md",
+    "docs/domain/glossary.md",
+    "docs/domain/bounded-contexts.md",
+    "docs/domain/code/ts/src/shared/snapshots.ts",
+    "docs/domain/code/ts/src/shared/events.ts",
+    "docs/domain/code/ts/src/shared/errors.ts",
+    "docs/domain/code/rust/src/snapshots.rs",
+    "docs/domain/code/rust/src/events.rs",
+    "docs/domain/code/rust/src/errors.rs",
+    "docs/domain/code/rust/src/vault/ports.rs",
+    "docs/domain/code/rust/src/vault/workflows.rs"
+  ]
+}

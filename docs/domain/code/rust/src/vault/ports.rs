@@ -67,10 +67,26 @@ pub trait ClockPort {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// Vault.allocateNoteId（Capture からの依存）
-// aggregates.md §1 衝突回避設計
+// NoteId 割り当て — 2 層構造
+// aggregates.md §1 衝突回避設計（Phase 1c F-001 で純粋性境界を分離）
 // ──────────────────────────────────────────────────────────────────────
 
+/// Pure helper — 既存 NoteId 集合と希望 Timestamp から衝突なき NoteId を返す。
+/// 副作用なし、同一入力 → 同一出力。fast-check property test の対象。
+///
+/// Phase 11+ 実装。Tier 1 検証可能。
+pub fn next_available_note_id(
+    _preferred: Timestamp,
+    _existing_ids: &std::collections::HashSet<NoteId>,
+) -> NoteId {
+    todo!("Phase 11+ 実装：preferred と衝突するなら -1, -2 ... を付与")
+}
+
+/// Effectful Aggregate method — Vault 内部 NoteId 集合を読み取り、
+/// `next_available_note_id` に委譲する境界。
+///
+/// 純粋性境界：このトレイトは effectful（Vault state read）。
+/// アルゴリズム本体は `next_available_note_id` 側にある。
 pub trait NoteIdAllocatorPort {
-    fn allocate(&self, preferred: Timestamp) -> NoteId;
+    fn allocate(&self, now: Timestamp) -> NoteId;
 }

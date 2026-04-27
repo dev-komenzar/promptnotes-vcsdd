@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "features": {
+    "app-startup": {
+      "status": "active",
+      "createdAt": "2026-04-27T21:10:34.186Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "1b",
+      "updatedAt": "2026-04-27T21:20:38.531Z"
+    }
+  },
+  "activeFeature": "app-startup"
+}

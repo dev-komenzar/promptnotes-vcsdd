@@ -131,12 +131,15 @@ Markdown ファイルの永続化と Obsidian 互換性を担保する。
 | Vault スキャン | **Vault Scan** | Vault 内 Markdown を走査して NoteFileSnapshot 一覧を返す操作 |
 | ノートファイルスナップショット | **NoteFileSnapshot** | `{ noteId, body, frontmatter, filePath, fileMtime }`。Vault が返す読み取り表現（DTO） |
 | ハイドレーション | **Hydration** | NoteFileSnapshot を Note Aggregate に変換する ACL 処理 |
-| ハイドレーション失敗 | **Hydration Failure** | YAML 不正・必須欠落・VO 拒否などで変換できなかった状態 |
+| ハイドレーション失敗 | **Hydration Failure** | YAML 不正・必須欠落・VO 拒否などで snapshot から Note Aggregate に変換できなかった状態（**read 失敗は含まない**） |
 | ハイドレーション失敗理由 | **HydrationFailureReason** | `'yaml-parse' \| 'missing-field' \| 'invalid-value' \| 'unknown'` |
+| 壊れファイル | **CorruptedFile** | `VaultScanned.corruptedFiles[]` の要素。`{ filePath, failure: ScanFileFailure, detail? }` |
+| スキャンファイル失敗 | **ScanFileFailure** | scanVault でのファイル単位失敗の判別ユニオン。`{kind:'read', fsError}` または `{kind:'hydrate', reason: HydrationFailureReason}`。read 失敗（OS）と hydrate 失敗（フォーマット）を型で区別 |
 | 読み取り時正規化 | **Read-time Normalization** | タグ等の正規化は ACL 変換時のみ行い、ファイル自体は書き換えない方針 |
 | OS ゴミ箱 | **OS Trash** | 削除時の送り先（Electron なら `shell.trashItem()` 等）。MVP 確定 |
 | 並行スキャン抑制 | **Concurrent Scan Lock** | `status='scanning'` の間は新たな scan を受け付けない不変条件 |
-| ID 割り当て | **allocateNoteId** | 既存ファイル名と衝突しない NoteId を返す Vault の責務 |
+| ID 割り当て | **allocateNoteId** | Vault Aggregate の effectful method。`vault.allocateNoteId(now: Timestamp): NoteId`。内部 NoteId 集合を読み、pure helper に委譲 |
+| 次利用可能 NoteId | **nextAvailableNoteId** | Pure helper `nextAvailableNoteId(preferred: Timestamp, existingIds: ReadonlySet<NoteId>): NoteId`。衝突時 `-N` サフィックス。副作用なし、property test 対象 |
 | ファイルシステム競合 | **Filesystem Conflict** | Obsidian 等の外部ツールによる同時編集の可能性（MVP は rescan-only で対処） |
 | 腐敗防止層 | **ACL (Anticorruption Layer)** | Vault と Capture/Curate のドメインモデルを分離する変換層 |
 

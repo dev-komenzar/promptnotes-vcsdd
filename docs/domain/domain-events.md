@@ -42,7 +42,7 @@
 - **プロパティ**:
   - `vaultId: VaultId`
   - `snapshots: NoteFileSnapshot[]` — 各 snapshot は `{ noteId, body, frontmatter, filePath, fileMtime }`
-  - `corruptedFiles: { filePath: string, reason: HydrationFailureReason, detail?: string }[]` — 壊れファイル一覧（F10 解決：起動時集約）
+  - `corruptedFiles: CorruptedFile[]` — 壊れファイル一覧（F10 解決：起動時集約）。`CorruptedFile = { filePath: string, failure: ScanFileFailure, detail?: string }` で、`ScanFileFailure = {kind:'read', fsError: FsError} \| {kind:'hydrate', reason: HydrationFailureReason}` により read 失敗（OS）と hydrate 失敗（フォーマット）を区別
   - `occurredOn: Timestamp`
 - **Consumer**: Curate（Feed 構築・TagInventory 構築・壊れファイル警告 UI）
 - **Enrichment**: Enrichment（snapshot 全体 + 失敗ファイル一覧を載せる）。Curate は Vault に再問い合わせせずに Feed を組み立てられる

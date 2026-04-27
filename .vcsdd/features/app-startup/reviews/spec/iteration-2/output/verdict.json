@@ -1,0 +1,48 @@
+{
+  "feature": "app-startup",
+  "iteration": 2,
+  "phase": "1c",
+  "reviewer": "adversary",
+  "reviewedAt": "2026-04-28T00:00:00Z",
+  "mode": "lean",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "summary": "All five prior findings are correctly addressed in behavioral-spec.md revision 3. (1) REQ-011 L184-196 explicitly documents the two-layer split (`vault.allocateNoteId` effectful + `nextAvailableNoteId(preferred, existingIds)` pure helper), citing aggregates.md §1 and ports.rs as ground truth — matches aggregates.md L228 and ports.rs L78-92 (`pub fn next_available_note_id`) exactly. (2) REQ-013 has been split into REQ-013a (L211-220, VaultScanned as Vault-emitted public event) and REQ-013b (L224-233, FeedRestored + TagInventoryBuilt as Curate-internal events), aligning with domain-events.md L39-48 (VaultScanned 発生元 Vault, public) and L177-178 (FeedRestored / TagInventoryBuilt under Curate 内). (3) REQ-001 L29 + new outcome contract L32-38 enumerate `Ok(true)`, `Ok(false)`, `Err(not-found)`, `Err(permission)` and explicitly state both Ok(false) and Err(not-found) map to PathNotFound (resolves F-005 ambiguity). (4) REQ-015 L253-257 splits AC-1 (purity, property-verifiable) from AC-2 (sync vs async, deferred to Phase 2b), per F-004. (5) Glossary entries for `allocateNoteId` (L141) and `nextAvailableNoteId` (L142) are now distinct and the spec cross-references both. EARS syntax preserved throughout; scope boundary respected."
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "summary": "verification-architecture.md revision 3 fixes both prior FAIL conditions. (1) Port section L86-103 declares both `NextAvailableNoteId(preferred, existingIds): NoteId` (pure) and `VaultAllocateNoteId(now): NoteId` (effectful, comment explicitly says 'reads Vault state'), matching ports.rs canonical signatures. Purity Boundary Map L13-22 correctly classifies `nextAvailableNoteId` as Pure core and `vault.allocateNoteId` as Effectful shell with a clear rationale. PROP-003 L116 is retargeted to `nextAvailableNoteId(ts, existingIds) ∉ existingIds` — fully testable in fast-check. PROP-022 L135 (suffix determinism) added as the same-input/same-output guarantee. (2) PROP-021 L134 added: covers the three-event ordering VaultScanned → FeedRestored → TagInventoryBuilt with VaultScanned payload `{vaultId, snapshots, corruptedFiles, occurredOn}` using `CorruptedFile.failure: ScanFileFailure`, plus an explicit type-level assertion that FeedRestored and TagInventoryBuilt are NOT in the PublicDomainEvent union. Coverage matrix L168, L170-171 correctly maps REQ-011 → PROP-003+PROP-022 and REQ-013a/REQ-013b → PROP-021; the misleading PROP-014 mapping for REQ-013 is removed. The `required: true` set remains a tight 4 (PROP-001/002/003/004) — appropriate for lean mode. PROP-014 (L127) still correctly serves REQ-003 only. Every requirement has at least one PROP. No dangling PROP IDs or orphan beads detected."
+    }
+  },
+  "overallVerdict": "PASS",
+  "priorFindingStatus": [
+    {
+      "id": "F-001",
+      "status": "resolved",
+      "justification": "Two-layer port split present in both spec (REQ-011 L184-196) and verification architecture (Purity Boundary Map L19-20, Port Contracts L86-103). PROP-003 retargeted to pure helper with `existingIds` as explicit parameter; PROP-022 adds determinism. Matches ports.rs L78-92 ground truth."
+    },
+    {
+      "id": "F-002",
+      "status": "resolved",
+      "justification": "PROP-021 (L134) explicitly asserts the three-event ordering, VaultScanned payload with corruptedFiles using ScanFileFailure shape, and PublicDomainEvent union membership constraint. Coverage matrix L170-171 routes REQ-013a/b to PROP-021; the misleading PROP-014 mapping removed."
+    },
+    {
+      "id": "F-003",
+      "status": "resolved",
+      "justification": "REQ-013 split cleanly into REQ-013a (Vault Context emits public VaultScanned, L211-220) and REQ-013b (Curate Context emits internal FeedRestored + TagInventoryBuilt in that order, L224-233). Emitter responsibility and PublicDomainEvent membership are now explicit ACs. Aligns with domain-events.md L39 and Curate 内 list L177-178."
+    },
+    {
+      "id": "F-004",
+      "status": "resolved",
+      "justification": "REQ-015 ACs at L253-257 split into AC-1 (purity, property-verifiable) and AC-2 (sync/async deferred to Phase 2b). FrontmatterParser.parse purity restated separately at L257 with the same partition."
+    },
+    {
+      "id": "F-005",
+      "status": "resolved",
+      "justification": "REQ-001 L32-38 enumerates all four `statDir` outcomes (Ok(true), Ok(false), Err(not-found), Err(permission)) and explicitly states Ok(false) and Err(not-found) both map to PathNotFound with rationale. verification-architecture.md L41-49 mirrors the contract on the port-signature side."
+    }
+  ],
+  "newFindings": [],
+  "judgment": "Proceed to Phase 2a — the spec and verification architecture are now coherent with domain ground truth and the lean-mode required-property set is well-scoped."
+}

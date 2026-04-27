@@ -1,0 +1,34 @@
+{
+  "reviewType": "spec",
+  "feature": "app-startup",
+  "iteration": 1,
+  "mode": "lean",
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": [
+    "spec_fidelity",
+    "verification_readiness"
+  ],
+  "domainGroundTruth": [
+    "docs/domain/workflows.md",
+    "docs/domain/aggregates.md",
+    "docs/domain/domain-events.md",
+    "docs/domain/glossary.md",
+    "docs/domain/bounded-contexts.md",
+    "docs/domain/code/ts/src/shared/snapshots.ts",
+    "docs/domain/code/ts/src/shared/events.ts",
+    "docs/domain/code/ts/src/shared/errors.ts",
+    "docs/domain/code/rust/src/snapshots.rs",
+    "docs/domain/code/rust/src/events.rs",
+    "docs/domain/code/rust/src/errors.rs",
+    "docs/domain/code/rust/src/vault/ports.rs",
+    "docs/domain/code/rust/src/vault/workflows.rs"
+  ],
+  "scopeDecisions": [
+    "Initialization-only: ConfigureVault flow is OUT of scope",
+    "No large-file performance NFR for MVP",
+    "Phase 1b defines port contracts only; implementation deferred to Phase 2b"
+  ]
+}

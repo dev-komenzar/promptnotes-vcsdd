@@ -123,7 +123,8 @@ Phase 2 では **Capture / Curate / Vault** の 3 候補が出ました。Phase 
   - **OS Trash** — OS のゴミ箱機能（削除時の送り先候補）
   - **Filesystem Conflict** — 外部ツールによる同時編集の可能性
   - **Read-time Normalization** — タグ等の正規化は読み取り時のみ（ACL 変換時）に行う。ファイル自体の書き換えは行わない。これにより Obsidian 等の外部ツールの意図と衝突せず共存できる
-  - **Hydration Failure** — Markdown ファイルから Note Aggregate への変換失敗（YAML 不正、必須欠落等）。Vault は失敗ファイル一覧を `VaultScanned` の `corruptedFiles[]` に含めて返す
+  - **Hydration Failure** — snapshot から Note Aggregate への変換失敗（YAML 不正、必須欠落、VO 拒否等）。**read 失敗は含まない**（read 失敗は別カテゴリ）
+  - **Scan File Failure** — `scanVault` の個別ファイル失敗。OS read 失敗（`{kind:'read', fsError}`）と Hydration 失敗（`{kind:'hydrate', reason}`）を型で区別する判別ユニオン。Vault は失敗ファイル一覧を `VaultScanned` の `corruptedFiles[]` に含めて返す
 - **所有チーム**: TBD
 - **境界となる関心事**: 「物理ファイルとしての表現と永続化」。Capture/Curate の概念モデルを Markdown に変換する責務を持つ。
 
