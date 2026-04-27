@@ -1,0 +1,330 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+=== TypeScript: bun test (runtime) ===
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/app-startup/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/app-startup/pipeline' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/app-startup/hydrate-feed' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/app-startup/initialize-capture' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/app-startup/scan-vault' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/app-startup/load-vault-config' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts'
+-------------------------------
+
+
+ 9 pass
+ 5 fail
+ 5 errors
+ 20 expect() calls
+Ran 14 tests across 6 files. [44.00ms]
+
+=== TypeScript: bun run check (svelte-check / type-level) ===
+Note: Tier 0 (type-level) PROPs (PROP-004, PROP-019) only fail at type-check time;
+their runtime assertions trivially pass because TypeScript erases type imports.
+Red phase signal for these is the type errors below.
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+1777331273812 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777331273814 ERROR "vite.config.js" 4:1 "Unused '@ts-expect-error' directive."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/errors.test.ts" 16:67 "Cannot find module '$lib/domain/app-startup/errors' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/errors.test.ts" 34:13 "Type 'AppStartupError' is not assignable to type 'never'."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/errors.test.ts" 50:13 "Type 'VaultConfigError' is not assignable to type 'never'."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/pipeline.test.ts" 20:37 "Cannot find module '$lib/domain/app-startup/stages' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/pipeline.test.ts" 26:8 "Cannot find module '$lib/domain/app-startup/pipeline' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 22:38 "Cannot find module '$lib/domain/app-startup/stages' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 29:8 "Cannot find module '$lib/domain/app-startup/load-vault-config' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 153:17 "Parameter '_path' implicitly has an 'any' type."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 332:17 "Parameter '_path' implicitly has an 'any' type."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts" 22:35 "Cannot find module '$lib/domain/app-startup/stages' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts" 28:8 "Cannot find module '$lib/domain/app-startup/scan-vault' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts" 123:18 "Parameter '_path' implicitly has an 'any' type."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts" 18:49 "Cannot find module '$lib/domain/app-startup/stages' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts" 21:29 "Cannot find module '$lib/domain/app-startup/hydrate-feed' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts" 175:54 "Parameter 'id' implicitly has an 'any' type."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts" 264:43 "Parameter 'id' implicitly has an 'any' type."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts" 297:56 "Parameter 'id' implicitly has an 'any' type."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts" 352:8 "Parameter 'e' implicitly has an 'any' type."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 18:51 "Cannot find module '$lib/domain/app-startup/stages' or its corresponding type declarations."
+1777331273814 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 27:8 "Cannot find module '$lib/domain/app-startup/initialize-capture' or its corresponding type declarations."
+1777331273815 COMPLETED 301 FILES 21 ERRORS 0 WARNINGS 7 FILES_WITH_PROBLEMS
+error: script "check" exited with code 1
+
+=== Rust: cargo test ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running unittests src/lib.rs (target/debug/deps/promptnotes_lib-b238cc2e44bd4932)
+
+running 7 tests
+test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_double_collision ... FAILED
+test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_empty_set ... FAILED
+test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_with_collision ... FAILED
+test domain::vault::note_id::tests::prop022_deterministic_empty_set ... FAILED
+test domain::vault::note_id::tests::prop022_deterministic_with_collision ... FAILED
+test domain::vault::note_id::tests::prop003_proptest_uniqueness ... FAILED
+test domain::vault::note_id::tests::prop022_proptest_determinism ... FAILED
+
+failures:
+
+---- domain::vault::note_id::tests::prop003_result_not_in_existing_ids_double_collision stdout ----
+
+thread 'domain::vault::note_id::tests::prop003_result_not_in_existing_ids_double_collision' (1007377) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+---- domain::vault::note_id::tests::prop003_result_not_in_existing_ids_empty_set stdout ----
+
+thread 'domain::vault::note_id::tests::prop003_result_not_in_existing_ids_empty_set' (1007378) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- domain::vault::note_id::tests::prop003_result_not_in_existing_ids_with_collision stdout ----
+
+thread 'domain::vault::note_id::tests::prop003_result_not_in_existing_ids_with_collision' (1007379) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+---- domain::vault::note_id::tests::prop022_deterministic_empty_set stdout ----
+
+thread 'domain::vault::note_id::tests::prop022_deterministic_empty_set' (1007380) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+---- domain::vault::note_id::tests::prop022_deterministic_with_collision stdout ----
+
+thread 'domain::vault::note_id::tests::prop022_deterministic_with_collision' (1007381) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+---- domain::vault::note_id::tests::prop003_proptest_uniqueness stdout ----
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop003_proptest_uniqueness' (1007376) panicked at src/domain/vault/note_id.rs:128:5:
+Test failed: not yet implemented: Phase 11+ 実装.
+minimal failing input: epoch_ms = 1000, existing_strs = []
+	successes: 0
+	local rejects: 0
+	global rejects: 0
+
+
+---- domain::vault::note_id::tests::prop022_proptest_determinism stdout ----
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/docs/domain/code/rust/src/value_objects.rs:63:9:
+not yet implemented: Phase 11+ 実装
+
+thread 'domain::vault::note_id::tests::prop022_proptest_determinism' (1007382) panicked at src/domain/vault/note_id.rs:128:5:
+Test failed: not yet implemented: Phase 11+ 実装.
+minimal failing input: epoch_ms = 1000, existing_strs = []
+	successes: 0
+	local rejects: 0
+	global rejects: 0
+
+
+
+failures:
+    domain::vault::note_id::tests::prop003_proptest_uniqueness
+    domain::vault::note_id::tests::prop003_result_not_in_existing_ids_double_collision
+    domain::vault::note_id::tests::prop003_result_not_in_existing_ids_empty_set
+    domain::vault::note_id::tests::prop003_result_not_in_existing_ids_with_collision
+    domain::vault::note_id::tests::prop022_deterministic_empty_set
+    domain::vault::note_id::tests::prop022_deterministic_with_collision
+    domain::vault::note_id::tests::prop022_proptest_determinism
+
+test result: FAILED. 0 passed; 7 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

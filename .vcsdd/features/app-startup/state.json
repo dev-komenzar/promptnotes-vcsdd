@@ -529,8 +529,14 @@
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/errors.test.ts",
         "status": "red",
         "linkedBeads": [
-          "BEAD-003", "BEAD-004", "BEAD-005", "BEAD-007",
-          "BEAD-019", "BEAD-034", "BEAD-035", "BEAD-036"
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-005",
+          "BEAD-007",
+          "BEAD-019",
+          "BEAD-034",
+          "BEAD-035",
+          "BEAD-036"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
@@ -542,8 +548,16 @@
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts",
         "status": "red",
         "linkedBeads": [
-          "BEAD-001", "BEAD-003", "BEAD-004", "BEAD-005", "BEAD-006",
-          "BEAD-020", "BEAD-021", "BEAD-022", "BEAD-029", "BEAD-031"
+          "BEAD-001",
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-005",
+          "BEAD-006",
+          "BEAD-020",
+          "BEAD-021",
+          "BEAD-022",
+          "BEAD-029",
+          "BEAD-031"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
@@ -555,8 +569,17 @@
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
         "status": "red",
         "linkedBeads": [
-          "BEAD-002", "BEAD-007", "BEAD-023", "BEAD-024", "BEAD-025",
-          "BEAD-026", "BEAD-027", "BEAD-033", "BEAD-034", "BEAD-035", "BEAD-036"
+          "BEAD-002",
+          "BEAD-007",
+          "BEAD-023",
+          "BEAD-024",
+          "BEAD-025",
+          "BEAD-026",
+          "BEAD-027",
+          "BEAD-033",
+          "BEAD-034",
+          "BEAD-035",
+          "BEAD-036"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
@@ -568,7 +591,13 @@
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
         "status": "red",
         "linkedBeads": [
-          "BEAD-008", "BEAD-009", "BEAD-015", "BEAD-016", "BEAD-017", "BEAD-030", "BEAD-033"
+          "BEAD-008",
+          "BEAD-009",
+          "BEAD-015",
+          "BEAD-016",
+          "BEAD-017",
+          "BEAD-030",
+          "BEAD-033"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
@@ -580,7 +609,13 @@
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts",
         "status": "red",
         "linkedBeads": [
-          "BEAD-010", "BEAD-011", "BEAD-012", "BEAD-014", "BEAD-018", "BEAD-028", "BEAD-038"
+          "BEAD-010",
+          "BEAD-011",
+          "BEAD-012",
+          "BEAD-014",
+          "BEAD-018",
+          "BEAD-028",
+          "BEAD-038"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
@@ -592,8 +627,14 @@
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
         "status": "red",
         "linkedBeads": [
-          "BEAD-001", "BEAD-002", "BEAD-008", "BEAD-010", "BEAD-013",
-          "BEAD-014", "BEAD-032", "BEAD-037"
+          "BEAD-001",
+          "BEAD-002",
+          "BEAD-008",
+          "BEAD-010",
+          "BEAD-013",
+          "BEAD-014",
+          "BEAD-032",
+          "BEAD-037"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
@@ -605,7 +646,9 @@
         "artifactPath": "promptnotes/src-tauri/src/domain/vault/note_id.rs",
         "status": "red",
         "linkedBeads": [
-          "BEAD-011", "BEAD-018", "BEAD-038"
+          "BEAD-011",
+          "BEAD-018",
+          "BEAD-038"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
@@ -630,21 +673,6 @@
     }
   },
   "sprintCount": 1,
-  "sprints": {
-    "1": {
-      "phase": "2a",
-      "status": "red",
-      "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-1-red-phase.log",
-      "newFeatureTests": "FAIL",
-      "regressionBaseline": "PASS",
-      "tsTestsCreated": 47,
-      "tsTestsFailing": 5,
-      "tsTestsErrored": 5,
-      "rustTestsCreated": 7,
-      "rustTestsFailing": 7,
-      "recordedAt": "2026-04-28T00:00:00.000Z"
-    }
-  },
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-28T00:00:00.000Z"
+  "updatedAt": "2026-04-27T23:04:55.627Z"
 }

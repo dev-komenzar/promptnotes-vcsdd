@@ -41,3 +41,4 @@
 {"timestamp":"2026-04-27T22:53:10.494Z","event":"phase_transition","featureName":"app-startup","from":"1b","to":"1c","iteration":1,"phase":"1c"}
 {"timestamp":"2026-04-27T22:53:10.499Z","event":"phase_transition","featureName":"app-startup","from":"1c","to":"2a","iteration":1,"phase":"2a"}
 {"timestamp":"2026-04-27T22:53:10.499Z","event":"sprint_started","featureName":"app-startup","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-04-27T23:05:03.869Z","event":"sprint_red_recorded","featureName":"app-startup","sprintN":1,"phase":"2a","evidencePath":".vcsdd/features/app-startup/evidence/sprint-1-red-phase.log","newFeatureTests":"FAIL","regressionBaseline":"PASS"}

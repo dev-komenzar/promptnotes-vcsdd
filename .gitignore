@@ -42,6 +42,8 @@ build/
 # Project local
 .env.local
 *.log
+# VCSDD パイプラインの evidence は commit 対象（Phase ゲートで参照される）。
+!.vcsdd/features/*/evidence/*.log
 
 # MCP
 .playwright-mcp/
