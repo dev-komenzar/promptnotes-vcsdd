@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "title": "SaveFailedState lacks Note field; classifyCurrentSession cannot produce CurrentSessionDecision.dirty",
+  "description": "REQ-EPNS-006 and REQ-EPNS-007 specify that classifyCurrentSession(SaveFailedState) returns { kind: 'dirty', noteId: currentNoteId, note: Note }. However, the type contract for SaveFailedState in capture/states.ts (lines 52-61) has fields: status, currentNoteId, pendingNextNoteId, lastSaveError. There is NO 'note: Note' field. The CurrentSessionDecision 'dirty' variant (stages.ts line 60) requires a 'note: Note' field. The spec does not explain where the Note instance comes from when the input state is SaveFailedState. This makes the classifyCurrentSession function unimplementable as specified for the save-failed path.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/capture/states.ts",
+    "lineRange": "52-61",
+    "snippet": "export type SaveFailedState = {\n  readonly status: \"save-failed\";\n  readonly currentNoteId: NoteId;\n  readonly pendingNextNoteId: NoteId | null;\n  readonly lastSaveError: SaveError;\n};"
+  },
+  "recommendation": "Either (a) add a 'note: Note' field to SaveFailedState in the type contract so the unsaved content is preserved, or (b) change classifyCurrentSession for SaveFailedState to accept an additional Note parameter or retrieve it from a separate source, and document that mechanism in the spec. Option (a) is the DMMF-idiomatic approach: the state should carry all data needed for the next transition.",
+  "routeToPhase": "1a"
+}

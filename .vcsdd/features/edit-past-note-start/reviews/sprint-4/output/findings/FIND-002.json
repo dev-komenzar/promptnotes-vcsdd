@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "structural_integrity",
+  "category": "purity_boundary",
+  "severity": "minor",
+  "description": "The `emit` port type across all three modules (flush-current-session.ts:27, start-new-session.ts:19, pipeline.ts:40) is typed as `(event: { kind: string; [k: string]: unknown }) => void`. The verification architecture specifies `Emit = (event: PublicDomainEvent | CaptureInternalEvent) => void`. The wider type defeats type-level guarantees that only well-formed domain events are emittable. Any object with a `kind` field is accepted, meaning the implementation could emit malformed events without compile-time detection. This is a structural type safety gap in the effectful shell.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+    "lineRange": "27",
+    "snippet": "readonly emit: (event: { kind: string; [k: string]: unknown }) => void;"
+  },
+  "specReference": "verification-architecture.md lines 62-64 — Emit port contract: `type Emit = (event: PublicDomainEvent | CaptureInternalEvent) => void`",
+  "routeToPhase": "2c"
+}

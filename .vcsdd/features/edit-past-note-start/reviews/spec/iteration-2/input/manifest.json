@@ -1,0 +1,21 @@
+{
+  "reviewType": "spec",
+  "feature": "edit-past-note-start",
+  "iteration": 2,
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "previousFindings": "reviews/spec/iteration-1/output/verdict.json",
+  "revisionChanges": [
+    "FIND-SPEC-001: Pipeline input includes currentNote: Note | null",
+    "FIND-SPEC-002: Same-note re-selection as pre-pipeline guard with Clock.now()",
+    "FIND-SPEC-003: SaveError → NoteSaveFailureReason mapping defined in REQ-EPNS-004",
+    "FIND-SPEC-004: PROP-EPNS-004 promoted to required: true",
+    "FIND-SPEC-005: NoteFileSaved field sourcing specified in REQ-EPNS-003",
+    "FIND-SPEC-006: Same-note check clarified for all states in REQ-EPNS-005",
+    "FIND-SPEC-007: PROP-EPNS-019 added for Clock.now() in same-note path",
+    "FIND-SPEC-008: classifyCurrentSession signature updated to (state, currentNote)"
+  ]
+}

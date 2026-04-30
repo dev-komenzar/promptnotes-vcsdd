@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-EPNS-012 Clock budget table specifies dirty-fail path has 0 total Clock.now() calls (flushCurrentSession=0, startNewSession=0, total=0). However, the Sprint 1 fix for FIND-001 introduced a ports.clockNow() call at flush-current-session.ts:76 for NoteSaveFailed.occurredOn. The pipeline test at pipeline.test.ts:548 asserts clockCalls===1 on this path, directly contradicting the spec table. Either the spec table is wrong (should say flush=1, total=1 on dirty-fail) or the implementation violates the budget. The spec and implementation are out of sync.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+    "lineRange": "74-82",
+    "snippet": "const failOccurredOn = ports.clockNow();"
+  },
+  "specReference": "REQ-EPNS-012 Clock budget table, row 'Dirty (save fails)': flushCurrentSession=0, startNewSession=0, Total=0",
+  "routeToPhase": "1a"
+}

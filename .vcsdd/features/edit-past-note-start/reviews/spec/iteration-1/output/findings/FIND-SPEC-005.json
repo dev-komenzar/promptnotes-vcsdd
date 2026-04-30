@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-005",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "major",
+  "title": "NoteFileSaved event shape requirements incomplete; body/frontmatter/previousFrontmatter sourcing unspecified",
+  "description": "REQ-EPNS-003 states NoteFileSaved is emitted upon save success, but the spec only references the event by name without specifying how to populate its required fields. The type contract (shared/events.ts lines 50-58) defines NoteFileSaved with: noteId, body, frontmatter, previousFrontmatter (Frontmatter | null), occurredOn. The spec does not define where body, frontmatter, and previousFrontmatter come from in the context of the EditPastNoteStart workflow. If CaptureAutoSave returns NoteFileSaved as its Ok value (as suggested by the verification-architecture.md port contract), this should be explicitly stated. Otherwise the implementation has no guidance on event construction.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/shared/events.ts",
+    "lineRange": "50-58",
+    "snippet": "export type NoteFileSaved = {\n  readonly kind: \"note-file-saved\";\n  readonly noteId: NoteId;\n  readonly body: Body;\n  readonly frontmatter: Frontmatter;\n  readonly previousFrontmatter: Frontmatter | null;\n  readonly occurredOn: Timestamp;\n};"
+  },
+  "recommendation": "Clarify in the behavioral spec that NoteFileSaved is produced by the CaptureAutoSave port and returned as-is (the EditPastNoteStart orchestrator re-emits it), or specify the fields explicitly. The port contract in verification-architecture.md line 39 suggests CaptureAutoSaveBlurSave returns Result<NoteFileSaved, SaveError> which would make this clear, but the behavioral spec itself should be self-contained on event sourcing.",
+  "routeToPhase": "1a"
+}

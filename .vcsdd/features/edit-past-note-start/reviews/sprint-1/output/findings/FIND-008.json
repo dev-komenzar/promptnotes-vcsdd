@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "minor",
+  "title": "PROP-EPNS-013 (Clock.now() budget per path) not implemented as property test",
+  "description": "The verification architecture marks PROP-EPNS-013 as a Tier 1 property (fast-check) proof obligation: 'fast-check / spy wrapper: instrument Clock.now; verify call count per path matches budget table'. The implementation tests in pipeline.test.ts verify clock call counts with example-based tests (lines 440-513), not property-based tests. While the example tests cover the budget table cases, they do not use fast-check with generated inputs as specified. This is a deviation from the verification architecture's stated tool requirement.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+    "lineRange": "440-513",
+    "snippet": "test(\"idle path: Clock.now() called exactly once (in startNewSession)\", () => {\n  let clockCalls = 0;"
+  },
+  "recommendation": "Either upgrade the clock budget tests to use fast-check property tests (generating arbitrary valid inputs for each path and verifying the clock call count), or document the deviation as an accepted risk in the verification architecture.",
+  "routeToPhase": "2a"
+}

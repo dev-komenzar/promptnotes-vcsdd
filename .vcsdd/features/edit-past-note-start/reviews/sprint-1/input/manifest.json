@@ -1,0 +1,29 @@
+{
+  "reviewType": "implementation",
+  "feature": "edit-past-note-start",
+  "sprint": 1,
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md",
+    "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+    "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+    "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
+    "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step1-classify-current-session.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step2-flush-current-session.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step3-start-new-session.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-001-classify-purity.harness.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-002-classify-idle.harness.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-003-classify-editing.harness.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-004-classify-save-failed.harness.test.ts",
+    "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts"
+  ],
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "sprintNumber": null,
+  "feature": "edit-past-note-start",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-04-30T16:00:00Z",
+  "iteration": 3,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": ["FIND-SPEC-014", "FIND-SPEC-016"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "FIND-SPEC-009 resolved: Clock budget standardized to <=2 at line 284 with consistent path table at lines 289-295. No contradiction remains."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "FIND-SPEC-010 resolved: EmptyNoteDiscarded.occurredOn deterministically sourced from flushCurrentSession's own Clock.now() call at line 251. No 'OR' ambiguity."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "FIND-SPEC-011 resolved: previousFrontmatter added to EditPastNoteStartInput at line 43, with sourcing explanation at line 47."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "FIND-SPEC-012 resolved: Same-note guard on SaveFailedState explicitly clarified at lines 153-154 and 168. Focus event does not imply error resolution."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "All 12 requirements (REQ-EPNS-001 through REQ-EPNS-012) verified against domain source-of-truth types. Pipeline stages match stages.ts CurrentSessionDecision union (lines 57-60). SwitchError matches errors.ts (lines 50-54). EmptyNoteDiscarded confirmed in PublicDomainEvent union (events.ts line 149). EditorFocusedOnPastNote confirmed in CaptureInternalEvent (internal-events.ts lines 10, 37-41) and NOT in PublicDomainEvent. SaveError -> NoteSaveFailureReason mapping covers all FsError variants. EditPastNoteStartInput fields are sourced and explained."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "Two minor findings remain (FIND-SPEC-014, FIND-SPEC-016) that do not block implementation: (1) NoteSaveFailed emission boundary ambiguity between flushCurrentSession and CaptureAutoSave adapter, (2) undefined behavior when currentNote is null for SaveFailedState. Both are edge cases at the boundary of the declared scope."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": ["FIND-SPEC-015"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+          "description": "FIND-SPEC-013 resolved: PROP-EPNS-013 at line 108 now enumerates all 5 paths with correct call counts: same-note=1, no-current=1, empty=2, dirty-success=1, dirty-fail=0."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+          "description": "19 proof obligations (PROP-EPNS-001 through PROP-EPNS-019) verified. Coverage matrix at lines 136-150 maps all 12 requirements to at least one PROP. 5 required obligations (PROP-EPNS-001 through PROP-EPNS-005) span Tiers 0-1 and cover the highest-risk invariants. Port contracts at lines 42-88 are consistent with behavioral spec. BlurSave now accepts previousFrontmatter (line 58)."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+          "description": "One minor finding (FIND-SPEC-015): no proof obligation explicitly verifies that startNewSession performs zero file I/O. The purity boundary map classifies it as effectful (Clock + emit only) but this is not enforced by any listed PROP. Does not block implementation."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 3,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": [],
+    "previousFindingsResolved": [
+      "FIND-SPEC-001",
+      "FIND-SPEC-002",
+      "FIND-SPEC-003",
+      "FIND-SPEC-004",
+      "FIND-SPEC-005",
+      "FIND-SPEC-006",
+      "FIND-SPEC-007",
+      "FIND-SPEC-008",
+      "FIND-SPEC-009",
+      "FIND-SPEC-010",
+      "FIND-SPEC-011",
+      "FIND-SPEC-012",
+      "FIND-SPEC-013"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "PROP-EPNS-018 (Tier 3, required: false) specifies a full workflow integration test asserting all three happy paths produce `EditingSessionState.status === 'editing'` with `currentNoteId === selectedNoteId`. No test file implements this proof obligation. The pipeline function returns `Result<EditPastNoteStartResult, SwitchError>` rather than performing the state transition itself, so verifying the final EditingSessionState requires a higher-level harness that applies the returned NewSession to the state machine. While each happy path is tested individually at the pipeline level (PROP-006/007/008), the combined assertion about post-pipeline state shape is absent.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+    "lineRange": "1-652",
+    "snippet": "No test matches PROP-EPNS-018 description: 'Full workflow integration — all three happy paths produce EditingSessionState.status === editing'"
+  },
+  "specReference": "verification-architecture.md line 113 — PROP-EPNS-018",
+  "routeToPhase": "2a"
+}

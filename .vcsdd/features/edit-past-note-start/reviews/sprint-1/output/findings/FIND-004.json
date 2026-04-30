@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "major",
+  "title": "No test for same-note re-selection on SaveFailedState preserving error state",
+  "description": "REQ-EPNS-005 explicitly states: 'When same-note is detected on SaveFailedState, the guard emits EditorFocusedOnPastNote but does NOT clear the save-failed status or error. The EditingSessionState remains in save-failed status'. This is a critical edge case (same-note on SaveFailedState). There is no test in pipeline.test.ts or anywhere else that verifies this behavior. The existing same-note test (PROP-EPNS-010, line 347) only tests with EditingState, not SaveFailedState. A test must verify that when SaveFailedState.currentNoteId === selection.noteId, the pipeline emits the focus event but the state remains save-failed.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+    "lineRange": "347-372",
+    "snippet": "currentState: makeEditingState({ currentNoteId: noteId, isDirty: true }),"
+  },
+  "recommendation": "Add a test: SaveFailedState with currentNoteId === selection.noteId. Verify EditorFocusedOnPastNote is emitted, blurSave is NOT called, and the return value does not indicate a new session was created (which relates to FIND-003).",
+  "routeToPhase": "2a"
+}

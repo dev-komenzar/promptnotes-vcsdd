@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-003",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "major",
+  "title": "NoteSaveFailed.reason mapping from SaveError is unspecified",
+  "description": "REQ-EPNS-004 states NoteSaveFailed is emitted with 'reason' and 'occurredOn' on save failure. The type contract (shared/events.ts lines 60-66) defines NoteSaveFailed.reason as NoteSaveFailureReason, which is a flat string union: 'permission' | 'disk-full' | 'lock' | 'unknown'. However, SaveError (shared/errors.ts lines 38-44) is a discriminated union with kind 'validation' (carrying SaveValidationError) or kind 'fs' (carrying FsError). The spec does not define how to map from SaveError to NoteSaveFailureReason. For example, SaveError { kind: 'validation', reason: { kind: 'empty-body-on-idle' } } has no obvious mapping to the four NoteSaveFailureReason strings. Similarly, FsError { kind: 'not-found' } has no corresponding NoteSaveFailureReason value.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/shared/errors.ts",
+    "lineRange": "38-44",
+    "snippet": "export type SaveError =\n  | { kind: \"validation\"; reason: SaveValidationError }\n  | { kind: \"fs\"; reason: FsError };"
+  },
+  "recommendation": "Add an explicit mapping table from SaveError variants to NoteSaveFailureReason in the behavioral spec, or acknowledge that NoteSaveFailed emission is the responsibility of the CaptureAutoSave sub-workflow (out of scope) and remove it from this spec's event emission list. If the latter, clarify that flushCurrentSession does NOT directly emit NoteSaveFailed.",
+  "routeToPhase": "1a"
+}

@@ -101,3 +101,17 @@
 {"timestamp":"2026-04-30T13:55:11.389Z","event":"phase_transition","featureName":"capture-auto-save","from":"5","to":"6","iteration":1,"phase":"6"}
 {"timestamp":"2026-04-30T13:55:34.162Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-04-30T13:58:31.774Z","event":"phase_transition","featureName":"capture-auto-save","from":"6","to":"complete","iteration":1,"phase":"complete"}
+{"timestamp":"2026-04-30T14:11:31.606Z","event":"feature_created","featureName":"edit-past-note-start","mode":"lean","language":"typescript"}
+{"timestamp":"2026-04-30T14:20:41.813Z","event":"phase_transition","featureName":"edit-past-note-start","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-04-30T14:20:47.200Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-04-30T14:38:00.996Z","event":"gate_recorded","featureName":"edit-past-note-start","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T14:38:00.997Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-04-30T21:10:54.792Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-04-30T21:10:54.793Z","event":"sprint_started","featureName":"edit-past-note-start","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-04-30T21:15:23.568Z","event":"phase_transition","featureName":"edit-past-note-start","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-04-30T21:15:39.486Z","event":"phase_transition","featureName":"edit-past-note-start","from":"2b","to":"2c","iteration":1,"phase":"2c"}
+{"timestamp":"2026-04-30T21:15:49.690Z","event":"phase_transition","featureName":"edit-past-note-start","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-04-30T21:41:22.421Z","event":"gate_recorded","featureName":"edit-past-note-start","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T21:41:31.446Z","event":"phase_transition","featureName":"edit-past-note-start","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-04-30T21:45:13.328Z","event":"phase_transition","featureName":"edit-past-note-start","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-04-30T21:45:41.209Z","event":"gate_recorded","featureName":"edit-past-note-start","phase":"6","verdict":"PASS","reviewedBy":"adversary"}

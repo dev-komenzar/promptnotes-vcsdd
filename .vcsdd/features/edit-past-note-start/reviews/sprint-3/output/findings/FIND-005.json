@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "PROP-EPNS-013 specifies Clock.now() call count per path: same-note=1. The pipeline tests verify clock counts for idle (1), empty (2), and dirty-fail (1) paths, but no test verifies that the same-note path calls Clock.now() exactly once. The PROP-EPNS-019 test (pipeline.test.ts:548-573) verifies the timestamp value but does not count calls. A spy counting clockNow calls should assert exactly 1 on the same-note path.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+    "lineRange": "548-573",
+    "snippet": "test(\"same note: EditorFocusedOnPastNote.occurredOn equals Clock.now() value\", () => {\n    ...\n    const now = makeTimestamp(42000);\n    const ports = makeHappyPorts(spy, {\n      clockNow: () => now,\n    });"
+  },
+  "routeToPhase": "2a"
+}

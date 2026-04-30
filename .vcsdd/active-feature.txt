@@ -1,1 +1,1 @@
-capture-auto-save
+edit-past-note-start

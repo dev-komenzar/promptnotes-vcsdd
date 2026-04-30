@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "title": "classifyCurrentSession default branch returns 'no-current' for saving/switching states instead of failing",
+  "description": "REQ-EPNS-007 states: 'SavingState and SwitchingState are NOT valid inputs; the caller guards against them.' The implementation at classify-current-session.ts lines 51-54 has a default branch that silently returns `{ kind: 'no-current' }` for saving/switching states. This defensive fallback masks caller bugs: if a caller fails to guard against saving/switching, classifyCurrentSession will silently classify the session as 'no-current', leading to the pipeline skipping the flush step entirely and potentially causing data loss (the in-progress save would be ignored). The spec comment at line 51 says 'treat as no-op defensively' but this contradicts REQ-EPNS-007 which says these are NOT valid inputs.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+    "lineRange": "51-54",
+    "snippet": "// saving / switching: caller should guard \u2014 treat as no-op defensively\ndefault:\n  return { kind: \"no-current\" };"
+  },
+  "recommendation": "Replace the defensive default with an explicit throw: `throw new Error('classifyCurrentSession: invalid state ' + state.status + '. Caller must guard against saving/switching.')`. This makes precondition violations immediately visible rather than silently degrading.",
+  "routeToPhase": "2b"
+}

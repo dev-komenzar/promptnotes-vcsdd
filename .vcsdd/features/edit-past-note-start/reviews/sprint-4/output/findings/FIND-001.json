@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "All 9 calls to flushCurrentSession in step2-flush-current-session.test.ts pass only 3 arguments, omitting the required 4th parameter `previousFrontmatter: Frontmatter | null`. With tsconfig.json `strict: true`, this should be a compile error. At runtime (Bun test runner skips type checking), the 4th parameter is `undefined`, and line 64's `previousFrontmatter ?? null` silently coerces it to `null`. This means: (1) the step2 unit tests never exercise the `previousFrontmatter` passthrough to `blurSave`, and (2) the tests are type-incorrect under the project's own strict TypeScript configuration. The pipeline.test.ts does have a test for previousFrontmatter passthrough (line 597-623), but the step2 unit-level tests are structurally broken for this parameter.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step2-flush-current-session.test.ts",
+    "lineRange": "87, 106, 133, 163, 187, 199, 216, 235, 265",
+    "snippet": "flushCurrentSession(decision, null, ports)  // 3 args, should be 4"
+  },
+  "specReference": "flush-current-session.ts:38-43 — function signature requires 4 parameters",
+  "routeToPhase": "2b"
+}

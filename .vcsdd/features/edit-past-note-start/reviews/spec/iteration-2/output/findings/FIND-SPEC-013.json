@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-013",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "PROP-EPNS-013 (verification-architecture.md line 101) states 'Clock.now() called exactly once on normal success paths (no-current, dirty-success)' but omits the empty path from the enumeration. On the empty path, Clock.now() is needed both for EmptyNoteDiscarded.occurredOn (flush step, per REQ-EPNS-009 line 242) and for NewSession.startedAt (startNewSession step, per REQ-EPNS-008). This means either PROP-EPNS-013 is wrong (the empty path needs 2 calls, not 1), or the spec's Clock budget is wrong. Until FIND-SPEC-009 and FIND-SPEC-010 are resolved, this proof obligation cannot be correctly stated.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+    "lineRange": "101",
+    "snippet": "PROP-EPNS-013 | Clock.now() called exactly once on normal success paths (no-current, dirty-success); exactly once on same-note path; zero on error path"
+  },
+  "routeToPhase": "1b"
+}

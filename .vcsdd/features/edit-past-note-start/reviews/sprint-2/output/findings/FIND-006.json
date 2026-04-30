@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "verification_readiness",
+  "category": "purity_boundary",
+  "severity": "minor",
+  "description": "PROP-EPNS-003 property tests (prop-003-classify-editing.harness.test.ts) use the default isEmpty implementation embedded in classifyCurrentSession. Since Sprint 1 FIND-002 changed the architecture so isEmpty is injected as a parameter from the pipeline, the property tests do not cover the injected-isEmpty path that is actually exercised in production (pipeline.ts:98 passes ports.isEmpty). The tests prove the default implementation works but not that the injection mechanism preserves the isEmpty-to-classification biconditional under arbitrary isEmpty predicates.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-003-classify-editing.harness.test.ts",
+    "lineRange": "38-75",
+    "snippet": "const result = classifyCurrentSession(state, note); // uses default isEmpty, not injected"
+  },
+  "routeToPhase": "2a"
+}

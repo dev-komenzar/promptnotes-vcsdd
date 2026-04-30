@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-002",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "major",
+  "title": "REQ-EPNS-005 same-note re-selection contradicts REQ-EPNS-010 EditorFocusedOnPastNote emission trigger",
+  "description": "REQ-EPNS-010 states: 'WHEN startNewSession completes successfully THEN the system SHALL emit EditorFocusedOnPastNote'. REQ-EPNS-005 states that on same-note re-selection, there is 'no new session creation' yet EditorFocusedOnPastNote is emitted. These two requirements contradict each other: REQ-EPNS-010 ties the event strictly to startNewSession completion, but REQ-EPNS-005 requires the event without startNewSession. Additionally, the spec does not define where EditorFocusedOnPastNote.occurredOn comes from in the same-note path since Clock.now() is only called inside startNewSession (REQ-EPNS-012), and startNewSession is not invoked in this path.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "103-113",
+    "snippet": "WHEN PastNoteSelected arrives AND the selected noteId equals EditingSessionState.currentNoteId THEN the system SHALL treat the selection as a no-op: no flush, no new session creation, and emit EditorFocusedOnPastNote to refocus the editor on the same note."
+  },
+  "recommendation": "Resolve the contradiction by either (a) amending REQ-EPNS-010 to say EditorFocusedOnPastNote is emitted on any successful workflow completion (not only startNewSession), and specifying a separate Clock.now() call for the same-note path, or (b) defining a different event for the same-note case, or (c) amending the Clock.now() budget in REQ-EPNS-012 to account for this path. The occurredOn timestamp source for the same-note path must be explicitly specified.",
+  "routeToPhase": "1a"
+}

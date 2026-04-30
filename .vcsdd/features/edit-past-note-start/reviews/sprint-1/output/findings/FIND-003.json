@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "title": "Same-note guard returns synthetic NewSession instead of no-op per REQ-EPNS-005",
+  "description": "REQ-EPNS-005 states: 'the system SHALL treat the selection as a no-op: no flush, no new session creation'. The acceptance criteria explicitly say 'EditingSessionState is unchanged' and 'classifyCurrentSession is NOT called'. However, pipeline.ts lines 77-86 construct and return a `NewSession` object (with `ok: true, value: { kind: 'NewSession', ... }`) on the same-note path. This is semantically incorrect: the caller receives a result indistinguishable from a successful note switch, when the spec requires no session creation. A caller relying on the return type to decide whether to update EditingSessionState would incorrectly transition state. The return type of the pipeline function (`Result<NewSession, SwitchError>`) has no representation for 'no-op / same-note'. This is a design gap.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+    "lineRange": "77-86",
+    "snippet": "return {\n  ok: true,\n  value: {\n    kind: \"NewSession\",\n    noteId: selection.noteId,\n    note: currentNote!,\n    startedAt: now,\n  },\n};"
+  },
+  "recommendation": "Introduce a discriminated return type that distinguishes 'same-note no-op' from 'new session created'. For example: `Result<NewSession | SameNoteNoOp, SwitchError>` where `SameNoteNoOp = { kind: 'SameNoteNoOp' }`. Alternatively, change the return to a three-variant result. The caller must not treat same-note as a new session.",
+  "routeToPhase": "2b"
+}

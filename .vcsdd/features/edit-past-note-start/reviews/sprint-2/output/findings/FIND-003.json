@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "implementation_correctness",
+  "category": "purity_boundary",
+  "severity": "major",
+  "description": "classifyCurrentSession at classify-current-session.ts:24-28 accepts an optional third parameter 'isEmpty: (note: Note) => boolean' with a default implementation. REQ-EPNS-007 specifies the function signature as '(EditingSessionState, Note | null) -> CurrentSessionDecision' with zero port dependencies. The third parameter breaches the pure function contract in two ways: (1) The caller can inject an isEmpty function with side effects, making the function impure at the type level. (2) The default isEmpty implementation at line 71 is a private reimplementation of NoteOps.isEmpty, creating hidden coupling to a specific string-trimming algorithm that may diverge from the canonical NoteOps.isEmpty. The spec says 'classifyCurrentSession accepts EditingSessionState and Note | null as inputs; it calls no ports' -- an injected isEmpty IS a port dependency.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+    "lineRange": "24-28",
+    "snippet": "export function classifyCurrentSession(\n  state: EditingSessionState,\n  currentNote: Note | null,\n  isEmpty: (note: Note) => boolean = defaultIsEmpty,\n): CurrentSessionDecision {"
+  },
+  "specReference": "REQ-EPNS-007: classifyCurrentSession accepts (EditingSessionState, Note | null); it calls no ports.",
+  "routeToPhase": "2b"
+}

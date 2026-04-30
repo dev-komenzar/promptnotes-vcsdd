@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "implementation_correctness",
+  "category": "security_surface",
+  "severity": "major",
+  "description": "flush-current-session.ts:89 uses a non-null assertion (selectedNoteId!) when constructing SwitchError.pendingNextNoteId on the dirty-fail path. If selectedNoteId is null at this point, the assertion silently passes through null at runtime, producing a SwitchError with pendingNextNoteId=null which violates the SwitchError type contract (pendingNextNoteId: NoteId, not NoteId | null). The selectedNoteId parameter is typed as NoteId | null (line 40). Sprint 1 FIND-006 required explicit null guards instead of non-null assertions, but this instance was not addressed.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+    "lineRange": "84-91",
+    "snippet": "pendingNextNoteId: selectedNoteId!,"
+  },
+  "routeToPhase": "2b"
+}

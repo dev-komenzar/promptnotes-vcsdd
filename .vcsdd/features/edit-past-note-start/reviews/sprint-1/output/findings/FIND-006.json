@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "implementation_correctness",
+  "category": "security_surface",
+  "severity": "minor",
+  "title": "Non-null assertion on currentNote in classifyCurrentSession for editing/save-failed states",
+  "description": "In classify-current-session.ts lines 40 and 49, `currentNote!` is used with a non-null assertion. If a caller violates the precondition by passing `currentNote: null` when state.status is 'editing' or 'save-failed', this will propagate null into the CurrentSessionDecision.note field, causing a deferred runtime error rather than a fail-fast. While the spec says 'SavingState and SwitchingState are NOT valid inputs; the caller must guard', there is no equivalent guard documented for null currentNote on editing/save-failed states. The classification table (REQ-EPNS-007) shows `currentNote: Note (non-null)` for save-failed, but the function signature accepts `Note | null`.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+    "lineRange": "37-41",
+    "snippet": "return {\n  kind: \"dirty\",\n  noteId: state.currentNoteId,\n  note: currentNote!,\n};"
+  },
+  "recommendation": "Add a runtime guard: if `currentNote === null` when `state.status` is 'editing' or 'save-failed', throw an explicit invariant error rather than silently propagating null. This makes the precondition visible and debuggable.",
+  "routeToPhase": "2b"
+}

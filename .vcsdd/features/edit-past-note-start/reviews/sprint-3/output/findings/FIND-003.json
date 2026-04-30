@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "implementation_correctness",
+  "category": "security_surface",
+  "severity": "major",
+  "description": "flushCurrentSession at flush-current-session.ts:42 declares previousFrontmatter as an optional parameter ('previousFrontmatter?: Frontmatter | null') instead of required ('previousFrontmatter: Frontmatter | null'). The spec (behavioral-spec.md:43-44) and the pipeline input type (pipeline.ts:49) both define previousFrontmatter as required (non-optional). The optional parameter means any direct caller of flushCurrentSession can omit it entirely without a TypeScript error, silently passing undefined to blurSave. At flush-current-session.ts:64, the nullish coalescing 'previousFrontmatter ?? null' masks the omission by coercing undefined to null. This weakens the contract: if previousFrontmatter carries meaningful data (for TagInventory delta calculation per NoteFileSaved spec), omitting it would produce incorrect NoteFileSaved events. Multiple tests call flushCurrentSession with only 3 arguments (e.g., step2 lines 87, 106, 133, 187, 198) without previousFrontmatter, which compiles successfully because the parameter is optional.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+    "lineRange": "42",
+    "snippet": "previousFrontmatter?: Frontmatter | null,"
+  },
+  "routeToPhase": "2b"
+}

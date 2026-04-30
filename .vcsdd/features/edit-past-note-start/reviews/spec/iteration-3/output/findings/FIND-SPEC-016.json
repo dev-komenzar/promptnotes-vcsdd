@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-016",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "The classifyCurrentSession function signature (REQ-EPNS-007 line 208) accepts Note | null, and the classification table (line 201) specifies 'Note (non-null)' for SaveFailedState. But the spec does not define what happens if currentNote is null when state is SaveFailedState. The caller is expected to provide non-null, but no precondition is formally stated and no error is specified. PROP-EPNS-004 (verification-architecture.md line 99) tests with 'Note' (non-null), so null-for-SaveFailedState is not covered by any proof obligation. An implementer might throw, return undefined, or silently misclassify. The spec should either add a precondition assertion ('currentNote must be non-null when status is save-failed or editing') or specify the behavior for null.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "201,206-211",
+    "snippet": "Line 201: '| save-failed | Note (non-null) | dirty |' | Lines 206-211: 'type ClassifyCurrentSession = (state: EditingSessionState, currentNote: Note | null) => CurrentSessionDecision;'"
+  },
+  "routeToPhase": "1a"
+}

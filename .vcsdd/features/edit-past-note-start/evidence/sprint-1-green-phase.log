@@ -1,0 +1,10 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+=== bun test src/lib/domain/__tests__/edit-past-note-start/ ===
+bun test v1.3.11 (af24e281)
+
+37 pass
+0 fail
+10173 expect() calls
+Ran 37 tests across 9 files. [193.00ms]

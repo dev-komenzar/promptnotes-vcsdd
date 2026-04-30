@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "No test verifies that the blurSave port receives the previousFrontmatter value from the pipeline input on the dirty-success path. REQ-EPNS-003 (behavioral-spec.md:103-104) specifies that NoteFileSaved.previousFrontmatter is sourced from the pipeline input's previousFrontmatter. The pipeline passes it at pipeline.ts:108, but all dirty-path tests use blurSave stubs that ignore their arguments (e.g., pipeline.test.ts:190 returns a hardcoded NoteFileSaved without checking inputs). A test should verify that blurSave is called with the correct previousFrontmatter value from the pipeline input, not just that save succeeds.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+    "lineRange": "183-199",
+    "snippet": "blurSave: overrides?.blurSave ??\n      ((noteId) => ({ ok: true as const, value: makeNoteFileSaved(noteId) }))"
+  },
+  "routeToPhase": "2a"
+}

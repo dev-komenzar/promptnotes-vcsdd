@@ -1,0 +1,122 @@
+{
+  "sprintNumber": 4,
+  "feature": "edit-past-note-start",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T18:00:00Z",
+  "iteration": 4,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "All REQ-EPNS-001 through REQ-EPNS-012 have corresponding tests in pipeline.test.ts and step-level test files. Sprint 3 FIND-001 (PROP-EPNS-014 contradiction) resolved: spec, implementation, and tests now consistently show dirty-fail calls Clock.now() once."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+          "description": "PROP-EPNS-001 through PROP-EPNS-005 (required: true) all have dedicated harness tests. PROP-EPNS-006 through PROP-EPNS-017 and PROP-EPNS-019 are covered by pipeline.test.ts and step-level tests."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": ["FIND-003"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step1-classify-current-session.test.ts",
+          "description": "All classification edge cases covered: idle, empty, whitespace, dirty, save-failed with/without pending, saving/switching throws, null-note throws."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "Integration tests cover all 7 paths: no-current, empty, dirty-success, dirty-fail, same-note, save-failed-retry-success, save-failed-retry-fail. Event ordering verified. Clock budget verified per path. FIND-003 (PROP-EPNS-018 gap) is minor/non-required."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-001"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step2-flush-current-session.test.ts",
+          "description": "All 9 calls to flushCurrentSession use 3 arguments instead of 4. The 4th parameter previousFrontmatter is omitted. Under strict TypeScript, this is a type error. At runtime it silently becomes undefined and is coerced to null."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts:38-43",
+          "description": "Function signature requires 4 parameters: (decision, selectedNoteId, ports, previousFrontmatter). Implementation is correct; tests are calling incorrectly."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": ["FIND-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+          "description": "Pure core properly isolated. No port dependencies, no I/O. switch/case is exhaustive with saving/switching throw guards."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+          "description": "Clean orchestration: pre-guard, classify, flush, startNewSession. Port threading is explicit. getCurrentNoteId helper is minimal. FIND-002 is a minor type-safety gap in emit port typing."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-001-classify-purity.harness.test.ts",
+          "description": "PROP-EPNS-001: 1000-run property test with valid (state, note) pairs covering idle, editing, save-failed. Includes Date.now() spy check."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-003-classify-editing.harness.test.ts",
+          "description": "PROP-EPNS-003: 1000-run property test with separate empty/non-empty body arbitraries. Tests the production isEmpty function directly."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-004-classify-save-failed.harness.test.ts",
+          "description": "PROP-EPNS-004: 1000-run property test covering SaveFailedState with varied pendingNextNoteId and SaveError variants."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts",
+          "description": "PROP-EPNS-005: Tier-0 compile-time exhaustiveness check verified. Also tested in pipeline.test.ts lines 53-63."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 3,
+    "criticalFindings": 0,
+    "majorFindings": 1,
+    "minorFindings": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": [],
+    "sprint3ResolutionStatus": {
+      "FIND-001_propEpns014Contradiction": "RESOLVED — PROP-EPNS-014 description updated to match spec (dirty-fail calls Clock once); spec, implementation, and tests are now consistent",
+      "FIND-002_optionalPreviousFrontmatter": "PARTIALLY_RESOLVED — The `?` was removed from flushCurrentSession parameter (line 42), but step2 tests still call with 3 arguments, omitting the now-required 4th parameter. New FIND-001 raised.",
+      "FIND-003_clockBudgetSameNote": "RESOLVED — same-note clock budget test added at pipeline.test.ts line 548-569",
+      "FIND-004_clockBudgetDirtySuccess": "RESOLVED — dirty-success clock budget test added at pipeline.test.ts line 572-594",
+      "FIND-005_clockBudgetDirtyFail": "RESOLVED — dirty-fail clock budget test at pipeline.test.ts line 518-545 and step2 line 221-241",
+      "FIND-006_previousFrontmatterPassthrough": "RESOLVED — test at pipeline.test.ts line 597-623 verifies blurSave receives previousFrontmatter from pipeline input"
+    },
+    "trajectory": "8→6→6→3 (diminishing as expected)"
+  }
+}

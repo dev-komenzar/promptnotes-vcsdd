@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "No test verifies that classifyCurrentSession throws when called with SavingState or SwitchingState. Sprint 1 FIND-007 required these states to throw instead of silent fallthrough, and the implementation correctly throws (lines 60-66). However, the test suite has zero coverage for this behavior. If a future refactor accidentally removes the throw, no test would catch the regression.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step1-classify-current-session.test.ts",
+    "lineRange": "101-166",
+    "snippet": "(no test case for saving/switching states)"
+  },
+  "routeToPhase": "2a"
+}

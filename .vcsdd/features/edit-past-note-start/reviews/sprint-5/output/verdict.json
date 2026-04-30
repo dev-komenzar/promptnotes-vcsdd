@@ -1,0 +1,139 @@
+{
+  "sprintNumber": 5,
+  "feature": "edit-past-note-start",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-04-30T19:30:00Z",
+  "iteration": 5,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "REQ-EPNS-001 through REQ-EPNS-012 each have corresponding tests. Classification table (REQ-EPNS-007) fully tested at step1 level with property and example tests. Pipeline tests cover all 7 execution paths (idle, empty, dirty-success, dirty-fail, same-note-editing, same-note-save-failed, save-failed-retry)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "Lines 51-63: PROP-EPNS-005 compile-time exhaustiveness. Lines 66-91: PROP-EPNS-015 type-level membership assertions. Lines 203-652: Integration tests covering all PROP obligations PROP-EPNS-006 through PROP-EPNS-019."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": ["FIND-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step1-classify-current-session.test.ts",
+          "description": "Lines 103-196: idle, empty-string, whitespace-only, dirty, save-failed, save-failed-with-pending, saving-throws, switching-throws, editing-null-throws, save-failed-null-throws — all classification edge cases covered."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step2-flush-current-session.test.ts",
+          "description": "Lines 244-271: All 6 SaveError-to-NoteSaveFailureReason mapping variants tested (permission, disk-full, lock, not-found, unknown, validation)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "Lines 376-403: Same-note on SaveFailedState verified (SameNoteNoOp, no blurSave, error state preserved). Lines 434-468: Save-failed retry with different note, save fails again — pendingNextNoteId updated to new selection."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+          "description": "Lines 27-66: switch exhaustive over all 5 EditingSessionState variants. idle->no-current, editing->empty|dirty via isEmpty, save-failed->dirty, saving/switching->throw. Null-note guards at lines 32-36 and 48-52."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+          "description": "Lines 44-98: switch exhaustive over CurrentSessionDecision. no-current->no-op (no Clock, no I/O). empty->clockNow()+emit(EmptyNoteDiscarded). dirty->blurSave, success->emit(NoteFileSaved), fail->clockNow()+emit(NoteSaveFailed)+Err(SwitchError). Lines 102-112: mapSaveErrorToFailureReason correctly maps all FsError variants."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
+          "description": "Lines 27-52: clockNow() called once, hydrateSnapshot called, NewSession constructed with startedAt=now, EditorFocusedOnPastNote emitted with occurredOn=now."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+          "description": "Lines 72-122: Pre-pipeline guard (same-note check) at lines 79-93 correctly short-circuits with SameNoteNoOp. Pipeline orchestration at lines 96-121 correctly threads ports and previousFrontmatter through all three steps."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": ["FIND-001"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+          "description": "Pure core with zero imports from ports/I/O modules. Only imports domain types (Note, EditingSessionState, CurrentSessionDecision). Local isEmpty function at lines 70-73 matches NoteOps.isEmpty semantics."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+          "description": "Clean separation: pipeline imports three step functions and orchestrates them linearly. Port types defined locally and threaded to sub-steps. getCurrentNoteId helper at lines 125-128 minimal and correct."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-001-classify-purity.harness.test.ts",
+          "description": "PROP-EPNS-001: 1000-run property test with valid (state, note) pairs across idle, editing, save-failed. Date.now() spy confirms no hidden clock dependency."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-002-classify-idle.harness.test.ts",
+          "description": "PROP-EPNS-002: 1000-run constant property test confirming IdleState always yields no-current."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-003-classify-editing.harness.test.ts",
+          "description": "PROP-EPNS-003: 1000-run property test with separate empty-body and non-empty-body arbitraries verifying isEmpty biconditional."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-004-classify-save-failed.harness.test.ts",
+          "description": "PROP-EPNS-004: 1000-run property test with SaveFailedState variants (varied pendingNextNoteId and SaveError). Confirms result.kind=dirty, result.noteId=state.currentNoteId, result.note===input note."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts",
+          "description": "PROP-EPNS-005: Tier 0 compile-time exhaustiveness via never branch in switch. Runtime test confirms the handler executes correctly."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 2,
+    "criticalFindings": 0,
+    "majorFindings": 0,
+    "minorFindings": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": [],
+    "sprint4ResolutionStatus": {
+      "FIND-001_step2TestsMissing4thArg": "RESOLVED — All 9 flushCurrentSession calls in step2 tests now include the 4th previousFrontmatter parameter",
+      "FIND-002_emitTypeWidth": "PERSISTS — Carried forward as sprint 5 FIND-001 (minor). Emit port still typed as { kind: string; [k: string]: unknown } instead of PublicDomainEvent | CaptureInternalEvent",
+      "FIND-003_propEpns018NoTest": "PERSISTS — Carried forward as sprint 5 FIND-002 (minor). PROP-EPNS-018 is Tier 3, required: false, and architecturally untestable at current pipeline boundary"
+    },
+    "trajectory": "8→6→6→3→2 (converging — zero critical/major, two minor carry-forwards)"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "The emit port type in FlushCurrentSessionPorts and StartNewSessionPorts is typed as `(event: { kind: string; [k: string]: unknown }) => void`, which is strictly wider than the spec's `Emit = (event: PublicDomainEvent | CaptureInternalEvent) => void`. This allows emitting events with arbitrary shapes that are not members of either union. The pipeline-level EditPastNoteStartPorts has the same wide type. Carried forward from sprint 4 FIND-002.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+    "lineRange": "27",
+    "snippet": "readonly emit: (event: { kind: string; [k: string]: unknown }) => void;"
+  },
+  "routeToPhase": "2c"
+}

@@ -1,0 +1,97 @@
+{
+  "featureName": "edit-past-note-start",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "6",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-04-30T14:20:41.811Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-04-30T14:20:47.198Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-04-30T14:38:00.996Z"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-04-30T21:10:54.791Z",
+      "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-04-30T21:15:23.566Z",
+      "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-04-30T21:15:39.485Z",
+      "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-04-30T21:15:49.689Z",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-04-30T21:41:31.443Z",
+      "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-04-30T21:45:13.327Z",
+      "sprint": 1
+    }
+  ],
+  "iterations": {
+    "3": 1,
+    "5": 1,
+    "6": 1,
+    "1a": 1,
+    "1b": 1,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1,
+    "2c": 1
+  },
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-edit-past-note-start-1777558291604",
+    "beads": []
+  },
+  "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T21:41:22.420Z",
+      "reviewedBy": "adversary"
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T21:45:41.208Z",
+      "reviewedBy": "adversary"
+    },
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T14:38:00.995Z",
+      "reviewedBy": "adversary",
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-04-30T14:38:00.995Z"
+    }
+  },
+  "sprintCount": 1,
+  "createdAt": "2026-04-30T14:11:31.604Z",
+  "updatedAt": "2026-04-30T21:45:41.209Z"
+}

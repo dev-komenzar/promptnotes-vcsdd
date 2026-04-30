@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "major",
+  "title": "SaveError-to-NoteSaveFailureReason mapping not exhaustively tested per REQ-EPNS-004",
+  "description": "REQ-EPNS-004 defines an explicit mapping table with 6 entries: fs/permission->permission, fs/disk-full->disk-full, fs/lock->lock, fs/not-found->unknown, fs/unknown->unknown, validation/*->unknown. The tests only exercise the 'permission' case (step2 test line 155, pipeline test line 315). The remaining 5 mapping cases (disk-full, lock, not-found, unknown, validation) have no dedicated test cases. The mapSaveErrorToFailureReason function at flush-current-session.ts:95-105 does implement the mapping, but without test coverage the implementation correctness for each case is unverified. In particular, the `not-found` case is mapped to `unknown` via the `default` branch, which means it would break silently if a new FsError variant were added that should map differently.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step2-flush-current-session.test.ts",
+    "lineRange": "153-176",
+    "snippet": "const saveError: SaveError = {\n  kind: \"fs\",\n  reason: { kind: \"permission\", path: \"/vault/test.md\" },\n};"
+  },
+  "recommendation": "Add parameterized or individual test cases for each SaveError variant in the mapping table. Each test should verify the emitted NoteSaveFailed.reason matches the spec mapping.",
+  "routeToPhase": "2a"
+}
