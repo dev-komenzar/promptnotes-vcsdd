@@ -14,7 +14,6 @@
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type {
-  Body,
   Frontmatter,
   NoteId,
   VaultPath,
@@ -124,7 +123,7 @@ export async function scanVault(
 
     const snapshot: NoteFileSnapshot = {
       noteId: stem as unknown as NoteId,
-      body: parsed.body as unknown as Body,
+      body: parsed.body,
       frontmatter: {
         tags: parsed.fm.tags,
         createdAt: parsed.fm.createdAt,

@@ -21,7 +21,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import type { NoteId, Timestamp, VaultPath } from "promptnotes-domain-types/shared/value-objects";
+import type { Body, NoteId, Timestamp, VaultPath } from "promptnotes-domain-types/shared/value-objects";
 import type { CorruptedFile } from "promptnotes-domain-types/shared/snapshots";
 import type { VaultScanned, PublicDomainEvent } from "promptnotes-domain-types/shared/events";
 import type { InitialUIState } from "$lib/domain/app-startup/stages";
@@ -86,6 +86,10 @@ function makeNoteId(raw: string): NoteId {
   return raw as unknown as NoteId;
 }
 
+function makeBody(raw: string): Body {
+  return raw as unknown as Body;
+}
+
 function makeValidMarkdownContent(): string {
   return `---
 tags: []
@@ -120,7 +124,7 @@ function makeHappyPathPorts(
       return {
         ok: true,
         value: {
-          body: "Body text",
+          body: makeBody("Body text"),
           fm: {
             tags: [],
             createdAt: makeTimestamp(1714298400000),

@@ -1,0 +1,93 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+total-tests: 115
+passing-tests: 115
+failing-tests: 0
+type-check-errors: 0
+
+=== Sprint 3 Iteration 1 / Phase 2b (Green Phase) ===
+Sprint: 3
+Phase: 2b
+Iteration: 1
+Mode: lean
+Spec revision: 5
+Captured at: 2026-04-30T17:00:00Z
+
+## Routed Findings driving Sprint 3 Phase 2b
+- FIND-013 (route 2b) — ParsedNote.body retained as `string`; verification-architecture
+  port contract requires `Body` VO. Sprint 3 Red captured this as 2 type-check errors
+  at step2-scan-vault.test.ts:92 (_BodyIsBody) and :105 (_BodyTypeMatchesPort).
+
+## Phase 2b Implementation (minimum code to turn 2 type-check errors green)
+- promptnotes/src/lib/domain/app-startup/stages.ts:
+  - Added `Body` to the imports from `promptnotes-domain-types/shared/value-objects`.
+  - Tightened `ParsedNote.body` from `string` to `Body` (Brand<string, "Body">).
+  - Updated docstring to explicitly cite FIND-005 + FIND-013 and the Tier-0 contract
+    that the parser port owns Body VO construction; scanVault never re-wraps raw strings.
+- promptnotes/src/lib/domain/app-startup/scan-vault.ts:
+  - Removed the residual `parsed.body as unknown as Body` cast at the snapshot construction
+    site (formerly line 127). `parsed.body` already has type `Body` after the stages.ts
+    tightening, so the cast becomes both unnecessary and contractually wrong (it would
+    bypass the boundary the verification-architecture port catalog assigns to the parser).
+  - Removed the now-unused `Body` import.
+
+## Cascading Test Stub Updates (mechanical, no behavior change)
+- step2-scan-vault.test.ts: introduced `makeBody(raw: string): Body` helper next to the
+  existing `makeTag` / `makeVaultPath` smart-constructor mirrors. Replaced raw-string
+  bodies in 5 parser-stub sites:
+    1. `makeParserAlwaysSucceed` (the helper used by 18 happy-path callers): `body: "Body text"` → `body: makeBody("Body text")`.
+    2. Inline parser stub in the empty-content fallback test: `body: "x"` → `body: makeBody("x")`.
+    3. Three FIND-006 inline parser stubs returning `body: "body"` → `body: makeBody("body")` (replace_all hit all 3).
+- pipeline.test.ts: added `Body` to the imports and added the same `makeBody` helper.
+  Replaced the single raw-string occurrence in the happy-path parser stub: `body: "Body text"`
+  → `body: makeBody("Body text")`.
+- step3-hydrate-feed.test.ts and step4-initialize-capture.test.ts: already used
+  `makeBody(...)` and `"" as unknown as Body` respectively — no Sprint 3 Phase 2b changes
+  were needed beyond what already existed.
+- All Sprint 3 Red coverage-retrofit guards (FIND-011 strengthened arity / FIND-012
+  negative-membership / FIND-014 PROP-013 watchpoint) compile and run unchanged.
+
+## Verification Signals
+- bun test: 115 pass / 0 fail / 276 expect() calls / 6 files
+- bun run check (svelte-check): 0 errors / 0 warnings / 310 files
+- Both signals captured from promptnotes/ working directory (mandatory: running from
+  repo root pulls in a separate workspace and yields incorrect counts).
+- Type-level Red guards from Sprint 3 now resolve as expected:
+    _BodyIsBody = (Body extends Body) = true → const _ : true = true OK.
+    _BodyTypeMatchesPort = ((Body extends Body) ? (Body extends Body) : false) = true → const _ : true = true OK.
+
+## Beads
+- BEAD-076 (impl): stages.ts ParsedNote.body tightened to Body (resolves FIND-013).
+- BEAD-077 (impl): scan-vault.ts cast removal at snapshot construction site (resolves FIND-013 residual).
+- BEAD-078 (test): step2-scan-vault.test.ts makeBody helper + 5 parser-stub updates.
+- BEAD-079 (test): pipeline.test.ts Body import + makeBody helper + parser-stub update.
+
+## Open / Out-of-scope
+- FIND-008 (route 2c, minor): Rust src/domain/vault/note_id.rs path remains absent.
+  No Phase 2b code change. Leave bead open for Phase 5 (Formal Hardening) decision.
+
+================================================================
+=== bun test output (full) ===
+================================================================
+bun test v1.3.11 (af24e281)
+
+ 115 pass
+ 0 fail
+ 276 expect() calls
+Ran 115 tests across 6 files. [120.00ms]
+
+================================================================
+=== bun run check (svelte-check) output (full) ===
+================================================================
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+1777537017484 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777537017487 COMPLETED 310 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
+
+================================================================
+=== Regression Baseline (existing 113 + 2 Sprint-3 Red tests still PASS) ===
+================================================================
+- All 113 tests from Sprint 2 final state continue to pass.
+- 2 runtime tests added in Sprint 3 Red (FIND-014 / PROP-013 watchpoints) continue to pass.
+- 8 type-level guards added in Sprint 3 Red now all compile (the 2 FIND-013 guards that
+  were the genuine Red signal at Sprint 3 Phase 2a now resolve to `true` and compile clean).
+- 0 tests removed.

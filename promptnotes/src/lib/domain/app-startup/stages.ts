@@ -4,6 +4,7 @@
 // and do NOT cross bounded context boundaries.
 
 import type {
+  Body,
   Tag,
   Timestamp,
   VaultPath,
@@ -21,15 +22,15 @@ import type { EditingState } from "promptnotes-domain-types/capture/states";
 /**
  * Structured parse result returned by the FrontmatterParser port.
  *
- * FIND-005 (Tier-0): `fm.tags` is tightened to `readonly Tag[]` so the parser
- * port owns Tag VO construction. `body` remains `string` because scanVault is
- * the boundary that wraps the raw markdown into a Body VO; treating body as
- * `Body` here would force every parser stub to perform that cast itself.
- * scanVault still defensively re-validates the tag values (FIND-006) so a
- * parser that smuggles raw strings via `as` casts is rejected at runtime.
+ * FIND-005 / FIND-013 (Tier-0): both `fm.tags` and `body` are tightened to
+ * the corresponding VO types. The parser port is the boundary that owns
+ * Tag and Body VO construction — scanVault consumes already-validated values
+ * and never re-wraps raw strings. scanVault still defensively re-validates
+ * tag values (FIND-006) so a parser that smuggles raw strings via `as` casts
+ * is rejected at runtime.
  */
 export type ParsedNote = {
-  readonly body: string;
+  readonly body: Body;
   readonly fm: {
     readonly tags: readonly Tag[];
     readonly createdAt: Timestamp;

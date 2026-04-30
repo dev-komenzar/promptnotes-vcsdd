@@ -115,6 +115,10 @@ function makeTag(raw: string): Tag {
   return raw as unknown as Tag;
 }
 
+function makeBody(raw: string): Body {
+  return raw as unknown as Body;
+}
+
 function makeValidMarkdownContent(id: string = "2026-04-28-120000-000"): string {
   return `---
 tags: []
@@ -154,7 +158,7 @@ function makeParserAlwaysSucceed(noteIdFor: (path: string) => string) {
       ok: true as const,
       value: {
         // Parser returns the snapshot data needed to build NoteFileSnapshot
-        body: "Body text",
+        body: makeBody("Body text"),
         fm: {
           tags: [],
           createdAt: { epochMillis: 1714298400000 } as any,
@@ -481,7 +485,7 @@ describe("REQ-002 / PROP-010: zero-byte file → hydrate kind, missing-field", (
         if (!_raw.trim()) {
           return { ok: false, error: "missing-field" as const };
         }
-        return { ok: true, value: { body: "x", fm: {} as any } };
+        return { ok: true, value: { body: makeBody("x"), fm: {} as any } };
       },
     };
 
@@ -774,7 +778,7 @@ describe("FIND-006 / REQ-002: invalid-value via real VO rejection — malformed 
       parseNote: (_raw: string) => ({
         ok: true as const,
         value: {
-          body: "body",
+          body: makeBody("body"),
           fm: {
             // The empty string tag is malformed — Tag.tryNew("") rejects it.
             tags: [""] as any, // raw value: would fail Tag.tryNew
@@ -819,7 +823,7 @@ describe("FIND-006 / REQ-002: invalid-value via real VO rejection — malformed 
       parseNote: (_raw: string) => ({
         ok: true as const,
         value: {
-          body: "body",
+          body: makeBody("body"),
           fm: {
             // "  " (whitespace-only) would fail Tag.tryNew with {kind:'only-whitespace'}
             tags: ["  "] as any,
@@ -861,7 +865,7 @@ describe("FIND-006 / REQ-002: invalid-value via real VO rejection — malformed 
       parseNote: (_raw: string) => ({
         ok: true as const,
         value: {
-          body: "body",
+          body: makeBody("body"),
           fm: {
             tags: ["rust"] as any, // "rust" is a valid tag
             createdAt: { epochMillis: 1714298400000 } as any,
