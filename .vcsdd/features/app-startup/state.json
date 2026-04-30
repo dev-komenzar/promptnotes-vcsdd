@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -36,15 +36,130 @@
       "to": "2c",
       "timestamp": "2026-04-30T03:03:28.992919Z",
       "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-04-30T04:30:00Z",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-04-30T04:35:00Z",
+      "sprint": 1,
+      "reason": "adversary-fail-routing"
+    },
+    {
+      "from": "4",
+      "to": "1a",
+      "timestamp": "2026-04-30T04:35:00Z",
+      "sprint": 1,
+      "reason": "earliest-affected-phase: spec ambiguity (FIND-003 REQ-015 vs REQ-013, FIND-010 REQ-004 statDir error variants)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-04-30T04:50:00Z",
+      "sprint": 1,
+      "reason": "spec refinement complete (FIND-003 Option A, FIND-010 collapsed mapping)"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-04-30T13:00:00Z",
+      "reason": "spec-review-gate iteration-3"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-04-30T13:00:01Z",
+      "sprint": 2,
+      "reason": "lean-mode adversary PASS — start sprint 2 with refined spec"
+    },
+    {
+      "from": "2a",
+      "to": "2a",
+      "timestamp": "2026-04-30T13:30:00Z",
+      "sprint": 2,
+      "iteration": 2,
+      "reason": "sprint-2 red phase complete: 12 failing tests for FIND-001/002/004/006/009; 20 coverage-retrofit tests for PROP-023/024/021 + FIND-005/007"
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-04-30T04:37:05Z",
+      "sprint": 2,
+      "reason": "sprint-2 green phase begin"
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-04-30T04:47:47Z",
+      "sprint": 2,
+      "reason": "sprint-2 green complete (113/113 pass, 0 svelte-check errors); start refactor"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-04-30T14:30:00Z",
+      "sprint": 2,
+      "reason": "sprint-2 adversary review begin (lean mode, iteration 1)"
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-04-30T14:35:00Z",
+      "sprint": 2,
+      "reason": "sprint-2 adversary FAIL: 4 findings (3 major, 1 minor). Routing required."
+    },
+    {
+      "from": "4",
+      "to": "1a",
+      "timestamp": "2026-04-30T14:35:00Z",
+      "sprint": 2,
+      "reason": "earliest-affected-phase: FIND-014 raises REQ-010 spec ambiguity (Note aggregate disposition). FIND-011/012 → 2a, FIND-013 → 2b will be picked up after spec refinement."
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-04-30T14:50:00Z",
+      "sprint": 2,
+      "iteration": 3,
+      "reason": "spec refinement complete (FIND-014 Option A: REQ-010 NOTE — Note aggregate not retained; behavioral-spec.md Revision 5)"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-04-30T15:05:00Z",
+      "sprint": 2,
+      "reason": "spec-review-gate iteration-4 (FIND-014 resolution check)"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-04-30T15:05:01Z",
+      "sprint": 3,
+      "reason": "lean-mode adversary PASS (iteration 4) — start sprint 3 with FIND-011/012/013 + REQ-010 refinement"
+    },
+    {
+      "from": "2a",
+      "to": "2a",
+      "timestamp": "2026-04-30T15:15:00Z",
+      "sprint": 3,
+      "iteration": 4,
+      "reason": "sprint-3 red phase complete: 1 routed finding (FIND-013) genuine Red via 2 type-check errors; FIND-011/012/014 coverage-retrofit (8 type-level guards + 2 runtime tests). 115 pass / 0 fail / 2 type-check errors."
     }
   ],
   "iterations": {
-    "1a": 1,
-    "1b": 1,
-    "1c": 1,
-    "2a": 1,
-    "2b": 1,
-    "2c": 1
+    "1a": 3,
+    "1b": 3,
+    "1c": 4,
+    "2a": 4,
+    "2b": 2,
+    "2c": 2,
+    "3": 2,
+    "4": 2
   },
   "proofObligations": [],
   "traceability": {
@@ -781,26 +896,843 @@
         "createdAt": "2026-04-30T03:03:28.992919Z",
         "createdInPhase": "2b",
         "externalId": "IMPL-rust-value-objects"
+      },
+      {
+        "beadId": "BEAD-055",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-001.json",
+        "status": "resolved-code",
+        "linkedBeads": [
+          "BEAD-010",
+          "BEAD-014",
+          "BEAD-049",
+          "BEAD-051"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-001",
+        "metadata": {
+          "dimension": "spec_fidelity",
+          "severity": "critical",
+          "routeToPhase": "2b",
+          "sprint": 1,
+          "resolution": "stages.ts:91 introduces editingSessionState aggregate; initialize-capture.ts:71 emits CaptureSessionStarted with editingSessionState. Confirmed by sprint-2 adversary review.",
+          "resolvedAt": "2026-04-30T14:30:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-056",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-002.json",
+        "status": "resolved-code",
+        "linkedBeads": [
+          "BEAD-010",
+          "BEAD-049",
+          "BEAD-043"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-002",
+        "metadata": {
+          "dimension": "spec_fidelity",
+          "severity": "critical",
+          "routeToPhase": "2b",
+          "sprint": 1,
+          "resolution": "initialize-capture.ts:32 declares noteCreate port; line 59 invokes Note.create with empty Body. Confirmed by sprint-2 adversary review.",
+          "resolvedAt": "2026-04-30T14:30:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-057",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-003.json",
+        "status": "resolved-spec",
+        "linkedBeads": [
+          "BEAD-015",
+          "BEAD-016",
+          "BEAD-050",
+          "BEAD-065"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-003",
+        "metadata": {
+          "dimension": "implementation_correctness",
+          "severity": "major",
+          "routeToPhase": "1a",
+          "sprint": 1,
+          "resolution": "Option A: REQ-015 amended (Clock.now budget = 2 per run, Step 3 receives ts as arg). PROP-023 added.",
+          "resolvedAt": "2026-04-30T04:50:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-058",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-004.json",
+        "status": "resolved-code",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-025",
+          "BEAD-047"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-004",
+        "metadata": {
+          "dimension": "implementation_correctness",
+          "severity": "major",
+          "routeToPhase": "2b",
+          "sprint": 1,
+          "resolution": "scan-vault.ts:101-111 enforces NoteId regex via VO smart constructor. Confirmed by sprint-2 adversary review.",
+          "resolvedAt": "2026-04-30T14:30:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-059",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-005.json",
+        "status": "partially-resolved",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-015",
+          "BEAD-016",
+          "BEAD-047",
+          "BEAD-051",
+          "BEAD-069"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-005",
+        "metadata": {
+          "dimension": "structural_integrity",
+          "severity": "major",
+          "routeToPhase": "2b",
+          "sprint": 1,
+          "resolution": "Tags narrowed to readonly Tag[]; body remains string contradicting verification-architecture.md:76-78. See FIND-013 / BEAD-069 for the residual defect.",
+          "partiallyResolvedAt": "2026-04-30T14:30:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-060",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-006.json",
+        "status": "resolved-code",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-035",
+          "BEAD-041"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-006",
+        "metadata": {
+          "dimension": "edge_case_coverage",
+          "severity": "major",
+          "routeToPhase": "2a",
+          "sprint": 1,
+          "resolution": "scan-vault.ts:113-123 enforces Tag VO admissibility; new fail-grade tests for empty/whitespace tags added. Confirmed by sprint-2 adversary review.",
+          "resolvedAt": "2026-04-30T14:30:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-061",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-007.json",
+        "status": "resolved-code",
+        "linkedBeads": [
+          "BEAD-037",
+          "BEAD-044",
+          "BEAD-068"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-007",
+        "metadata": {
+          "dimension": "verification_readiness",
+          "severity": "major",
+          "routeToPhase": "2a",
+          "sprint": 1,
+          "resolution": "pipeline.test.ts:55-56 introduces TS positive-membership type assertion for VaultScanned. Negative direction handled separately as FIND-012 (BEAD-068).",
+          "resolvedAt": "2026-04-30T14:30:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-062",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-008.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-018",
+          "BEAD-038",
+          "BEAD-045",
+          "BEAD-053",
+          "BEAD-054"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-008",
+        "metadata": {
+          "dimension": "verification_readiness",
+          "severity": "minor",
+          "routeToPhase": "2c",
+          "sprint": 1
+        }
+      },
+      {
+        "beadId": "BEAD-063",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-009.json",
+        "status": "resolved-code",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-015",
+          "BEAD-029",
+          "BEAD-046"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-009",
+        "metadata": {
+          "dimension": "implementation_correctness",
+          "severity": "minor",
+          "routeToPhase": "2b",
+          "sprint": 1,
+          "resolution": "load-vault-config.ts:34 declares clockNow port; line 65 uses it. Confirmed by sprint-2 adversary review.",
+          "resolvedAt": "2026-04-30T14:30:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-064",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/findings/FIND-010.json",
+        "status": "resolved-spec",
+        "linkedBeads": [
+          "BEAD-004",
+          "BEAD-006",
+          "BEAD-046",
+          "BEAD-066"
+        ],
+        "createdAt": "2026-04-30T04:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-010",
+        "metadata": {
+          "dimension": "edge_case_coverage",
+          "severity": "minor",
+          "routeToPhase": "1a",
+          "sprint": 1,
+          "resolution": "REQ-004 amended: Err(disk-full|lock|unknown) collapse to path-not-found; F-005 expanded with explicit mapping. PROP-024 added.",
+          "resolvedAt": "2026-04-30T04:50:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-065",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
+        "status": "draft",
+        "linkedBeads": [
+          "BEAD-015",
+          "BEAD-057"
+        ],
+        "createdAt": "2026-04-30T04:50:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-023",
+        "metadata": {
+          "tier": 1,
+          "required": true,
+          "statement": "Clock.now is called at most twice per pipeline run; hydrateFeed contains no Clock.now call and accepts no timestamp argument.",
+          "addressesFinding": "FIND-003"
+        }
+      },
+      {
+        "beadId": "BEAD-066",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
+        "status": "draft",
+        "linkedBeads": [
+          "BEAD-004",
+          "BEAD-064"
+        ],
+        "createdAt": "2026-04-30T04:50:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-024",
+        "metadata": {
+          "tier": 1,
+          "required": false,
+          "statement": "For each statDir result kind (Ok(true), Ok(false), Err(not-found), Err(permission), Err(disk-full|lock|unknown)), loadVaultConfig maps to the spec-defined reason.",
+          "addressesFinding": "FIND-010"
+        }
+      },
+      {
+        "beadId": "BEAD-067",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/findings/FIND-011.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-065",
+          "BEAD-013"
+        ],
+        "createdAt": "2026-04-30T14:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-011",
+        "metadata": {
+          "dimension": "verification_readiness",
+          "severity": "major",
+          "routeToPhase": "2a",
+          "sprint": 2,
+          "category": "test_quality",
+          "title": "PROP-023 type-level assertion is tautological — `undefined as never` does not enforce hydrateFeed signature"
+        }
+      },
+      {
+        "beadId": "BEAD-068",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/findings/FIND-012.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-037",
+          "BEAD-044"
+        ],
+        "createdAt": "2026-04-30T14:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-012",
+        "metadata": {
+          "dimension": "verification_readiness",
+          "severity": "major",
+          "routeToPhase": "2a",
+          "sprint": 2,
+          "category": "test_quality",
+          "title": "PROP-021 negative-membership Tier-0 assertions tautological for FeedRestored / TagInventoryBuilt"
+        }
+      },
+      {
+        "beadId": "BEAD-069",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/findings/FIND-013.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-016",
+          "BEAD-059",
+          "BEAD-002",
+          "BEAD-047"
+        ],
+        "createdAt": "2026-04-30T14:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-013",
+        "metadata": {
+          "dimension": "structural_integrity",
+          "severity": "major",
+          "routeToPhase": "2b",
+          "sprint": 2,
+          "category": "code_structure",
+          "title": "ParsedNote.body retained as string — port contract requires Body VO (FIND-005 partial regression)"
+        }
+      },
+      {
+        "beadId": "BEAD-070",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/findings/FIND-014.json",
+        "status": "resolved-spec",
+        "linkedBeads": [
+          "BEAD-010",
+          "BEAD-022",
+          "BEAD-049"
+        ],
+        "createdAt": "2026-04-30T14:30:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-014",
+        "metadata": {
+          "dimension": "implementation_correctness",
+          "severity": "minor",
+          "routeToPhase": "1a",
+          "sprint": 2,
+          "category": "spec_ambiguity",
+          "title": "REQ-010: Step 4 calls noteCreate but discards the constructed Note — disposition unclear",
+          "resolution": "Option A: REQ-010 NOTE clarifies Note aggregate is constructed for invariant + event-emission semantics, not retention. PROP-013 description tightened to encode non-retention as a TypeScript shape constraint (REQ-010 added to PROP-013 Covers REQ).",
+          "resolvedAt": "2026-04-30T14:50:00Z"
+        }
+      },
+      {
+        "beadId": "BEAD-071",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-013",
+          "BEAD-065",
+          "BEAD-067"
+        ],
+        "createdAt": "2026-04-30T15:15:00Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-Sprint3-FIND-011-strengthened-prop023b",
+        "metadata": {
+          "sprint": 3,
+          "kind": "type-level-guard",
+          "tier": 0,
+          "redSignal": false,
+          "category": "coverage-retrofit",
+          "addressesFinding": "FIND-011",
+          "guards": [
+            "_hydrateFeedArity: _HydrateFeedSig['length'] = 1 as const",
+            "_exactlyOneScannedVaultArg: _IsExactlyOneScannedVaultArg = true",
+            "_noTimestampParamAnywhere: _IsNever<_NoTimestampParam> = true"
+          ],
+          "replacedTautologicalGuard": "_noTimestamp: _NoTimestampParam = undefined as never",
+          "note": "PROP-023b strengthened — fails compile if hydrateFeed gains a Timestamp parameter or arity grows."
+        }
+      },
+      {
+        "beadId": "BEAD-072",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-013",
+          "BEAD-068"
+        ],
+        "createdAt": "2026-04-30T15:15:00Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-Sprint3-FIND-012-strengthened-prop021-negative",
+        "metadata": {
+          "sprint": 3,
+          "kind": "type-level-guard",
+          "tier": 0,
+          "redSignal": false,
+          "category": "coverage-retrofit",
+          "addressesFinding": "FIND-012",
+          "guards": [
+            "_feedRestoredNeverPublic: _IsNever<_FeedRestoredNotPublic> = true",
+            "_tagInventoryBuiltNeverPublic: _IsNever<_TagInventoryBuiltNotPublic> = true"
+          ],
+          "replacedTautologicalGuard": "_f / _t: _XxxNotPublic = undefined as never",
+          "note": "PROP-021 negative-membership strengthened — fails compile if feed-restored or tag-inventory-built is added to PublicDomainEvent."
+        }
+      },
+      {
+        "beadId": "BEAD-073",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-016",
+          "BEAD-002",
+          "BEAD-047",
+          "BEAD-069"
+        ],
+        "createdAt": "2026-04-30T15:15:00Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-Sprint3-FIND-013-body-vo-port-contract",
+        "metadata": {
+          "sprint": 3,
+          "kind": "type-level-guard",
+          "tier": 0,
+          "redSignal": true,
+          "category": "genuine-red",
+          "addressesFinding": "FIND-013",
+          "guards": [
+            "_parsedNoteBodyIsBody: _BodyIsBody = true (line 92)",
+            "_bodyTypeMatchesPort: _BodyTypeMatchesPort = true (line 105)"
+          ],
+          "currentTypeCheckErrors": 2,
+          "remediationTarget": "promptnotes/src/lib/domain/app-startup/stages.ts:32 (ParsedNote.body: string → Body) + scan-vault.ts:127 (drop `as unknown as Body` cast)",
+          "note": "Tightens PROP-001 port contract: ParsedNote.body must be Body VO end-to-end. Genuine Red — fails compile until 2b updates stages.ts."
+        }
+      },
+      {
+        "beadId": "BEAD-074",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-010",
+          "BEAD-014",
+          "BEAD-028",
+          "BEAD-070"
+        ],
+        "createdAt": "2026-04-30T15:15:00Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-Sprint3-FIND-014-prop013-object-keys",
+        "metadata": {
+          "sprint": 3,
+          "kind": "runtime-test",
+          "tier": 2,
+          "redSignal": false,
+          "category": "coverage-retrofit",
+          "addressesFinding": "FIND-014",
+          "addressesProofObligation": "PROP-013",
+          "watchpointSource": "1c iteration-4 PASS verdict gates.1c.details.watchpointForSprint3",
+          "assertion": "Object.keys(initialUIState).sort() === ['corruptedFiles','editingSessionState','feed','kind','tagInventory']",
+          "note": "Load-bearing PROP-013 guard under structural typing; the TypeScript shape constraint cannot prove non-retention by itself."
+        }
+      },
+      {
+        "beadId": "BEAD-075",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-010",
+          "BEAD-049",
+          "BEAD-070"
+        ],
+        "createdAt": "2026-04-30T15:15:00Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-Sprint3-FIND-014-note-non-retention-sentinel",
+        "metadata": {
+          "sprint": 3,
+          "kind": "runtime-test",
+          "tier": 2,
+          "redSignal": false,
+          "category": "coverage-retrofit",
+          "addressesFinding": "FIND-014",
+          "addressesRequirement": "REQ-010 NOTE",
+          "assertion": "noteCreate spy returns a sentinel-marked Note; no top-level InitialUIState value === sentinel and no value carries __noteCreateSentinel__ marker",
+          "regressionGuard": "FIND-002 (noteCreate must still be invoked)",
+          "note": "Negative test — proves Note aggregate constructed by Step 4 is discarded, not retained on InitialUIState."
+        }
       }
     ]
   },
   "gates": {
     "1c": {
       "verdict": "PASS",
-      "timestamp": "2026-04-27T22:26:05.206Z",
+      "timestamp": "2026-04-30T15:05:00Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 2,
+        "iteration": 4,
         "spec_fidelity": "PASS",
         "verification_readiness": "PASS",
         "findingsCount": 0,
-        "priorFindingsResolved": 5
+        "priorFindingsResolved": 8,
+        "routedFindingsResolved": [
+          "FIND-014"
+        ],
+        "regressionCheck": [
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-005",
+          "FIND-003",
+          "FIND-010"
+        ],
+        "watchpointForSprint3": "PROP-013 must be implemented as a runtime Object.keys assertion on InitialUIState (not a TypeScript type assertion which would be tautological under structural typing). The new test should assert Object.keys(initialUIState).sort() === ['corruptedFiles', 'editingSessionState', 'feed', 'tagInventory'].",
+        "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-4/output/verdict.json"
       },
       "adversaryVerdict": "PASS",
-      "adversaryReviewedAt": "2026-04-27T22:26:05.206Z"
+      "adversaryReviewedAt": "2026-04-30T15:05:00Z",
+      "history": [
+        {
+          "iteration": 1,
+          "verdict": "PASS-with-findings",
+          "timestamp": "2026-04-27T22:11:00Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-1/output/verdict.json"
+        },
+        {
+          "iteration": 2,
+          "verdict": "PASS",
+          "timestamp": "2026-04-27T22:26:05.206Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-2/output/verdict.json"
+        },
+        {
+          "iteration": 3,
+          "verdict": "PASS",
+          "timestamp": "2026-04-30T13:00:00Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-3/output/verdict.json",
+          "routedFindingsResolved": ["FIND-003", "FIND-010"]
+        }
+      ]
+    },
+    "3": {
+      "verdict": "FAIL",
+      "timestamp": "2026-04-30T14:30:00Z",
+      "reviewedBy": "adversary",
+      "sprint": 2,
+      "iteration": 1,
+      "details": {
+        "spec_fidelity": "PASS",
+        "edge_case_coverage": "PASS",
+        "implementation_correctness": "PASS",
+        "structural_integrity": "FAIL",
+        "verification_readiness": "FAIL",
+        "findingsCount": 4,
+        "findingsBySeverity": {
+          "critical": 0,
+          "major": 3,
+          "minor": 1
+        },
+        "priorSprintFindingsResolved": [
+          "FIND-001",
+          "FIND-002",
+          "FIND-004",
+          "FIND-006",
+          "FIND-007",
+          "FIND-009"
+        ],
+        "priorSprintFindingsKeptOpen": ["FIND-008"],
+        "priorSprintFindingsRoutedToSpec": ["FIND-003", "FIND-010"],
+        "priorSprintFindingsPartiallyResolved": ["FIND-005"],
+        "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/verdict.json",
+        "findingsDir": ".vcsdd/features/app-startup/reviews/sprint-2/output/findings/"
+      },
+      "adversaryVerdict": "FAIL",
+      "adversaryReviewedAt": "2026-04-30T14:30:00Z",
+      "history": [
+        {
+          "sprint": 1,
+          "iteration": 1,
+          "verdict": "FAIL",
+          "timestamp": "2026-04-30T04:30:00Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-1/output/verdict.json",
+          "findingsCount": 10,
+          "findingsBySeverity": { "critical": 2, "major": 5, "minor": 3 }
+        }
+      ]
     }
   },
-  "sprintCount": 1,
+  "feedbackRouting": {
+    "sprint-1": {
+      "routedAt": "2026-04-30T04:35:00Z",
+      "fromPhase": "3",
+      "targetPhase": "1a",
+      "reason": "earliest-affected-phase: spec ambiguity raised by FIND-003 (REQ-015 vs REQ-013a/b clock confinement) and FIND-010 (REQ-004 statDir error variants).",
+      "iterationLimit": {
+        "phase": "3",
+        "mode": "lean",
+        "current": 1,
+        "max": 3
+      },
+      "groupedFindings": {
+        "1a": [
+          "FIND-003",
+          "FIND-010"
+        ],
+        "2a": [
+          "FIND-006",
+          "FIND-007"
+        ],
+        "2b": [
+          "FIND-001",
+          "FIND-002",
+          "FIND-004",
+          "FIND-005",
+          "FIND-009"
+        ],
+        "2c": [
+          "FIND-008"
+        ]
+      },
+      "findingBeads": [
+        "BEAD-055",
+        "BEAD-056",
+        "BEAD-057",
+        "BEAD-058",
+        "BEAD-059",
+        "BEAD-060",
+        "BEAD-061",
+        "BEAD-062",
+        "BEAD-063",
+        "BEAD-064"
+      ]
+    },
+    "sprint-2": {
+      "routedAt": "2026-04-30T14:35:00Z",
+      "fromPhase": "3",
+      "targetPhase": "1a",
+      "reason": "earliest-affected-phase: spec ambiguity in REQ-010 raised by FIND-014 (Note aggregate disposition unclear). Other findings will be addressed in 2a (FIND-011, FIND-012 — type-level assertion strengthening) and 2b (FIND-013 — ParsedNote.body Body VO) once the spec is refined.",
+      "iterationLimit": {
+        "phase": "3",
+        "mode": "lean",
+        "current": 2,
+        "max": 3
+      },
+      "groupedFindings": {
+        "1a": ["FIND-014"],
+        "2a": ["FIND-011", "FIND-012"],
+        "2b": ["FIND-013"]
+      },
+      "findingBeads": [
+        "BEAD-067",
+        "BEAD-068",
+        "BEAD-069",
+        "BEAD-070"
+      ]
+    }
+  },
+  "sprintCount": 3,
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-30T03:06:41.010506Z"
+  "updatedAt": "2026-04-30T15:15:00Z",
+  "sprints": {
+    "sprint-3": {
+      "startedAt": "2026-04-30T15:05:01Z",
+      "currentPhase": "2a",
+      "routedFindings": ["FIND-011", "FIND-012", "FIND-013", "FIND-014"],
+      "specRefinementContext": {
+        "behavioralSpecRevision": 5,
+        "verificationArchitectureRevision": 5,
+        "specGateIteration": 4,
+        "specGateVerdict": "PASS"
+      },
+      "redPhase": {
+        "completedAt": "2026-04-30T15:15:00Z",
+        "iteration": 1,
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-3-red-phase.log",
+        "newFeatureTests": "FAIL",
+        "regressionBaseline": "PASS",
+        "totalTests": 115,
+        "newTestsAdded": 2,
+        "newTypeLevelGuardsAdded": 8,
+        "failingTests": 0,
+        "passingTests": 115,
+        "typeCheckErrors": 2,
+        "mixedMode": "1 routed finding (FIND-013) is genuine Red via compile-time guard; FIND-011/012/014 are coverage-retrofit because the impl already satisfies them",
+        "redSignalSources": {
+          "FIND-013": {
+            "route": "2b",
+            "typeCheckErrors": 2,
+            "files": [
+              "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts"
+            ],
+            "lines": [92, 105],
+            "predicates": ["_BodyIsBody", "_BodyTypeMatchesPort"],
+            "remediationTarget": "promptnotes/src/lib/domain/app-startup/stages.ts:32 (ParsedNote.body: string → Body) + scan-vault.ts:127 (drop `as unknown as Body` cast)"
+          }
+        },
+        "coverageRetrofit": {
+          "FIND-011": {
+            "tier": 0,
+            "required": false,
+            "guardsReplaced": 1,
+            "guardsAdded": 3,
+            "files": ["promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts"],
+            "note": "Replaced tautological `_noTimestamp = undefined as never` with arity (`length = 1`), exact-tuple-shape (`extends [ScannedVault]`), and no-Timestamp-anywhere (`_IsNever<Extract<...,{epochMillis:number}>>`) guards."
+          },
+          "FIND-012": {
+            "tier": 0,
+            "required": false,
+            "guardsReplaced": 2,
+            "guardsAdded": 2,
+            "files": ["promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts"],
+            "note": "Replaced tautological `_f / _t = undefined as never` with `_IsNever<T>` predicate; positive direction (vault-scanned IS in PublicDomainEvent) preserved unchanged."
+          },
+          "FIND-014": {
+            "tier": 2,
+            "required": false,
+            "newTests": 2,
+            "files": ["promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts"],
+            "note": "Phase 1c iteration-4 watchpoint — Object.keys(state).sort() === ['corruptedFiles','editingSessionState','feed','kind','tagInventory'] runtime assertion + Note non-retention sentinel test. Structural typing cannot prove non-retention; runtime is load-bearing."
+          }
+        },
+        "testBeads": ["BEAD-071", "BEAD-072", "BEAD-073", "BEAD-074", "BEAD-075"]
+      }
+    },
+    "sprint-2": {
+      "startedAt": "2026-04-30T13:00:01Z",
+      "currentPhase": "1b",
+      "redPhase": {
+        "completedAt": "2026-04-30T13:30:00Z",
+        "iteration": 2,
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-2-red-phase.log",
+        "newFeatureTests": "FAIL",
+        "regressionBaseline": "PASS",
+        "totalTests": 113,
+        "newTestsAdded": 32,
+        "failingTests": 12,
+        "passingTests": 101,
+        "typeCheckErrors": 43,
+        "redSignalSources": {
+          "FIND-001": {
+            "route": "2b",
+            "failingTests": 5,
+            "files": [
+              "pipeline.test.ts",
+              "step4-initialize-capture.test.ts"
+            ]
+          },
+          "FIND-002": {
+            "route": "2b",
+            "failingTests": 3,
+            "files": [
+              "step4-initialize-capture.test.ts"
+            ]
+          },
+          "FIND-004": {
+            "route": "2b",
+            "failingTests": 1,
+            "files": [
+              "step2-scan-vault.test.ts"
+            ]
+          },
+          "FIND-006": {
+            "route": "2a",
+            "failingTests": 2,
+            "files": [
+              "step2-scan-vault.test.ts"
+            ]
+          },
+          "FIND-009": {
+            "route": "2b",
+            "failingTests": 1,
+            "files": [
+              "step1-load-vault-config.test.ts"
+            ]
+          }
+        },
+        "coverageRetrofit": {
+          "PROP-023": {
+            "tier": 1,
+            "required": true,
+            "newTests": 7,
+            "note": "impl already complies with Clock.now budget"
+          },
+          "PROP-024": {
+            "tier": 1,
+            "required": false,
+            "newTests": 8,
+            "note": "impl already collapses disk-full|lock|unknown via else branch"
+          },
+          "PROP-021": {
+            "tier": 0,
+            "required": false,
+            "newTests": 3,
+            "note": "replaces hand-maintained string-list test with TS type assertion (FIND-007)"
+          },
+          "FIND-005": {
+            "tier": 0,
+            "required": false,
+            "newTests": 3,
+            "note": "compile-time + runtime narrowing for ParsedNote.fm.tags"
+          }
+        }
+      },
+      "greenPhase": {
+        "completedAt": "2026-04-30T04:47:00Z",
+        "iteration": 1,
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-2-green-phase.log",
+        "targetFeatureTests": "PASS",
+        "regressionBaseline": "PASS",
+        "totalTests": 113,
+        "passingTests": 113,
+        "failingTests": 0,
+        "typeCheckErrors": 0,
+        "resolvedFindings": ["FIND-001", "FIND-002", "FIND-004", "FIND-006", "FIND-009"]
+      },
+      "refactorPhase": {
+        "completedAt": "2026-04-30T04:50:30Z",
+        "iteration": 2,
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-2-green-phase.log",
+        "targetFeatureTests": "PASS",
+        "regressionBaseline": "PASS",
+        "totalTests": 113,
+        "passingTests": 113,
+        "failingTests": 0,
+        "typeCheckErrors": 0,
+        "refactors": [
+          "scan-vault: hoist NoteId regex constant; .every() for tag validation; doc cleanup",
+          "initialize-capture: extract makeEditingState + emitCaptureSessionStartEvents helpers",
+          "pipeline: header doc refresh referencing PROP-023, FIND-002, FIND-009"
+        ],
+        "find008Disposition": "kept open — referenced Rust path does not exist; Phase 5 to decide"
+      }
+    }
+  }
 }

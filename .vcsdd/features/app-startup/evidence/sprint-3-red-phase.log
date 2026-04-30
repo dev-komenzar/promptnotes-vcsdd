@@ -1,0 +1,113 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+total-tests: 115
+new-tests-added: 2
+new-type-level-guards-added: 8
+type-check-errors: 2
+failing-tests: 0
+passing-tests: 115
+
+=== Sprint 3 Iteration 1 / Phase 2a (Red Phase) ===
+Sprint: 3
+Phase: 2a
+Iteration: 1
+Mode: lean
+Spec revision: 5 (FIND-014 resolved at 1a; PROP-013 description tightened at 1b)
+Captured at: 2026-04-30T15:15:00Z
+
+## Routed Findings driving Sprint 3 (from sprint-2 adversary FAIL)
+- FIND-011 (route 2a) — PROP-023b type-level assertion was tautological (`undefined as never`)
+- FIND-012 (route 2a) — PROP-021 negative-membership Tier-0 guards were tautological for FeedRestored / TagInventoryBuilt
+- FIND-013 (route 2b) — ParsedNote.body retained as `string`; verification-architecture port contract requires `Body` VO
+- FIND-014 (resolved at 1a; PROP-013 watchpoint route 2a) — runtime Object.keys assertion required to prove Note aggregate non-retention under structural typing
+
+## Red Signal Sources (drives Sprint 3 2b implementation work)
+- FIND-013 (route 2b) — Body VO type contract for ParsedNote.body
+  - step2-scan-vault.test.ts:92  ERROR  Type 'true' is not assignable to type 'false'.  (predicate `_BodyIsBody`)
+  - step2-scan-vault.test.ts:105 ERROR  Type 'true' is not assignable to type 'false'.  (predicate `_BodyTypeMatchesPort`)
+  Why these fail compile: ParsedNote.body is currently `string`. With `Body = Brand<string, "Body">`,
+  `string extends Body` evaluates to `false`, so the strengthened predicates `_BodyIsBody = false` and
+  `_BodyTypeMatchesPort = false` reject `const x: false = true`. After 2b tightens stages.ts:32
+  to `body: Body`, both predicates become `true` and compile passes. The cast at scan-vault.ts:127
+  (`parsed.body as unknown as Body`) is the residual code-level work for 2b.
+
+## Coverage-retrofit Tests (passing — codify sprint-2 routed findings the impl already satisfies)
+- FIND-011 strengthened compile guards (step3-hydrate-feed.test.ts) — 3 type-level assertions
+    1. `_hydrateFeedArity: _HydrateFeedSig['length'] = 1 as const`
+       fails if hydrateFeed gains a second parameter (tuple length grows to 2).
+    2. `_exactlyOneScannedVaultArg: _IsExactlyOneScannedVaultArg = true`
+       where `_IsExactlyOneScannedVaultArg = _HydrateFeedSig extends [ScannedVault] ? true : false`.
+       Tuple `extends` is length-sensitive: `[ScannedVault, Timestamp] extends [ScannedVault]` is `false`.
+    3. `_noTimestampParamAnywhere: _IsNever<_NoTimestampParam> = true`
+       where `_NoTimestampParam = Extract<_HydrateFeedSig[number], { epochMillis: number }>`.
+       If any parameter is Timestamp-shaped, Extract is non-never and `_IsNever` is `false`.
+  Replaced the tautological `const _noTimestamp: _NoTimestampParam = undefined as never` (FIND-011
+  excerpt) which compiled regardless of whether `_NoTimestampParam` was `never`.
+
+- FIND-012 strengthened compile guards (pipeline.test.ts) — 2 type-level assertions
+    1. `_feedRestoredNeverPublic: _IsNever<_FeedRestoredNotPublic> = true`
+       fails compile if `feed-restored` is added to `PublicDomainEvent` (Extract becomes non-never).
+    2. `_tagInventoryBuiltNeverPublic: _IsNever<_TagInventoryBuiltNotPublic> = true`
+       fails compile if `tag-inventory-built` is added to `PublicDomainEvent`.
+  Replaced the tautological `const _f: _FeedRestoredNotPublic = undefined as never` and the analogous
+  guard for tag-inventory-built (FIND-012 excerpt). Positive direction `_v: _VaultScannedIsPublic = ...`
+  was already load-bearing and is preserved unchanged.
+
+- FIND-014 / PROP-013 watchpoint runtime tests (pipeline.test.ts) — 2 new bun:test cases
+    1. "FIND-014 / PROP-013 watchpoint: InitialUIState has EXACTLY {kind, feed, tagInventory,
+       editingSessionState, corruptedFiles} — no Note aggregate retained"
+       Asserts `Object.keys(state).sort() === ['corruptedFiles','editingSessionState','feed','kind','tagInventory']`.
+       Under structural typing, a TypeScript shape constraint cannot prove non-retention; this is the
+       load-bearing PROP-013 guard that the Phase 1c iteration-4 watchpoint demanded.
+    2. "FIND-014 / REQ-010 NOTE: Note aggregate constructed by noteCreate is NOT retained on InitialUIState"
+       Spies on `noteCreate` to capture the constructed Note (with a `__noteCreateSentinel__` marker),
+       then verifies that no top-level `InitialUIState` value is the same reference and no value carries
+       the sentinel marker. Sanity-checks that the noteCreate port WAS invoked (FIND-002 regression guard).
+
+## Type-level Red Signals (svelte-check)
+- step2-scan-vault.test.ts:92  Type 'true' is not assignable to type 'false'.  (FIND-013 _BodyIsBody)
+- step2-scan-vault.test.ts:105 Type 'true' is not assignable to type 'false'.  (FIND-013 _BodyTypeMatchesPort)
+Total: 2 type-check errors driven by Sprint 3 Red contract.
+
+## Test Beads (Sprint 3)
+- BEAD-071 (test-case): step3-hydrate-feed.test.ts FIND-011 strengthened compile guards (3 assertions).
+- BEAD-072 (test-case): pipeline.test.ts FIND-012 strengthened compile guards (2 assertions).
+- BEAD-073 (test-case): step2-scan-vault.test.ts FIND-013 Body VO compile-time predicates (2 assertions).
+- BEAD-074 (test-case): pipeline.test.ts FIND-014 / PROP-013 Object.keys runtime assertion.
+- BEAD-075 (test-case): pipeline.test.ts FIND-014 / REQ-010 NOTE Note-non-retention runtime assertion.
+
+## Test count delta vs Sprint 2
+- Sprint 2 final: 113 pass / 0 fail / 0 type-check errors (post-green).
+- Sprint 3 red:    115 pass / 0 fail / 2 type-check errors.
+- Runtime tests added: 2 (PROP-013 Object.keys + Note non-retention).
+- Type-level guards added: 8 (3 FIND-011 + 2 FIND-012 + 2 FIND-013 + 1 unchanged positive-direction guard relocated).
+- Of the 8 guards, 6 currently compile (coverage-retrofit) and 2 currently fail compile (FIND-013 genuine Red).
+- 0 existing tests removed; FIND-011 and FIND-012 replaced 3 weak `undefined as never` assertions in place.
+
+================================================================
+=== bun test output (full) ===
+================================================================
+bun test v1.3.11 (af24e281)
+
+ 115 pass
+ 0 fail
+ 276 expect() calls
+Ran 115 tests across 6 files. [122.00ms]
+
+================================================================
+=== bun run check (svelte-check) output (full) ===
+================================================================
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+1777530332866 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777530332868 ERROR "src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts" 92:7 "Type 'true' is not assignable to type 'false'."
+1777530332868 ERROR "src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts" 105:7 "Type 'true' is not assignable to type 'false'."
+1777530332869 COMPLETED 310 FILES 2 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS
+error: script "check" exited with code 1
+
+================================================================
+=== Regression Baseline (existing 113 tests still PASS) ===
+================================================================
+- All 113 tests from Sprint 2 final state continue to pass; 0 test removed, 2 runtime tests added,
+  8 type-level guards added (in-place replacement of 3 tautological guards).
+- Type-check errors are localized to step2-scan-vault.test.ts:92 and :105 (FIND-013 strengthened
+  predicates). No regression-baseline file produces type errors.
