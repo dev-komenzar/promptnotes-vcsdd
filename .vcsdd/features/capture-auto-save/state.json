@@ -2,9 +2,23 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
-  "iterations": {},
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-04-30T12:39:52.549Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-04-30T12:39:52.552Z"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-capture-auto-save-1777552191428",
@@ -13,5 +27,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-04-30T12:29:51.428Z"
+  "updatedAt": "2026-04-30T12:39:52.552Z"
 }
