@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -171,17 +171,33 @@
       "sprint": 3,
       "iteration": 1,
       "reason": "sprint-3 adversary review FAIL \u2014 2 new findings (FIND-015 critical structural_integrity, FIND-016 major spec_fidelity); prior FIND-011/012/013/014 all resolved"
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-04-30T18:45:00Z",
+      "sprint": 3,
+      "iteration": 1,
+      "reason": "adversary-fail-routing (sprint-3 FIND-015 + FIND-016)"
+    },
+    {
+      "from": "4",
+      "to": "2a",
+      "timestamp": "2026-04-30T18:45:00Z",
+      "sprint": 4,
+      "iteration": 1,
+      "reason": "earliest-affected-phase: FIND-015 \u2192 2a, FIND-016 \u2192 2b; sprint-4 starts at 2a (red phase rework)"
     }
   ],
   "iterations": {
     "1a": 3,
     "1b": 3,
     "1c": 4,
-    "2a": 4,
+    "2a": 5,
     "2b": 3,
     "2c": 3,
-    "3": 2,
-    "4": 2
+    "3": 3,
+    "4": 3
   },
   "proofObligations": [],
   "traceability": {
@@ -1649,11 +1665,51 @@
         "BEAD-069",
         "BEAD-070"
       ]
+    },
+    "sprint-3": {
+      "routedAt": "2026-04-30T18:45:00Z",
+      "fromPhase": "3",
+      "targetPhase": "2a",
+      "reason": "earliest-affected-phase: FIND-015 (PROP-003 \u885d\u7a81\u56de\u907f\u30c6\u30b9\u30c8\u306e tautological \u5316, route 2a) \u306f FIND-016 (Frontmatter port \u5951\u7d04\u9055\u53cd, route 2b) \u3088\u308a\u65e9\u3044\u30d5\u30a7\u30fc\u30ba\u30022a \u3078\u306e\u76f4\u63a5\u30eb\u30fc\u30c6\u30a3\u30f3\u30b0\u3067\u4e21\u65b9\u3092 sprint-4 \u30b5\u30a4\u30af\u30eb\u5185\u3067\u89e3\u6d88\u3059\u308b\u3002",
+      "iterationLimit": {
+        "phase": "3",
+        "mode": "lean",
+        "current": 3,
+        "max": 3,
+        "warning": "phase-3 cap reached. /vcsdd-escalate is required before next /vcsdd-adversary invocation."
+      },
+      "groupedFindings": {
+        "2a": [
+          "FIND-015"
+        ],
+        "2b": [
+          "FIND-016"
+        ]
+      },
+      "findings": [
+        {
+          "id": "FIND-015",
+          "severity": "critical",
+          "dimension": "structural_integrity",
+          "routeTo": "2a",
+          "title": "PROP-003 \u885d\u7a81\u56de\u907f\u30c6\u30b9\u30c8\u306f\u30bf\u30a4\u30e0\u30b9\u30bf\u30f3\u30d7\u751f\u6210\u57fa\u6e96\u5024\u306e\u4e0d\u4e00\u81f4\u306b\u3088\u308a\u885d\u7a81\u30d1\u30b9\u3092\u5b9f\u884c\u3057\u3066\u3044\u306a\u3044"
+        },
+        {
+          "id": "FIND-016",
+          "severity": "major",
+          "dimension": "spec_fidelity",
+          "routeTo": "2b",
+          "title": "ParsedNote.fm \u304c verification-architecture \u306e\u30dd\u30fc\u30c8\u5951\u7d04 (Frontmatter VO) \u3068\u4e00\u81f4\u305b\u305a scan-vault.ts:131 \u3067 as unknown as Frontmatter \u30ad\u30e3\u30b9\u30c8\u304c\u6b8b\u5b58"
+        }
+      ],
+      "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-3/output/verdict.json",
+      "findingsDir": ".vcsdd/features/app-startup/reviews/sprint-3/output/findings/",
+      "newSprintNumber": 4
     }
   },
-  "sprintCount": 3,
+  "sprintCount": 4,
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-30T18:30:00Z",
+  "updatedAt": "2026-04-30T18:45:00Z",
   "sprints": {
     "sprint-3": {
       "startedAt": "2026-04-30T15:05:01Z",
@@ -1900,6 +1956,18 @@
         ],
         "find008Disposition": "kept open \u2014 referenced Rust path does not exist; Phase 5 to decide"
       }
+    },
+    "sprint-4": {
+      "startedAt": "2026-04-30T18:45:00Z",
+      "currentPhase": "2a",
+      "routedFindings": [
+        "FIND-015",
+        "FIND-016"
+      ],
+      "specRefinementContext": null,
+      "redPhase": null,
+      "greenPhase": null,
+      "refactorPhase": null
     }
   }
 }
