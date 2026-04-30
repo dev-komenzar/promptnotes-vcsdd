@@ -1,0 +1,41 @@
+PROP-023 Clock.now budget — fast-check + spy 実行ログ
+実行日時: 2026-04-30T20:30:00Z
+ハーネス: promptnotes/src/lib/domain/__tests__/app-startup/__verify__/prop-023-clock-budget.harness.test.ts
+コマンド: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/__verify__/prop-023-clock-budget.harness.test.ts --verbose
+
+bun test v1.3.11 (af24e281)
+
+ 5 pass
+ 0 fail
+ 6 expect() calls
+Ran 5 tests across 1 file. [58.00ms]
+
+テスト詳細:
+  PASS: PROP-023a: パイプライン実行中の Clock.now() 呼び出し回数は最大 2 回 [numRuns=100]
+    - fast-check asyncProperty, numRuns: 100
+    - 生成器: epoch_ms ∈ [1_000_000, 9_999_999_999]
+    - clockNow をスパイしてカウントを記録
+    - 検証項目: clockCallCount >= 1 AND clockCallCount <= 2
+    - 結果: VERIFIED (100 runs / 0 failures)
+
+  PASS: PROP-023a: 具体的な happy path で clockNow 呼び出し回数が正確に 2 回
+    - 実測 clockCallCount: 2
+      Call #1: pipeline.ts:93 — inter-step (Step 2→3) の VaultScanned emit 前
+      Call #2: initialize-capture.ts:52 — Step 4 の clockNow() 呼び出し
+    - 結果: VERIFIED
+
+  PASS: PROP-023b: hydrateFeed のアリティは 1 (Timestamp パラメータなし)
+    - hydrateFeed.length === 1
+    - 型レベルガード: _HydrateFeedParams extends [ScannedVault] ? true : false = true
+    - 型レベルガード: IsNever<Extract<_HydrateFeedParams[number], { epochMillis: number }>> = true
+    - 結果: VERIFIED (runtime + compile-time)
+
+  PASS: PROP-023b: hydrateFeed は ScannedVault のみで呼び出し可能
+    - result.kind === 'HydratedFeed' (2 番目の引数なし)
+    - 結果: VERIFIED
+
+  PASS: PROP-023c: hydrateFeed 実行中に Date.now() は呼び出されない
+    - dateNowCalls === 0
+    - 結果: VERIFIED
+
+判定: PROVED

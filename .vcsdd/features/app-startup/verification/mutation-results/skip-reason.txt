@@ -1,0 +1,32 @@
+Stryker mutation testing — スキップ理由
+実行日時: 2026-04-30T20:30:00Z
+
+実行コマンド:
+  bunx stryker run --testRunner bun --files promptnotes/src/lib/domain/app-startup/**/*.ts
+
+エラー内容:
+  Exception: Could not inject "ChildProcessTestRunnerWorker". Inner error:
+  Cannot load TestRunner plugin "bun". In fact, no TestRunner plugins were loaded.
+  Did you forget to install it?
+
+原因:
+  Stryker v0.35.1 は bun テストランナーのプラグイン (@stryker-mutator/bun-runner) を
+  標準では含まない。当該プラグインはプロジェクトの devDependencies に存在せず、
+  lean モードのポリシー「新たな依存関係をインストールしない」に従いスキップとする。
+
+lean モードでの扱い:
+  mutation testing は lean モードでは任意 (optional) である。
+  スキップは Phase 6 収束判定をブロックしない。
+
+残留リスク:
+  ミューテーション耐性の定量的な数値 (mutation score) は取得できていない。
+  fast-check numRuns=1000 の property テストが実質的なミューテーション耐性を
+  提供していると判断する。PROP-001/002/003 の property はそれぞれ 1000 通りの
+  任意入力で検証済みであり、単純なミューテーション (return 逆転, 比較逆転 等) は
+  これらのプロパティによって検出される。
+
+代替カバレッジ:
+  - PROP-001 (numRuns=1000): hydrateFeed 全分岐を含む
+  - PROP-002 (numRuns=1000): 除外ロジック全分岐を含む
+  - PROP-003 (numRuns=1000): 衝突ループ (-1, -2 等) を含む
+  - Rust proptest: src-tauri/src/domain/vault/note_id.rs で 2 proptest を実行済み

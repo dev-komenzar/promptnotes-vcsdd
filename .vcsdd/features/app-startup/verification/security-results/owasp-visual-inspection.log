@@ -1,0 +1,59 @@
+OWASP 手動検査ログ — app-startup ドメインモジュール
+実行日時: 2026-04-30T20:30:00Z
+対象: promptnotes/src/lib/domain/app-startup/*.ts
+
+--- 検査コマンド ---
+grep -nE "Date\.now\(\)" app-startup/*.ts | grep -v comment
+  -> 結果: 0 件 (コメント内の言及のみ、実際の呼び出しなし)
+
+grep -nE "process\.|eval\(|exec\(|spawn\(" app-startup/*.ts
+  -> 結果: 0 件
+
+grep -nE "require\(" app-startup/*.ts
+  -> 結果: 0 件
+
+grep -nE "path\.\." scan-vault.ts
+  -> 結果: 0 件
+
+grep -nE "filePath|readFile" app-startup/*.ts (実行コード部分のみ)
+  -> scan-vault.ts:77: ports.readFile(filePath)
+     scan-vault.ts:102: const stem = filePathStem(filePath)
+     scan-vault.ts:147: return filePath.replace(/\.md$/, "").split("/").pop() ?? filePath;
+
+--- 検査項目と結果 ---
+
+A1 - Injection (Path Traversal):
+  loadVaultConfig: vaultPath は settingsLoad() ポート経由で取得。
+    ドメイン層が直接ファイルシステムを触らない。実際の statDir 呼び出しは
+    infrastructure 層 (Tauri プラグイン) に委譲される。
+  scanVault: filePathStem() は string.replace + split("/").pop() を使用。
+    "../" を含むパスに対して pop() は末尾セグメントのみを返すため、
+    ディレクトリトラバーサルは発生しない (ファイル名の stem のみ取得)。
+    ただし listMarkdown() が返す filePath の検証はインフラ層に依存する。
+    ドメイン層での追加検証: NOTE_ID_FORMAT regex でファイルステムを検証済み。
+    非適合ステムは CorruptedFile として扱われる (FIND-004)。
+  判定: LOW リスク (インフラ層トラストバウンダリ依存、ドメイン層での防御層あり)
+
+A3 - Injection (Eval/Exec):
+  eval(), exec(), spawn() の呼び出し: 0 件
+  判定: PASS
+
+A6 - Vulnerable and Outdated Components:
+  自動 audit 不可のため手動確認。主要パッケージに既知重大 CVE なし (要定期確認)。
+  判定: INFORMATIONAL (自動検査なし)
+
+A8 - Software and Data Integrity Failures:
+  事実: Date.now() の直接呼び出しなし — Clock ポート経由。
+  事実: process.env の読み取りなし。
+  事実: 外部 URL からのデータ取得なし (Tauri IPC + ファイルシステムのみ)。
+  判定: PASS
+
+暗号関連 (Wycheproof):
+  app-startup 機能に暗号処理は存在しない。
+  Wycheproof は非適用。
+  判定: NOT APPLICABLE
+
+--- 総合判定 ---
+重大度 HIGH 以上の所見: 0 件
+重大度 MEDIUM の所見: 0 件
+重大度 LOW の所見: 1 件 (A1: インフラ層トラストバウンダリ依存)

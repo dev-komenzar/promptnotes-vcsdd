@@ -1,0 +1,35 @@
+PROP-004 AppStartupError exhaustiveness — 実行ログ
+実行日時: 2026-04-30T20:30:00Z
+ハーネス: promptnotes/src/lib/domain/__tests__/app-startup/__verify__/prop-004-app-startup-error-exhaustive.harness.test.ts
+コマンド: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/__verify__/prop-004-app-startup-error-exhaustive.harness.test.ts --verbose
+
+bun test v1.3.11 (af24e281)
+
+ 5 pass
+ 0 fail
+ 7 expect() calls
+Ran 5 tests across 1 file. [34.00ms]
+
+テスト詳細:
+  PASS: PROP-004: AppStartupError 'config/unconfigured' が正しくハンドルされる
+    - switch never ブランチを通過せずに 'config:unconfigured' を返す
+    - 結果: VERIFIED
+
+  PASS: PROP-004: AppStartupError 'config/path-not-found' が正しくハンドルされる
+    - 結果: VERIFIED
+
+  PASS: PROP-004: AppStartupError 'config/permission-denied' が正しくハンドルされる
+    - 結果: VERIFIED
+
+  PASS: PROP-004: AppStartupError 'scan/list-failed' が正しくハンドルされる
+    - 結果: VERIFIED
+
+  PASS: PROP-004: AppStartupError の kind は 'config' または 'scan' の 2 種類のみ
+    - 結果: VERIFIED
+
+型レベルアサーション (コンパイル時証明済み):
+  - _noExtraKinds: IsNever<Exclude<AppStartupErrorKind, 'config' | 'scan'>> = true
+  - assertAppStartupErrorExhaustive: switch の never ブランチがコンパイル通過
+    → 第3バリアント追加時にコンパイルエラーとなる Tier-0 Red シグナル確認済み
+
+判定: PROVED

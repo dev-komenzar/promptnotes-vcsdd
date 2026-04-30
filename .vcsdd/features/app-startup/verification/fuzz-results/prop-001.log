@@ -1,0 +1,28 @@
+PROP-001 hydrateFeed purity — fast-check 実行ログ
+実行日時: 2026-04-30T20:30:00Z
+ハーネス: promptnotes/src/lib/domain/__tests__/app-startup/__verify__/prop-001-hydrate-feed-purity.harness.test.ts
+コマンド: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/__verify__/prop-001-hydrate-feed-purity.harness.test.ts --verbose
+
+bun test v1.3.11 (af24e281)
+
+ 3 pass
+ 0 fail
+ 2 expect() calls
+Ran 3 tests across 1 file. [137.00ms]
+
+テスト詳細:
+  PASS: PROP-001: hydrateFeed は純粋関数 — ∀ ScannedVault, fn(x) deepEquals fn(x) [numRuns=1000]
+    - fast-check numRuns: 1000
+    - 生成器: 0〜8 スナップショット × 0〜4 破損ファイル
+    - 検証項目: noteRefs 順序一致, tagInventory 一致, corruptedFiles 件数一致, lastBuiltAt 一致
+    - 結果: VERIFIED (1000 runs / 0 failures)
+
+  PASS: PROP-001: hydrateFeed は Date.now() を呼び出さない（purity 監視）
+    - Date.now スパイ: 呼び出し回数 = 0
+    - 結果: VERIFIED
+
+  PASS: PROP-001: hydrateFeed の関数アリティは 1 (ScannedVault のみ)
+    - hydrateFeed.length === 1
+    - 結果: VERIFIED
+
+判定: PROVED

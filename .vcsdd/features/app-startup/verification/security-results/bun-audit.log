@@ -1,0 +1,29 @@
+bun pm scan / npm audit 実行ログ
+実行日時: 2026-04-30T20:30:00Z
+
+--- bun pm scan 試行 ---
+コマンド: cd promptnotes && bun pm scan
+エラー: no security scanner configured
+  (bunfig.toml に [install.security] scanner が未設定)
+
+--- npm audit 試行 ---
+コマンド: cd promptnotes && bunx npm audit
+エラー: npm error code ENOLOCK
+  (npm-lockfile が存在しないため実行不可)
+
+--- 代替手段: 手動依存関係レビュー ---
+プロジェクト主要依存関係 (bun.lock より抜粋):
+  fast-check: 4.7.0  — property-based testing, セキュリティ関連なし
+  svelte: 5.55.5     — UI フレームワーク, フロントエンド XSS は Tauri WebView 管理下
+  svelte-kit: 2.58.0 — SvelteKit, Tauri context で動作 (外部ネットワーク露出なし)
+  vite: 6.4.2        — build tool (devDependency のみ)
+
+--- Rust 依存関係 ---
+cargo audit: NOT INSTALLED (PATH 上に存在しない)
+Cargo.toml 主要依存関係:
+  proptest: 1 (dev-dependency のみ)
+  tauri: バージョン詳細は src-tauri/Cargo.toml 参照
+
+--- 結論 ---
+自動 audit ツールはいずれも設定上の制約により実行不可。
+手動レビュー結果は security-report.md に記録する。

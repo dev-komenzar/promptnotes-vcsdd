@@ -1,0 +1,37 @@
+PROP-003 nextAvailableNoteId uniqueness — fast-check 実行ログ
+実行日時: 2026-04-30T20:30:00Z
+ハーネス: promptnotes/src/lib/domain/__tests__/app-startup/__verify__/prop-003-next-available-note-id.harness.test.ts
+コマンド: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/__verify__/prop-003-next-available-note-id.harness.test.ts --verbose
+
+bun test v1.3.11 (af24e281)
+
+ 5 pass
+ 0 fail
+ 7 expect() calls
+Ran 5 tests across 1 file. [64.00ms]
+
+テスト詳細:
+  PASS: PROP-003: ∀ preferred, ∀ existingIds, nextAvailableNoteId(preferred, existingIds) ∉ existingIds [numRuns=1000]
+    - fast-check numRuns: 1000
+    - 生成器: epoch_ms ∈ [1000, 9_999_999] × suffixes: 0〜5 個
+    - Sprint-4 load-bearing パターン: base を existingIds に必ず含めて衝突ループを強制実行
+    - 検証項目: result ∉ existingIds
+    - 結果: VERIFIED (1000 runs / 0 failures)
+
+  PASS: PROP-003: 空の existingIds でも base は有効な NoteId フォーマット
+    - regex: /^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}$/
+    - 結果: VERIFIED
+
+  PASS: PROP-003: base 衝突時は -1 が付与される
+    - existingIds = {base} → result = base-1
+    - 結果: VERIFIED
+
+  PASS: PROP-003: base と -1 の両衝突時は -2 が付与される
+    - existingIds = {base, base-1} → result = base-2
+    - 結果: VERIFIED
+
+  PASS: PROP-003: nextAvailableNoteId の関数アリティは 2 (純粋関数の証明)
+    - nextAvailableNoteId.length === 2
+    - 結果: VERIFIED
+
+判定: PROVED

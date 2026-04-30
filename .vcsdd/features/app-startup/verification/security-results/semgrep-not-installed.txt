@@ -1,0 +1,14 @@
+semgrep は PATH 上に存在しない。
+実行日時: 2026-04-30T20:30:00Z
+
+確認コマンド:
+  which semgrep 2>/dev/null
+  -> (出力なし)
+
+代替措置:
+  ソースコードの手動 OWASP パターン検査を実施した。
+  結果は verification/security-report.md の ## Findings セクションに記録する。
+
+インストール方法 (参考):
+  pip install semgrep
+  または brew install semgrep

@@ -1,0 +1,32 @@
+PROP-002 hydrateFeed excludes corrupted — fast-check 実行ログ
+実行日時: 2026-04-30T20:30:00Z
+ハーネス: promptnotes/src/lib/domain/__tests__/app-startup/__verify__/prop-002-hydrate-feed-excludes-corrupted.harness.test.ts
+コマンド: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/__verify__/prop-002-hydrate-feed-excludes-corrupted.harness.test.ts --verbose
+
+bun test v1.3.11 (af24e281)
+
+ 4 pass
+ 0 fail
+ 6 expect() calls
+Ran 4 tests across 1 file. [115.00ms]
+
+テスト詳細:
+  PASS: PROP-002: noteRefs は入力スナップショットの NoteId のみから構成される [numRuns=1000]
+    - fast-check numRuns: 1000
+    - 生成器: 0〜8 スナップショット × 0〜4 破損パス
+    - 検証項目: 全 noteRef が inputNoteIds に含まれること / noteRefs.length === snapshots.length
+    - 結果: VERIFIED (1000 runs / 0 failures)
+
+  PASS: PROP-002: 全破損の Vault → noteRefs は空
+    - corruptedFiles: 3 件, snapshots: 0 件
+    - 結果: VERIFIED
+
+  PASS: PROP-002: 破損ファイルは TagInventory にも反映されない
+    - tagInventory.entries.length === 0
+    - 結果: VERIFIED
+
+  PASS: PROP-002: 混合 Vault — 正常ファイルは noteRefs に含まれ、破損ファイルは除外される
+    - good snapshot ∈ noteRefs / bad filePath ∉ noteRefs
+    - 結果: VERIFIED
+
+判定: PROVED

@@ -44,6 +44,8 @@ build/
 *.log
 # VCSDD パイプラインの evidence は commit 対象（Phase ゲートで参照される）。
 !.vcsdd/features/*/evidence/*.log
+# VCSDD Phase 5 verification 成果物も commit 対象。
+!.vcsdd/features/*/verification/**/*.log
 
 # MCP
 .playwright-mcp/
