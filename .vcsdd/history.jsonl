@@ -89,3 +89,5 @@
 {"timestamp":"2026-04-30T12:52:42.617Z","event":"phase_transition","featureName":"capture-auto-save","from":"1b","to":"1c","iteration":1,"phase":"1c"}
 {"timestamp":"2026-04-30T12:53:30.316Z","event":"phase_transition","featureName":"capture-auto-save","from":"1c","to":"2a","iteration":1,"phase":"2a"}
 {"timestamp":"2026-04-30T12:53:30.316Z","event":"sprint_started","featureName":"capture-auto-save","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-04-30T12:58:15.753Z","event":"phase_transition","featureName":"capture-auto-save","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-04-30T13:01:09.875Z","event":"phase_transition","featureName":"capture-auto-save","from":"2b","to":"2c","iteration":1,"phase":"2c"}
