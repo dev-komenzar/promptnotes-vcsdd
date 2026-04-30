@@ -1,0 +1,126 @@
+{
+  "verdict": "FAIL",
+  "timestamp": "2026-04-30T12:00:00Z",
+  "feature": "capture-auto-save",
+  "iteration": 1,
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "FAIL",
+      "findings": ["FIND-001", "FIND-002", "FIND-003", "FIND-004"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/behavioral-spec.md",
+          "description": "Reviewed all 17 requirements (REQ-001 through REQ-017) against workflows.md Workflow 2 and canonical type files"
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "FAIL",
+      "findings": ["FIND-005", "FIND-006", "FIND-007"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/verification-architecture.md",
+          "description": "Reviewed all 21 proof obligations (PROP-001 through PROP-021) and coverage matrix"
+        }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "FIND-001",
+      "severity": "major",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "description": "REQ-001 states the pipeline produces 'Result<IndexedNote, SaveError>' and acceptance criteria says 'returns { ok: true, value: IndexedNote }'. But REQ-017 states the function signature returns 'Promise<Result<NoteFileSaved, SaveError>>', matching the canonical workflows.ts CaptureAutoSave type (line 73). These two requirements contradict each other on the return type. Additionally, workflows.md line 179 uses yet another type 'Result<SavedNoteAck, SaveError>' which neither REQ matches.",
+      "location": "specs/behavioral-spec.md:REQ-001 (line 27) vs REQ-017 (line 283-291)",
+      "evidence": {
+        "filePath": "docs/domain/code/ts/src/capture/workflows.ts",
+        "lineRange": "68-73",
+        "snippet": "export type CaptureAutoSave = (\n  deps: CaptureDeps,\n) => (\n  state: EditingState,\n  trigger: \"idle\" | \"blur\",\n) => Promise<Result<NoteFileSaved, SaveError>>;"
+      },
+      "recommendation": "Reconcile the return type. The canonical type in workflows.ts returns NoteFileSaved, not IndexedNote. REQ-001 acceptance criteria must be updated to match. Also clarify how workflows.md's 'SavedNoteAck' maps to NoteFileSaved (or document it as a naming discrepancy resolved in code)."
+    },
+    {
+      "id": "FIND-002",
+      "severity": "major",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "description": "REQ-003 explicitly states EmptyNoteDiscarded is 'not an error - this is a valid early-exit route' and returns '{ kind: \"empty-discarded\", event: EmptyNoteDiscarded }'. However, the Error Catalog in the same spec (lines 314-319) defines 'SaveValidationError' with variant '{ kind: \"empty-body-on-idle\" }', and REQ-013 includes this as an exhaustive variant of SaveError. The spec simultaneously treats empty-body-on-idle as both a non-error early exit AND an error variant. The canonical PrepareSaveRequest type in workflows.ts (lines 47-55) places empty-discarded in the success channel of the Result, confirming it is NOT a SaveError. The 'empty-body-on-idle' variant in SaveValidationError is therefore orphaned — no code path should produce it if REQ-003 is correct.",
+      "location": "specs/behavioral-spec.md:REQ-003 (line 68) vs REQ-013/Error Catalog (lines 219-228, 314-319)",
+      "evidence": {
+        "filePath": "docs/domain/code/ts/src/capture/workflows.ts",
+        "lineRange": "47-55",
+        "snippet": "export type PrepareSaveRequest = (\n  deps: CaptureDeps,\n) => (\n  input: DirtyEditingSession,\n) => Result<\n  { kind: \"validated\"; request: ValidatedSaveRequest }\n  | { kind: \"empty-discarded\"; event: EmptyNoteDiscarded },\n  SaveError\n>;"
+      },
+      "recommendation": "Decide whether empty-body-on-idle is an error variant or a success-channel early exit. If it is a success-channel early exit (as workflows.ts suggests), remove '{ kind: \"empty-body-on-idle\" }' from SaveValidationError and update REQ-013 to reflect that SaveValidationError has only one variant ('invariant-violated'). If it is an error, update REQ-003 to return it as a SaveError. The current dual treatment is ambiguous and will produce implementation confusion."
+    },
+    {
+      "id": "FIND-003",
+      "severity": "major",
+      "dimension": "spec_fidelity",
+      "category": "purity_boundary",
+      "description": "REQ-006 (line 109) states serializeNote is 'a pure function: no I/O, no port calls, deterministic.' REQ-016 (line 271) reiterates 'serializeNote calls no ports and has no side effects.' Yet workflows.md Step 2 (line 217-219) lists 'FrontmatterSerializer.toYaml(fm): string' as a dependency for serializeNote, and the verification architecture (lines 39-43) lists FrontmatterSerializerToYaml as a Port Contract. If FrontmatterSerializer.toYaml is a port (dependency-injected), then serializeNote has a port dependency, violating the purity claim. The canonical CaptureDeps in ports.ts (lines 23-28) does NOT include FrontmatterSerializer, which suggests the spec intends it as a direct import rather than a port — but the verification architecture mislabels it as a Port Contract.",
+      "location": "specs/verification-architecture.md:Port Contracts section (lines 39-43) vs specs/behavioral-spec.md:REQ-006 (line 109), REQ-016 (line 271)",
+      "evidence": {
+        "filePath": "docs/domain/code/ts/src/capture/ports.ts",
+        "lineRange": "23-28",
+        "snippet": "export type CaptureDeps = {\n  readonly clockNow: ClockNow;\n  readonly allocateNoteId: AllocateNoteId;\n  readonly clipboardWrite: ClipboardWrite;\n  readonly publish: EventBusPublish;\n};"
+      },
+      "recommendation": "Remove FrontmatterSerializerToYaml from the Port Contracts section of the verification architecture. It should be documented as a pure utility function (direct import), not a port. Alternatively, if it IS a port, add it to CaptureDeps and update REQ-006/REQ-016 to acknowledge the dependency — but this would undermine the purity claim and require reclassifying serializeNote."
+    },
+    {
+      "id": "FIND-004",
+      "severity": "minor",
+      "dimension": "spec_fidelity",
+      "category": "spec_gap",
+      "description": "SaveNoteRequested is specified in REQ-008 with detailed acceptance criteria and placed in Step 3. However, workflows.md Workflow 2 event table (lines 282-287) does NOT list SaveNoteRequested as an emitted event. The event exists in events.ts (lines 102-110) and workflows.ts has BuildSaveNoteRequested (line 124-126) and EmitSaveAndTransition (line 129-134), confirming it belongs to this workflow. The spec is correct to include it, but the placement in Step 3 conflicts with EmitSaveAndTransition in workflows.ts which couples it with the EditingState-to-SavingState transition (before the Vault write dispatch). This is a source-of-truth gap in workflows.md rather than a spec error, but the spec should acknowledge the discrepancy.",
+      "location": "specs/behavioral-spec.md:REQ-008 (lines 132-142) vs docs/domain/workflows.md (lines 282-287)",
+      "evidence": {
+        "filePath": "docs/domain/code/ts/src/capture/workflows.ts",
+        "lineRange": "129-134",
+        "snippet": "export type EmitSaveAndTransition = (\n  deps: CaptureDeps,\n) => (\n  request: ValidatedSaveRequest,\n  state: EditingState,\n) => SavingState;"
+      },
+      "recommendation": "Clarify whether SaveNoteRequested is emitted in Step 3 (writeMarkdown, as the spec says) or as part of the state transition to SavingState before Step 3 (as EmitSaveAndTransition in workflows.ts suggests). Update REQ-008 and REQ-016 accordingly. The EmitSaveAndTransition type strongly suggests the event is emitted BEFORE the Vault write dispatch, not during Step 3."
+    },
+    {
+      "id": "FIND-005",
+      "severity": "major",
+      "dimension": "verification_readiness",
+      "category": "test_coverage",
+      "description": "REQ-005 (InvariantViolated error path) is mapped in the coverage matrix to PROP-005 and PROP-006 only. Both PROP-005 and PROP-006 verify type exhaustiveness of SaveError/SaveValidationError at the TypeScript type level (Tier 0). Neither property tests that the InvariantViolated error is actually RETURNED when the invariant condition is violated (e.g., updatedAt < createdAt). There is no PROP that exercises the InvariantViolated code path at runtime. This means the most defensive error path in Step 1 has zero runtime verification.",
+      "location": "specs/verification-architecture.md:Coverage Matrix REQ-005 row (line 148)",
+      "evidence": {
+        "filePath": "specs/verification-architecture.md",
+        "lineRange": "102-103",
+        "snippet": "| PROP-005 | `SaveError` type is exhaustive: only `'validation'` or `'fs'` kind values exist | REQ-013 | 0 | **true** | TypeScript type exhaustiveness (never branch in switch) |\n| PROP-006 | `SaveValidationError` type is exhaustive: only `'empty-body-on-idle'` or `'invariant-violated'` | REQ-013 | 0 | false | TypeScript type exhaustiveness |"
+      },
+      "recommendation": "Add a PROP (e.g., PROP-022) at Tier 2 that verifies: WHEN Clock.now() returns a timestamp earlier than createdAt THEN prepareSaveRequest returns SaveError { kind: 'validation', reason: { kind: 'invariant-violated' } }. This exercises the defensive error path at runtime."
+    },
+    {
+      "id": "FIND-006",
+      "severity": "major",
+      "dimension": "verification_readiness",
+      "category": "purity_boundary",
+      "description": "PROP-016 claims to verify that 'serializeNote calls no ports — it has zero dependencies beyond its input' using 'TypeScript type assertion: serializeNote parameter list has no Deps argument.' However, the verification architecture's own Port Contracts section (lines 39-43) defines FrontmatterSerializerToYaml as a port used in serializeNote. If serializeNote calls FrontmatterSerializer.toYaml, it has a port dependency even if it is not in CaptureDeps. PROP-016's verification method (checking the parameter list for a Deps argument) would not detect a direct-imported dependency. The proof obligation is therefore either testing the wrong thing (if the serializer is a port) or the Port Contracts section is mislabeled (if the serializer is a pure import). Either way, the verification architecture is internally inconsistent.",
+      "location": "specs/verification-architecture.md:PROP-016 (line 113) vs Port Contracts (lines 39-43)",
+      "evidence": {
+        "filePath": "specs/verification-architecture.md",
+        "lineRange": "39-43",
+        "snippet": "/** Serialize Frontmatter to YAML string.\n *  Pure function — no I/O. Used in Step 2 (serializeNote).\n *  Source: workflows.md §依存（ポート）一覧. */\ntype FrontmatterSerializerToYaml = (fm: Frontmatter) => string;"
+      },
+      "recommendation": "Resolve the FrontmatterSerializer classification. If it is a pure utility (not a port), remove it from Port Contracts and document it as a pure import in the purity boundary map. If it is a port, PROP-016 is invalid and must be rewritten to account for the dependency. The verification architecture must be internally consistent on this point."
+    },
+    {
+      "id": "FIND-007",
+      "severity": "minor",
+      "dimension": "verification_readiness",
+      "category": "test_coverage",
+      "description": "REQ-015 specifies that on EmptyNoteDiscarded (REQ-003), the state does NOT transition to 'saving'. However, neither PROP-019 nor PROP-020 (which cover REQ-015's state transitions) nor any other PROP verifies this negative constraint. There is no proof obligation ensuring that the EmptyNoteDiscarded path preserves the 'editing' state without transitioning to 'saving'.",
+      "location": "specs/verification-architecture.md:Coverage Matrix REQ-015 row (line 158), PROP-019/PROP-020 (lines 116-117)",
+      "recommendation": "Add a PROP (e.g., PROP-023) at Tier 2: WHEN trigger is 'idle' AND Note.isEmpty returns true THEN EditingSessionState remains 'editing' (no transition to 'saving')."
+    }
+  ],
+  "summary": "FAIL on both dimensions. Three major findings in spec_fidelity: (1) contradictory return types between REQ-001 (IndexedNote) and REQ-017 (NoteFileSaved), (2) empty-body-on-idle treated simultaneously as a non-error early exit (REQ-003) and as a SaveValidationError variant (REQ-013), (3) FrontmatterSerializer classified as both a Port Contract and a pure-function dependency with no port calls. Two major findings in verification_readiness: (1) REQ-005 InvariantViolated path has zero runtime verification — only type-level exhaustiveness checks, (2) PROP-016 purity assertion is inconsistent with the Port Contracts section listing FrontmatterSerializer as a port."
+}

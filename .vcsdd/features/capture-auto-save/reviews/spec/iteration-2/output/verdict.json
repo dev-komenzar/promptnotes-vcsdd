@@ -1,0 +1,113 @@
+{
+  "verdict": "PASS",
+  "timestamp": "2026-04-30T14:00:00Z",
+  "feature": "capture-auto-save",
+  "iteration": 2,
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "findings": ["FIND-008", "FIND-009", "FIND-011"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/behavioral-spec.md",
+          "description": "Reviewed all 17 requirements (REQ-001 through REQ-017) against workflows.ts, ports.ts, stages.ts, states.ts, errors.ts, events.ts, and workflows.md Workflow 2. Return type reconciliation (FIND-001) correctly resolved to NoteFileSaved. EmptyNoteDiscarded channel (FIND-002) correctly placed in success channel with orphaned SaveValidationError variant documented. FrontmatterSerializer (FIND-003) correctly reclassified as internal pure function. SaveNoteRequested timing (FIND-004) correctly aligned with EmitSaveAndTransition."
+        },
+        {
+          "type": "file",
+          "location": "docs/domain/code/ts/src/capture/workflows.ts",
+          "description": "Verified CaptureAutoSave type (line 68-73), PrepareSaveRequest type (line 47-55), EmitSaveAndTransition type (line 129-134), DispatchSaveRequest type (line 61-65) against spec claims"
+        },
+        {
+          "type": "file",
+          "location": "docs/domain/code/ts/src/capture/ports.ts",
+          "description": "Verified CaptureDeps (line 23-28) does NOT include FrontmatterSerializer, confirming spec's reclassification"
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "findings": ["FIND-010"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/verification-architecture.md",
+          "description": "Reviewed all 23 proof obligations (PROP-001 through PROP-023). PROP-022 (InvariantViolated runtime test, resolves FIND-005) correctly added at Tier 2. PROP-023 (EmptyNoteDiscarded state non-transition, resolves FIND-007) correctly added at Tier 2. FrontmatterSerializer correctly moved to internal pure functions section (resolves FIND-003/FIND-006). PROP-016 description updated for consistency. Coverage matrix covers all 17 requirements."
+        },
+        {
+          "type": "file",
+          "location": "specs/verification-architecture.md",
+          "description": "Verified coverage matrix: every REQ has at least one PROP. Six required PROPs (001-005, 014) span Tiers 0-1. Purity boundary map is internally consistent after FrontmatterSerializer reclassification."
+        }
+      ]
+    }
+  },
+  "previousFindingsResolution": {
+    "FIND-001": "resolved",
+    "FIND-002": "resolved",
+    "FIND-003": "resolved",
+    "FIND-004": "resolved",
+    "FIND-005": "resolved",
+    "FIND-006": "resolved",
+    "FIND-007": "resolved"
+  },
+  "findings": [
+    {
+      "id": "FIND-008",
+      "severity": "minor",
+      "dimension": "spec_fidelity",
+      "category": "spec_gap",
+      "description": "Event Catalog (line 383) lists SaveNoteRequested at 'Step 3 (pre-write)' but REQ-008 (revised for FIND-004) now specifies it is emitted at the editing-to-saving state transition AFTER Step 1 and BEFORE Step 3. The Event Catalog table was not updated to reflect the timing correction.",
+      "location": "specs/behavioral-spec.md:Event Catalog (line 383)",
+      "evidence": {
+        "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/.vcsdd/features/capture-auto-save/specs/behavioral-spec.md",
+        "lineRange": "383",
+        "snippet": "| `SaveNoteRequested` | 3 (pre-write) | Capture | Public | always (on validated save) |"
+      },
+      "recommendation": "Update the Event Catalog Step column for SaveNoteRequested from '3 (pre-write)' to '1 (post-validation, state transition)' or similar to match REQ-008."
+    },
+    {
+      "id": "FIND-009",
+      "severity": "minor",
+      "dimension": "spec_fidelity",
+      "category": "spec_gap",
+      "description": "REQ-016 acceptance criteria (line 310) states 'Event emission (publish) occurs in Step 3 (SaveNoteRequested, NoteFileSaved/NoteSaveFailed)'. This groups SaveNoteRequested with Step 3 events, contradicting REQ-008 which places SaveNoteRequested at the state transition between Step 1 and Step 3. The FIND-004 resolution corrected REQ-008 but did not propagate the timing change to REQ-016.",
+      "location": "specs/behavioral-spec.md:REQ-016 acceptance criteria (line 310)",
+      "evidence": {
+        "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/.vcsdd/features/capture-auto-save/specs/behavioral-spec.md",
+        "lineRange": "310",
+        "snippet": "- Event emission (`publish`) occurs in Step 3 (SaveNoteRequested, NoteFileSaved/NoteSaveFailed) and optionally in Step 4 (TagInventoryUpdated)."
+      },
+      "recommendation": "Update REQ-016 line 310 to separate SaveNoteRequested from Step 3 events: 'Event emission (publish) occurs at the editing-to-saving transition (SaveNoteRequested), in Step 3 (NoteFileSaved/NoteSaveFailed), and optionally in Step 4 (TagInventoryUpdated).'"
+    },
+    {
+      "id": "FIND-010",
+      "severity": "minor",
+      "dimension": "verification_readiness",
+      "category": "spec_gap",
+      "description": "REQ-017 notes that the EmptyNoteDiscarded route's encoding within the CaptureAutoSave return type (Result<NoteFileSaved, SaveError>) is 'deferred to Phase 2b'. One proposed encoding is 'a sentinel NoteFileSaved-compatible value', which would be semantically incorrect since no file was saved. No PROP verifies the encoding choice's correctness. This is acceptable as a Phase 2b decision but creates a type-level semantic risk that should be tracked.",
+      "location": "specs/behavioral-spec.md:REQ-017 NOTE on EmptyNoteDiscarded encoding (lines 327-328)",
+      "evidence": {
+        "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/.vcsdd/features/capture-auto-save/specs/behavioral-spec.md",
+        "lineRange": "327-328",
+        "snippet": "The implementation handles it by emitting the `EmptyNoteDiscarded` event and returning an appropriate `Ok` value (encoding deferred to Phase 2b — e.g., a sentinel `NoteFileSaved`-compatible value, or a wrapper type). The key invariant is: EmptyNoteDiscarded NEVER appears in the `Err` channel."
+      },
+      "recommendation": "When the Phase 2b encoding is decided, add a PROP to verify that the chosen encoding does not violate NoteFileSaved's semantic contract. Consider using a discriminated union wrapper (e.g., Result<NoteFileSaved | EmptyNoteDiscardedAck, SaveError>) rather than a sentinel NoteFileSaved value."
+    },
+    {
+      "id": "FIND-011",
+      "severity": "minor",
+      "dimension": "spec_fidelity",
+      "category": "spec_gap",
+      "description": "The canonical Capture-side type for Step 3 dispatching is DispatchSaveRequest (workflows.ts lines 61-65), which bridges Capture (TypeScript) to Vault (Rust) and returns Promise<Result<NoteFileSaved, NoteSaveFailed>>. The spec acknowledges the Capture/Vault boundary (line 28) but does not reference DispatchSaveRequest anywhere. REQ-007 describes Step 3 as if the pipeline directly calls FileSystem.writeFileAtomic, and the verification architecture Port Contracts section lists FileSystemWriteFileAtomic as a port — but this port is on the Vault (Rust) side, not in CaptureDeps. The spec should clarify how the Capture-side orchestrator invokes Step 3 at the type level.",
+      "location": "specs/behavioral-spec.md:REQ-007 (lines 144-155), specs/verification-architecture.md:Port Contracts FileSystemWriteFileAtomic (lines 42-46)",
+      "evidence": {
+        "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/docs/domain/code/ts/src/capture/workflows.ts",
+        "lineRange": "61-65",
+        "snippet": "export type DispatchSaveRequest = (\n  deps: CaptureDeps,\n) => (\n  request: ValidatedSaveRequest,\n) => Promise<Result<NoteFileSaved, NoteSaveFailed>>;"
+      },
+      "recommendation": "Add a note to REQ-007 clarifying that FileSystem.writeFileAtomic is a Vault-side port invoked via DispatchSaveRequest, not a direct Capture-side port call. Consider documenting DispatchSaveRequest in the Port Contracts section as the Capture-side boundary type for Step 3."
+    }
+  ],
+  "summary": "PASS with 4 minor findings. All 7 previous findings (FIND-001 through FIND-007) are adequately resolved. The major issues — return type inconsistency, EmptyNoteDiscarded channel confusion, FrontmatterSerializer purity classification, SaveNoteRequested timing, InvariantViolated test coverage, PROP-016 contradiction, and EmptyNoteDiscarded state non-transition — have all been addressed with correct revisions. The 4 new minor findings are residual inconsistencies: (1) Event Catalog table not updated for SaveNoteRequested timing, (2) REQ-016 still groups SaveNoteRequested with Step 3 events, (3) EmptyNoteDiscarded encoding deferred to Phase 2b with a risky sentinel proposal, (4) DispatchSaveRequest type omitted from spec despite being the canonical Step 3 bridge type. None of these block implementation."
+}

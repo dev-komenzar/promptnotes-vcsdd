@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-010",
+  "dimension": "verification_readiness",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "REQ-017 notes that the EmptyNoteDiscarded route's encoding within the CaptureAutoSave return type (Result<NoteFileSaved, SaveError>) is 'deferred to Phase 2b'. One proposed encoding is 'a sentinel NoteFileSaved-compatible value', which would be semantically incorrect since no file was saved. No PROP verifies the encoding choice's correctness.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/.vcsdd/features/capture-auto-save/specs/behavioral-spec.md",
+    "lineRange": "327-328",
+    "snippet": "The implementation handles it by emitting the `EmptyNoteDiscarded` event and returning an appropriate `Ok` value (encoding deferred to Phase 2b — e.g., a sentinel `NoteFileSaved`-compatible value, or a wrapper type). The key invariant is: EmptyNoteDiscarded NEVER appears in the `Err` channel."
+  },
+  "routeToPhase": "2b"
+}

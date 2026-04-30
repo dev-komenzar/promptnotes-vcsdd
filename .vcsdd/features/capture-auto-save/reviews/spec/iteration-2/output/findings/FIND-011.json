@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-011",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "The canonical Capture-side type for Step 3 dispatching is DispatchSaveRequest (workflows.ts lines 61-65), which bridges Capture (TypeScript) to Vault (Rust) and returns Promise<Result<NoteFileSaved, NoteSaveFailed>>. The spec does not reference DispatchSaveRequest anywhere. REQ-007 describes Step 3 as if the pipeline directly calls FileSystem.writeFileAtomic, and the verification architecture lists FileSystemWriteFileAtomic as a port — but this port is on the Vault (Rust) side, not in CaptureDeps.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/docs/domain/code/ts/src/capture/workflows.ts",
+    "lineRange": "61-65",
+    "snippet": "export type DispatchSaveRequest = (\n  deps: CaptureDeps,\n) => (\n  request: ValidatedSaveRequest,\n) => Promise<Result<NoteFileSaved, NoteSaveFailed>>;"
+  },
+  "routeToPhase": "1a"
+}

@@ -2,7 +2,7 @@
 
 **Feature**: `capture-auto-save`
 **Phase**: 1b
-**Revision**: 1
+**Revision**: 2 (iteration-1 spec review FAIL: FIND-003 FrontmatterSerializer port reclassification, FIND-005 InvariantViolated runtime test, FIND-006 serializeNote port consistency, FIND-007 EmptyNoteDiscarded state non-transition)
 **Mode**: lean
 **Source**: `docs/domain/workflows.md` Workflow 2, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/ports.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/events.ts`
 
@@ -36,12 +36,6 @@ Port signatures match `docs/domain/workflows.md §依存（ポート）一覧` a
 /** Return the current wall-clock time. Purity-violating. Called once in Step 1. */
 type ClockNow = () => Timestamp;
 
-// ── FrontmatterSerializer ──────────────────────────────────────────────
-/** Serialize Frontmatter to YAML string.
- *  Pure function — no I/O. Used in Step 2 (serializeNote).
- *  Source: workflows.md §依存（ポート）一覧. */
-type FrontmatterSerializerToYaml = (fm: Frontmatter) => string;
-
 // ── FileSystem ─────────────────────────────────────────────────────────
 /** Atomic file write. Temp file → rename for crash safety.
  *  Write I/O boundary. Used in Step 3 (writeMarkdown).
@@ -60,6 +54,19 @@ type EventBusPublish = (event: PublicDomainEvent) => void;
 /** Check if a note body is empty/whitespace-only.
  *  Pure function. Source: note.ts NoteOps.isEmpty. */
 type NoteIsEmpty = (note: Note) => boolean;
+```
+
+### Internal pure functions (NOT ports — not injected via CaptureDeps)
+
+```typescript
+// ── FrontmatterSerializer (resolves FIND-003, FIND-006) ────────────────
+/** Serialize Frontmatter to YAML string.
+ *  Pure function — no I/O. Used internally by serializeNote (Step 2).
+ *  Listed in workflows.md §依存（ポート）一覧 as a dependency,
+ *  but classified here as a module-internal pure function, NOT an
+ *  injected port. CaptureDeps (ports.ts) does not include it.
+ *  This means serializeNote has ZERO CaptureDeps port calls. */
+type FrontmatterSerializerToYaml = (fm: Frontmatter) => string;
 ```
 
 ### Trigger → SaveNoteSource mapping contract
@@ -110,12 +117,14 @@ function mapFsErrorToReason(err: FsError): NoteSaveFailureReason {
 | PROP-013 | `TagInventoryUpdated` NOT emitted when `previousFrontmatter` is null and new note has no tags | REQ-012 | 2 | false | Example-based test |
 | PROP-014 | `Clock.now()` is called exactly once per pipeline run (in Step 1 `prepareSaveRequest`) | REQ-016 | 1 | **true** | Spy wrapper: instrument `clockNow` with counter; run pipeline → counter === 1 |
 | PROP-015 | `FileSystem.writeFileAtomic` is called exactly once per pipeline run (in Step 3) | REQ-016 | 2 | false | Spy wrapper with counter |
-| PROP-016 | `serializeNote` calls no ports — it has zero dependencies beyond its input | REQ-006, REQ-016 | 1 | false | TypeScript type assertion: `serializeNote` parameter list has no `Deps` argument |
+| PROP-016 | `serializeNote` calls no `CaptureDeps` ports — its function signature has no `deps` parameter. `FrontmatterSerializerToYaml` is an internal pure function, not an injected port (resolves FIND-006) | REQ-006, REQ-016 | 1 | false | TypeScript type assertion: `serializeNote` parameter list has no `Deps`/`CaptureDeps` argument |
 | PROP-017 | Full pipeline integration: happy path → `NoteFileSaved` with correct fields | REQ-001, REQ-009 | 3 | false | Integration test with port fakes |
 | PROP-018 | Full pipeline integration: write failure → `SaveError { kind: 'fs' }` + `NoteSaveFailed` | REQ-010 | 3 | false | Integration test with failing write stub |
 | PROP-019 | `EditingSessionState` transitions: `editing → saving → editing` on success | REQ-015 | 2 | false | Example-based test with state assertions |
 | PROP-020 | `EditingSessionState` transitions: `editing → saving → save-failed` on failure | REQ-015 | 2 | false | Example-based test with state assertions |
 | PROP-021 | `ValidatedSaveRequest.frontmatter.updatedAt === requestedAt` (timestamp propagation) | REQ-002 | 2 | false | Example-based test |
+| PROP-022 | `prepareSaveRequest` returns `SaveError { kind: 'validation', reason: { kind: 'invariant-violated' } }` when invariant check fails (e.g., mocked clock returning timestamp before `createdAt`) — runtime verification of the InvariantViolated code path (resolves FIND-005) | REQ-005 | 2 | false | Example-based test with clock stub returning past timestamp |
+| PROP-023 | On the EmptyNoteDiscarded path (idle trigger + empty body), `EditingSessionState` does NOT transition to `saving` — the state remains `editing` (resolves FIND-007) | REQ-003, REQ-015 | 2 | false | Example-based test: invoke `prepareSaveRequest` with empty body + idle trigger, assert state is still `editing` (not `saving`) |
 
 ---
 
@@ -142,9 +151,9 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 |-------------|---------|
 | REQ-001 | PROP-017 |
 | REQ-002 | PROP-021 |
-| REQ-003 | PROP-003 |
+| REQ-003 | PROP-003, PROP-023 |
 | REQ-004 | PROP-003, PROP-004 |
-| REQ-005 | PROP-005, PROP-006 |
+| REQ-005 | PROP-005, PROP-006, PROP-022 |
 | REQ-006 | PROP-001, PROP-002, PROP-016 |
 | REQ-007 | PROP-015, PROP-017, PROP-018 |
 | REQ-008 | PROP-011 |
@@ -154,8 +163,16 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 | REQ-012 | PROP-012, PROP-013 |
 | REQ-013 | PROP-005, PROP-006 |
 | REQ-014 | PROP-007 |
-| REQ-015 | PROP-019, PROP-020 |
+| REQ-015 | PROP-019, PROP-020, PROP-023 |
 | REQ-016 | PROP-001, PROP-014, PROP-015, PROP-016 |
 | REQ-017 | PROP-017 |
 
-Every requirement has at least one proof obligation. Six `required: true` obligations (PROP-001 through PROP-005, PROP-014) cover the highest-risk invariants and span Tiers 0–1. Total proof obligations: 21 (PROP-001 through PROP-021).
+Every requirement has at least one proof obligation. Six `required: true` obligations (PROP-001 through PROP-005, PROP-014) cover the highest-risk invariants and span Tiers 0–1. Total proof obligations: 23 (PROP-001 through PROP-023).
+
+### 改訂履歴 / Revision Log
+
+| 日付 | 反復 | 対象 finding | 概要 |
+|------|------|-------------|------|
+| 2026-04-30 | 2 | FIND-003, FIND-006 | `FrontmatterSerializerToYaml` をポート契約セクションから内部純粋関数セクションへ移動。PROP-016 の description を更新し「`CaptureDeps` ポート」を明示して矛盾を解消 |
+| 2026-04-30 | 2 | FIND-005 | PROP-022 を追加: `InvariantViolated` コードパスのランタイム検証（Tier 2, example-based） |
+| 2026-04-30 | 2 | FIND-007 | PROP-023 を追加: EmptyNoteDiscarded パスで `EditingSessionState` が `saving` に遷移しないことの検証（Tier 2, example-based） |

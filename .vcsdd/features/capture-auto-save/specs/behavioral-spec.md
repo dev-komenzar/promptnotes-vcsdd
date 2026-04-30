@@ -2,9 +2,20 @@
 
 **Feature**: `capture-auto-save`
 **Phase**: 1a
-**Revision**: 1
+**Revision**: 2 (iteration-1 spec review FAIL: FIND-001 return type, FIND-002 EmptyNoteDiscarded channel, FIND-003 serializeNote purity, FIND-004 SaveNoteRequested timing)
 **Source of truth**: `docs/domain/workflows.md` Workflow 2, `docs/domain/aggregates.md`, `docs/domain/domain-events.md`, `docs/domain/glossary.md`, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/events.ts`
-**Scope**: CaptureAutoSave pipeline only (idle save and blur save). Excludes: idle timer management (UI concern), debounce logic (UI concern), EditPastNoteStart flush (Workflow 3), HandleSaveFailure (Workflow 8). The pipeline starts when a save trigger fires and ends when `IndexedNote` is produced or an error is returned.
+**Scope**: CaptureAutoSave pipeline only (idle save and blur save). Excludes: idle timer management (UI concern), debounce logic (UI concern), EditPastNoteStart flush (Workflow 3), HandleSaveFailure (Workflow 8). The pipeline starts when a save trigger fires and ends when `NoteFileSaved` is returned or an error/early-exit occurs.
+
+---
+
+## 改訂履歴 / Revision Log
+
+| 日付 | 反復 | 対象 finding | 概要 |
+|------|------|-------------|------|
+| 2026-04-30 | 2 | FIND-001 | REQ-001, REQ-017: return type を `Result<NoteFileSaved, SaveError>` に統一（canonical `workflows.ts` CaptureAutoSave 型に準拠）。`IndexedNote` / `SavedNoteAck` は使わない |
+| 2026-04-30 | 2 | FIND-002 | REQ-003: EmptyNoteDiscarded は success チャネル（`PrepareSaveRequest` の戻り値）であり `SaveError` ではないことを明示。Error Catalog から `empty-body-on-idle` の UI mapping 行を EmptyNoteDiscarded ルートとして再分類 |
+| 2026-04-30 | 2 | FIND-003 | REQ-006: `FrontmatterSerializer.toYaml` は外部ポートではなくモジュール内部の純粋関数として位置づけ。`serializeNote` が依存するのはこの内部関数のみであり、`CaptureDeps` のポートは呼ばない |
+| 2026-04-30 | 2 | FIND-004 | REQ-008: `SaveNoteRequested` の発行タイミングを「Step 3 の write 前」から「Step 1 完了直後、状態遷移 `editing → saving` と同時」に修正（canonical `EmitSaveAndTransition` に準拠） |
 
 ---
 
@@ -22,20 +33,25 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 ## Requirements
 
-### REQ-001: Happy Path — Full pipeline produces IndexedNote
+### REQ-001: Happy Path — Full pipeline produces NoteFileSaved
 
-**EARS**: WHEN a save trigger fires (idle or blur) AND the current `EditingSessionState` is `editing` with `isDirty=true` AND the body is non-empty THEN the system SHALL produce `Result<IndexedNote, SaveError>` where `IndexedNote` confirms that the note file has been written and the Curate projections (Feed, TagInventory) have been updated.
+**EARS**: WHEN a save trigger fires (idle or blur) AND the current `EditingSessionState` is `editing` with `isDirty=true` AND the body is non-empty THEN the system SHALL produce `Result<NoteFileSaved, SaveError>` where `NoteFileSaved` confirms that the note file has been written, and the Curate projections (Feed, TagInventory) have been updated as a side effect.
+
+**Return type reconciliation** (resolves FIND-001):
+- The canonical return type is `Promise<Result<NoteFileSaved, SaveError>>` per `workflows.ts` line 73 (`CaptureAutoSave` type).
+- `workflows.md` uses the informal name `SavedNoteAck` for the same concept — this spec uses `NoteFileSaved` exclusively.
+- `IndexedNote` (from `workflows.md` stage pipeline) is an internal concept: `updateProjections` (Step 4) runs as a side effect after `NoteFileSaved` is obtained, and its result is not surfaced in the pipeline return type.
 
 **Edge Cases**:
-- Trigger is `idle` but body is empty: see REQ-003 (EmptyNoteDiscarded route).
+- Trigger is `idle` but body is empty: see REQ-003 (EmptyNoteDiscarded route — success channel, not error).
 - Trigger is `blur` with empty body: allowed — proceeds to save (see REQ-004).
 - `isDirty=false`: the pipeline SHOULD NOT be invoked. Precondition enforcement is the caller's responsibility (UI/timer layer). If invoked with `isDirty=false`, behavior is undefined by this spec.
 
 **Acceptance Criteria**:
-- The pipeline returns `{ ok: true, value: IndexedNote }` on the happy path.
+- The pipeline returns `{ ok: true, value: NoteFileSaved }` on the happy path.
 - `NoteFileSaved` public domain event is emitted exactly once (see REQ-009).
 - `EditingSessionState` transitions through `editing → saving → editing` with `isDirty=false` and `lastSaveResult='success'` on return.
-- `SaveNoteRequested` public domain event is emitted before the Vault write (see REQ-008).
+- `SaveNoteRequested` public domain event is emitted at state transition time (see REQ-008).
 
 ---
 
@@ -57,18 +73,24 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 ---
 
-### REQ-003: Step 1 — Empty body on idle save triggers EmptyNoteDiscarded
+### REQ-003: Step 1 — Empty body on idle save triggers EmptyNoteDiscarded (success channel)
 
 **EARS**: WHEN a `DirtyEditingSession` has `trigger: "idle"` AND `Note.isEmpty(note)` returns `true` THEN the system SHALL NOT proceed to Step 2 but SHALL emit `EmptyNoteDiscarded { noteId, occurredOn }` and return early.
 
-**Source**: `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`.
+**Source**: `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`; `workflows.ts` `PrepareSaveRequest` return type.
+
+**EmptyNoteDiscarded channel clarification** (resolves FIND-002):
+- `EmptyNoteDiscarded` is routed through the **success channel** of `PrepareSaveRequest`, not as a `SaveError`. The canonical type in `workflows.ts` line 52–55 returns `Result<{kind:"validated"} | {kind:"empty-discarded"}, SaveError>`.
+- The `SaveValidationError` variant `{ kind: 'empty-body-on-idle' }` exists in `errors.ts` but is **not used** by the CaptureAutoSave pipeline for the EmptyNoteDiscarded route. It exists for potential use by external callers who need to distinguish empty-body rejection as an error. Within CaptureAutoSave, the empty-idle case is a valid early exit, not an error.
+- The pipeline's top-level `CaptureAutoSave` type returns `Result<NoteFileSaved, SaveError>`. The EmptyNoteDiscarded case is handled internally — the implementation may encode it as a special-cased success or an early return that does not reach the caller as `SaveError`.
 
 **Acceptance Criteria**:
 - `EmptyNoteDiscarded` public domain event is emitted exactly once with the correct `noteId`.
-- The return value is `{ kind: "empty-discarded", event: EmptyNoteDiscarded }` (not an error — this is a valid early-exit route).
+- The return from `prepareSaveRequest` is `{ kind: "empty-discarded", event: EmptyNoteDiscarded }` — in the **Ok** channel, not the **Err** channel.
 - No `SaveNoteRequested` is emitted.
 - No file I/O occurs.
 - No `NoteFileSaved` or `NoteSaveFailed` is emitted.
+- `EditingSessionState` does NOT transition to `saving` (see REQ-015).
 
 ---
 
@@ -104,9 +126,15 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 **Source**: `workflows.md` Step 2 — `FrontmatterSerializer.toYaml(fm)`.
 
+**Purity clarification** (resolves FIND-003):
+- `serializeNote` is a **pure function** that takes only a `ValidatedSaveRequest` as input and returns `SerializedMarkdown`.
+- `FrontmatterSerializer.toYaml` is listed in `workflows.md` as a dependency, but it is an **internal pure function** (module-level helper), NOT an external port injected via `CaptureDeps`. The canonical `CaptureDeps` in `ports.ts` does not include it.
+- `serializeNote` has **zero `CaptureDeps` port calls**. It may internally use a YAML serialization library (e.g., `js-yaml`), but this is a build-time dependency, not a runtime port.
+
 **Acceptance Criteria**:
 - Output format is `---\n{yaml frontmatter}\n---\n{body text}`.
-- `serializeNote` is a **pure function**: no I/O, no port calls, deterministic.
+- `serializeNote` is a **pure function**: no I/O, no `CaptureDeps` port calls, deterministic.
+- `serializeNote` function signature has no `deps` parameter — it takes only `ValidatedSaveRequest`.
 - The YAML section contains `tags`, `createdAt`, `updatedAt` fields from the frontmatter.
 - The body section is the raw `Body` string (no transformation).
 - This step never fails (the VO invariants guarantee valid input; source: `workflows.md` Step 2 error column: "なし").
@@ -127,11 +155,15 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 ---
 
-### REQ-008: Step 3 — SaveNoteRequested emitted before write
+### REQ-008: SaveNoteRequested emitted at state transition (editing → saving)
 
-**EARS**: WHEN `writeMarkdown` is about to perform the file write THEN the system SHALL emit `SaveNoteRequested` public domain event with `source` mapped from the trigger: `trigger: "idle"` → `source: "capture-idle"`, `trigger: "blur"` → `source: "capture-blur"`.
+**EARS**: WHEN `prepareSaveRequest` produces a `ValidatedSaveRequest` AND the state transitions from `editing` to `saving` THEN the system SHALL emit `SaveNoteRequested` public domain event with `source` mapped from the trigger: `trigger: "idle"` → `source: "capture-idle"`, `trigger: "blur"` → `source: "capture-blur"`.
 
-**Source**: `events.ts` `SaveNoteSource` type; `workflows.md` Workflow 2 発行イベント.
+**Source**: `events.ts` `SaveNoteSource` type; `workflows.ts` `EmitSaveAndTransition` type (line 129–134).
+
+**Emission timing clarification** (resolves FIND-004):
+- The canonical `EmitSaveAndTransition` in `workflows.ts` couples `SaveNoteRequested` emission with the `editing → saving` state transition. This occurs AFTER Step 1 (`prepareSaveRequest`) produces a `ValidatedSaveRequest` and BEFORE the Vault write (Step 3).
+- `SaveNoteRequested` is NOT emitted inside `writeMarkdown`. It is emitted at the orchestration layer when the state machine transitions to `saving`.
 
 **Acceptance Criteria**:
 - `SaveNoteRequested.kind === "save-note-requested"`.
@@ -139,7 +171,8 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 - `SaveNoteRequested.body` and `SaveNoteRequested.frontmatter` match the `ValidatedSaveRequest`.
 - `SaveNoteRequested.previousFrontmatter` carries the pre-save frontmatter (may be `null`).
 - `SaveNoteRequested.source` is `"capture-idle"` or `"capture-blur"` per the trigger.
-- `SaveNoteRequested` is emitted BEFORE `NoteFileSaved` or `NoteSaveFailed`.
+- `SaveNoteRequested` is emitted at the `editing → saving` transition, BEFORE `NoteFileSaved` or `NoteSaveFailed`.
+- `SaveNoteRequested` is NOT emitted on the EmptyNoteDiscarded path (REQ-003).
 
 ---
 
@@ -291,7 +324,8 @@ Step 2 (`serializeNote`) SHALL be a pure function with zero I/O.
 - The return type is `Promise<Result<NoteFileSaved, SaveError>>`.
 - The EmptyNoteDiscarded route is handled internally and does not appear in the top-level return type (it is surfaced via event emission only).
 
-**NOTE on return type**: The `CaptureAutoSave` type signature in `workflows.ts` returns `Result<NoteFileSaved, SaveError>`. The EmptyNoteDiscarded route is a valid early exit that does not constitute an error — the implementation handles it by emitting the event and returning an appropriate result. The exact encoding of the "empty discarded" result in the `Result` type is an implementation decision deferred to Phase 2b.
+**NOTE on EmptyNoteDiscarded encoding** (FIND-002):
+The `CaptureAutoSave` top-level type returns `Result<NoteFileSaved, SaveError>`. The EmptyNoteDiscarded route is a valid early exit that does not constitute a `SaveError`. The implementation handles it by emitting the `EmptyNoteDiscarded` event and returning an appropriate `Ok` value (encoding deferred to Phase 2b — e.g., a sentinel `NoteFileSaved`-compatible value, or a wrapper type). The key invariant is: EmptyNoteDiscarded NEVER appears in the `Err` channel.
 
 ---
 
@@ -327,11 +361,14 @@ type FsError =
   | { kind: 'unknown'; detail: string }
 ```
 
+**NOTE on `SaveValidationError.empty-body-on-idle`** (FIND-002 resolution):
+The `empty-body-on-idle` variant exists in `errors.ts` but is NOT used as a `SaveError` in the CaptureAutoSave pipeline. The empty-idle case is handled via the success channel (`EmptyNoteDiscarded` event + early return), not the error channel. The variant is retained in the type system for potential external use but is not exercised by this workflow.
+
 UI mapping:
 
-| Error | UI Reaction |
-|-------|------------|
-| `empty-body-on-idle` | Silent (EmptyNoteDiscarded route) |
+| Condition | UI Reaction |
+|-----------|------------|
+| EmptyNoteDiscarded (idle + empty) | Silent (not an error — early exit) |
 | `invariant-violated` | Internal bug: error log + silent |
 | `permission` / `disk-full` / `lock` | Save failure banner with retry button, `EditingSessionState.status='save-failed'` |
 | `not-found` / `unknown` | Save failure banner with retry button |

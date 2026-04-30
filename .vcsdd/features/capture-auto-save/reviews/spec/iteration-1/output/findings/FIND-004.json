@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "SaveNoteRequested is specified in REQ-008 and placed in Step 3. However, workflows.md Workflow 2 event table (lines 282-287) does NOT list SaveNoteRequested as an emitted event. The event exists in events.ts and workflows.ts has BuildSaveNoteRequested and EmitSaveAndTransition confirming it belongs to this workflow. The placement in Step 3 conflicts with EmitSaveAndTransition in workflows.ts which couples the event with the EditingState-to-SavingState transition (before the Vault write dispatch).",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/capture/workflows.ts",
+    "lineRange": "129-134",
+    "snippet": "export type EmitSaveAndTransition = (\n  deps: CaptureDeps,\n) => (\n  request: ValidatedSaveRequest,\n  state: EditingState,\n) => SavingState;"
+  },
+  "routeToPhase": "1a"
+}

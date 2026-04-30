@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "purity_boundary",
+  "severity": "major",
+  "description": "REQ-006 states serializeNote is 'a pure function: no I/O, no port calls, deterministic.' REQ-016 reiterates 'serializeNote calls no ports and has no side effects.' Yet workflows.md Step 2 lists 'FrontmatterSerializer.toYaml(fm): string' as a dependency, and the verification architecture lists FrontmatterSerializerToYaml as a Port Contract. The canonical CaptureDeps in ports.ts does NOT include FrontmatterSerializer. The verification architecture simultaneously calls it a port and claims serializeNote is pure with no port dependencies.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/capture/ports.ts",
+    "lineRange": "23-28",
+    "snippet": "export type CaptureDeps = {\n  readonly clockNow: ClockNow;\n  readonly allocateNoteId: AllocateNoteId;\n  readonly clipboardWrite: ClipboardWrite;\n  readonly publish: EventBusPublish;\n};"
+  },
+  "routeToPhase": "1b"
+}

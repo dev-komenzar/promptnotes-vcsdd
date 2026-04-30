@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-009",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "REQ-016 acceptance criteria (line 310) states 'Event emission (publish) occurs in Step 3 (SaveNoteRequested, NoteFileSaved/NoteSaveFailed)'. This groups SaveNoteRequested with Step 3 events, contradicting REQ-008 which places SaveNoteRequested at the state transition between Step 1 and Step 3.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/.vcsdd/features/capture-auto-save/specs/behavioral-spec.md",
+    "lineRange": "310",
+    "snippet": "- Event emission (`publish`) occurs in Step 3 (SaveNoteRequested, NoteFileSaved/NoteSaveFailed) and optionally in Step 4 (TagInventoryUpdated)."
+  },
+  "routeToPhase": "1a"
+}

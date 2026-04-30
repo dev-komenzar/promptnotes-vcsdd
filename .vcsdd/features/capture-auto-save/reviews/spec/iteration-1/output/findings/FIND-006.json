@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "verification_readiness",
+  "category": "purity_boundary",
+  "severity": "major",
+  "description": "PROP-016 claims serializeNote has 'zero dependencies beyond its input' and verifies this by checking the parameter list has no Deps argument. But the verification architecture's own Port Contracts section defines FrontmatterSerializerToYaml as a port used in serializeNote. If the serializer is a port, PROP-016 is testing the wrong thing. If it is a pure import, the Port Contracts section is mislabeled. The verification architecture is internally inconsistent on this point.",
+  "evidence": {
+    "filePath": "specs/verification-architecture.md",
+    "lineRange": "39-43",
+    "snippet": "/** Serialize Frontmatter to YAML string.\n *  Pure function — no I/O. Used in Step 2 (serializeNote).\n *  Source: workflows.md §依存（ポート）一覧. */\ntype FrontmatterSerializerToYaml = (fm: Frontmatter) => string;"
+  },
+  "routeToPhase": "1b"
+}

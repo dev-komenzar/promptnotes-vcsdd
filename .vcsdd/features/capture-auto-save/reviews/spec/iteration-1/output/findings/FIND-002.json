@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-003 explicitly states EmptyNoteDiscarded is 'not an error - this is a valid early-exit route' and returns '{ kind: \"empty-discarded\", event: EmptyNoteDiscarded }'. However, the Error Catalog defines 'SaveValidationError' with variant '{ kind: \"empty-body-on-idle\" }', and REQ-013 includes this as an exhaustive variant of SaveError. The spec simultaneously treats empty-body-on-idle as both a non-error early exit AND an error variant. The canonical PrepareSaveRequest type in workflows.ts (lines 47-55) places empty-discarded in the success channel of the Result, confirming it is NOT a SaveError. The 'empty-body-on-idle' variant in SaveValidationError is therefore orphaned.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/capture/workflows.ts",
+    "lineRange": "47-55",
+    "snippet": "export type PrepareSaveRequest = (\n  deps: CaptureDeps,\n) => (\n  input: DirtyEditingSession,\n) => Result<\n  { kind: \"validated\"; request: ValidatedSaveRequest }\n  | { kind: \"empty-discarded\"; event: EmptyNoteDiscarded },\n  SaveError\n>;"
+  },
+  "routeToPhase": "1a"
+}

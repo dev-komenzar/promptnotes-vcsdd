@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "major",
+  "description": "REQ-005 (InvariantViolated error path) is mapped in the coverage matrix to PROP-005 and PROP-006 only. Both verify type exhaustiveness at the TypeScript type level (Tier 0). Neither exercises the InvariantViolated code path at runtime. There is no PROP that verifies prepareSaveRequest actually returns SaveError { kind: 'validation', reason: { kind: 'invariant-violated' } } when updatedAt < createdAt.",
+  "evidence": {
+    "filePath": "specs/verification-architecture.md",
+    "lineRange": "102-103",
+    "snippet": "| PROP-005 | `SaveError` type is exhaustive ... | REQ-013 | 0 | **true** |\n| PROP-006 | `SaveValidationError` type is exhaustive ... | REQ-013 | 0 | false |"
+  },
+  "routeToPhase": "1b"
+}

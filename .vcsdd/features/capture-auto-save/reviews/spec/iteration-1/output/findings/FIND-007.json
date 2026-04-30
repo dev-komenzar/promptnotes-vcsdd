@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "REQ-015 specifies that on EmptyNoteDiscarded (REQ-003), the state does NOT transition to 'saving'. Neither PROP-019 nor PROP-020 nor any other PROP verifies this negative constraint. The EmptyNoteDiscarded path's state preservation has no proof obligation.",
+  "evidence": {
+    "filePath": "specs/verification-architecture.md",
+    "lineRange": "116-117",
+    "snippet": "| PROP-019 | `EditingSessionState` transitions: `editing → saving → editing` on success | REQ-015 | 2 | false |\n| PROP-020 | `EditingSessionState` transitions: `editing → saving → save-failed` on failure | REQ-015 | 2 | false |"
+  },
+  "routeToPhase": "1b"
+}

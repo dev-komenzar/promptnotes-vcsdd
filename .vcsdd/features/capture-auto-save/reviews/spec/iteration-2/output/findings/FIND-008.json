@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "Event Catalog (line 383) lists SaveNoteRequested at 'Step 3 (pre-write)' but REQ-008 (revised for FIND-004) now specifies it is emitted at the editing-to-saving state transition AFTER Step 1 and BEFORE Step 3. The Event Catalog table was not updated to reflect the timing correction.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/.vcsdd/features/capture-auto-save/specs/behavioral-spec.md",
+    "lineRange": "383",
+    "snippet": "| `SaveNoteRequested` | 3 (pre-write) | Capture | Public | always (on validated save) |"
+  },
+  "routeToPhase": "1a"
+}

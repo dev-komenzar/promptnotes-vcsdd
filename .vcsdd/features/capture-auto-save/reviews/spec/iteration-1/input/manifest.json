@@ -1,0 +1,20 @@
+{
+  "reviewType": "spec",
+  "feature": "capture-auto-save",
+  "iteration": 1,
+  "mode": "lean",
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "sourceOfTruth": [
+    "docs/domain/workflows.md",
+    "docs/domain/code/ts/src/capture/stages.ts",
+    "docs/domain/code/ts/src/capture/workflows.ts",
+    "docs/domain/code/ts/src/capture/ports.ts",
+    "docs/domain/code/ts/src/capture/states.ts",
+    "docs/domain/code/ts/src/shared/errors.ts",
+    "docs/domain/code/ts/src/shared/events.ts"
+  ]
+}
