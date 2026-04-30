@@ -4,8 +4,11 @@
 // REQ-001: Happy path full pipeline.
 // REQ-013a: VaultScanned emitted after Step 2 (Vault public domain event).
 // REQ-013b: FeedRestored then TagInventoryBuilt emitted after VaultScanned (Curate-internal).
+// REQ-015: I/O confinement — clockNow ≤ 2 calls per pipeline run (PROP-023).
 // PROP-017: Full pipeline integration: happy path → InitialUIState with editing status.
 // PROP-021: Event ordering: VaultScanned → FeedRestored → TagInventoryBuilt.
+// FIND-002: Step 4 builds Note via noteCreate port (forwarded through ports).
+// FIND-009: Step 1 stamps occurredOn via clockNow port (forwarded through ports).
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type {
@@ -16,6 +19,7 @@ import type {
 } from "promptnotes-domain-types/shared/value-objects";
 import type { AppStartupError, FsError } from "promptnotes-domain-types/shared/errors";
 import type { HydrationFailureReason } from "promptnotes-domain-types/shared/snapshots";
+import type { Note } from "promptnotes-domain-types/shared/note";
 import type { InitialUIState, ParsedNote } from "./stages.js";
 import { loadVaultConfig } from "./load-vault-config.js";
 import { scanVault } from "./scan-vault.js";
@@ -29,7 +33,8 @@ import { initializeCaptureSession } from "./initialize-capture.js";
  * Combines ports from Steps 1, 2, and 4 plus vaultId for VaultScanned event.
  */
 export type AppStartupPipelinePorts = {
-  // Step 1 ports
+  // Step 1 ports — clockNow (declared below) is shared with the orchestrator
+  // and Step 4; FIND-009 uses it to stamp VaultDirectoryNotConfigured.occurredOn.
   readonly settingsLoad: () => Result<VaultPath | null, never>;
   readonly statDir: (path: string) => Result<boolean, FsError>;
   // Step 2 ports
@@ -43,6 +48,8 @@ export type AppStartupPipelinePorts = {
   // Step 4 ports
   readonly clockNow: () => Timestamp;
   readonly allocateNoteId: (now: Timestamp) => NoteId;
+  /** FIND-002: Note aggregate Smart Constructor port for Step 4. */
+  readonly noteCreate: (id: NoteId, now: Timestamp) => Note;
   // Shared event emitter
   readonly emit: (event: { kind: string; [k: string]: unknown }) => void;
   // VaultId for VaultScanned public domain event

@@ -98,12 +98,32 @@ export async function scanVault(
       continue;
     }
 
-    // Build a minimal NoteFileSnapshot from parsed content. The NoteId is
-    // derived from the file stem; the canonical NoteId allocator runs later
-    // in Step 4 only for the new note being created at session start.
+    // FIND-004: validate the file stem against the NoteId VO format
+    // before constructing the NoteFileSnapshot. Non-conforming stems are
+    // recorded as CorruptedFile with hydrate/invalid-value, never reach Step 3.
+    const stem = filePathStem(filePath);
+    if (!isValidNoteIdFormat(stem)) {
+      corruptedFiles.push({
+        filePath,
+        failure: { kind: "hydrate", reason: "invalid-value" },
+      });
+      continue;
+    }
+
+    // FIND-006: validate every tag in the parsed frontmatter against the
+    // Tag VO rules. Empty / whitespace-only strings would be rejected by
+    // Tag.tryNew; surface the violation as CorruptedFile/hydrate/invalid-value.
     const parsed = parseResult.value;
+    if (!areAllTagsValid(parsed.fm.tags)) {
+      corruptedFiles.push({
+        filePath,
+        failure: { kind: "hydrate", reason: "invalid-value" },
+      });
+      continue;
+    }
+
     const snapshot: NoteFileSnapshot = {
-      noteId: filePathToNoteId(filePath),
+      noteId: stem as unknown as NoteId,
       body: parsed.body as unknown as Body,
       frontmatter: {
         tags: parsed.fm.tags,
@@ -125,12 +145,31 @@ export async function scanVault(
 
 // ── Private helpers ─────────────────────────────────────────────────────────
 
+/** Strip directory components and the trailing `.md` extension. */
+function filePathStem(filePath: string): string {
+  return filePath.replace(/\.md$/, "").split("/").pop() ?? filePath;
+}
+
+/** Anchored NoteId format regex: `YYYY-MM-DD-HHmmss-SSS[-N]` (REQ-011 AC). */
+const NOTE_ID_FORMAT = /^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}(-\d+)?$/;
+
 /**
- * Derive a synthetic NoteId string from a file path for use in NoteFileSnapshot.
- * Uses the file stem (without directory and .md extension).
- * This is a best-effort derivation; the canonical NoteId allocator lives in Step 4.
+ * NoteId VO Smart Constructor mirror — accepts the same set of strings as
+ * `NoteId::try_new` in docs/domain/code/rust/src/value_objects.rs.
  */
-function filePathToNoteId(filePath: string): NoteId {
-  const stem = filePath.replace(/\.md$/, "").split("/").pop() ?? filePath;
-  return stem as unknown as NoteId;
+function isValidNoteIdFormat(raw: string): boolean {
+  return NOTE_ID_FORMAT.test(raw);
+}
+
+/**
+ * Tag VO admissibility: non-empty string after trim. Mirrors the rejection set
+ * of `Tag.tryNew` (`{kind:'empty'}` and `{kind:'only-whitespace'}`); both
+ * collapse to `invalid-value` per F-005 / FIND-006.
+ */
+function isValidTag(raw: unknown): boolean {
+  return typeof raw === "string" && raw.trim().length > 0;
+}
+
+function areAllTagsValid(tags: readonly unknown[]): boolean {
+  return tags.every(isValidTag);
 }

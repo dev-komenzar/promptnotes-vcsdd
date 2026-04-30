@@ -10,7 +10,7 @@
 // PROP-016: Happy-path emits NO domain event.
 
 import type { Result } from "promptnotes-domain-types/util/result";
-import type { VaultPath } from "promptnotes-domain-types/shared/value-objects";
+import type { Timestamp, VaultPath } from "promptnotes-domain-types/shared/value-objects";
 import type { AppStartupError, FsError } from "promptnotes-domain-types/shared/errors";
 import type { ConfiguredVault } from "./stages.js";
 
@@ -26,6 +26,12 @@ export type LoadVaultConfigPorts = {
   readonly settingsLoad: () => Result<VaultPath | null, never>;
   /** Stat the given path; Ok(true) means it is a directory that exists. */
   readonly statDir: (path: string) => Result<boolean, FsError>;
+  /**
+   * Obtain current wall-clock time. Effectful — used to stamp
+   * `VaultDirectoryNotConfigured.occurredOn` (FIND-009: must come from this
+   * port, never from `Date.now()` directly).
+   */
+  readonly clockNow: () => Timestamp;
   /** Emit a domain event to the application event bus. */
   readonly emit: (event: { kind: string; [k: string]: unknown }) => void;
 };
@@ -52,10 +58,11 @@ export async function loadVaultConfig(
 
   // REQ-006 / REQ-003: null path → unconfigured (never PathNotFound).
   if (vaultPath === null) {
-    // PROP-014: emit VaultDirectoryNotConfigured exactly once.
+    // FIND-009: occurredOn must come from the injected clockNow port,
+    // not Date.now(). PROP-014: emitted exactly once.
     ports.emit({
       kind: "vault-directory-not-configured",
-      occurredOn: { epochMillis: Date.now() },
+      occurredOn: ports.clockNow(),
     });
     return {
       ok: false,

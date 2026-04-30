@@ -1,15 +1,19 @@
 // app-startup/initialize-capture.ts
-// Step 4: Initialize capture session — allocate NoteId, emit events, build InitialUIState.
+// Step 4: Initialize capture session — allocate NoteId, emit events,
+//   build InitialUIState carrying the seeded EditingSessionState.
 //
 // REQ-010: initializeCaptureSession creates new note and editing session.
 // REQ-011: NoteId uniqueness invariant (via nextAvailableNoteId pure helper).
 // REQ-012: Events emitted — NewNoteAutoCreated then EditorFocusedOnNewNote.
-// REQ-014: Post-condition — InitialUIState shape.
+// REQ-014: Post-condition — InitialUIState shape (FIND-001: editingSessionState).
 // PROP-003: nextAvailableNoteId returns NoteId not in existingIds (required: true).
-// PROP-013: InitialUIState has feed, tagInventory, corruptedFiles, initialNoteId.
+// PROP-013: InitialUIState has feed, tagInventory, corruptedFiles, editingSessionState.
 // PROP-022: nextAvailableNoteId is deterministic.
+// FIND-002: noteCreate port wraps Note.create(id, now) with empty Body.
 
 import type { NoteId, Timestamp } from "promptnotes-domain-types/shared/value-objects";
+import type { Note } from "promptnotes-domain-types/shared/note";
+import type { EditingState } from "promptnotes-domain-types/capture/states";
 import type { HydratedFeed, InitialUIState } from "./stages.js";
 
 // ── Port definitions ────────────────────────────────────────────────────────
@@ -19,6 +23,13 @@ export type InitializeCaptureSessionPorts = {
   readonly clockNow: () => Timestamp;
   /** Allocate a collision-free NoteId based on the current time. */
   readonly allocateNoteId: (now: Timestamp) => NoteId;
+  /**
+   * FIND-002: Construct an empty Note via the Note aggregate's `create`
+   * Smart Constructor. The implementation must call this exactly once with
+   * the allocated NoteId and the Clock.now timestamp; the returned Note
+   * carries an empty Body and createdAt === updatedAt === now.
+   */
+  readonly noteCreate: (id: NoteId, now: Timestamp) => Note;
   /** Emit a domain event to the application event bus. */
   readonly emit: (event: { kind: string; [k: string]: unknown }) => void;
 };
@@ -36,33 +47,28 @@ export async function initializeCaptureSession(
   hydrated: HydratedFeed,
   ports: InitializeCaptureSessionPorts
 ): Promise<InitialUIState> {
-  // REQ-010: obtain current timestamp from clock port.
+  // REQ-010: obtain current wall-clock time and allocate a collision-free
+  // NoteId for the session-start auto-created note.
   const now = ports.clockNow();
-
-  // REQ-010: allocate a collision-free NoteId via the effectful allocator port.
   const noteId = ports.allocateNoteId(now);
 
-  // REQ-012: emit NewNoteAutoCreated first.
-  ports.emit({
-    kind: "new-note-auto-created",
-    noteId,
-    occurredOn: now,
-  });
+  // FIND-002 / REQ-010: invoke Note.create through the noteCreate port.
+  // Step 4 does not consume the resulting aggregate — id-seeded UI state is
+  // sufficient — but downstream subscribers of NewNoteAutoCreated rely on the
+  // aggregate having been constructed by this call.
+  ports.noteCreate(noteId, now);
 
-  // REQ-012: emit EditorFocusedOnNewNote after.
-  ports.emit({
-    kind: "editor-focused-on-new-note",
-    noteId,
-    occurredOn: now,
-  });
+  // REQ-012: emit NewNoteAutoCreated, then EditorFocusedOnNewNote.
+  emitCaptureSessionStartEvents(ports.emit, noteId, now);
 
-  // REQ-014: build and return InitialUIState.
+  // FIND-001 / REQ-014: return InitialUIState with the EditingState branch
+  // of EditingSessionState seeded by the allocated NoteId.
   return {
     kind: "InitialUIState",
     feed: hydrated.feed,
     tagInventory: hydrated.tagInventory,
     corruptedFiles: hydrated.corruptedFiles,
-    initialNoteId: noteId,
+    editingSessionState: makeEditingState(noteId),
   };
 }
 
@@ -117,4 +123,32 @@ function formatBaseId(epochMillis: number): string {
   const ms = pad3(d.getUTCMilliseconds());
 
   return `${Y}-${M}-${D}-${h}${m}${s}-${ms}`;
+}
+
+/**
+ * REQ-010 / FIND-001: build the EditingState branch of EditingSessionState
+ * for a fresh session-start note. All transient editing fields start blank.
+ */
+function makeEditingState(noteId: NoteId): EditingState {
+  return {
+    status: "editing",
+    currentNoteId: noteId,
+    isDirty: false,
+    lastInputAt: null,
+    idleTimerHandle: null,
+    lastSaveResult: null,
+  };
+}
+
+/**
+ * REQ-012: emit the two Capture-internal events in the required order —
+ * NewNoteAutoCreated MUST precede EditorFocusedOnNewNote.
+ */
+function emitCaptureSessionStartEvents(
+  emit: InitializeCaptureSessionPorts["emit"],
+  noteId: NoteId,
+  now: Timestamp
+): void {
+  emit({ kind: "new-note-auto-created", noteId, occurredOn: now });
+  emit({ kind: "editor-focused-on-new-note", noteId, occurredOn: now });
 }

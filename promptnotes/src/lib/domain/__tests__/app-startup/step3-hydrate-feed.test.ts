@@ -9,6 +9,11 @@
  * PROP-002: hydrateFeed excludes all corrupted-file entries from Feed.noteRefs (required: true)
  * PROP-015: Feed sort order is updatedAt descending
  * PROP-018: total output invariant (covered in step2, but hydrateFeed passes corruptedFiles through)
+ * PROP-023: Clock.now() not called inside hydrateFeed (Sprint 2)
+ *
+ * Sprint 2 changes:
+ *   PROP-023b: type-level assertion — hydrateFeed signature has no Timestamp parameter
+ *   PROP-023c: runtime — hydrateFeed produces deterministic output without any clock dependency
  */
 
 import { describe, test, expect } from "bun:test";
@@ -19,6 +24,45 @@ import type { ScannedVault, HydratedFeed } from "$lib/domain/app-startup/stages"
 
 // The implementation does NOT exist yet. This import will fail in Red phase.
 import { hydrateFeed } from "$lib/domain/app-startup/hydrate-feed";
+
+// ── PROP-023b / REQ-015 AC-4: Type-level signature assertion ─────────────
+//
+// REQ-015 AC-4: hydrateFeed accepts only ScannedVault as its parameter.
+// A Timestamp parameter must NOT be allowed.
+//
+// Type-level check: Parameters<typeof hydrateFeed> must be a 1-tuple `[ScannedVault]`.
+// A Timestamp has `{ epochMillis: number }` shape. Verify that the first (and only)
+// parameter does NOT extend { epochMillis: number }.
+
+type _HydrateFeedSig = Parameters<typeof hydrateFeed>;
+
+// FIND-011 background: the prior guard `const _noTimestamp: _NoTimestampParam = undefined as never`
+// was tautological because `undefined as never` is assignable to any target, including a
+// non-`never` Extract result. The strengthened guards below replace it with assertions that
+// fail compile when the impl gains a Timestamp parameter or widens the parameter tuple.
+
+type _IsNever<T> = [T] extends [never] ? true : false;
+
+// PROP-023b (FIND-011 strengthened guard #1 — arity): the parameter tuple must have arity 1.
+// If hydrateFeed gains a second `now: Timestamp` parameter, `_HydrateFeedSig['length']`
+// becomes `2`, and the assignment `2 = 1 as const` fails compile.
+const _hydrateFeedArity: _HydrateFeedSig["length"] = 1 as const;
+void _hydrateFeedArity;
+
+// PROP-023b (FIND-011 strengthened guard #2 — exact tuple shape): the parameter tuple must
+// be exactly `[ScannedVault]`. Tuple `extends` is length-sensitive: `[ScannedVault, Timestamp]
+// extends [ScannedVault]` is `false`, so `_IsExactlyOneScannedVaultArg` becomes `false`, and
+// the assignment `true = false` fails compile.
+type _IsExactlyOneScannedVaultArg = _HydrateFeedSig extends [ScannedVault] ? true : false;
+const _exactlyOneScannedVaultArg: _IsExactlyOneScannedVaultArg = true;
+void _exactlyOneScannedVaultArg;
+
+// PROP-023b (FIND-011 strengthened guard #3 — no Timestamp anywhere): no tuple element
+// may extend `{ epochMillis: number }` (the Timestamp shape). If any element does, the
+// Extract is non-never and `_IsNever<...>` becomes `false`, breaking compile.
+type _NoTimestampParam = Extract<_HydrateFeedSig[number], { epochMillis: number }>;
+const _noTimestampParamAnywhere: _IsNever<_NoTimestampParam> = true;
+void _noTimestampParamAnywhere;
 
 // ── Test helpers ──────────────────────────────────────────────────────────
 
@@ -154,6 +198,85 @@ describe("REQ-008 / PROP-001: hydrateFeed is pure (required)", () => {
 
     expect(result.corruptedFiles).toHaveLength(1);
     expect(result.corruptedFiles[0]).toEqual(corrupted);
+  });
+});
+
+// ── PROP-023b / PROP-023c / REQ-015 AC-1/AC-4: hydrateFeed has no clock ─
+
+describe("PROP-023b / PROP-023c / REQ-015: hydrateFeed has no Clock.now dependency", () => {
+  test("PROP-023b: hydrateFeed signature has exactly 1 parameter (ScannedVault only, no Timestamp)", () => {
+    // REQ-015 AC-4: hydrateFeed accepts only ScannedVault; no Timestamp argument.
+    // Runtime check: function arity must be 1.
+    // Type-level check is encoded at file top (_NoTimestampParam).
+    expect(hydrateFeed.length).toBe(1);
+  });
+
+  test("PROP-023b: type-level — hydrateFeed parameter does not have epochMillis shape", () => {
+    // REQ-015 AC-4: The parameter type of hydrateFeed must NOT have `epochMillis`.
+    // This is a runtime proxy for the compile-time assertion at file top.
+    // The type assertion `_noTimestamp: _NoTimestampParam = undefined as never` would
+    // fail to compile if hydrateFeed's first param were Timestamp.
+    // Runtime: verify arity is 1, which is the only observable proxy.
+    // (TypeScript type checking provides the deeper guarantee.)
+    expect(hydrateFeed.length).toBe(1);
+    // Verify that calling hydrateFeed with only ScannedVault works (no second arg needed):
+    const input = makeScannedVault([]);
+    const result = hydrateFeed(input); // must not require a second argument
+    expect(result.kind).toBe("HydratedFeed");
+  });
+
+  test("PROP-023c: hydrateFeed produces identical output across two calls — no Date.now contamination", () => {
+    // PROP-023c: hydrateFeed is deterministic; it must not call Date.now() internally.
+    // If it called Date.now(), two calls with the same input could differ (different timestamps).
+    // We spy on Date.now to detect any call from inside hydrateFeed.
+    const snapshot = makeSnapshot("2026-04-28-120000-001", "/vault/a.md", 2000);
+    const input = makeScannedVault([snapshot]);
+
+    // Patch Date.now to track calls during hydrateFeed execution.
+    const originalDateNow = Date.now;
+    let dateNowCallCount = 0;
+    Date.now = () => {
+      dateNowCallCount++;
+      return originalDateNow();
+    };
+
+    try {
+      const result1 = hydrateFeed(input);
+      const result2 = hydrateFeed(input);
+
+      // PROP-023c: Date.now must NOT be called inside hydrateFeed (0 calls).
+      // If hydrateFeed calls Date.now, dateNowCallCount > 0.
+      expect(dateNowCallCount).toBe(0);
+
+      // Also verify outputs are identical (purity confirmation):
+      const r1Ids = [...result1.feed.noteRefs].map((id) => id as unknown as string).join(",");
+      const r2Ids = [...result2.feed.noteRefs].map((id) => id as unknown as string).join(",");
+      expect(r1Ids).toBe(r2Ids);
+    } finally {
+      // Restore original Date.now regardless of test outcome.
+      Date.now = originalDateNow;
+    }
+  });
+
+  test("PROP-023c: hydrateFeed.lastBuiltAt is deterministic (epochMillis: 0, not Date.now)", () => {
+    // PROP-001 / PROP-023c: The tagInventory.lastBuiltAt must be deterministic.
+    // Current impl uses epochMillis: 0 — verify it does NOT use Date.now().
+    const input = makeScannedVault([]);
+    const result = hydrateFeed(input);
+
+    // lastBuiltAt must be a fixed value (0 or similar) — not current wall clock.
+    const lastBuiltAtMs = (result.tagInventory.lastBuiltAt as unknown as { epochMillis: number }).epochMillis;
+    // The value must be deterministic. We check it's the same across calls.
+    const result2 = hydrateFeed(input);
+    const lastBuiltAtMs2 = (result2.tagInventory.lastBuiltAt as unknown as { epochMillis: number }).epochMillis;
+    expect(lastBuiltAtMs).toBe(lastBuiltAtMs2);
+
+    // Specifically: it must NOT be a near-current timestamp (which would indicate Date.now).
+    const nowMs = Date.now();
+    // If lastBuiltAt were Date.now(), it would be within 1000ms of nowMs.
+    // A deterministic value like 0 would be far from nowMs (at least several years old).
+    const isNotCurrentTime = Math.abs(lastBuiltAtMs - nowMs) > 1_000;
+    expect(isNotCurrentTime).toBe(true);
   });
 });
 

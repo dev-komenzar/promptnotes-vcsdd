@@ -1,0 +1,271 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+total-tests: 113
+new-tests-added: 32
+tests-modified: 12
+failing-tests: 12
+passing-tests: 101
+type-check-errors: 43
+
+=== Sprint 2 Iteration 2 / Phase 2a (Red Phase) ===
+Sprint: 2
+Phase: 2a
+Iteration: 2
+Mode: lean
+Spec revision: 4 (FIND-003 + FIND-010 resolved at 1a; PROP-023, PROP-024 added at 1b)
+Captured at: 2026-04-30T04:29:25Z
+
+## Red Signal Sources (12 failing tests drive 2b implementation work)
+- FIND-001 (route 2b) — InitialUIState.editingSessionState replaces initialNoteId
+  - pipeline.test.ts: 2 failures
+  - step4-initialize-capture.test.ts: 3 failures
+- FIND-002 (route 2b) — Note.create with empty Body via noteCreate port
+  - step4-initialize-capture.test.ts: 3 failures
+- FIND-004 (route 2b) — NoteId VO validation in scanVault
+  - step2-scan-vault.test.ts: 1 failure
+- FIND-006 (route 2a) — Tag VO rejection via real VO path (parser stub returns malformed tag)
+  - step2-scan-vault.test.ts: 2 failures (empty string + whitespace-only)
+- FIND-009 (route 2b) — clockNow port for VaultDirectoryNotConfigured.occurredOn
+  - step1-load-vault-config.test.ts: 1 failure
+
+## Coverage-retrofit Tests (passing — codify new spec invariants impl already satisfies)
+- PROP-023a: Clock.now ≤ 2 calls per pipeline run (already complies — 3 tests)
+- PROP-023b: hydrateFeed signature has no Timestamp parameter (TS type assertion — 2 tests)
+- PROP-023c: hydrateFeed deterministic, no Date.now contamination (2 tests)
+- PROP-024 (7 cases): statDir result mapping to reason kind
+- PROP-024 negative: permission-denied is the ONLY variant producing permission-denied
+- PROP-021 type-level: Extract<PublicDomainEvent,{kind:'feed-restored'}> = never (3 tests)
+- FIND-005: ParsedNote tags type narrowing (compile-time + runtime narrowing)
+- FIND-007: type-level PublicDomainEvent membership checks
+
+## Type-level Red Signals (svelte-check)
+- editingSessionState property does not exist on InitialUIState (3 errors pipeline.test.ts; 4 errors step4)
+- clockNow does not exist in LoadVaultConfigPorts (25 errors step1)
+- noteCreate does not exist in InitializeCaptureSessionPorts (12 errors step4)
+Total type-check errors driven by Sprint 2 Red contract: 43
+
+## Test Beads (32 new tests)
+TEST-Sprint2-001..038 — see /vcsdd-status output and reviewer manifest for full list
+
+================================================================
+=== bun test output (full) ===
+================================================================
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/app-startup/pipeline.test.ts:
+151 |       const state = result.value;
+152 |       expect("feed" in state).toBe(true);
+153 |       expect("tagInventory" in state).toBe(true);
+154 |       expect("corruptedFiles" in state).toBe(true);
+155 |       // FIND-001: must have editingSessionState, NOT initialNoteId
+156 |       expect("editingSessionState" in state).toBe(true);
+                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts:156:46)
+(fail) PROP-017: Full pipeline happy path → InitialUIState with editing status > FIND-001 / REQ-014: InitialUIState has feed, tagInventory, corruptedFiles, editingSessionState
+172 |     const result = await runAppStartupPipeline(ports);
+173 | 
+174 |     expect(result.ok).toBe(true);
+175 |     if (result.ok) {
+176 |       // FIND-001: access editingSessionState, not initialNoteId
+177 |       expect(result.value.editingSessionState.status).toBe("editing");
+                                ^
+TypeError: undefined is not an object (evaluating 'result.value.editingSessionState.status')
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts:177:27)
+(fail) PROP-017: Full pipeline happy path → InitialUIState with editing status > FIND-001 / REQ-010: editingSessionState.status === 'editing'
+
+src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:
+130 |     // REQ-014 AC checks
+131 |     expect("feed" in result).toBe(true);
+132 |     expect("tagInventory" in result).toBe(true);
+133 |     expect("corruptedFiles" in result).toBe(true);
+134 |     // FIND-001: editingSessionState must be present
+135 |     expect("editingSessionState" in result).toBe(true);
+                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:135:45)
+(fail) REQ-010 / PROP-013 / REQ-014: initializeCaptureSession creates editing session > FIND-001 / PROP-013: InitialUIState has feed, tagInventory, editingSessionState, corruptedFiles (not initialNoteId)
+152 |     };
+153 | 
+154 |     const result = await initializeCaptureSession(makeHydratedFeed(), ports);
+155 | 
+156 |     // FIND-001: editingSessionState carries the editing state
+157 |     expect(result.editingSessionState.status).toBe("editing");
+                        ^
+TypeError: undefined is not an object (evaluating 'result.editingSessionState.status')
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:157:19)
+(fail) REQ-010 / PROP-013 / REQ-014: initializeCaptureSession creates editing session > FIND-001 / REQ-010: editingSessionState.status === 'editing'
+172 |     };
+173 | 
+174 |     const result = await initializeCaptureSession(makeHydratedFeed(), ports);
+175 | 
+176 |     // FIND-001: currentNoteId (not initialNoteId) carries the allocated id
+177 |     expect(result.editingSessionState.status).toBe("editing");
+                        ^
+TypeError: undefined is not an object (evaluating 'result.editingSessionState.status')
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:177:19)
+(fail) REQ-010 / PROP-013 / REQ-014: initializeCaptureSession creates editing session > FIND-001 / REQ-010: editingSessionState.currentNoteId equals NoteId returned by allocateNoteId
+249 |     };
+250 | 
+251 |     await initializeCaptureSession(makeHydratedFeed(), ports);
+252 | 
+253 |     // FIND-002 AC: noteCreate must be called exactly once.
+254 |     expect(noteCreateCallCount).toBe(1);
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:254:33)
+(fail) FIND-002 / REQ-010: noteCreate port — Note.create(id, now) with empty Body > FIND-002: noteCreate spy called exactly once with (allocatedId, now)
+279 |     };
+280 | 
+281 |     await initializeCaptureSession(makeHydratedFeed(), ports);
+282 | 
+283 |     // REQ-010 AC: body must be empty string (cast to Body VO).
+284 |     expect(capturedNote).toBeDefined();
+                               ^
+error: expect(received).toBeDefined()
+
+Received: undefined
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:284:26)
+(fail) FIND-002 / REQ-010: noteCreate port — Note.create(id, now) with empty Body > FIND-002 / REQ-010 AC: returned Note has empty body (body === '')
+306 |       emit: spy.emit,
+307 |     };
+308 | 
+309 |     await initializeCaptureSession(makeHydratedFeed(), ports);
+310 | 
+311 |     expect(capturedNote).toBeDefined();
+                               ^
+error: expect(received).toBeDefined()
+
+Received: undefined
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:311:26)
+(fail) FIND-002 / REQ-010: noteCreate port — Note.create(id, now) with empty Body > FIND-002 / REQ-010 AC: returned Note has createdAt === updatedAt === now
+
+src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:
+602 | 
+603 |     expect(result.ok).toBe(true);
+604 |     if (result.ok) {
+605 |       // FIND-004: non-conforming stem must be a CorruptedFile, not a NoteFileSnapshot.
+606 |       // Current impl adds it to snapshots — this assertion will FAIL in Red phase.
+607 |       expect(result.value.snapshots).toHaveLength(0);
+                                           ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 0
+Received length: 1
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:607:38)
+(fail) FIND-004 / REQ-002: NoteId VO validation — non-conforming file stem → CorruptedFile > FIND-004: non-conforming file stem (e.g., 'note.md') produces CorruptedFile with hydrate/invalid-value
+764 | 
+765 |     expect(result.ok).toBe(true);
+766 |     if (result.ok) {
+767 |       // FIND-006 AC: malformed tag must be caught by scanVault's VO validation step.
+768 |       // Current impl: adds to snapshots (will FAIL this assertion — Red signal).
+769 |       expect(result.value.snapshots).toHaveLength(0);
+                                           ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 0
+Received length: 1
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:769:38)
+(fail) FIND-006 / REQ-002: invalid-value via real VO rejection — malformed tag in parsed output > FIND-006: parser returns parsed note with malformed tag (empty string) → scanVault produces hydrate/invalid-value
+808 |     const result = await scanVault(vaultPath, ports);
+809 | 
+810 |     expect(result.ok).toBe(true);
+811 |     if (result.ok) {
+812 |       // FIND-006: whitespace-only tag must also be caught.
+813 |       expect(result.value.snapshots).toHaveLength(0);
+                                           ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 0
+Received length: 1
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:813:38)
+(fail) FIND-006 / REQ-002: invalid-value via real VO rejection — malformed tag in parsed output > FIND-006: parser returns parsed note with whitespace-only tag ('  ') → hydrate/invalid-value
+
+src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts:
+183 |     );
+184 |     expect(notConfiguredEvent).toBeDefined();
+185 |     if (notConfiguredEvent) {
+186 |       // FIND-009 AC: occurredOn must equal the fake timestamp, proving it came from clockNow.
+187 |       const occurredOn = notConfiguredEvent.occurredOn as Timestamp;
+188 |       expect((occurredOn as unknown as { epochMillis: number }).epochMillis).toBe(99999999999999);
+                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: 99999999999999
+Received: 1777523329874
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts:188:78)
+(fail) REQ-003 / REQ-006 / PROP-005: null Settings.load → Unconfigured > FIND-009 / REQ-003: VaultDirectoryNotConfigured.occurredOn comes from clockNow port (not Date.now)
+
+ 101 pass
+ 12 fail
+ 244 expect() calls
+Ran 113 tests across 6 files. [101.00ms]
+
+================================================================
+=== bun run check (svelte-check) output (full) ===
+================================================================
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+1777523333146 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777523333147 ERROR "vite.config.js" 4:1 "Unused '@ts-expect-error' directive."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/pipeline.test.ts" 177:27 "Property 'editingSessionState' does not exist on type 'InitialUIState'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/pipeline.test.ts" 178:24 "Property 'editingSessionState' does not exist on type 'InitialUIState'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/pipeline.test.ts" 179:29 "Property 'editingSessionState' does not exist on type 'InitialUIState'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 77:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 96:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 122:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 147:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 175:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 199:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 219:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 239:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 265:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 292:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 315:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 337:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 362:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 388:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 414:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 446:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 464:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 482:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 500:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 519:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 537:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 555:7 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts" 579:9 "Object literal may only specify known properties, and 'clockNow' does not exist in type 'LoadVaultConfigPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 122:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 150:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 157:19 "Property 'editingSessionState' does not exist on type 'InitialUIState'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 170:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 177:19 "Property 'editingSessionState' does not exist on type 'InitialUIState'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 178:16 "Property 'editingSessionState' does not exist on type 'InitialUIState'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 179:21 "Property 'editingSessionState' does not exist on type 'InitialUIState'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 195:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 213:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 242:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 273:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 301:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 333:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 354:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 378:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 ERROR "src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts" 401:7 "Object literal may only specify known properties, and 'noteCreate' does not exist in type 'InitializeCaptureSessionPorts'."
+1777523333148 COMPLETED 310 FILES 43 ERRORS 0 WARNINGS 4 FILES_WITH_PROBLEMS
+error: script "check" exited with code 1

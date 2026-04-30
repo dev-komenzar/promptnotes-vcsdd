@@ -1,0 +1,50 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+total-tests: 113
+passing-tests: 113
+failing-tests: 0
+type-check-errors: 0
+
+=== Sprint 2 Iteration 2 / Phase 2c (Refactor + post-refactor green) ===
+Sprint: 2
+Phase: 2c
+Iteration: 2
+Mode: lean
+Captured at: 2026-04-30T04:50:21Z
+
+## Phase 2c Refactors (no behavior change — verified by re-running both signals)
+- scan-vault.ts:
+  - Hoisted NOTE_ID_FORMAT regex to module scope (single allocation; clearer intent).
+  - Replaced explicit for-loop in areAllTagsValid with .every(isValidTag).
+  - Replaced misleading filePathStem doc (the 'synthetic NoteId' wording predated FIND-004).
+  - Tightened isValidTag to single-expression form.
+- initialize-capture.ts:
+  - Extracted makeEditingState(noteId) to clarify FIND-001 EditingState construction.
+  - Extracted emitCaptureSessionStartEvents to keep the orchestrator pithy.
+  - Updated header docstring to reference Sprint 2 spec wording (FIND-001/FIND-002).
+- pipeline.ts:
+  - Header docstring now references PROP-023 budget, FIND-002, and FIND-009.
+  - Step 1 port comment clarified: clockNow is the shared port (Step 1 + orchestrator + Step 4).
+
+## FIND-008 status (route 2c, verification_readiness, minor)
+- The Rust source path mentioned by FIND-008 (promptnotes/src-tauri/src/domain/vault/note_id.rs)
+  does not exist on disk. Sprint 2 makes no changes to Rust verification scaffolding.
+- Action: leave the bead open and let Phase 5 (Formal Hardening) decide whether to wire
+  the Rust property tests or remove the manifest reference. No 2c-time refactor possible.
+
+================================================================
+=== bun test output (full) ===
+================================================================
+bun test v1.3.11 (af24e281)
+
+ 113 pass
+ 0 fail
+ 267 expect() calls
+Ran 113 tests across 6 files. [106.00ms]
+
+================================================================
+=== bun run check (svelte-check) output (full) ===
+================================================================
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+1777524625303 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777524625305 COMPLETED 310 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
