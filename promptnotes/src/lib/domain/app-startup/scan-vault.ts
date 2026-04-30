@@ -14,7 +14,6 @@
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type {
-  Frontmatter,
   NoteId,
   VaultPath,
 } from "promptnotes-domain-types/shared/value-objects";
@@ -121,14 +120,13 @@ export async function scanVault(
       continue;
     }
 
+    // FIND-016 (Sprint-4 2b): parser port が Frontmatter VO を保証済みのため
+    // スキャン境界での再構築を撤廃し parsed.fm を直接代入する。
+    // `as unknown as Frontmatter` キャストを除去。
     const snapshot: NoteFileSnapshot = {
       noteId: stem as unknown as NoteId,
       body: parsed.body,
-      frontmatter: {
-        tags: parsed.fm.tags,
-        createdAt: parsed.fm.createdAt,
-        updatedAt: parsed.fm.updatedAt,
-      } as unknown as Frontmatter,
+      frontmatter: parsed.fm,
       filePath,
       fileMtime: parsed.fm.updatedAt,
     };

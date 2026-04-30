@@ -23,7 +23,7 @@ import { describe, test, expect } from "bun:test";
 import * as fc from "fast-check";
 import type { CorruptedFile, NoteFileSnapshot } from "promptnotes-domain-types/shared/snapshots";
 import type { FsError } from "promptnotes-domain-types/shared/errors";
-import type { VaultPath, Tag, Body, Frontmatter } from "promptnotes-domain-types/shared/value-objects";
+import type { VaultPath, Tag, Body, Frontmatter, Timestamp } from "promptnotes-domain-types/shared/value-objects";
 import type { ScannedVault, ParsedNote } from "$lib/domain/app-startup/stages";
 
 // The implementation does NOT exist yet. This import will fail in Red phase.
@@ -177,12 +177,13 @@ function makeParserAlwaysSucceed(noteIdFor: (path: string) => string) {
       ok: true as const,
       value: {
         // Parser returns the snapshot data needed to build NoteFileSnapshot
+        // FIND-016: fm は branded Frontmatter VO 形式でキャスト（テストスタブ）
         body: makeBody("Body text"),
         fm: {
-          tags: [],
-          createdAt: { epochMillis: 1714298400000 } as any,
-          updatedAt: { epochMillis: 1714298400000 } as any,
-        } as any,
+          tags: [] as readonly Tag[],
+          createdAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+          updatedAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+        } as unknown as Frontmatter,
       },
     };
   };

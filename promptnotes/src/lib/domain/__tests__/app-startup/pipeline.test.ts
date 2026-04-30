@@ -21,7 +21,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import type { Body, NoteId, Timestamp, VaultPath } from "promptnotes-domain-types/shared/value-objects";
+import type { Body, Frontmatter, NoteId, Tag, Timestamp, VaultPath } from "promptnotes-domain-types/shared/value-objects";
 import type { CorruptedFile } from "promptnotes-domain-types/shared/snapshots";
 import type { VaultScanned, PublicDomainEvent } from "promptnotes-domain-types/shared/events";
 import type { InitialUIState } from "$lib/domain/app-startup/stages";
@@ -121,15 +121,16 @@ function makeHappyPathPorts(
     readFile: (_filePath: string) => ({ ok: true, value: makeValidMarkdownContent() }),
     parseNote: (raw: string) => {
       if (!raw.trim()) return { ok: false, error: "missing-field" as const };
+      // FIND-016: fm は branded Frontmatter VO 形式でキャスト（テストスタブ）
       return {
         ok: true,
         value: {
           body: makeBody("Body text"),
           fm: {
-            tags: [],
+            tags: [] as readonly Tag[],
             createdAt: makeTimestamp(1714298400000),
             updatedAt: makeTimestamp(1714298400000),
-          } as any,
+          } as unknown as Frontmatter,
         },
       };
     },

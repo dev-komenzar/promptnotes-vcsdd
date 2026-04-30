@@ -5,6 +5,7 @@
 
 import type {
   Body,
+  Frontmatter,
   Tag,
   Timestamp,
   VaultPath,
@@ -28,14 +29,17 @@ import type { EditingState } from "promptnotes-domain-types/capture/states";
  * and never re-wraps raw strings. scanVault still defensively re-validates
  * tag values (FIND-006) so a parser that smuggles raw strings via `as` casts
  * is rejected at runtime.
+ *
+ * FIND-016 (Sprint-4 2b, Tier-0 follow-up to FIND-013): `fm` は構造的型から
+ * branded `Frontmatter` VO に締め直す。parser port が Frontmatter.tryNew に
+ * よる構築責任を持つ。scan-vault.ts は受け取った Frontmatter を直接
+ * NoteFileSnapshot.frontmatter に代入し、スキャン境界で再構築しない。
+ * `Tag` / `Timestamp` は EditingState / ScannedVault 経由で他の型から引き続き
+ * 参照されるため引き続き import を維持する。
  */
 export type ParsedNote = {
   readonly body: Body;
-  readonly fm: {
-    readonly tags: readonly Tag[];
-    readonly createdAt: Timestamp;
-    readonly updatedAt: Timestamp;
-  };
+  readonly fm: Frontmatter;
 };
 
 // ── Step 1 output ──────────────────────────────────────────────────────────

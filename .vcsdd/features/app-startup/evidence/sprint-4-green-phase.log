@@ -1,0 +1,69 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+total-tests: 115
+passing-tests: 115
+failing-tests: 0
+type-check-errors: 0
+red-signals-resolved: FIND-016 (2 type-check errors at step2-scan-vault.test.ts:114,124)
+
+[実装変更]
+- stages.ts:6-12: import に Frontmatter を追加（同一 import 文内）
+- stages.ts:22-43: ParsedNote.fm を構造的型 { tags; createdAt; updatedAt } → branded Frontmatter VO に締め直し。
+  docstring に FIND-016 (Sprint-4 2b) の説明を追記し、parser port が構築責任を持つことを明示。
+- scan-vault.ts:17-20: Frontmatter import を削除（FIND-016 後は直接型参照がなくなった dead import）
+- scan-vault.ts:124-131: NoteFileSnapshot.frontmatter の再構築を撤廃し parsed.fm を直接代入。
+  `{ tags, createdAt, updatedAt } as unknown as Frontmatter` キャスト除去。
+
+[test stub 更新]
+- step2-scan-vault.test.ts:26: Timestamp を import に追加
+- step2-scan-vault.test.ts:181-188: makeParserAlwaysSucceed の fm を
+  `{ tags: [] as readonly Tag[], createdAt: ... as unknown as Timestamp, updatedAt: ... as unknown as Timestamp } as unknown as Frontmatter` 形式に変更
+- pipeline.test.ts:24: Frontmatter と Tag を import に追加
+- pipeline.test.ts:125-134: parseNote スタブの fm を
+  `{ tags: [] as readonly Tag[], createdAt: ..., updatedAt: ... } as unknown as Frontmatter` 形式に変更
+
+[FIND-016 解消の証拠]
+- 変更前: ParsedNote["fm"] は構造的型であり Frontmatter ブランドを持たない。
+  _FmIsFrontmatter = false となり `const _parsedNoteFmIsFrontmatter: false = true` でコンパイルエラー。
+- 変更後: ParsedNote["fm"] = Frontmatter（branded）。
+  _FmIsFrontmatter = true、_FmTypeMatchesPort = true となり両ガードがコンパイルを通過。
+  step2-scan-vault.test.ts:114 および :124 の型エラー 2 件が解消。
+
+[bun test 出力]
+bun test v1.3.11 (af24e281)
+
+ 115 pass
+ 0 fail
+ 279 expect() calls
+Ran 115 tests across 6 files. [114.00ms]
+
+[svelte-check 出力]
+1777540248977 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777540248979 COMPLETED 310 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
+
+---
+## Phase 2c (Refactor) — evidence
+
+refactor-verdict: PASS
+rationale: scan-vault.ts の Frontmatter import が FIND-016 対応後に dead code となったため削除。
+  stages.ts docstring は Green phase で既に FIND-016 説明を追記済み。
+  それ以外に重複・不要な抽象化・デッドコードは認められなかった。
+
+[変更内容]
+- scan-vault.ts:17-20: Frontmatter dead import 削除（TS が unused type import として扱う。
+  svelte-check / bun test 両方で影響なし確認済み）
+
+[bun test 出力 (refactor 後)]
+bun test v1.3.11 (af24e281)
+
+ 115 pass
+ 0 fail
+ 279 expect() calls
+Ran 115 tests across 6 files. [109.00ms]
+
+[svelte-check 出力 (refactor 後)]
+1777540229614 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777540229616 COMPLETED 310 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
+
+open-followups: FIND-008 (Tag VO 構築の正式スマートコンストラクタ注入) は未対応のまま。
+  本 sprint は FIND-016 の型安全性締めに限定。FIND-008 は次 sprint に持ち越し。
