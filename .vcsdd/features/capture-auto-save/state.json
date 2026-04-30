@@ -54,7 +54,7 @@
   "gates": {
     "3": {
       "verdict": "FAIL",
-      "timestamp": "2026-04-30T13:18:30.745Z",
+      "timestamp": "2026-04-30T13:35:36.495Z",
       "reviewedBy": "adversary"
     },
     "1c": {
@@ -67,5 +67,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-04-30T13:18:30.746Z"
+  "updatedAt": "2026-04-30T13:35:36.496Z"
 }

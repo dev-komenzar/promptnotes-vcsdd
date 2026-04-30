@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-003 and REQ-017 explicitly require that EmptyNoteDiscarded is NOT returned as a SaveError. REQ-003 states: 'The return from prepareSaveRequest is { kind: \"empty-discarded\", event: EmptyNoteDiscarded } -- in the Ok channel, not the Err channel.' REQ-017 states: 'EmptyNoteDiscarded NEVER appears in the Err channel.' However, pipeline.ts lines 90-98 convert the Ok(empty-discarded) result from prepareSaveRequest into Err({ kind: 'validation', reason: { kind: 'empty-body-on-idle' } }). The pipeline comment at line 5 openly acknowledges this deviation: 'REQ-003: EmptyNoteDiscarded -> returned as SaveError (empty-body-on-idle)'. The pipeline.test.ts lines 366-378 assert this incorrect behavior, expecting ok:false. The spec says the implementation should return an appropriate Ok value for EmptyNoteDiscarded, surfacing it only via event emission.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "88-98",
+    "snippet": "if (prepareResult.value.kind === \"empty-discarded\") {\n  return {\n    ok: false,\n    error: {\n      kind: \"validation\",\n      reason: { kind: \"empty-body-on-idle\" },\n    },\n  };\n}"
+  },
+  "specReference": "REQ-003 (behavioral-spec.md line 89), REQ-017 (behavioral-spec.md line 328)",
+  "routeToPhase": "2b"
+}

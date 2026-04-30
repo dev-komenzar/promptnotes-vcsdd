@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "REQ-007 specifies 'The file path is {vaultPath}/{noteId}.md'. pipeline.ts line 121 implements this as template literal interpolation. No test asserts the constructed path value. All test mocks for writeFileAtomic ignore the path argument (e.g., step3 test makePorts line 91: 'writeFileAtomic: () => writeResult'). A test should verify the path is correctly constructed, especially for noteId values containing special characters or path separators.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "121",
+    "snippet": "const filePath = `${infra.vaultPath}/${validatedRequest.noteId}.md`;"
+  },
+  "specReference": "REQ-007 (behavioral-spec.md line 153)",
+  "routeToPhase": "2a"
+}

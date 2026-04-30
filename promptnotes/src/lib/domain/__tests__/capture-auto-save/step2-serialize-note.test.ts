@@ -9,7 +9,7 @@
  */
 
 import { describe, test, expect } from "bun:test";
-import { fc } from "@fast-check/vitest";
+// fast-check property tests deferred to Phase 5 verification harnesses
 import type { Body, Frontmatter, NoteId, Tag, Timestamp } from "promptnotes-domain-types/shared/value-objects";
 import type { ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
 

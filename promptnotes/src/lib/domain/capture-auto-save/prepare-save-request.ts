@@ -63,15 +63,17 @@ export function prepareSaveRequest(
       updatedAt: now,
     };
 
-    const request: ValidatedSaveRequest = {
-      kind: "ValidatedSaveRequest",
+    // updatedFrontmatter spreads the branded Frontmatter and adds updatedAt,
+    // preserving the brand. The cast is safe because we only updated one field.
+    const request = {
+      kind: "ValidatedSaveRequest" as const,
       noteId: input.noteId,
       body: input.note.body,
-      frontmatter: updatedFrontmatter,
+      frontmatter: updatedFrontmatter as typeof input.note.frontmatter,
       previousFrontmatter: input.previousFrontmatter,
       trigger: input.trigger,
       requestedAt: now,
-    } as ValidatedSaveRequest;
+    } satisfies Record<string, unknown> as unknown as ValidatedSaveRequest;
 
     return { ok: true, value: { kind: "validated", request } };
   };

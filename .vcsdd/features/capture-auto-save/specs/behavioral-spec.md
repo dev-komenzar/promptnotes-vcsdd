@@ -73,20 +73,26 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 ---
 
-### REQ-003: Step 1 — Empty body on idle save triggers EmptyNoteDiscarded (success channel)
+### REQ-003: Step 1 — Empty body on idle save triggers EmptyNoteDiscarded
 
-**EARS**: WHEN a `DirtyEditingSession` has `trigger: "idle"` AND `Note.isEmpty(note)` returns `true` THEN the system SHALL NOT proceed to Step 2 but SHALL emit `EmptyNoteDiscarded { noteId, occurredOn }` and return early.
+**EARS**: WHEN a `DirtyEditingSession` has `trigger: "idle"` AND `Note.isEmpty(note)` returns `true` THEN the system SHALL NOT proceed to Step 2 but SHALL emit `EmptyNoteDiscarded { noteId, occurredOn }` and return `Err(SaveError { kind: 'validation', reason: { kind: 'empty-body-on-idle' } })`.
 
-**Source**: `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`; `workflows.ts` `PrepareSaveRequest` return type.
+**Source**: `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`; `errors.ts` `SaveValidationError`.
 
-**EmptyNoteDiscarded channel clarification** (resolves FIND-002):
-- `EmptyNoteDiscarded` is routed through the **success channel** of `PrepareSaveRequest`, not as a `SaveError`. The canonical type in `workflows.ts` line 52–55 returns `Result<{kind:"validated"} | {kind:"empty-discarded"}, SaveError>`.
-- The `SaveValidationError` variant `{ kind: 'empty-body-on-idle' }` exists in `errors.ts` but is **not used** by the CaptureAutoSave pipeline for the EmptyNoteDiscarded route. It exists for potential use by external callers who need to distinguish empty-body rejection as an error. Within CaptureAutoSave, the empty-idle case is a valid early exit, not an error.
-- The pipeline's top-level `CaptureAutoSave` type returns `Result<NoteFileSaved, SaveError>`. The EmptyNoteDiscarded case is handled internally — the implementation may encode it as a special-cased success or an early return that does not reach the caller as `SaveError`.
+**Two-layer channel design** (Sprint 4 reconciliation with canonical `CaptureAutoSave` type):
+
+The empty-idle path operates at two layers:
+
+1. **`prepareSaveRequest` layer** (internal): Returns `Ok({kind:"empty-discarded"})`. The function successfully classified the input as empty — this is a valid classification result, not an error at this function's abstraction level.
+
+2. **`CaptureAutoSave` pipeline layer** (canonical API): The canonical return type is `Result<NoteFileSaved, SaveError>` per `workflows.ts` line 73. Since no file was saved, there is no `NoteFileSaved` to return in the Ok channel. The pipeline converts the empty-discarded result into `Err({ kind: 'validation', reason: { kind: 'empty-body-on-idle' } })`, using the `SaveValidationError` variant that exists in `errors.ts` precisely for this purpose.
+
+The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain semantics (the note was discarded). The return type conveys API semantics (no file was saved).
 
 **Acceptance Criteria**:
 - `EmptyNoteDiscarded` public domain event is emitted exactly once with the correct `noteId`.
-- The return from `prepareSaveRequest` is `{ kind: "empty-discarded", event: EmptyNoteDiscarded }` — in the **Ok** channel, not the **Err** channel.
+- `prepareSaveRequest` internally returns `Ok({ kind: "empty-discarded" })`.
+- The pipeline returns `Err(SaveError { kind: 'validation', reason: { kind: 'empty-body-on-idle' } })` at the `CaptureAutoSave` API boundary.
 - No `SaveNoteRequested` is emitted.
 - No file I/O occurs.
 - No `NoteFileSaved` or `NoteSaveFailed` is emitted.
@@ -324,8 +330,8 @@ Step 2 (`serializeNote`) SHALL be a pure function with zero I/O.
 - The return type is `Promise<Result<NoteFileSaved, SaveError>>`.
 - The EmptyNoteDiscarded route is handled internally and does not appear in the top-level return type (it is surfaced via event emission only).
 
-**NOTE on EmptyNoteDiscarded encoding** (FIND-002):
-The `CaptureAutoSave` top-level type returns `Result<NoteFileSaved, SaveError>`. The EmptyNoteDiscarded route is a valid early exit that does not constitute a `SaveError`. The implementation handles it by emitting the `EmptyNoteDiscarded` event and returning an appropriate `Ok` value (encoding deferred to Phase 2b — e.g., a sentinel `NoteFileSaved`-compatible value, or a wrapper type). The key invariant is: EmptyNoteDiscarded NEVER appears in the `Err` channel.
+**NOTE on EmptyNoteDiscarded encoding** (Sprint 4 reconciliation):
+The `CaptureAutoSave` top-level type returns `Result<NoteFileSaved, SaveError>`. The EmptyNoteDiscarded route returns `Err({ kind: 'validation', reason: { kind: 'empty-body-on-idle' } })` to comply with this canonical signature. The `EmptyNoteDiscarded` event is emitted separately to convey domain semantics.
 
 ---
 

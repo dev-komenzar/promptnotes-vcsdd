@@ -2,7 +2,7 @@
 // Full CaptureAutoSave pipeline — orchestrates Steps 1 through 4.
 //
 // REQ-001: Happy path → Result<NoteFileSaved, SaveError>
-// REQ-003: EmptyNoteDiscarded → returned as SaveError (empty-body-on-idle)
+// REQ-003: EmptyNoteDiscarded → Err(SaveError{empty-body-on-idle}) per canonical type
 // REQ-008: SaveNoteRequested emitted at editing → saving transition
 // REQ-015: EditingSessionState transitions
 // REQ-016: I/O confinement — clockNow exactly once
