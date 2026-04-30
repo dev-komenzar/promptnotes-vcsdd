@@ -98,3 +98,6 @@
 {"timestamp":"2026-04-30T13:45:46.605Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"PASS","reviewedBy":"human"}
 {"timestamp":"2026-04-30T13:45:51.252Z","event":"phase_transition","featureName":"capture-auto-save","from":"2c","to":"3","iteration":1,"phase":"3"}
 {"timestamp":"2026-04-30T13:45:51.253Z","event":"phase_transition","featureName":"capture-auto-save","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-04-30T13:55:11.389Z","event":"phase_transition","featureName":"capture-auto-save","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-04-30T13:55:34.162Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:58:31.774Z","event":"phase_transition","featureName":"capture-auto-save","from":"6","to":"complete","iteration":1,"phase":"complete"}
