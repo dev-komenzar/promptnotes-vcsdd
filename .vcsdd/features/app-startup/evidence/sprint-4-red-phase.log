@@ -1,0 +1,52 @@
+mixed-mode: true
+coverage-retrofit: true (FIND-015 PROP-003/REQ-011 collision tests)
+new-feature-tests: FAIL (FIND-016 _FmIsFrontmatter Tier-0 guard, 2 type-check errors)
+regression-baseline: PASS
+total-tests: 115
+new-tests-added: 0
+guards-replaced-or-tightened: 4 (FIND-015) + 2 added (FIND-016) = 6
+type-check-errors: 2
+
+[FIND-015 載せ替え対象]
+- step4-initialize-capture.test.ts: PROP-003 example
+  修正前: existingIds = new Set([makeNoteId("2026-04-28-120000-000")]) — 1714298400000 ms と対応しない
+  修正後: base = nextAvailableNoteId(preferred, new Set()); existingIds = new Set([base])
+  効果: 衝突ループ必ず実行、result !== base を追加アサート
+- step4-initialize-capture.test.ts: PROP-003 fast-check
+  修正前: fc.array(fc.string({minLength:20, maxLength:30}).map(s => makeNoteId(s))) — 衝突確率 ~0
+  修正後: base を先行取得し existingIds に必ず含め、任意 suffix で多段衝突を網羅
+- step4-initialize-capture.test.ts: PROP-022 example
+  修正前: existingIds = new Set([makeNoteId("2026-04-28-120000-000")]) — 衝突なし
+  修正後: base = nextAvailableNoteId(preferred, new Set()); existingIds = new Set([base])
+- step4-initialize-capture.test.ts: PROP-022 fast-check
+  修正前: fc.array(fc.string()) — 衝突確率 ~0
+  修正後: base を先行取得し衝突状態での決定性を検証
+- step4-initialize-capture.test.ts: REQ-011 -1 suffix
+  修正前: existingIds = new Set([makeNoteId("2026-04-28-120000-000")]) — 衝突なし
+  修正後: base を先行取得し result === "${base}-1" を厳格アサート
+- step4-initialize-capture.test.ts: REQ-011 -2 suffix
+  修正前: existingIds に "2026-04-28-120000-000" と "2026-04-28-120000-000-1" — 衝突なし
+  修正後: base を先行取得し result === "${base}-2" を厳格アサート
+
+[FIND-016 RED 信号]
+- step2-scan-vault.test.ts:114: _FmIsFrontmatter ガード (compile-fail expected)
+  type _FmIsFrontmatter = ParsedNote["fm"] extends Frontmatter ? true : false;
+  const _parsedNoteFmIsFrontmatter: _FmIsFrontmatter = true;  ← Type 'true' is not assignable to type 'false'
+- step2-scan-vault.test.ts:124: _FmTypeMatchesPort ガード (compile-fail expected)
+  type _FmTypeMatchesPort = ParsedNote["fm"] extends Frontmatter ? ... : false;
+  const _fmTypeMatchesPort: _FmTypeMatchesPort = true;  ← Type 'true' is not assignable to type 'false'
+- 該当 svelte-check エラー: 2 件
+
+[bun test 出力]
+bun test v1.3.11 (af24e281)
+
+ 115 pass
+ 0 fail
+ 279 expect() calls
+Ran 115 tests across 6 files. [116.00ms]
+
+[svelte-check 出力]
+1777539611699 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777539611701 ERROR "src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts" 114:7 "Type 'true' is not assignable to type 'false'."
+1777539611701 ERROR "src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts" 124:7 "Type 'true' is not assignable to type 'false'."
+1777539611701 COMPLETED 310 FILES 2 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS

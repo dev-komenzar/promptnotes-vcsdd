@@ -23,7 +23,7 @@ import { describe, test, expect } from "bun:test";
 import * as fc from "fast-check";
 import type { CorruptedFile, NoteFileSnapshot } from "promptnotes-domain-types/shared/snapshots";
 import type { FsError } from "promptnotes-domain-types/shared/errors";
-import type { VaultPath, Tag, Body } from "promptnotes-domain-types/shared/value-objects";
+import type { VaultPath, Tag, Body, Frontmatter } from "promptnotes-domain-types/shared/value-objects";
 import type { ScannedVault, ParsedNote } from "$lib/domain/app-startup/stages";
 
 // The implementation does NOT exist yet. This import will fail in Red phase.
@@ -104,6 +104,25 @@ type _BodyTypeMatchesPort = ParsedNote["body"] extends Body
   : false;
 const _bodyTypeMatchesPort: _BodyTypeMatchesPort = true;
 void _bodyTypeMatchesPort;
+
+// FIND-016 強化ガード: ParsedNote.fm が branded Frontmatter VO であることを compile-time で
+// 強制する。現状 stages.ts:34 では fm が構造的型のままで Frontmatter ブランドを持たないため、
+// `_FmIsFrontmatter` は `false` に解決され、`const _: _FmIsFrontmatter = true` の代入で
+// `Type 'true' is not assignable to type 'false'` が発生する。
+// Sprint-4 の 2b で stages.ts を `fm: Frontmatter` に締めると compile が通る。
+type _FmIsFrontmatter = ParsedNote["fm"] extends Frontmatter ? true : false;
+const _parsedNoteFmIsFrontmatter: _FmIsFrontmatter = true;
+void _parsedNoteFmIsFrontmatter;
+
+// FIND-016 強化ガード #2 (相互方向の型等価): Frontmatter extends ParsedNote['fm'] も成立し
+// 構造的に広がっていないことを確認する。
+type _FmTypeMatchesPort = ParsedNote["fm"] extends Frontmatter
+  ? Frontmatter extends ParsedNote["fm"]
+    ? true
+    : false
+  : false;
+const _fmTypeMatchesPort: _FmTypeMatchesPort = true;
+void _fmTypeMatchesPort;
 
 // ── Test helpers ──────────────────────────────────────────────────────────
 

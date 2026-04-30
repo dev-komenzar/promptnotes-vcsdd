@@ -187,6 +187,14 @@
       "sprint": 4,
       "iteration": 1,
       "reason": "earliest-affected-phase: FIND-015 \u2192 2a, FIND-016 \u2192 2b; sprint-4 starts at 2a (red phase rework)"
+    },
+    {
+      "from": "2a",
+      "to": "2a",
+      "timestamp": "2026-04-30T19:30:00Z",
+      "sprint": 4,
+      "iteration": 1,
+      "reason": "sprint-4 red phase complete: coverage-retrofit (FIND-015 PROP-003/REQ-011 6 tests load-bearing \u5316) + genuine RED (FIND-016 _FmIsFrontmatter / _FmTypeMatchesPort 2 type-check errors). 115 pass / 0 fail / 2 type-check errors."
     }
   ],
   "iterations": {
@@ -1709,7 +1717,7 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-30T18:45:00Z",
+  "updatedAt": "2026-04-30T19:30:00Z",
   "sprints": {
     "sprint-3": {
       "startedAt": "2026-04-30T15:05:01Z",
@@ -1965,7 +1973,40 @@
         "FIND-016"
       ],
       "specRefinementContext": null,
-      "redPhase": null,
+      "redPhase": {
+        "completedAt": "2026-04-30T19:30:00Z",
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-4-red-phase.log",
+        "mixedMode": true,
+        "coverageRetrofit": {
+          "finding": "FIND-015",
+          "description": "PROP-003/REQ-011 衝突回避テストを load-bearing に載せ替え。base を先行取得し existingIds に必ず含めて衝突ループを確実に実行させる。",
+          "testsModified": [
+            "step4-initialize-capture.test.ts: PROP-003 example (衝突ループ実行 + result !== base アサート追加)",
+            "step4-initialize-capture.test.ts: PROP-003 fast-check (base 先行取得 + 多段衝突)",
+            "step4-initialize-capture.test.ts: PROP-022 example (base 先行取得で衝突状態で決定性確認)",
+            "step4-initialize-capture.test.ts: PROP-022 fast-check (base 先行取得 + 多段衝突)",
+            "step4-initialize-capture.test.ts: REQ-011 -1 suffix (base → result === base-1 厳格アサート)",
+            "step4-initialize-capture.test.ts: REQ-011 -2 suffix (base + base-1 → result === base-2 厳格アサート)"
+          ],
+          "testsStatus": "PASS (115/115)"
+        },
+        "redSignalSources": [
+          {
+            "finding": "FIND-016",
+            "description": "ParsedNote.fm が branded Frontmatter VO を持たないことの compile-time Tier-0 ガード追加。2 type-check errors を genuine RED として確認。",
+            "guardsAdded": [
+              "step2-scan-vault.test.ts:113 type _FmIsFrontmatter = ParsedNote['fm'] extends Frontmatter ? true : false",
+              "step2-scan-vault.test.ts:114 const _parsedNoteFmIsFrontmatter: _FmIsFrontmatter = true  ← Type 'true' is not assignable to type 'false'",
+              "step2-scan-vault.test.ts:119-123 type _FmTypeMatchesPort (双方向等価チェック)",
+              "step2-scan-vault.test.ts:124 const _fmTypeMatchesPort: _FmTypeMatchesPort = true  ← Type 'true' is not assignable to type 'false'"
+            ],
+            "typeCheckErrors": 2
+          }
+        ],
+        "totalTests": 115,
+        "bunTestStatus": "PASS",
+        "svelteCheckErrors": 2
+      },
       "greenPhase": null,
       "refactorPhase": null
     }

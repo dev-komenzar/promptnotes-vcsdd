@@ -420,27 +420,35 @@ describe("REQ-011 / PROP-003 / PROP-022: nextAvailableNoteId pure helper", () =>
   test("PROP-003: nextAvailableNoteId result not in existingIds (required)", () => {
     // PROP-003: ∀ ts, ∀ existingIds, nextAvailableNoteId(ts, existingIds) ∉ existingIds
     const preferred = makeTimestamp(1714298400000);
-    // Simulate: preferred maps to "2026-04-28-120000-000"
-    const baseId = "2026-04-28-120000-000";
-    const existingIds = new Set([makeNoteId(baseId)]);
+    // 実際の実装が生成するベースIDを先に取得し、それを existingIds に含めることで
+    // 衝突ループ（initialize-capture.ts:97-103）を必ず通過させる。
+    // 1714298400000 ms = 2024-04-28T10:00:00.000Z → base は "2024-04-28-100000-000" 相当。
+    const base = nextAvailableNoteId(preferred, new Set());
+    const existingIds = new Set([base]);
 
     const result = nextAvailableNoteId(preferred, existingIds);
 
     expect(existingIds.has(result)).toBe(false);
+    // 衝突ループが実際に実行されたことを確認: result は base と異なる必要がある。
+    expect(result as unknown as string).not.toBe(base as unknown as string);
   });
 
   test("PROP-003 property: ∀ ts, ∀ existingIds, result ∉ existingIds", () => {
-    // Tier 1 fast-check property for uniqueness guarantee.
+    // Tier 1 fast-check プロパティ: 一意性保証の検証。
+    // base を必ず existingIds に含めることで衝突ループを必ず実行させ、
+    // 任意の接尾辞も追加して多段衝突を網羅的にテストする。
     fc.assert(
       fc.property(
         fc.integer({ min: 1000, max: 9999999 }),
-        fc.array(
-          fc.string({ minLength: 20, maxLength: 30 }).map((s) => makeNoteId(s)),
-          { minLength: 0, maxLength: 10 }
-        ),
-        (epochMs, existingArray) => {
+        fc.array(fc.integer({ min: 0, max: 5 }), { minLength: 0, maxLength: 5 }),
+        (epochMs, suffixes) => {
           const preferred = makeTimestamp(epochMs);
-          const existingIds = new Set(existingArray);
+          // base を先に取得し、必ず衝突するように existingIds を構築する。
+          const base = nextAvailableNoteId(preferred, new Set());
+          const existingIds = new Set<NoteId>([base]);
+          for (const n of suffixes) {
+            existingIds.add(`${base as unknown as string}-${n}` as unknown as NoteId);
+          }
 
           const result = nextAvailableNoteId(preferred, existingIds);
 
@@ -453,7 +461,10 @@ describe("REQ-011 / PROP-003 / PROP-022: nextAvailableNoteId pure helper", () =>
   test("PROP-022: nextAvailableNoteId is deterministic — same args → same result", () => {
     // PROP-022: ∀ ts, ∀ existingIds, fn(ts, existingIds) === fn(ts, existingIds)
     const preferred = makeTimestamp(1714298400000);
-    const existingIds = new Set([makeNoteId("2026-04-28-120000-000")]);
+    // 実装が生成するベースIDを取得し、衝突状態で決定性を確認する。
+    // 1714298400000 ms = 2024-04-28T10:00:00.000Z → base は実装依存で決定される。
+    const base = nextAvailableNoteId(preferred, new Set());
+    const existingIds = new Set([base]);
 
     const r1 = nextAvailableNoteId(preferred, existingIds);
     const r2 = nextAvailableNoteId(preferred, existingIds);
@@ -462,17 +473,19 @@ describe("REQ-011 / PROP-003 / PROP-022: nextAvailableNoteId pure helper", () =>
   });
 
   test("PROP-022 property: same (preferred, existingIds) always produces same NoteId", () => {
-    // Tier 1 fast-check property for determinism.
+    // Tier 1 fast-check プロパティ: 決定性の検証。
+    // base を含む existingIds で衝突状態でも決定性が保たれることを確認する。
     fc.assert(
       fc.property(
         fc.integer({ min: 1000, max: 9999999 }),
-        fc.array(
-          fc.string({ minLength: 20, maxLength: 30 }).map((s) => makeNoteId(s)),
-          { minLength: 0, maxLength: 5 }
-        ),
-        (epochMs, existingArray) => {
+        fc.array(fc.integer({ min: 0, max: 5 }), { minLength: 0, maxLength: 5 }),
+        (epochMs, suffixes) => {
           const preferred = makeTimestamp(epochMs);
-          const existingIds = new Set(existingArray);
+          const base = nextAvailableNoteId(preferred, new Set());
+          const existingIds = new Set<NoteId>([base]);
+          for (const n of suffixes) {
+            existingIds.add(`${base as unknown as string}-${n}` as unknown as NoteId);
+          }
 
           const r1 = nextAvailableNoteId(preferred, existingIds);
           const r2 = nextAvailableNoteId(preferred, existingIds);
@@ -498,29 +511,37 @@ describe("REQ-011 / PROP-003 / PROP-022: nextAvailableNoteId pure helper", () =>
   test("REQ-011: suffix appended on collision — base occupied → -1 tried", () => {
     // REQ-011 AC: if base collides, append -1. If -1 collides, append -2, etc.
     const preferred = makeTimestamp(1714298400000);
-    const baseId = makeNoteId("2026-04-28-120000-000"); // must match preferred's timestamp format
-    const existingWithBase = new Set([baseId]);
+    // 実装が生成するベースIDを取得してから existingIds に含め、
+    // 衝突ループを確実に実行させる。base に -1 が付与されることを検証する。
+    const base = nextAvailableNoteId(preferred, new Set());
+    const existingWithBase = new Set([base]);
 
     const result = nextAvailableNoteId(preferred, existingWithBase);
 
-    // result must differ from base
-    expect(result).not.toBe(baseId);
-    // result must not be in the existing set
+    // result は base と異なる（衝突ループが実行された証拠）
+    expect(result).not.toBe(base);
+    // result は existingIds に含まれない
     expect(existingWithBase.has(result)).toBe(false);
+    // REQ-011 AC: base が占有されると `-1` が付与される
+    expect(result as unknown as string).toBe(`${base as unknown as string}-1`);
   });
 
   test("REQ-011: -2 suffix when both base and -1 are occupied", () => {
     // REQ-011 AC: -2 is tried after -1 collides.
     const preferred = makeTimestamp(1714298400000);
-    const baseId = "2026-04-28-120000-000";
+    // base と base-1 を両方 existingIds に含め、-2 への多段衝突を確実に実行させる。
+    const base = nextAvailableNoteId(preferred, new Set());
+    const baseStr = base as unknown as string;
     const existingIds = new Set([
-      makeNoteId(baseId),
-      makeNoteId(`${baseId}-1`),
+      base,
+      `${baseStr}-1` as unknown as NoteId,
     ]);
 
     const result = nextAvailableNoteId(preferred, existingIds);
 
     expect(existingIds.has(result)).toBe(false);
+    // REQ-011 AC: base と -1 が占有されると `-2` が付与される
+    expect(result as unknown as string).toBe(`${baseStr}-2`);
   });
 
   test("REQ-011: allocateNoteId is in-memory — no file I/O required", () => {
