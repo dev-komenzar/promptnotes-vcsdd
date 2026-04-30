@@ -95,3 +95,6 @@
 {"timestamp":"2026-04-30T13:12:25.686Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-04-30T13:18:30.746Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-04-30T13:35:36.496Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:45:46.605Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"PASS","reviewedBy":"human"}
+{"timestamp":"2026-04-30T13:45:51.252Z","event":"phase_transition","featureName":"capture-auto-save","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-04-30T13:45:51.253Z","event":"phase_transition","featureName":"capture-auto-save","from":"3","to":"5","iteration":1,"phase":"5"}

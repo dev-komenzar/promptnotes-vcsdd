@@ -2,7 +2,7 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -36,9 +36,23 @@
       "to": "2c",
       "timestamp": "2026-04-30T13:01:09.873Z",
       "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-04-30T13:45:51.250Z",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-04-30T13:45:51.252Z",
+      "sprint": 1
     }
   ],
   "iterations": {
+    "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -46,16 +60,80 @@
     "2b": 1,
     "2c": 1
   },
-  "proofObligations": [],
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "description": "serializeNote is pure: same input always produces identical output",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-001-serialize-note-purity.harness.test.ts",
+      "provedAt": "2026-04-30"
+    },
+    {
+      "id": "PROP-002",
+      "description": "serializeNote output matches Obsidian format /^---\\n[\\s\\S]*\\n---\\n[\\s\\S]*$/",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-002-serialize-note-format.harness.test.ts",
+      "provedAt": "2026-04-30"
+    },
+    {
+      "id": "PROP-003",
+      "description": "Empty body + idle trigger → EmptyNoteDiscarded, NOT SaveError",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-003-empty-idle-discard.harness.test.ts",
+      "provedAt": "2026-04-30"
+    },
+    {
+      "id": "PROP-004",
+      "description": "Empty body + blur trigger → ValidatedSaveRequest (does NOT discard)",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-004-empty-blur-save.harness.test.ts",
+      "provedAt": "2026-04-30"
+    },
+    {
+      "id": "PROP-005",
+      "description": "SaveError type is exhaustive: only 'validation' or 'fs' kind values exist",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "tool": "TypeScript type exhaustiveness (never branch)",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-005-save-error-exhaustiveness.harness.test.ts",
+      "provedAt": "2026-04-30"
+    },
+    {
+      "id": "PROP-014",
+      "description": "Clock.now() called exactly once per pipeline run",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check spy wrapper",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-014-clock-now-budget.harness.test.ts",
+      "provedAt": "2026-04-30"
+    }
+  ],
   "traceability": {
     "epicId": "VCSDD-capture-auto-save-1777552191428",
     "beads": []
   },
   "gates": {
     "3": {
-      "verdict": "FAIL",
-      "timestamp": "2026-04-30T13:35:36.495Z",
-      "reviewedBy": "adversary"
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T13:45:46.604Z",
+      "reviewedBy": "human",
+      "details": {
+        "reason": "Escalation approved: spec reconciled, remaining findings are deferred to Phase 5"
+      }
     },
     "1c": {
       "verdict": "PASS",
@@ -67,5 +145,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-04-30T13:35:36.496Z"
+  "updatedAt": "2026-04-30T13:45:51.252Z"
 }
