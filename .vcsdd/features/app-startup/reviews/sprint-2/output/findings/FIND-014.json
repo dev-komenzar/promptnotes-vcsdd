@@ -1,0 +1,19 @@
+{
+  "id": "FIND-014",
+  "sprintNumber": 2,
+  "iteration": 1,
+  "dimension": "implementation_correctness",
+  "severity": "minor",
+  "title": "Step 4 calls noteCreate but discards the constructed Note — Note aggregate is ephemeral",
+  "description": "REQ-010 EARS: 'create a new Note via Note.create(id, now) with an empty Body, and transition EditingSessionState to editing(newNoteId)'. The implementation at initialize-capture.ts:59 does call `ports.noteCreate(noteId, now)` (FIND-002 port present and exercised by tests), but the return value is discarded. The inline comment at lines 56-58 acknowledges this: 'Step 4 does not consume the resulting aggregate — id-seeded UI state is sufficient'. The constructed Note is not persisted, not attached to EditingSessionState, not included in any emitted event payload, and not visible anywhere downstream. Tests verify the call (call-count, signature, body=='', createdAt===updatedAt===now) only by capturing arguments inside the spy — the production path effectively treats noteCreate as a no-op. This passes the literal AC text (REQ-010 AC: 'The new Note.body is empty string ... Note.frontmatter.createdAt === Note.frontmatter.updatedAt === now') because those properties are assertions about the value the port returns, not about its usage. However, the spec's intent — that an actual Note aggregate participates in the session — is not realized. This is borderline: the AC is met by the port-call signature, but the spec EARS reading suggests the Note should participate downstream.",
+  "evidence": {
+    "files": [
+      "promptnotes/src/lib/domain/app-startup/initialize-capture.ts:55-72",
+      ".vcsdd/features/app-startup/specs/behavioral-spec.md:198-208"
+    ],
+    "excerpt": "// FIND-002 / REQ-010: invoke Note.create through the noteCreate port.\n// Step 4 does not consume the resulting aggregate — id-seeded UI state is\n// sufficient — but downstream subscribers of NewNoteAutoCreated rely on the\n// aggregate having been constructed by this call.\nports.noteCreate(noteId, now);"
+  },
+  "specReference": "REQ-010",
+  "recommendedRoute": "1a",
+  "remediation": "Either (a) clarify in REQ-010 that the Note aggregate is constructed for event-emission semantics only and need not be retained (then keep current behavior), or (b) attach the constructed Note to NewNoteAutoCreated.payload (or to a future persistence step) so the call has observable downstream effect. Phase 1a should disambiguate."
+}

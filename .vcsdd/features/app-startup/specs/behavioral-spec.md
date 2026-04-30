@@ -2,9 +2,18 @@
 
 **Feature**: `app-startup`
 **Phase**: 1a
-**Revision**: 3 (phase-1c-iteration-1-FAIL: F-001 purity boundary, F-002 REQ-013 coverage, F-003 emitter partition, F-004 REQ-015 AC split, F-005 statDir contract clarification)
+**Revision**: 5 (phase-3-adversary-FAIL iteration-3: FIND-014 REQ-010 Note aggregate retention clarification — Option A)
 **Source of truth**: `docs/domain/workflows.md` Workflow 1, `docs/domain/aggregates.md`, `docs/domain/domain-events.md`, `docs/domain/glossary.md`, `docs/domain/code/ts/src/shared/snapshots.ts`
 **Scope**: Initialization-only. Workflow terminates after the 4-step pipeline completes or returns an error. ConfigureVault flow and UI reaction to errors are out of scope.
+
+---
+
+## 改訂履歴 / Revision Log
+
+| 日付 | 反復 | 対象 finding | 概要 |
+|------|------|-------------|------|
+| 2026-04-30 | 2 | FIND-003, FIND-010 | FIND-003: REQ-015にオーケストレーター間ステップClock.now呼び出しの明示的許可を追記（Option A採択）; FIND-010: REQ-004のACにErr(disk-full\|lock\|unknown)→path-not-found折り畳みの明示的根拠を追記 |
+| 2026-04-30 | 3 | FIND-014 | Iteration 3: REQ-010 NOTE clarifies that the Note aggregate is constructed for invariant + event-emission semantics, not retention (resolves FIND-014). |
 
 ---
 
@@ -28,14 +37,16 @@ Each intermediate type carries stronger guarantees than the previous. Errors ter
 - `Settings.load()` returns `null` (first run): maps to `Unconfigured` error — see REQ-003.
 - `FileSystem.statDir` returns `Ok(false)` (path exists but is not a directory) or `Err(FsError{kind:'not-found'})` (path does not exist): both map to `PathNotFound` error — see REQ-004 and F-005 clarification below.
 - `FileSystem.statDir` returns `Err(FsError{kind:'permission'})`: maps to `PermissionDenied` error — see REQ-005.
+- `FileSystem.statDir` returns `Err(FsError{kind:'disk-full'|'lock'|'unknown'})`: maps to `PathNotFound` (collapsed) — see REQ-004 F-005 amendment.
 
-**`FileSystem.statDir` outcome contract** (F-005):
-`statDir` returns `Result<boolean, FsError>` with three distinct outcomes:
+**`FileSystem.statDir` outcome contract** (F-005, amended by FIND-010):
+`statDir` returns `Result<boolean, FsError>` with the following distinct outcomes:
 - `Ok(true)`: path exists and is a readable directory — workflow proceeds.
 - `Ok(false)`: path exists but is not a directory (e.g., it is a file) — maps to `PathNotFound`.
 - `Err(FsError{kind:'not-found'})`: path does not exist at all — maps to `PathNotFound`.
 - `Err(FsError{kind:'permission'})`: insufficient OS permissions — maps to `PermissionDenied`.
-Both `Ok(false)` and `Err(not-found)` are treated as `PathNotFound` because AppStartup requires a readable directory; the distinction between "exists-as-file" and "absent" is not actionable at this level. The relevant AppStartup error variant `path-not-found` covers both cases.
+- `Err(FsError{kind:'disk-full'|'lock'|'unknown'})`: transient or indeterminate OS errors — maps to `PathNotFound` (collapsed; user remediation is identical to not-found — see REQ-004 rationale table).
+Both `Ok(false)` and `Err(not-found)` are treated as `PathNotFound` because AppStartup requires a readable directory; the distinction between "exists-as-file" and "absent" is not actionable at this level. The `disk-full`, `lock`, and `unknown` FsError kinds are also collapsed to `path-not-found` per the same principle: no distinct user-visible recovery path exists at startup.
 
 **Acceptance Criteria**:
 - Given `Settings.load()` returns a non-null VaultPath and `statDir` returns `Ok(true)`, the workflow advances to `scanVault`.
@@ -99,10 +110,27 @@ type ScanFileFailure =
 
 ### REQ-004: Step 1 Error — PathNotFound
 
-**EARS**: WHEN `Settings.load()` returns a non-null `VaultPath` AND `FileSystem.statDir(path)` returns `Ok(false)` or `Err(FsError{kind:'not-found'})` THEN the system SHALL terminate with `AppStartupError { kind: 'config', reason: { kind: 'path-not-found', path: string } }`.
+**EARS**: WHEN `Settings.load()` returns a non-null `VaultPath` AND `FileSystem.statDir(path)` returns `Ok(false)`, `Err(FsError{kind:'not-found'})`, or `Err(FsError{kind:'disk-full'|'lock'|'unknown'})` THEN the system SHALL terminate with `AppStartupError { kind: 'config', reason: { kind: 'path-not-found', path: string } }`.
+
+**`statDir` → reason mapping** (F-005 amendment for FIND-010):
+
+| `statDir` result | reason | rationale |
+|---|---|---|
+| `Ok(true)` | — (success, proceed) | path exists and is a readable directory |
+| `Ok(false)` | `path-not-found` | path exists but is not a directory; cannot be used as vault |
+| `Err({ kind: 'not-found' })` | `path-not-found` | path does not exist at all |
+| `Err({ kind: 'permission' })` | `permission-denied` | OS permission failure; see REQ-005 |
+| `Err({ kind: 'disk-full' \| 'lock' \| 'unknown' })` | `path-not-found` | collapsed: the user-visible remediation ("configure a valid vault path") is identical across these variants; distinguishing them in AppStartup error UX would provide no additional guidance. A `permission-denied` error, by contrast, requires a distinct OS-level remediation (chmod/chown), which justifies its separate variant. |
+
+**Rejected alternative (FIND-010)**: introduce a third reason `unavailable` for `Err(disk-full|lock|unknown)`. Rejected because: (1) it would require a new error variant type, (2) the AppStartup UI has no separate recovery path for transient fs errors at startup, and (3) it would create downstream churn in Phase 2a/2b tests without user-observable benefit.
 
 **Acceptance Criteria**:
 - `AppStartupError.reason.path` contains the configured path string.
+- `statDir` returning `Ok(false)` produces `reason: { kind: 'path-not-found' }` (not `permission-denied`).
+- `statDir` returning `Err({ kind: 'not-found' })` produces `reason: { kind: 'path-not-found' }`.
+- `statDir` returning `Err({ kind: 'disk-full' })` produces `reason: { kind: 'path-not-found' }` (collapsed — see table above).
+- `statDir` returning `Err({ kind: 'lock' })` produces `reason: { kind: 'path-not-found' }` (collapsed — see table above).
+- `statDir` returning `Err({ kind: 'unknown' })` produces `reason: { kind: 'path-not-found' }` (collapsed — see table above).
 - No `VaultDirectoryNotConfigured` event is emitted (that event is reserved for the unconfigured case — source: `domain-events.md`).
 - No further steps are executed.
 
@@ -172,11 +200,23 @@ type ScanFileFailure =
 
 **EARS**: WHEN a `HydratedFeed` is available THEN the system SHALL call `Clock.now()` to obtain a `Timestamp`, call `Vault.allocateNoteId(now)` to obtain a collision-free `NoteId`, create a new `Note` via `Note.create(id, now)` with an empty `Body`, and transition `EditingSessionState` to `editing(newNoteId)`.
 
+**NOTE — Note aggregate retention semantics (resolves FIND-014, Option A)**:
+
+The `Note` aggregate constructed by `noteCreate(noteId, now)` (the Step 4 port call) serves two purposes at the moment of allocation:
+
+1. **Invariant enforcement**: `Note.create` validates that `Body` is empty, that `createdAt === updatedAt === now`, and that the frontmatter shape is valid per `aggregates.md §1 Note.create`. These invariants are enforced by the aggregate constructor itself; the constructed value is the proof that construction succeeded.
+2. **Event-emission semantics**: the call site's contract is satisfied by the act of construction — `NewNoteAutoCreated` signals that a valid Note has been allocated at `noteId`. The event payload carries `{ noteId, occurredOn }` only, matching the canonical type contract in `docs/domain/code/ts/src/capture/internal-events.ts` lines 24–28: `NewNoteAutoCreated = { kind, noteId, occurredOn }`.
+
+The `Note` aggregate is **not retained** by Step 4 after construction. It is not attached to `EditingSessionState`, not included in the `NewNoteAutoCreated` payload, and not passed to any persistence step within the AppStartup pipeline. Downstream consumers (the editor UI, any future persistence step) address the new note exclusively via `NoteId`; `editingSessionState.editing(newNoteId)` carries the only downstream handle.
+
+Attaching the full `Note` aggregate to `NewNoteAutoCreated.payload` (Option B) would require a backwards-incompatible change to `docs/domain/code/ts/src/capture/internal-events.ts`, which is the pinned type-contract source of truth. Option B is rejected.
+
 **Acceptance Criteria**:
 - `EditingSessionState.status === 'editing'`.
 - `EditingSessionState.currentNoteId` equals the `NoteId` returned by `Vault.allocateNoteId`.
-- The new `Note.body` is empty string (source: `aggregates.md §1 Note.create`).
-- `Note.frontmatter.createdAt === Note.frontmatter.updatedAt === now`.
+- The new `Note.body` is empty string at the time of construction (source: `aggregates.md §1 Note.create`). This is a property of the Note value returned by the `noteCreate` port call — it is an invariant enforced at allocation time, not a property of any persisted aggregate.
+- `Note.frontmatter.createdAt === Note.frontmatter.updatedAt === now`. This is a property of the Note value returned by `noteCreate` at construction time; the aggregate is subsequently discarded.
+- The `Note` aggregate constructed by `noteCreate` is **not retained** beyond Step 4; downstream code receives only `NoteId` via `editingSessionState`. No downstream caller within AppStartup holds a reference to the constructed `Note`.
 - `InitialUIState` contains `feed`, `tagInventory`, `editingSessionState`, and `corruptedFiles`.
 
 ---
@@ -248,11 +288,28 @@ type ScanFileFailure =
 
 ### REQ-015: Non-functional — No I/O outside designated steps
 
-**EARS**: WHEN the AppStartup pipeline executes THEN the system SHALL perform I/O only in Step 1 (`Settings.load`, `FileSystem.statDir`), Step 2 (`FileSystem.listMarkdown`, `FileSystem.readFile`), and Step 4 (`Clock.now`, `Vault.allocateNoteId` effectful Vault-state read). Step 3 SHALL perform zero I/O.
+**EARS**: WHEN the AppStartup pipeline executes THEN the system SHALL perform I/O only in: Step 1 (`Settings.load`, `FileSystem.statDir`), Step 2 (`FileSystem.listMarkdown`, `FileSystem.readFile`), the inter-step orchestration phase between Step 2 and Step 3 (`Clock.now` — exactly once, for event timestamps), and Step 4 (`Clock.now`, `Vault.allocateNoteId` effectful Vault-state read). Step 3 (`hydrateFeed`) itself SHALL perform zero I/O and receive the timestamp as an argument from the orchestrator.
 
-**Acceptance Criteria** (F-004: split into two distinct ACs):
-- AC-1 (purity): `hydrateFeed` (Step 3) has no port dependencies and is a pure function — no side effects, no I/O, deterministic given its input (source: `workflows.md Step 3 依存: なし（純粋）`). This is the property-verifiable claim.
+**Clock.now call-site budget** (FIND-003 resolution — Option A adopted):
+
+The pipeline orchestrator MAY call `Clock.now()` exactly once after Step 2 completes and before Step 3 (`hydrateFeed`) begins. The resulting `Timestamp` is:
+- Shared across the three inter-step domain events: `VaultScanned`, `FeedRestored`, `TagInventoryBuilt`.
+- NOT passed into `hydrateFeed` (Step 3 remains a pure function over `ScannedVault` only).
+- Distinct from the `Clock.now()` call inside Step 4, which obtains a fresh timestamp for `EditingSessionState.now` and `Note.frontmatter.createdAt/updatedAt`.
+
+**Rejected alternatives (FIND-003)**:
+- Option B (lift timestamp to Step 1): rejected because Step 1 produces `ConfiguredVault` — threading a timestamp through all intermediate stages would add unnecessary coupling with no functional benefit.
+- Option C (drop `occurredOn` from Step 3 events): rejected because `occurredOn` is part of the canonical `VaultScanned` / `FeedRestored` / `TagInventoryBuilt` event contracts in `domain-events.md`; removing it would require a domain-model change.
+
+**Total `Clock.now` call budget per pipeline run**: exactly two calls maximum —
+- Call 1: between Step 2 and Step 3 (inter-step orchestration, for `VaultScanned.occurredOn`, `FeedRestored.occurredOn`, `TagInventoryBuilt.occurredOn`).
+- Call 2: inside Step 4 `initializeCaptureSession` (for `Note.createdAt/updatedAt` and `EditingSessionState`).
+
+**Acceptance Criteria** (F-004: split into two distinct ACs, amended for FIND-003):
+- AC-1 (purity): `hydrateFeed` (Step 3) has no port dependencies and is a pure function — no side effects, no I/O, deterministic given its input (source: `workflows.md Step 3 依存: なし（純粋）`). This is the property-verifiable claim. `hydrateFeed` does NOT receive a timestamp argument and does NOT call `Clock.now`.
 - AC-2 (sync vs async, deferred): The synchronous vs asynchronous execution model for port calls (`Settings.load`, `FileSystem.statDir`, etc.) is an implementation choice deferred to Phase 2b per the manifest. This AC is not property-testable at Phase 1b.
+- AC-3 (Clock.now budget): `Clock.now()` is called at most twice per pipeline run — once in the orchestrator between Step 2 and Step 3 (inter-step, for event `occurredOn`), and once inside Step 4. Any implementation calling `Clock.now()` more than twice, or calling it inside Step 3, violates this requirement.
+- AC-4 (Step 3 receives no timestamp): `hydrateFeed` accepts only `ScannedVault` as its parameter. The `occurredOn` timestamp used for `VaultScanned`, `FeedRestored`, and `TagInventoryBuilt` is captured in the orchestrator scope and passed to `emit()` calls — not into `hydrateFeed`.
 - `nextAvailableNoteId` (the pure helper) has no side effects and no port dependencies; the Vault-state read is encapsulated in `vault.allocateNoteId` (effectful, Step 4 only).
 - `FrontmatterParser.parse` is a pure function with no side effects (source: `workflows.md 依存（ポート）表 sync (pure)`). Purity is the verifiable property; sync/async is deferred to Phase 2b.
 
@@ -283,8 +340,9 @@ type ScanFileFailure =
 |------|---------------|-----------|
 | Step 1: `loadVaultConfig` | Effectful read | Calls `Settings.load` and `FileSystem.statDir` |
 | Step 2: `scanVault` | Effectful read | Calls `FileSystem.listMarkdown`, `FileSystem.readFile`; `FrontmatterParser.parse` is pure but called within an effectful context |
-| Step 3: `hydrateFeed` | Pure core | No ports; deterministic; referentially transparent |
-| Step 4 (time) | `Clock.now()` | Effectful shell — returns wall-clock time; purity-violating |
+| Inter-step (2→3): orchestrator `Clock.now()` | Effectful shell | `runAppStartupPipeline` calls `Clock.now()` exactly once after Step 2 to obtain `occurredOn` for `VaultScanned`, `FeedRestored`, `TagInventoryBuilt`. This is orchestration-layer I/O, NOT Step 3 I/O. REQ-015 explicitly permits it. |
+| Step 3: `hydrateFeed` | Pure core | No ports; deterministic; referentially transparent. Receives `ScannedVault` only — no timestamp argument. |
+| Step 4 (time) | `Clock.now()` | Effectful shell — second and final `Clock.now()` call per pipeline run; returns wall-clock time for `Note` and `EditingSessionState` |
 | Step 4 (id-effectful) | `vault.allocateNoteId(now)` | Effectful — reads Vault Aggregate's internal NoteId set |
 | Step 4 (id-pure) | `nextAvailableNoteId(preferred, existingIds)` | Pure core — collision-avoidance algorithm; deterministic given inputs; property-test target |
 | Step 4 (compose) | `initializeCaptureSession` | Mixed — calls effectful `Clock.now()` and effectful `vault.allocateNoteId`; only the inner `nextAvailableNoteId` call is pure |

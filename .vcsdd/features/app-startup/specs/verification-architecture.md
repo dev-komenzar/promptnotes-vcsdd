@@ -2,9 +2,18 @@
 
 **Feature**: `app-startup`
 **Phase**: 1b
-**Revision**: 3 (phase-1c-iteration-1-FAIL: F-001 purity boundary split + PROP-003 retarget + PROP-022 added, F-002 PROP-021 added + matrix fixed, F-003 emitter partition, F-004 REQ-015 AC split, F-005 statDir contract clarification)
+**Revision**: 5 (phase-3-adversary-FAIL iteration-3: FIND-014 REQ-010 Note aggregate non-retention clarified (Option A); PROP-013 description tightened to make non-retention explicit)
 **Mode**: lean
 **Source**: `docs/domain/workflows.md` Workflow 1, `docs/domain/aggregates.md §1 衝突回避設計`, `docs/domain/code/ts/src/shared/snapshots.ts`, `docs/domain/code/rust/src/vault/ports.rs`
+
+---
+
+## 改訂履歴 / Revision Log
+
+| 日付 | 反復 | 対象 finding | 概要 |
+|------|------|-------------|------|
+| 2026-04-30 | 2 | FIND-003, FIND-010 | FIND-003: purity boundary mapにinter-step (2→3)行を追記し、Clock.now呼び出し回数上限（≤2）を検証するPROP-023を追加（Tier 1, required: true）; FIND-010: statDir Err(disk-full\|lock\|unknown)の5行マッピングを検証するPROP-024を追加（Tier 1, required: false）; statDirポート契約の docstring に collapsed cases を追記 |
+| 2026-04-30 | 3 | FIND-014 | FIND-014: REQ-010 NOTE 追記（Option A 採用 — Note aggregate は invariant 強制 + event-emission 用途のみ、retention なし）。PROP-013 の InitialUIState shape 制約に Note aggregate 非保持の明示注記を追加。 |
 
 ---
 
@@ -14,15 +23,16 @@
 |------|----------|---------------|-----------|
 | Step 1 | `loadVaultConfig` | **Effectful shell** | Invokes `Settings.load()` and `FileSystem.statDir()` — both are external reads |
 | Step 2 | `scanVault` | **Effectful shell** | Invokes `FileSystem.listMarkdown()` and `FileSystem.readFile()` per file; `FrontmatterParser.parse` is pure but called inside an effectful loop |
-| Step 3 | `hydrateFeed` | **Pure core** | No port dependencies; deterministic; `ScannedVault` → `HydratedFeed` is referentially transparent |
-| Step 4 (time) | `Clock.now()` | **Effectful shell** | Returns wall-clock time; purity-violating |
+| Inter-step (2→3) | `runAppStartupPipeline` orchestrator | **Effectful shell** | Calls `Clock.now()` exactly once after Step 2 completes and before `hydrateFeed` begins, to obtain `occurredOn` for `VaultScanned`, `FeedRestored`, and `TagInventoryBuilt`. This is orchestration-layer I/O explicitly permitted by REQ-015. The resulting `Timestamp` is passed to `emit()` calls only — NOT into `hydrateFeed`. |
+| Step 3 | `hydrateFeed` | **Pure core** | No port dependencies; deterministic; `ScannedVault` → `HydratedFeed` is referentially transparent. Accepts only `ScannedVault` — no timestamp argument, no `Clock.now` call. |
+| Step 4 (time) | `Clock.now()` | **Effectful shell** | Second and final `Clock.now()` call per pipeline run; returns wall-clock time for `Note.createdAt/updatedAt` and `EditingSessionState` |
 | Step 4 (id-effectful) | `vault.allocateNoteId(now)` | **Effectful shell** | Reads Vault Aggregate's internal NoteId set — that read is an effect. Delegates collision-avoidance to the pure helper. |
 | Step 4 (id-pure) | `nextAvailableNoteId(preferred, existingIds)` | **Pure core** | Deterministic given `(Timestamp, ReadonlySet<NoteId>)`. No side effects. Property-test target for uniqueness and suffix determinism. |
 | Step 4 (compose) | `initializeCaptureSession` | **Mixed** | Calls effectful `Clock.now()` then effectful `vault.allocateNoteId`; only the inner `nextAvailableNoteId` invocation is pure |
 
 **Formally verifiable core**: `hydrateFeed` and `nextAvailableNoteId`.
 
-**Effectful shell**: `loadVaultConfig`, `scanVault`, `Clock.now()`, and `vault.allocateNoteId` (as an Aggregate method — its Vault-state read is an effect; the algorithm it delegates to is pure).
+**Effectful shell**: `loadVaultConfig`, `scanVault`, the inter-step (2→3) orchestrator `Clock.now()` call, `Clock.now()` in Step 4, and `vault.allocateNoteId` (as an Aggregate method — its Vault-state read is an effect; the algorithm it delegates to is pure).
 
 ---
 
@@ -38,15 +48,17 @@ type SettingsLoad = () => Result<VaultPath | null, never>;
 // ── FileSystem ────────────────────────────────────────────────────────────
 /** Verify that a path exists and is a readable directory.
  *
- *  Three distinct outcomes (F-005):
- *    Ok(true)                    — path exists and is a readable directory
- *    Ok(false)                   — path exists but is not a directory (e.g., it is a file)
- *    Err(FsError{kind:'not-found'}) — path does not exist at all
- *    Err(FsError{kind:'permission'}) — insufficient OS permissions
+ *  Five distinct outcomes (F-005, amended by FIND-010):
+ *    Ok(true)                             — path exists and is a readable directory
+ *    Ok(false)                            — path exists but is not a directory → PathNotFound
+ *    Err(FsError{kind:'not-found'})       — path does not exist at all → PathNotFound
+ *    Err(FsError{kind:'permission'})      — insufficient OS permissions → PermissionDenied
+ *    Err(FsError{kind:'disk-full'|'lock'|'unknown'}) — transient/indeterminate → PathNotFound (collapsed)
  *
- *  AppStartup maps both Ok(false) and Err(not-found) to PathNotFound, because
- *  the workflow requires a readable directory and the distinction is not
- *  actionable at this level. PermissionDenied maps to its own error variant.
+ *  Collapse rationale: disk-full, lock, and unknown have no distinct user-visible
+ *  recovery path at AppStartup time; the remediation ("configure a valid vault path")
+ *  is identical to the not-found case. PermissionDenied requires OS-level chmod/chown
+ *  and is therefore kept as a separate reason. See REQ-004 rationale table.
  */
 type FileSystemStatDir = (path: string) => Result<boolean, FsError>;
 
@@ -123,7 +135,7 @@ type VaultAllocateNoteId = (now: Timestamp) => NoteId;  // effectful: reads Vaul
 | PROP-010 | Zero-byte file accumulates `CorruptedFile` with `failure: {kind:'hydrate', reason:'missing-field'}` | REQ-002 | 2 | false | Example-based test |
 | PROP-011 | Empty vault (0 `.md` files) produces empty Feed and proceeds to Step 4 | REQ-002, REQ-008 | 2 | false | Example-based test |
 | PROP-012 | All-corrupted vault succeeds with empty Feed and `corruptedFiles.length === scanned count` | REQ-009 | 2 | false | Example-based test |
-| PROP-013 | `InitialUIState` contains `feed`, `tagInventory`, `editingSessionState`, `corruptedFiles` | REQ-014 | 2 | false | Example-based test |
+| PROP-013 | `InitialUIState` contains exactly `{ feed, tagInventory, editingSessionState, corruptedFiles }` — the type explicitly excludes a Note aggregate field, encoding REQ-010 Note non-retention as a TypeScript shape constraint | REQ-010, REQ-014 | 2 | false | Example-based test |
 | PROP-014 | `VaultDirectoryNotConfigured` event is emitted exactly once on `Unconfigured` | REQ-003 | 2 | false | Example-based test with event spy |
 | PROP-015 | `hydrateFeed` Feed sort order is `updatedAt` descending | REQ-008 | 1 | false | fast-check (property: ∀ non-empty snapshots, noteRefs sorted desc by updatedAt) |
 | PROP-016 | Happy-path Step 1 emits NO domain event (including no `VaultDirectoryConfigured` and no `VaultDirectoryNotConfigured`) | REQ-001 | 2 | false | Example-based test with event spy |
@@ -133,6 +145,8 @@ type VaultAllocateNoteId = (now: Timestamp) => NoteId;  // effectful: reads Vaul
 | PROP-020 | Per-file `readFile` permission-denied failure produces `failure: {kind:'read', fsError:{kind:'permission'}}` (not a hydrate variant) | REQ-016 | 2 | false | Example-based test with FsError stub |
 | PROP-021 | Event ordering: `VaultScanned` (Vault, public) is emitted before `FeedRestored` (Curate, internal) which is emitted before `TagInventoryBuilt` (Curate, internal); `VaultScanned` carries `{vaultId, snapshots, corruptedFiles, occurredOn}` with `CorruptedFile.failure: ScanFileFailure`; `FeedRestored` and `TagInventoryBuilt` are NOT in the `PublicDomainEvent` union | REQ-013a, REQ-013b | 2 | false | Example-based test with ordered event spy; verify PublicDomainEvent union membership via TypeScript type assertion |
 | PROP-022 | `nextAvailableNoteId` is deterministic: same `(preferred, existingIds)` arguments always produce the same `NoteId` output | REQ-011 | 1 | false | fast-check (property: ∀ ts, ∀ existingIds, nextAvailableNoteId(ts, existingIds) === nextAvailableNoteId(ts, existingIds)) |
+| PROP-023 | `Clock.now()` is called at most twice per pipeline run: once in the inter-step orchestrator (between Step 2 and Step 3) and once inside Step 4. `hydrateFeed` (Step 3) contains no `Clock.now` call and accepts no timestamp argument. | REQ-015 | 1 | **true** | fast-check / spy wrapper (property: instrument `Clock.now` with a counter; run full pipeline → counter ≤ 2; verify `hydrateFeed` call signature has no `Timestamp` parameter via TypeScript type assertion) |
+| PROP-024 | For each `statDir` result kind, `loadVaultConfig` maps to the spec-defined `reason`: `Ok(true)` → success; `Ok(false)` → `path-not-found`; `Err('not-found')` → `path-not-found`; `Err('permission')` → `permission-denied`; `Err('disk-full')` → `path-not-found`; `Err('lock')` → `path-not-found`; `Err('unknown')` → `path-not-found` | REQ-004 | 1 | false | fast-check with small finite generator over all 5 `statDir` result variants; assert `reason` matches the table in REQ-004 for each case |
 
 ---
 
@@ -148,6 +162,7 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 - **PROP-002** (corrupted files excluded) — safety property; corrupted data must never enter Feed.
 - **PROP-003** (NoteId uniqueness via pure helper) — uniqueness invariant on `nextAvailableNoteId`; collision would corrupt the file-system state. Retargeted from `vault.allocateNoteId` (which is effectful and cannot accept an arbitrary `existingIds` set in a property test) to `nextAvailableNoteId(ts, existingIds)` which is pure and fully fast-check-testable.
 - **PROP-004** (error type exhaustiveness) — ensures no unhandled error variant reaches the caller.
+- **PROP-023** (Clock.now call budget) — load-bearing purity boundary invariant: the "Step 3 is a pure function" guarantee depends on `Clock.now` being absent from `hydrateFeed` and bounded to ≤ 2 calls per run. Violation silently introduces a hidden effectful dependency inside the nominally-pure core.
 
 ---
 
@@ -158,7 +173,7 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 | REQ-001 | PROP-005 (indirectly), PROP-016, PROP-017 |
 | REQ-002 | PROP-009, PROP-010, PROP-011, PROP-018, PROP-019 |
 | REQ-003 | PROP-004, PROP-005, PROP-014 |
-| REQ-004 | PROP-004, PROP-006 |
+| REQ-004 | PROP-004, PROP-006, PROP-024 |
 | REQ-005 | PROP-004, PROP-007 |
 | REQ-006 | PROP-005, PROP-006 |
 | REQ-007 | PROP-004, PROP-008 |
@@ -170,10 +185,10 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 | REQ-013a | PROP-021 |
 | REQ-013b | PROP-021 |
 | REQ-014 | PROP-013, PROP-017 |
-| REQ-015 | PROP-001, PROP-018 |
+| REQ-015 | PROP-001, PROP-018, PROP-023 |
 | REQ-016 | PROP-009, PROP-019, PROP-020 |
 
-Every requirement has at least one proof obligation. All four `required: true` obligations (PROP-001, PROP-002, PROP-003, PROP-004) cover the highest-risk invariants and span Tiers 0–1.
+Every requirement has at least one proof obligation. Five `required: true` obligations (PROP-001, PROP-002, PROP-003, PROP-004, PROP-023) cover the highest-risk invariants and span Tiers 0–1. Total proof obligations: 24 (PROP-001 through PROP-024).
 
 **Note on PROP-003 retarget (F-001)**: In revision 2, PROP-003 was written as `allocateNoteId(ts) ∉ set` where `set` was never an argument to the function — making the property untestable as a pure fast-check test. In revision 3, PROP-003 targets `nextAvailableNoteId(ts, existingIds) ∉ existingIds`, which is a pure function with `existingIds` as an explicit parameter and is fully property-testable. The `externalId` link (BEAD-018 → PROP-003) is unchanged; only the spec content is updated.
 

@@ -1,0 +1,22 @@
+{
+  "reviewType": "implementation",
+  "featureName": "app-startup",
+  "sprintNumber": 2,
+  "iteration": 1,
+  "reviewedAt": "2026-04-30T14:30:00Z",
+  "dimensionVerdicts": {
+    "spec_fidelity": "PASS",
+    "edge_case_coverage": "PASS",
+    "implementation_correctness": "PASS",
+    "structural_integrity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "overallVerdict": "FAIL",
+  "findingsCount": 4,
+  "findingsBySeverity": { "critical": 0, "major": 3, "minor": 1 },
+  "priorSprintFindingsResolved": ["FIND-001", "FIND-002", "FIND-004", "FIND-006", "FIND-007", "FIND-009"],
+  "priorSprintFindingsKeptOpen": ["FIND-008"],
+  "priorSprintFindingsRoutedToSpec": ["FIND-003", "FIND-010"],
+  "priorSprintFindingsPartiallyResolved": ["FIND-005"],
+  "summary": "FAIL on structural_integrity and verification_readiness; the other three dimensions PASS. Sprint-2 genuinely resolves the prior critical defects via material code change: FIND-001 (editingSessionState aggregate at stages.ts:91, initialize-capture.ts:71), FIND-002 (noteCreate port at initialize-capture.ts:32 invoked at line 59), FIND-004 (NoteId regex validation at scan-vault.ts:101-111), FIND-006 (Tag VO admissibility at scan-vault.ts:113-123 with two new fail-grade tests for empty/whitespace tags), FIND-009 (clockNow port at load-vault-config.ts:34 used at line 65), and FIND-007 positive-membership type assertion at pipeline.test.ts:55-56. Spec-routed findings (FIND-003 Clock.now inter-step, FIND-010 statDir collapse) are reflected in REQ-015 and REQ-004 amendments and exercised by PROP-023a (clock-budget) and PROP-024 (7-case statDir mapping). The 113-test bun suite passes and svelte-check is clean. Three load-bearing defects remain: (1) FIND-011 — the PROP-023 type-level claim 'hydrateFeed signature has no Timestamp parameter' is encoded at step3-hydrate-feed.test.ts:42-51 as `const _noTimestamp: _NoTimestampParam = undefined as never`, which compiles regardless of whether _NoTimestampParam is `never` or `Timestamp` because `undefined as never` is the bottom type — therefore the Tier-1 required:true claim has no compile-time enforcement. (2) FIND-012 — PROP-021's negative-membership Tier-0 assertions for FeedRestored/TagInventoryBuilt at pipeline.test.ts:46-51 use the same tautological pattern; only the positive direction (VaultScanned IS public) at line 56 is actually load-bearing. (3) FIND-013 — FIND-005 was only partially resolved: stages.ts:32 retains `body: string` while the verification-architecture.md:76-78 port contract explicitly requires `body: Body`; the Tier-0 assertion at step2-scan-vault.test.ts:78 is declared but never made compile-time-falsifiable, and scan-vault.ts:127 still casts via `as unknown as Body`, bypassing the smart constructor at the very boundary the port catalog says owns Body construction. FIND-014 (minor) flags that initialize-capture.ts:59 calls noteCreate and discards the result — REQ-010 ACs are met by what the port returns but the Note aggregate is ephemeral; route to 1a for clarification. FIND-008 deferral to Phase 5 is acknowledged in the green-phase log; the referenced Rust path remains absent. Routes: FIND-011 + FIND-012 → 2a (replace tautological assertions with extends-never guards); FIND-013 → 2b (tighten ParsedNote.body to Body and add real Tier-0 guard); FIND-014 → 1a."
+}

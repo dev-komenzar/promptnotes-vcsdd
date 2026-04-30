@@ -1,0 +1,21 @@
+{
+  "id": "FIND-013",
+  "sprintNumber": 2,
+  "iteration": 1,
+  "dimension": "structural_integrity",
+  "severity": "major",
+  "title": "ParsedNote.body retained as `string` contradicts verification-architecture port contract requiring Body VO",
+  "description": "FIND-005 in sprint-1 demanded that ParsedNote use VO types end-to-end: `tags: readonly Tag[]` AND `body: Body`. Verification-architecture.md:76-78 codifies the canonical port contract as `FrontmatterParserParse: (raw: string) => Result<{ body: Body; fm: Frontmatter }, HydrationFailureReason>` — note the explicit `body: Body`, not `body: string`. Sprint 2 partially resolves FIND-005: stages.ts:34 now types `tags: readonly Tag[]` (good), but stages.ts:32 retains `body: string`, and the docstring at lines 26-29 explicitly justifies the deviation: 'body remains `string` because scanVault is the boundary that wraps the raw markdown into a Body VO'. The corresponding Tier-0 test `_BodyIsBody = ParsedNote['body'] extends Body ? true : false` is declared at step2-scan-vault.test.ts:78 but never made compile-time-falsifiable (no assignment fails when the extends is `false`). Consequence: scanVault.ts:127 must `parsed.body as unknown as Body` — bypassing the smart constructor at the very boundary the port catalog says owns Body construction. The FrontmatterParser port can return `{ body: 'totally invalid markdown body that fails Body.tryNew' }` and the cast silently coerces it. This is structural drift from the verification-architecture port contract that PROP-001 (Tier-1, required:true) depends on.",
+  "evidence": {
+    "files": [
+      "promptnotes/src/lib/domain/app-startup/stages.ts:21-38",
+      "promptnotes/src/lib/domain/app-startup/scan-vault.ts:125-135",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md:70-78",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:77-81"
+    ],
+    "excerpt": "// stages.ts:31-38\nexport type ParsedNote = {\n  readonly body: string;          // ← drifts from port contract requiring `Body`\n  readonly fm: {\n    readonly tags: readonly Tag[];\n    readonly createdAt: Timestamp;\n    readonly updatedAt: Timestamp;\n  };\n};\n\n// scan-vault.ts:127 still bypasses Body smart constructor:\nbody: parsed.body as unknown as Body,"
+  },
+  "specReference": "PROP-001",
+  "recommendedRoute": "2b",
+  "remediation": "Tighten ParsedNote.body to `Body` in stages.ts so the port contract matches verification-architecture.md. The parser stub/implementation can construct Body via Body.tryNew at the parse boundary; if that fails, return `{ ok: false, error: 'invalid-value' }`. Then remove the `as unknown as Body` cast in scan-vault.ts and add a compile-time guard `type _BodyOk = ParsedNote['body'] extends Body ? true : false; const _check: _BodyOk = true;` so that re-widening the type would fail compile."
+}

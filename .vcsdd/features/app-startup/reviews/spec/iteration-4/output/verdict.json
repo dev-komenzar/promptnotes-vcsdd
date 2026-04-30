@@ -1,0 +1,65 @@
+{
+  "feature": "app-startup",
+  "iteration": 4,
+  "phase": "1c",
+  "reviewer": "adversary",
+  "reviewedAt": "2026-04-30T16:00:00Z",
+  "mode": "lean",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "summary": "FIND-014 is fully addressed by behavioral-spec.md revision 5. (1) REQ-010 EARS at line 200 is preserved verbatim relative to the FIND-014 quoted text — 'create a new Note via Note.create(id, now) ... and transition EditingSessionState to editing(newNoteId)'. The Builder did not weaken the behavioral promise; the clarification is added as a NOTE block plus refined ACs, not as an EARS edit. (2) The NOTE block at lines 203-212 explicitly states Option A: the Note aggregate is constructed for (a) invariant enforcement (empty Body, createdAt===updatedAt===now, frontmatter shape per aggregates.md §1) and (b) event-emission semantics (NewNoteAutoCreated payload {noteId, occurredOn} only). Line 210 makes non-retention explicit: 'not attached to EditingSessionState, not included in the NewNoteAutoCreated payload, and not passed to any persistence step within the AppStartup pipeline'. Option B is reasoned-against at line 212 with a concrete contract-source-of-truth justification. (3) The citation 'docs/domain/code/ts/src/capture/internal-events.ts lines 24–28' at line 208 is accurate — the canonical type at that file is `NewNoteAutoCreated = { kind: 'new-note-auto-created'; noteId: NoteId; occurredOn: Timestamp }` (no Note aggregate field), confirming the spec's claim. (4) The 3 refined ACs at lines 217-219 unambiguously distinguish construction-time properties (AC bullets at 217-218 — Note.body empty / createdAt===updatedAt===now are properties of the value returned by noteCreate at allocation time) from retention semantics (AC bullet at 219 — 'not retained beyond Step 4; downstream code receives only NoteId via editingSessionState'). (5) Internal consistency: REQ-012 (line 242) emits NewNoteAutoCreated with the new NoteId (no Note payload field) — consistent with the NOTE. REQ-014 (line 279) lists InitialUIState fields as feed/tagInventory/editingSessionState/corruptedFiles — consistent with the NOTE's non-retention claim. (6) No contradiction with future-persistence language: the spec's scope is explicitly 'Initialization-only' (line 7), and the NOTE at line 210 disclaims persistence within the AppStartup pipeline only — leaving downstream persistence flows out of scope (correctly). (7) No regression on FIND-003 (Clock.now budget): REQ-010's Step 4 Clock.now call is the same Step-4 call already accounted for in REQ-015 AC-3 line 311; the NOTE adds no new clock site. (8) No regression on F-001 (REQ-011 two-layer split, lines 226-236), F-002/F-003 (REQ-013a/b split, lines 251-273), F-004 (REQ-015 ACs split, lines 308-314), F-005/FIND-010 (REQ-001/004 statDir contract, lines 42-49 and 115-123). EARS syntax preserved on all amended REQs.",
+      "findings": []
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "summary": "verification-architecture.md revision 5 tightens PROP-013 (line 138) coherently with FIND-014 Option A. (1) Coverage matrix update: PROP-013's Covers REQ column now lists 'REQ-010, REQ-014' and the inverse matrix at line 182 lists 'REQ-010 | PROP-013, PROP-017' — both directions of the trace are populated. (2) Tier and required values are appropriate: Tier 2 / required:false for a minor finding is calibrated — the regression-vector (someone adds a `note: Note` field to InitialUIState) is detectable by an example-based test that asserts `Object.keys(initialUIState).sort()` against the expected 4-key list, which is exactly what Tier 2 + Tool='Example-based test' encode. (3) Required:true set is preserved at exactly 5 entries (PROP-001, PROP-002, PROP-003, PROP-004, PROP-023, lines 161-165) — no regression. (4) No orphans: every REQ (REQ-001..REQ-016 including 013a/013b, 17 total) maps to ≥1 PROP and every PROP (PROP-001..PROP-024, 24 total) maps to ≥1 REQ. (5) No regression on PROP-021 (event ordering, line 146), PROP-023 (Clock.now budget, line 148), PROP-024 (statDir mapping, line 149), PROP-003+PROP-022 (NoteId uniqueness/determinism). (6) The 'no new PROP' decision is defensible: PROP-013 already covers InitialUIState shape for REQ-014; tightening its description plus adding REQ-010 to its Covers REQ column extends the same artifact rather than creating a redundant obligation. A new PROP would be required only if non-retention were not detectable by the existing PROP-013 mechanism — the example-based key-shape test detects exactly this regression. Caveat noted but not failing: the PROP-013 description prose says 'encoding REQ-010 Note non-retention as a TypeScript shape constraint', which could be read as a Tier-0 type-level claim. TypeScript's structural object types are open by default — a value satisfying `InitialUIState` may carry an extra `note` property without breaking assignability outside object-literal freshness checks. However, PROP-013's Tier column is explicitly 2 and its Tool column is explicitly 'Example-based test', directing the Phase 2a author to a runtime `Object.keys` assertion (which IS falsifiable on a regression that adds a `note: Note` field). The description's 'TypeScript shape constraint' wording is rhetoric, not a Tier-0 commitment. This is documentation looseness, not a verification-readiness defect.",
+      "findings": []
+    }
+  },
+  "overallVerdict": "PASS",
+  "priorFindingStatus": [
+    {
+      "id": "FIND-014",
+      "status": "resolved",
+      "justification": "REQ-010 NOTE block (behavioral-spec.md:203-212) explicitly adopts Option A: Note aggregate is for invariant + event-emission semantics, not retained. Line 210 enumerates the three places it is NOT retained (EditingSessionState, NewNoteAutoCreated payload, persistence). The citation at line 208 (internal-events.ts lines 24-28) was verified against the canonical file — `NewNoteAutoCreated = { kind, noteId, occurredOn }` matches exactly. Refined ACs at lines 217-219 split construction-time properties from retention semantics: lines 217-218 phrase Body/timestamp invariants as 'properties of the Note value returned by noteCreate at construction time'; line 219 says 'not retained beyond Step 4'. EARS sentence at line 200 is preserved verbatim. PROP-013 in verification-architecture.md:138 is tightened to encode non-retention with REQ-010 added to its Covers REQ column. All four FIND-014 acceptance criteria from the manifest (EARS preserved, NOTE explicit Option A, citation accurate, ACs unambiguous) are met."
+    },
+    {
+      "id": "FIND-003",
+      "status": "still-resolved",
+      "justification": "REQ-015 EARS (behavioral-spec.md:291), AC-3 (line 311), AC-4 (line 312), and the Total Clock.now call budget table (lines 304-306) are intact. PROP-023 (verification-architecture.md:148, Tier 1, required:true) remains traceable to REQ-015. REQ-010's NOTE adds no new Clock.now site — its Step 4 Clock.now call is the same call already counted in AC-3 Call 2. No regression."
+    },
+    {
+      "id": "FIND-010",
+      "status": "still-resolved",
+      "justification": "REQ-004 EARS (behavioral-spec.md:113), the statDir → reason mapping table (lines 117-123), the rejected 'unavailable' alternative at line 125, and ACs at lines 128-133 are unchanged. PROP-024 (verification-architecture.md:149) and the statDir Port Contract docstring (lines 49-62) mirror the contract on the verification side. Revision 5 did not touch this area. No regression."
+    },
+    {
+      "id": "F-001",
+      "status": "still-resolved",
+      "justification": "REQ-011 two-layer split intact (behavioral-spec.md:225-236): pure helper `nextAvailableNoteId(preferred, existingIds)` plus effectful `vault.allocateNoteId(now)`. PROP-003 (Tier 1, required:true) and PROP-022 still both trace to REQ-011 (verification-architecture.md:183). Revision 5 did not touch this area."
+    },
+    {
+      "id": "F-002",
+      "status": "still-resolved",
+      "justification": "PROP-021 (verification-architecture.md:146) intact — covers VaultScanned → FeedRestored → TagInventoryBuilt ordering, VaultScanned payload {vaultId, snapshots, corruptedFiles, occurredOn} with CorruptedFile.failure: ScanFileFailure, plus PublicDomainEvent union membership constraint. Coverage matrix lines 185-186 still route REQ-013a/b to PROP-021. No regression."
+    },
+    {
+      "id": "F-003",
+      "status": "still-resolved",
+      "justification": "REQ-013a (behavioral-spec.md:251-260) and REQ-013b (behavioral-spec.md:264-273) split is preserved verbatim. Emitter responsibility (Vault Aggregate vs Curate Context) and PublicDomainEvent membership remain explicit ACs. Revision 5 did not modify these REQs."
+    },
+    {
+      "id": "F-004",
+      "status": "still-resolved",
+      "justification": "REQ-015 ACs at behavioral-spec.md:308-314 retain the AC-1 (purity, property-verifiable) / AC-2 (sync-async deferred) split, plus AC-3 (Clock.now budget) and AC-4 (Step 3 receives no timestamp) added in revision 4. FrontmatterParser.parse purity restated at line 314. No regression."
+    },
+    {
+      "id": "F-005",
+      "status": "still-resolved",
+      "justification": "REQ-001 statDir outcome contract (behavioral-spec.md:42-49) retains the 4-outcome enumeration (Ok(true)/Ok(false)/Err(not-found)/Err(permission)) plus the disk-full/lock/unknown collapse from FIND-010. verification-architecture.md:49-62 mirrors the extension on the port-contract side. No regression."
+    }
+  ],
+  "newFindings": [],
+  "judgment": "PASS both dimensions. Proceed to Phase 2a (Sprint 3) — re-implement Step 4 against the now-disambiguated REQ-010 ACs and add a runtime example-based test for PROP-013's InitialUIState key-shape assertion (Object.keys check) to lock in non-retention. Implementation guidance for Sprint 3: the existing Phase 2b code at promptnotes/src/lib/domain/app-startup/initialize-capture.ts already calls noteCreate and discards the result, which now matches REQ-010 NOTE Option A — only the test surface and possibly a comment refresh need to change. Watchpoint for Sprint 3 adversary: ensure the new test asserts `Object.keys(initialUIState).sort()` against exactly ['corruptedFiles', 'editingSessionState', 'feed', 'tagInventory'] (a runtime mechanism), not a TypeScript-type assertion (which is open and tautological per structural typing). Documentation looseness in PROP-013's prose ('TypeScript shape constraint') is non-blocking but worth a follow-up cleanup if revision 6 ever happens; the Tier 2 / Tool='Example-based test' columns already direct the implementer correctly. No new spec findings raised."
+}

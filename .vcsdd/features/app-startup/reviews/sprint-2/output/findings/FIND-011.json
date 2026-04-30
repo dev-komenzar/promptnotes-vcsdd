@@ -1,0 +1,20 @@
+{
+  "id": "FIND-011",
+  "sprintNumber": 2,
+  "iteration": 1,
+  "dimension": "verification_readiness",
+  "severity": "major",
+  "title": "PROP-023 type-level assertion is tautological — does not catch hydrateFeed gaining a Timestamp parameter",
+  "description": "PROP-023 (verification-architecture.md:147) explicitly says: 'verify hydrateFeed call signature has no Timestamp parameter via TypeScript type assertion'. PROP-023 is the only Tier-1 required:true proof obligation added in this revision and underwrites the post-FIND-003 purity boundary claim. The implementation in step3-hydrate-feed.test.ts:42-51 encodes the assertion as: type _NoTimestampParam = Extract<_HydrateFeedSig[0], { epochMillis: number }>; const _noTimestamp: _NoTimestampParam = undefined as never;. This is tautological because the value `undefined as never` is assignable to ANY type — including Timestamp-shaped types. If a future change rewrites hydrateFeed as `(scannedVault: ScannedVault, now: Timestamp)`, _NoTimestampParam would become `Timestamp` (not `never`), and the line `const _noTimestamp: Timestamp = undefined as never` would still compile (never is the bottom type). Therefore the compile-time guard does not exist in any operational sense. The runtime arity check `hydrateFeed.length === 1` partially compensates but only catches first-position changes; it does not enforce parameter-type purity, and PROP-023 explicitly demands the type-level guarantee for the Tier-1 required:true claim.",
+  "evidence": {
+    "files": [
+      "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts:38-51",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md:147",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md:159-164"
+    ],
+    "excerpt": "type _NoTimestampParam = Extract<_HydrateFeedSig[0], { epochMillis: number }>;\n// ... since hydrateFeed(scannedVault: ScannedVault) has no Timestamp param,\n// _NoTimestampParam should already be `never` in current impl.\n// ...\nconst _noTimestamp: _NoTimestampParam = undefined as never;"
+  },
+  "specReference": "PROP-023",
+  "recommendedRoute": "2a",
+  "remediation": "Replace the always-passing assertion with a compile-time guard such as: `type _ParamCount = _HydrateFeedSig['length']; const _len: _ParamCount = 1 as const;` or `const _check: ScannedVault = (null as unknown as _HydrateFeedSig[0]);` so that adding a second Timestamp parameter would change the inferred parameter tuple and break the assignment. Equivalently: `type _AssertNoSecondParam = _HydrateFeedSig extends [unknown] ? true : false; const _nope: _AssertNoSecondParam = true;` would fail to compile if the function arity grew."
+}

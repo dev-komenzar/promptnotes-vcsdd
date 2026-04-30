@@ -1,0 +1,57 @@
+{
+  "feature": "app-startup",
+  "iteration": 4,
+  "phase": "1c",
+  "reviewType": "spec",
+  "mode": "lean",
+  "reviewer": "adversary",
+  "artifactsToReview": [
+    ".vcsdd/features/app-startup/specs/behavioral-spec.md",
+    ".vcsdd/features/app-startup/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "context": {
+    "rationale": "Phase 4 routed Phase 3 sprint-2 adversary FAIL findings. FIND-014 (minor, recommendedRoute 1a) was the only finding routed to spec; FIND-011/012 (2a) and FIND-013 (2b) will be picked up after this gate. Spec was refined to revision 5 (behavioral-spec.md) and revision 5 (verification-architecture.md). Re-running spec review gate to confirm the FIND-014 amendment is well-formed and does not introduce new ambiguity, and that prior PASS findings (F-001..F-005, FIND-003, FIND-010) remain resolved.",
+    "priorIterations": [
+      {"iteration": 1, "verdict": "PASS-with-findings (F-001..F-005)", "outputPath": ".vcsdd/features/app-startup/reviews/spec/iteration-1/output/verdict.json"},
+      {"iteration": 2, "verdict": "PASS (F-001..F-005 resolved)", "outputPath": ".vcsdd/features/app-startup/reviews/spec/iteration-2/output/verdict.json"},
+      {"iteration": 3, "verdict": "PASS (FIND-003, FIND-010 resolved)", "outputPath": ".vcsdd/features/app-startup/reviews/spec/iteration-3/output/verdict.json"}
+    ],
+    "routedFindings": [
+      {
+        "id": "FIND-014",
+        "fromPhase": "3",
+        "sprint": 2,
+        "dimension": "implementation_correctness",
+        "severity": "minor",
+        "category": "spec_ambiguity",
+        "summary": "Step 4's initializeCaptureSession calls noteCreate(noteId, now) but discards the returned Note aggregate. REQ-010 EARS says 'create a new Note via Note.create(id, now) ... and transition EditingSessionState to editing(newNoteId)' — the ACs assert properties of the returned Note value, which the spy captures, but the constructed aggregate never propagates downstream. Adversary asked for disambiguation: (A) clarify Note construction is for invariant + event-emission semantics only / (B) attach Note to NewNoteAutoCreated payload. Builder selected Option A.",
+        "specReferences": ["REQ-010", "REQ-012", "REQ-014"],
+        "specResolution": "behavioral-spec.md REQ-010 (Revision 5) inserts a NOTE block (lines 202-212) clarifying Option A: the Note aggregate is constructed for (1) invariant enforcement (empty Body, createdAt===updatedAt===now, frontmatter shape per aggregates.md §1) and (2) event-emission semantics (NewNoteAutoCreated signals allocation; payload is {noteId, occurredOn} per docs/domain/code/ts/src/capture/internal-events.ts:24-28). Note aggregate is NOT retained — not in EditingSessionState, not in NewNoteAutoCreated payload. Downstream addresses the new note via NoteId only. ACs are refined into 3 bullets that disambiguate construction-time-properties vs. retention. verification-architecture.md tightens PROP-013 description to 'InitialUIState contains exactly { feed, tagInventory, editingSessionState, corruptedFiles } — the type explicitly excludes a Note aggregate field, encoding REQ-010 Note non-retention as a TypeScript shape constraint' and adds REQ-010 to PROP-013's Covers REQ column. No new PROP added (minor severity). PROP-013 Tier 2 / required: false retained."
+      }
+    ],
+    "domainSourceOfTruth": [
+      "docs/domain/workflows.md (Workflow 1: アプリ初期化)",
+      "docs/domain/aggregates.md §1 衝突回避設計, §1 Note.create",
+      "docs/domain/domain-events.md (NewNoteAutoCreated internal Capture event)",
+      "docs/domain/glossary.md",
+      "docs/domain/code/ts/src/capture/internal-events.ts (canonical NewNoteAutoCreated type)",
+      "docs/domain/code/ts/src/shared/note.ts (Note.create contract)"
+    ]
+  },
+  "instructions": {
+    "scope": "Review specs/behavioral-spec.md (revision 5) and specs/verification-architecture.md (revision 5) ONLY. Do NOT read source code under promptnotes/ — Phase 3 will re-review the implementation in sprint 3.",
+    "focus": [
+      "Confirm FIND-014 is fully addressed: REQ-010 NOTE block makes Note aggregate non-retention explicit; ACs are unambiguous about construction-time vs. retention semantics; the canonical type-contract reference (internal-events.ts:24-28) is correctly cited.",
+      "Confirm Option A is internally consistent — i.e., the NOTE does not contradict REQ-012 (NewNoteAutoCreated emission) or REQ-014 (InitialUIState shape).",
+      "Confirm PROP-013's tightened description correctly encodes 'no Note aggregate field in InitialUIState' as a TypeScript shape constraint, and that REQ-010 → PROP-013 mapping is sound.",
+      "Detect any new spec ambiguity introduced by these amendments (e.g., does 'not retained' conflict with any future-persistence-step language elsewhere in the spec?).",
+      "Confirm prior PASS findings (F-001..F-005, FIND-003, FIND-010) remain resolved — no regression. Particular attention to REQ-015 (Clock.now budget — Note.create is invoked at Step 4 with now from Step 4's Clock call, not from any new clock site) and REQ-013a/b (event ordering).",
+      "Verify coverage matrix completeness: every REQ has ≥1 PROP; every PROP traces to ≥1 REQ. Confirm REQ-010's row in the inverse matrix lists PROP-013 and PROP-017.",
+      "Check EARS syntax preservation on REQ-010 (the EARS sentence should be unchanged; only the NOTE + ACs were touched).",
+      "Question the 'no new PROP' decision for FIND-014: is Tier 0 (TypeScript exhaustiveness) coverage genuinely sufficient for non-retention, or does this need a runtime test to detect e.g. a future addition of an aggregate-carrying field that does not exclude Note? If Tier 0 sufficient, confirm the existing TypeScript shape constraint is actually compile-time enforced (i.e., InitialUIState type is closed/exact, not open)."
+    ],
+    "outputContract": "Write reviews/spec/iteration-4/output/verdict.json with the standard schema: feature, iteration, phase, reviewer, reviewedAt, mode, dimensions{spec_fidelity, verification_readiness}, overallVerdict, priorFindingStatus (FIND-014 plus regression check on F-001..F-005, FIND-003, FIND-010), newFindings (if any), judgment."
+  },
+  "createdAt": "2026-04-30T15:00:00Z"
+}

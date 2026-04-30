@@ -1,0 +1,20 @@
+{
+  "id": "FIND-012",
+  "sprintNumber": 2,
+  "iteration": 1,
+  "dimension": "verification_readiness",
+  "severity": "major",
+  "title": "PROP-021 negative-membership Tier-0 assertions (feed-restored / tag-inventory-built NOT public) are tautological",
+  "description": "PROP-021 (verification-architecture.md:145) requires: 'FeedRestored and TagInventoryBuilt are NOT in the PublicDomainEvent union ... verify PublicDomainEvent union membership via TypeScript type assertion'. This was the explicit retrofit for FIND-007. The implementation in pipeline.test.ts:46-51 encodes the negative direction as `type _FeedRestoredNotPublic = Extract<PublicDomainEvent, { kind: 'feed-restored' }>; const _f: _FeedRestoredNotPublic = undefined as never;` (and analogously for tag-inventory-built). Because `undefined as never` is the bottom type and is assignable to ANY target type — including a non-`never` Extract result — the assignment compiles whether `_FeedRestoredNotPublic` resolves to `never` (current correct state) OR to `{kind:'feed-restored', ...}` (regression state). If a future edit adds `FeedRestored` to the `PublicDomainEvent` union in shared/events.ts, the test will continue to pass with no compile error. The positive-direction assertion at line 56 (`const _v: _VaultScannedIsPublic = null as unknown as VaultScanned`) IS correctly load-bearing — but the negative direction, which is the substantive content of REQ-013b and the original FIND-007, is not. PROP-021's Tier-0 claim is therefore only half-enforced.",
+  "evidence": {
+    "files": [
+      "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts:44-56",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md:145",
+      "docs/domain/code/ts/src/shared/events.ts:139-152"
+    ],
+    "excerpt": "// FIND-007 Negative: feed-restored must NOT be in PublicDomainEvent\ntype _FeedRestoredNotPublic = Extract<PublicDomainEvent, { kind: \"feed-restored\" }>;\nconst _f: _FeedRestoredNotPublic = undefined as never; // must remain `never`\n\n// FIND-007 Negative: tag-inventory-built must NOT be in PublicDomainEvent\ntype _TagInventoryBuiltNotPublic = Extract<PublicDomainEvent, { kind: \"tag-inventory-built\" }>;\nconst _t: _TagInventoryBuiltNotPublic = undefined as never; // must remain `never`"
+  },
+  "specReference": "PROP-021",
+  "recommendedRoute": "2a",
+  "remediation": "Use a type-level equality (or extends-never) check that fails when the Extract is non-never. Example: `type _IsNever<T> = [T] extends [never] ? true : false; const _feedRestoredIsNotPublic: _IsNever<_FeedRestoredNotPublic> = true;`. If `feed-restored` is added to `PublicDomainEvent`, `_IsNever<_FeedRestoredNotPublic>` becomes `false`, and the assignment `true` to `false` will fail compile. Apply the same pattern to `_TagInventoryBuiltNotPublic`."
+}
