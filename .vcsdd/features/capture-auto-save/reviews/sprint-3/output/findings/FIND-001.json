@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "major",
+  "description": "dispatch-save-request.ts remains dead code. Sprint 2 FIND-005 flagged this as dead code; the pipeline.ts inlines its own dispatch logic and never imports this module. Yet step3-write-markdown.test.ts tests this dead module exclusively, providing false coverage confidence. 95 lines of production code and 303 lines of test code exercise a code path that is never invoked by the pipeline.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/dispatch-save-request.ts",
+    "lineRange": "1-94",
+    "snippet": "// entire file is dead code — no imports found anywhere in the codebase"
+  },
+  "relatedArtifacts": [
+    "promptnotes/src/lib/domain/__tests__/capture-auto-save/step3-write-markdown.test.ts"
+  ],
+  "routeToPhase": "2c"
+}

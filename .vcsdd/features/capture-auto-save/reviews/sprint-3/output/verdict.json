@@ -1,0 +1,66 @@
+{
+  "sprintNumber": 3,
+  "feature": "capture-auto-save",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T16:00:00Z",
+  "iteration": 3,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-002", "FIND-003"],
+      "evidence": [
+        {"type": "file", "location": "docs/domain/code/ts/src/capture/workflows.ts", "description": "Canonical CaptureAutoSave type at lines 68-73 specifies CaptureDeps param and Result<NoteFileSaved, SaveError> return"},
+        {"type": "file", "location": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts", "description": "Implementation uses CaptureAutoSavePorts (superset) and returns Result<CaptureAutoSaveResult, SaveError> (widened Ok)"}
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts", "description": "Empty-idle, empty-blur, invariant-violated paths all covered (lines 160-273)"},
+        {"type": "file", "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts", "description": "Pipeline-level empty-idle path, write failure path, clock budget on all paths tested (lines 362-455)"},
+        {"type": "file", "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step4-update-projections.test.ts", "description": "Tag delta: changed, unchanged, null-prev-with-tags, null-prev-no-tags all covered (lines 94-153)"}
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-004", "FIND-007"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts", "description": "TagInventoryUpdated unsafe cast at line 159 publishes non-PublicDomainEvent through typed event bus"},
+        {"type": "file", "location": "promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts", "description": "Timestamp opaque type violated via (as any).epochMillis at lines 47-48"}
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-001", "FIND-005"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/domain/capture-auto-save/dispatch-save-request.ts", "description": "94 lines of dead code — no imports found in the codebase"},
+        {"type": "file", "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step3-write-markdown.test.ts", "description": "303 lines of tests exercising dead code only; PROP-008 (FsError mapping) not tested against the live pipeline implementation"}
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": ["FIND-006"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts", "description": "Unused fast-check import at line 12 — deferred to Phase 5 per prior agreement"},
+        {"type": "file", "location": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md", "description": "23 proof obligations mapped to requirements; purity boundary correctly identified; Clock.now budget verified on all paths"},
+        {"type": "test-output", "location": ".vcsdd/features/capture-auto-save/evidence/sprint-3-green-phase.log", "description": "65 tests pass, 104 expect() calls, 0 failures"}
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 7,
+    "criticalCount": 0,
+    "majorCount": 5,
+    "minorCount": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": [],
+    "sprintOverSprintProgress": "Sprint 2 critical findings (FIND-001 EmptyNoteDiscarded Err channel, FIND-002 CaptureDeps extension) are RESOLVED. Sprint 2 FIND-008 (no pipeline test for EmptyNoteDiscarded) is RESOLVED. Sprint 2 FIND-006 (Clock.now budget on non-happy paths) is RESOLVED. Sprint 2 FIND-005 (dead code) is UNRESOLVED — dispatch-save-request.ts still present and still tested. New findings: FIND-002/FIND-003 (canonical type conformance), FIND-004 (unsafe cast), FIND-005 (dead code tests covering wrong module), FIND-007 (opaque type violation)."
+  }
+}

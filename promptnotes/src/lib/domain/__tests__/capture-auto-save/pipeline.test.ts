@@ -127,6 +127,7 @@ function makeHappyPorts(
     getPreviousFrontmatter: () => null,
     refreshSort: () => {},
     applyTagDelta: () => false,
+    emitInternal: () => {},
     beginAutoSave: (state: EditingState, now: Timestamp) => {
       log.beginAutoSaveCalls.push({ state, now });
       return makeSavingState(state.currentNoteId, now);
@@ -362,17 +363,18 @@ describe("PROP-020: State transitions on failure", () => {
 // ── FIND-008: Pipeline EmptyNoteDiscarded path ──────────────────────────
 
 describe("REQ-003: EmptyNoteDiscarded pipeline integration", () => {
-  test("empty-idle returns Ok with EmptyNoteDiscarded (not Err)", async () => {
+  test("empty-idle returns Err with validation/empty-body-on-idle", async () => {
     const ports = makeHappyPorts();
-    // Override noteIsEmpty to return true
     const emptyPorts = { ...ports, noteIsEmpty: () => true };
     const state = makeEditingState();
 
     const result = await captureAutoSave(emptyPorts)(state, "idle");
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.value.kind).toBe("empty-note-discarded");
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.kind).toBe("validation");
+    if (result.error.kind !== "validation") return;
+    expect(result.error.reason.kind).toBe("empty-body-on-idle");
   });
 
   test("empty-idle emits EmptyNoteDiscarded event", async () => {

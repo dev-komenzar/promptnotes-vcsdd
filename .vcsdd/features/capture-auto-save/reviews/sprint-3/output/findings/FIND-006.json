@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "minor",
+  "description": "fast-check is imported in step2-serialize-note.test.ts (line 12: import { fc } from '@fast-check/vitest') but never used. PROP-001 and PROP-002 are marked as Tier 1 (property-based test with fast-check, required: true) in verification-architecture.md, but the actual tests are example-based only. This is legitimately deferred to Phase 5 per Sprint 2 FIND-003 agreement, but the unused import should be removed to avoid confusion about current verification coverage.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts",
+    "lineRange": "12",
+    "snippet": "import { fc } from \"@fast-check/vitest\";"
+  },
+  "routeToPhase": "5"
+}

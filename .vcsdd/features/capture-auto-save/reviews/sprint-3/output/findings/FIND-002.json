@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "The canonical CaptureAutoSave type in workflows.ts:68-73 specifies return type Result<NoteFileSaved, SaveError>. The implementation in pipeline.ts:63 returns Result<CaptureAutoSaveResult, SaveError> where CaptureAutoSaveResult = NoteFileSaved | EmptyNoteDiscarded. This widens the Ok channel beyond what the canonical type permits. REQ-017 explicitly states the return type must be Promise<Result<NoteFileSaved, SaveError>> and that EmptyNoteDiscarded is handled internally. Returning EmptyNoteDiscarded in the Ok channel forces callers to discriminate on the Ok value, violating the canonical contract.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "37-63",
+    "snippet": "export type CaptureAutoSaveResult = NoteFileSaved | EmptyNoteDiscarded;\n...\n): Promise<Result<CaptureAutoSaveResult, SaveError>>"
+  },
+  "relatedArtifacts": [
+    "docs/domain/code/ts/src/capture/workflows.ts"
+  ],
+  "routeToPhase": "2b"
+}

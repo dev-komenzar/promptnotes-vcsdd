@@ -1,0 +1,17 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "The canonical CaptureAutoSave type in workflows.ts:68 requires parameter type CaptureDeps. The implementation in pipeline.ts:61 demands CaptureAutoSavePorts (which extends CaptureDeps with 9 additional required fields). This means the implementation cannot be assigned to the canonical type — it requires MORE from callers than the canonical contract allows. Per REQ-017, the function must take CaptureDeps as the curried dependency parameter. The additional ports (noteIsEmpty, writeFileAtomic, vaultPath, getCurrentNote, getPreviousFrontmatter, refreshSort, applyTagDelta, beginAutoSave, onSaveSucceeded, onSaveFailed) need to either be added to CaptureDeps upstream or injected via a different mechanism.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "44-59",
+    "snippet": "export type CaptureAutoSavePorts = CaptureDeps & {\n  readonly noteIsEmpty: (note: Note) => boolean;\n  readonly getCurrentNote: () => Note;\n  ...\n};"
+  },
+  "relatedArtifacts": [
+    "docs/domain/code/ts/src/capture/ports.ts",
+    "docs/domain/code/ts/src/capture/workflows.ts"
+  ],
+  "routeToPhase": "2b"
+}
