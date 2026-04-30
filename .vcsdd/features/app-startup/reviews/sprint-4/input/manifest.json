@@ -1,0 +1,77 @@
+{
+  "reviewType": "implementation",
+  "featureName": "app-startup",
+  "sprintNumber": 4,
+  "iteration": 1,
+  "mode": "lean",
+  "language": "typescript",
+  "priorReview": {
+    "sprintNumber": 3,
+    "verdict": "FAIL",
+    "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-3/output/verdict.json",
+    "findingsRoutedThisSprint": [
+      "FIND-015",
+      "FIND-016"
+    ],
+    "findingsRoutingMap": {
+      "FIND-015": "2a (PROP-003 衝突回避テストの tautological 化を load-bearing 化)",
+      "FIND-016": "2b (ParsedNote.fm を Frontmatter VO に締め, scan-vault.ts のキャスト撤廃)"
+    },
+    "findingsKeptOpen": [
+      "FIND-008"
+    ]
+  },
+  "escalation": {
+    "approvedAt": "2026-04-30T19:15:00Z",
+    "approvedBy": "architect",
+    "phase": "3",
+    "reason": "lean mode phase-3 cap (3) reached after sprint-3; sprint-4 has resolved FIND-015/FIND-016, one more attempt to verify",
+    "escalationFile": ".vcsdd/features/app-startup/escalations/phase-3-sprint-4.md"
+  },
+  "specRefinementContext": {
+    "behavioralSpecRevision": 5,
+    "verificationArchitectureRevision": 5,
+    "specGateIteration": 4,
+    "specGateVerdict": "PASS"
+  },
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/app-startup/specs/behavioral-spec.md",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/domain/__tests__/app-startup/errors.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
+      "promptnotes/src-tauri/src/domain/vault/note_id.rs"
+    ],
+    "source": [
+      "promptnotes/src/lib/domain/app-startup/errors.ts",
+      "promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+      "promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
+      "promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "promptnotes/src/lib/domain/app-startup/stages.ts",
+      "promptnotes/src-tauri/src/domain/vault/mod.rs",
+      "promptnotes/src-tauri/src/domain/vault/note_id.rs",
+      "docs/domain/code/rust/src/value_objects.rs"
+    ]
+  },
+  "evidence": {
+    "redPhase": ".vcsdd/features/app-startup/evidence/sprint-4-red-phase.log",
+    "greenPhase": ".vcsdd/features/app-startup/evidence/sprint-4-green-phase.log"
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "outputDirectory": ".vcsdd/features/app-startup/reviews/sprint-4/output",
+  "createdAt": "2026-04-30T19:30:00Z"
+}

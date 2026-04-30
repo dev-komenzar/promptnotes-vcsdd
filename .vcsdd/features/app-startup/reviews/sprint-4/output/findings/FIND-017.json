@@ -1,0 +1,15 @@
+{
+  "id": "FIND-017",
+  "dimension": "structural_integrity",
+  "severity": "minor",
+  "title": "FIND-006 テストスタブで `as any` が残存し FIND-016 ブランド契約と一貫しない",
+  "description": "Sprint-4 で FIND-016 を解決し ParsedNote.fm を branded Frontmatter VO に締めたが、step2-scan-vault.test.ts の FIND-006 系テスト (lines 798-810, 843-854, 885-895) では parser スタブの fm が `tags: [\"\"] as any`, `createdAt: { ... } as any`, `updatedAt: { ... } as any`, 外側に `} as any` という形で型契約をすべて `as any` で潜り抜けている。同 sprint で `makeParserAlwaysSucceed` (step2-scan-vault.test.ts:181-188) と pipeline.test.ts:125-134 は `as unknown as Frontmatter` 形式へ統一されたのに対し、FIND-006 用スタブは未更新のままで一貫性が失われている。`as any` は brand bypass を許す最も緩い構造で、後の sprint で `Tag.tryNew` の正式適用 (FIND-008) を入れる際に静かに型違反が紛れ込むリスクがある。実害は現時点で限定的（IMPL 境界は parsed.fm を直接代入する Frontmatter 型のままで、テストのみが緩んでいる）だが、calibration の指針 (test stubs using `as any` for fields are NOT acceptable; flag them) に従って flag する。",
+  "evidence": [
+    "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:798-810",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:843-854",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:885-895"
+  ],
+  "specReference": "verification-architecture.md:77-79 (FrontmatterParserParse port contract)",
+  "recommendation": "FIND-006 系テストの parser スタブも `tags: [\"\"] as unknown as readonly Tag[]`, createdAt/updatedAt は `{ epochMillis: ... } as unknown as Timestamp`, 全体を `as unknown as Frontmatter` に統一する。`as any` 排除により FIND-016 のブランド締めが parser テスト全域で守られる。",
+  "routeTo": "2a"
+}

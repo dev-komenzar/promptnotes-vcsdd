@@ -1,0 +1,15 @@
+{
+  "id": "FIND-018",
+  "dimension": "structural_integrity",
+  "severity": "minor",
+  "title": "stages.ts に Tag / Timestamp の dead import が残存（2c refactor の clean-up 抜け）",
+  "description": "Sprint-4 2b で stages.ts:40-43 の ParsedNote が `fm: Frontmatter` に締まり、Frontmatter brand の inner shape (tags / createdAt / updatedAt) はもはや stages.ts 内で個別に参照されない。にもかかわらず stages.ts:6-12 の import 文には `Tag` と `Timestamp` が残存している。stages.ts 全体を grep しても Tag / Timestamp への直接参照は存在しない（NoteFileSnapshot や EditingState が transitive にこれらを使うが、その transitive 参照では stages.ts 側で Tag / Timestamp の import は不要）。Sprint-4 2c の refactor verdict で scan-vault.ts:17-20 の `Frontmatter` dead import 削除は実施されたが、stages.ts の同種 dead import は見落とされた。docstring (stages.ts:37-38) で「`Tag` / `Timestamp` は EditingState / ScannedVault 経由で他の型から引き続き参照される」と説明しているが、これは type 解決ではなく lexical import の議論として誤りで、import 文として不要。tsconfig.json は noUnusedLocals を設定していないため svelte-check は警告を出さないが、構造的整合性として 2c refactor の網羅性が問われる。",
+  "evidence": [
+    "promptnotes/src/lib/domain/app-startup/stages.ts:6-12",
+    "promptnotes/src/lib/domain/app-startup/stages.ts:37-38",
+    ".vcsdd/features/app-startup/evidence/sprint-4-green-phase.log:52-54"
+  ],
+  "specReference": "N/A",
+  "recommendation": "stages.ts:6-12 の import 文から `Tag` と `Timestamp` を除去し、`Body, Frontmatter, VaultPath` の 3 つだけを残す。docstring (stages.ts:37-38) の説明は不要な記述として削除するか、Frontmatter 内部で参照されることを単純に注記し直す。",
+  "routeTo": "2c"
+}
