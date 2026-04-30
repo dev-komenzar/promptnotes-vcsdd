@@ -1,0 +1,18 @@
+{
+  "id": "FIND-008",
+  "dimension": "verification_readiness",
+  "severity": "minor",
+  "title": "Rust property tests for next_available_note_id are blocked on todo!() Smart Constructors and never actually verify PROP-003/PROP-022 in CI",
+  "description": "promptnotes/src-tauri/src/domain/vault/note_id.rs:27-35 constructs Timestamp and NoteId via `try_from_epoch_millis(...).unwrap()` and `NoteId::try_new(...).unwrap()`. The Timestamp::try_from_epoch_millis impl in docs/domain/code/rust/src/value_objects.rs:68-74 is concrete, but Tag::try_new (line 99-101), Frontmatter::try_new (line 157-163), and VaultPath::try_new (line 213-215) are still `todo!('Phase 11+ 実装')`. The PROP-003/PROP-022 proptests (lines 132-178) generate strings matching the regex and call NoteId::try_new — that constructor does exist (line 31). However the comments at lines 24-30 and 14-16 describe these as 'Phase 2a Red phase tests' that will panic until Phase 2b. There is no recorded green-phase evidence in this manifest that these Rust tests pass — the manifest lists `note_id.rs` under both `tests` and `source` (manifest.json:19,30). Consequently PROP-003 (required: true) is asserted only by the TS implementation in promptnotes/src/lib/domain/app-startup/initialize-capture.ts; the Rust property tests provide no additional verification.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src-tauri/src/domain/vault/note_id.rs", "lines": "1-180"},
+      {"path": "docs/domain/code/rust/src/value_objects.rs", "lines": "31-37"},
+      {"path": ".vcsdd/features/app-startup/specs/verification-architecture.md", "lines": "146-150"},
+      {"path": ".vcsdd/features/app-startup/reviews/sprint-1/input/manifest.json", "lines": "19"}
+    ],
+    "specReferences": ["REQ-011", "PROP-003", "PROP-022"]
+  },
+  "suggestedRoute": "2c",
+  "rationale": "Phase 2c (refactor) should either (a) remove the Rust note_id.rs tests from the Sprint 1 sources/tests until the Rust crate is wired up, or (b) confirm Cargo test execution evidence and include it as a Phase-2b green log. As-is, listing them in the manifest implies they verify PROP-003/PROP-022, which they don't unless they actually run."
+}

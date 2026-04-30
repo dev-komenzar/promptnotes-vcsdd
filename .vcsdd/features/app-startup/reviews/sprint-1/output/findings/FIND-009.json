@@ -1,0 +1,17 @@
+{
+  "id": "FIND-009",
+  "dimension": "implementation_correctness",
+  "severity": "minor",
+  "title": "Step 1 emits VaultDirectoryNotConfigured with Date.now() — purity-violating and undermines determinism",
+  "description": "load-vault-config.ts:55-59 emits VaultDirectoryNotConfigured with `occurredOn: { epochMillis: Date.now() }`. This is an undeclared use of the system clock outside of a Clock port, contradicting the verification architecture's port catalog (verification-architecture.md:82-84) which routes all wall-clock access through `Clock.now()`. REQ-015 names Clock.now as a port; calling Date.now directly bypasses the port abstraction and makes the function harder to test deterministically (tests cannot inject a fake clock for the not-configured branch). PROP-014 ('VaultDirectoryNotConfigured emitted exactly once') is checked, but no test asserts that occurredOn comes from the Clock port rather than a hidden Date.now call.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/app-startup/load-vault-config.ts", "lines": "54-64"},
+      {"path": ".vcsdd/features/app-startup/specs/verification-architecture.md", "lines": "82-84"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "92-96"}
+    ],
+    "specReferences": ["REQ-003", "REQ-015", "PROP-014"]
+  },
+  "suggestedRoute": "2b",
+  "rationale": "Phase 2b should add a Clock port to LoadVaultConfigPorts and source occurredOn through it; Phase 2a should add a test that injects a fake clock and asserts VaultDirectoryNotConfigured.occurredOn === clockNow()'s return value."
+}

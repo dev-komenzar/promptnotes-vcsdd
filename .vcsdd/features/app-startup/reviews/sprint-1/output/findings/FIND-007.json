@@ -1,0 +1,17 @@
+{
+  "id": "FIND-007",
+  "dimension": "verification_readiness",
+  "severity": "major",
+  "title": "PROP-021 'PublicDomainEvent membership' assertion is a hard-coded string list, not a type-level check",
+  "description": "PROP-021 (verification-architecture.md:134) explicitly says: 'verify PublicDomainEvent union membership via TypeScript type assertion'. The actual test in pipeline.test.ts:281-303 ('PROP-021: FeedRestored is NOT in PublicDomainEvent union (Curate-internal only)') is implemented as a hand-maintained array of public-event kind strings and an `expect().not.toContain(...)` assertion. This is not a type-level guard — if a future change adds 'feed-restored' to the actual `PublicDomainEvent` union in `shared/events.ts` but no one updates this hand-rolled list, the test still passes. The intent of PROP-021 (Tier-0 type assertion) is not realized. Similarly, the asserted positive list at lines 305-324 ('VaultScanned is in publicEventKinds') is also a hand-maintained string list, not a type assertion against the imported `PublicDomainEvent` union.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts", "lines": "281-324"},
+      {"path": ".vcsdd/features/app-startup/specs/verification-architecture.md", "lines": "134"},
+      {"path": "docs/domain/code/ts/src/shared/events.ts", "lines": "139-152"}
+    ],
+    "specReferences": ["REQ-013a", "REQ-013b", "PROP-021"]
+  },
+  "suggestedRoute": "2a",
+  "rationale": "Phase 2a should replace the string list with a TypeScript type assertion such as `type _NotInPublic = Extract<PublicDomainEvent, {kind:'feed-restored'}>; const _check: _NotInPublic = undefined as never;` (or equivalent never-branch test). That gives the Tier-0 compile-time guarantee PROP-021 actually demands."
+}

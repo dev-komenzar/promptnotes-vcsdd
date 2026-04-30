@@ -1,0 +1,18 @@
+{
+  "id": "FIND-005",
+  "dimension": "structural_integrity",
+  "severity": "major",
+  "title": "ParsedNote.fm.tags typed as readonly unknown[] bypasses Tag VO contract",
+  "description": "verification-architecture.md:65-67 specifies `FrontmatterParserParse: (raw) => Result<{body: Body; fm: Frontmatter}, HydrationFailureReason>` — the parsed result must already carry validated VO types. The implementation's port abstraction (stages.ts:26-33) widens this to `{body: string; fm: {tags: readonly unknown[]; createdAt: Timestamp; updatedAt: Timestamp}}`, opening a hole through which arbitrary values can flow into snapshots. scan-vault.ts:108-115 then casts `parsed.fm.tags` directly into a Frontmatter without invoking Tag.tryNew. This means: (a) tag-VO smart-constructor failures (REQ-002 'invalid-value' edge case at behavioral-spec.md:73) cannot be raised by the inner parser/converter as the spec describes — they are silently coerced; (b) the type-level contract that protects the pure core (REQ-015 AC, PROP-001) is undermined. No test asserts that an invalid Tag in the parser output produces a hydrate-kind CorruptedFile with reason='invalid-value'.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/app-startup/stages.ts", "lines": "26-33"},
+      {"path": "promptnotes/src/lib/domain/app-startup/scan-vault.ts", "lines": "100-117"},
+      {"path": ".vcsdd/features/app-startup/specs/verification-architecture.md", "lines": "59-67"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "70-74"}
+    ],
+    "specReferences": ["REQ-002", "REQ-015", "PROP-001"]
+  },
+  "suggestedRoute": "2b",
+  "rationale": "Phase 2b should tighten ParsedNote so that tags are `readonly Tag[]` and the body is `Body`, mirroring the verification-architecture port signature. The conversion failure (Tag VO rejection) must produce {kind:'hydrate', reason:'invalid-value'} as REQ-002 requires."
+}

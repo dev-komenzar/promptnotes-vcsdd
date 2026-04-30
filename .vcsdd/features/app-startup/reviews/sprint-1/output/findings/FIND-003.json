@@ -1,0 +1,17 @@
+{
+  "id": "FIND-003",
+  "dimension": "implementation_correctness",
+  "severity": "major",
+  "title": "Pipeline calls Clock.now() between Step 2 and Step 3, violating REQ-015 I/O confinement",
+  "description": "REQ-015 EARS: 'WHEN the AppStartup pipeline executes THEN the system SHALL perform I/O only in Step 1 (Settings.load, FileSystem.statDir), Step 2 (FileSystem.listMarkdown, FileSystem.readFile), and Step 4 (Clock.now, Vault.allocateNoteId effectful Vault-state read). Step 3 SHALL perform zero I/O.' The pipeline at pipeline.ts:86 calls `ports.clockNow()` after Step 2 completes and before Step 3 (`hydrateFeed`) runs, in order to populate `occurredOn` for VaultScanned, FeedRestored, and TagInventoryBuilt. This is an effectful clock read in an inter-step orchestration phase that is not Step 1, Step 2, or Step 4. Per REQ-015 AC-1, hydrateFeed itself remains pure (it does not call clockNow), but the surrounding pipeline does, which contradicts the EARS clause naming the only valid Clock.now call site as Step 4. No test asserts that clockNow is called only inside Step 4; pipeline.test.ts only checks the existence of `occurredOn` on VaultScanned (lines 197-205) without bounding Clock.now invocations.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/app-startup/pipeline.ts", "lines": "85-100"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "249-258"},
+      {"path": ".vcsdd/features/app-startup/specs/verification-architecture.md", "lines": "82-84"}
+    ],
+    "specReferences": ["REQ-015", "REQ-013a", "REQ-013b", "PROP-001"]
+  },
+  "suggestedRoute": "1a",
+  "rationale": "Either the spec must add an explicit allowance for the inter-step VaultScanned/FeedRestored/TagInventoryBuilt emission to call Clock.now (and add a corresponding AC), or the implementation must source `occurredOn` from a Step 4 timestamp obtained earlier and threaded back, or accept that VaultScanned carries a deterministic timestamp. Route to Phase 1a to disambiguate — REQ-015 is currently in conflict with REQ-013a/REQ-013b which require an `occurredOn` payload."
+}

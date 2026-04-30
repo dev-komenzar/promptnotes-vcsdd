@@ -1,0 +1,17 @@
+{
+  "id": "FIND-006",
+  "dimension": "edge_case_coverage",
+  "severity": "major",
+  "title": "REQ-002 'invalid-value' edge case not exercised by any test",
+  "description": "behavioral-spec.md:73 lists the 'invalid-value' edge case explicitly: 'Individual FrontmatterParser.parse fails with invalid-value (e.g., Tag VO Smart Constructor rejection): file accumulates failure: { kind: hydrate, reason: invalid-value }'. step2-scan-vault.test.ts has a test 'invalid-value parser failure → hydrate kind with invalid-value reason' (lines 440-464), but it stubs the parser to always return `{ok:false, error:'invalid-value'}` — it does NOT exercise the actual VO rejection path through a real parser. Combined with FIND-005, no test demonstrates that a malformed tag value (e.g. empty string after trim) reaching the scanVault stage actually produces invalid-value. The implementation never calls Tag.tryNew, so even if FrontmatterParser were real, the rejection path would not fire because tags are already cast to `unknown[]` and then to `Tag[]` without validation.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts", "lines": "440-464"},
+      {"path": "promptnotes/src/lib/domain/app-startup/scan-vault.ts", "lines": "100-117"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "70-74"}
+    ],
+    "specReferences": ["REQ-002", "PROP-019"]
+  },
+  "suggestedRoute": "2a",
+  "rationale": "Phase 2a should add a test that drives a real (or higher-fidelity) parser stub which surfaces the Tag VO rejection as invalid-value, ensuring the pipeline correctly classifies it. The current stub-based test passes regardless of whether the implementation invokes Tag.tryNew — it merely tests that the kind/reason fields are preserved."
+}

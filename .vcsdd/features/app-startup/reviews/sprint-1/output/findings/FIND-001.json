@@ -1,0 +1,19 @@
+{
+  "id": "FIND-001",
+  "dimension": "spec_fidelity",
+  "severity": "critical",
+  "title": "InitialUIState lacks editingSessionState — REQ-010 / REQ-014 contradicted",
+  "description": "The behavioral spec REQ-010 AC mandates 'EditingSessionState.status === \"editing\"' and 'EditingSessionState.currentNoteId equals the NoteId returned by Vault.allocateNoteId'. REQ-014 AC explicitly says 'InitialUIState contains feed, tagInventory, editingSessionState, and corruptedFiles' (line 180) and 'InitialUIState.editingSessionState.status === \"editing\"' (line 244). The implementation's InitialUIState carries `initialNoteId: NoteId` instead of an `editingSessionState` aggregate — the EditingSessionState concept is entirely absent from the production code. Tests in step4-initialize-capture.test.ts and pipeline.test.ts were rewritten to assert on `initialNoteId` instead of `editingSessionState.status === 'editing'`, so they pass but do not verify the spec's actual post-condition. Compare stages.ts:75-82 (`InitialUIState.initialNoteId`) with behavioral-spec.md REQ-010 AC and REQ-014 AC.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/app-startup/stages.ts", "lines": "75-82"},
+      {"path": "promptnotes/src/lib/domain/app-startup/initialize-capture.ts", "lines": "59-66"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "172-180"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "237-246"},
+      {"path": "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts", "lines": "104-129"}
+    ],
+    "specReferences": ["REQ-010", "REQ-014", "PROP-013", "PROP-017"]
+  },
+  "suggestedRoute": "2b",
+  "rationale": "The post-condition shape is wrong. Either the implementation must produce InitialUIState.editingSessionState (and tests rewritten) or REQ-010/REQ-014 must be amended to use initialNoteId — but the latter would also weaken the contract because EditingSessionState is the documented domain concept that downstream UI binds to. Route to Phase 2b (implementation) to add an EditingSessionState construction step and update tests accordingly."
+}

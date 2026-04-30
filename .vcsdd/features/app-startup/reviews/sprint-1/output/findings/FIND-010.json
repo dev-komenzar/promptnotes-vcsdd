@@ -1,0 +1,17 @@
+{
+  "id": "FIND-010",
+  "dimension": "edge_case_coverage",
+  "severity": "minor",
+  "title": "REQ-004 'Ok(false) means exists-as-file' edge case is folded into a catch-all branch and never asserted",
+  "description": "load-vault-config.ts:81-86 builds the error reason via `!statResult.ok && statResult.error.kind === 'permission' ? permission-denied : path-not-found`. This collapses every non-Ok(true) outcome into either permission-denied or path-not-found. F-005 in behavioral-spec.md:32-38 explicitly enumerates four distinct statDir outcomes: Ok(true), Ok(false), Err(not-found), Err(permission). The catch-all 'else' branch maps Err(disk-full), Err(lock), and Err(unknown) into path-not-found — not into a 'list-failed'/scan/permission category. There is no test in step1-load-vault-config.test.ts or pipeline.test.ts that exercises Err(disk-full), Err(lock), or Err(unknown) on statDir. The behaviour is not flagged in REQ-004 ACs, so the implementation choice may be acceptable, but the spec is silent about these cases — a finding worth surfacing because future fs port implementations may produce them and silently get classified as path-not-found.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/app-startup/load-vault-config.ts", "lines": "78-86"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "29-44"},
+      {"path": "promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts", "lines": "189-275"}
+    ],
+    "specReferences": ["REQ-004", "REQ-005"]
+  },
+  "suggestedRoute": "1a",
+  "rationale": "Phase 1a should explicitly state how Err(disk-full|lock|unknown) on statDir maps. If they should still collapse to path-not-found, REQ-004 needs an AC saying so; otherwise a new error reason or a scan-style failure is needed. Once the spec is clarified, Phase 2a can add an example-based test."
+}

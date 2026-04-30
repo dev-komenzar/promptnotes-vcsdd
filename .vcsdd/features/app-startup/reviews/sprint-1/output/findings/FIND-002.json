@@ -1,0 +1,17 @@
+{
+  "id": "FIND-002",
+  "dimension": "spec_fidelity",
+  "severity": "critical",
+  "title": "Step 4 never creates a Note via Note.create — REQ-010 unfulfilled",
+  "description": "REQ-010 EARS clause: 'create a new Note via Note.create(id, now) with an empty Body'. REQ-010 AC (lines 178-179): 'The new Note.body is empty string ... Note.frontmatter.createdAt === Note.frontmatter.updatedAt === now.' The implementation in initialize-capture.ts only allocates a NoteId, emits two events, and assembles InitialUIState — it never invokes any Note.create constructor and never produces a Note value with body and frontmatter. No test in step4-initialize-capture.test.ts or pipeline.test.ts asserts that a Note was created, that its body is empty, or that createdAt/updatedAt equal `now`. The Note Aggregate is completely absent from Step 4.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/app-startup/initialize-capture.ts", "lines": "35-67"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "171-180"},
+      {"path": "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts", "lines": "85-186"}
+    ],
+    "specReferences": ["REQ-010"]
+  },
+  "suggestedRoute": "2b",
+  "rationale": "The Note creation call is part of the REQ-010 behavior contract; without it the Capture flow has no Note to bind to. Phase 2b should add the Note.create invocation (or document why it is deferred) and Phase 2a should add a test asserting Note.body === '' and createdAt === updatedAt === now."
+}

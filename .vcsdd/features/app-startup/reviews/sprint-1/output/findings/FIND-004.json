@@ -1,0 +1,18 @@
+{
+  "id": "FIND-004",
+  "dimension": "implementation_correctness",
+  "severity": "major",
+  "title": "scanVault synthesizes invalid NoteId from file path stem with no validation",
+  "description": "scan-vault.ts:133-136 derives a synthetic NoteId via `filePathToNoteId(filePath)` which strips `.md` and takes the last path segment (`stem as unknown as NoteId`). The NoteId VO format is `YYYY-MM-DD-HHmmss-SSS[-N]` (docs/domain/code/rust/src/value_objects.rs:30, 245-287). For paths that do not match this pattern (e.g. `/vault/a.md`, `/vault/note.md` — used throughout the test suite), the resulting NoteId is structurally invalid (`a`, `note`). The implementation comments admit this is 'best-effort' (line 132), but the spec REQ-002 AC says 'ScannedVault.snapshots contains only files where FrontmatterParser.parse succeeded and all VO invariants were satisfied' (behavioral-spec.md:78) — VO invariants explicitly include NoteId format. No `try_new` / smart-constructor call is performed; invalid IDs flow downstream silently. No test in step2-scan-vault.test.ts asserts the format of the synthesized noteId. PROP-002 / PROP-015 fast-check tests use the synthesized stems directly so they cannot catch a NoteId format violation.",
+  "evidence": {
+    "files": [
+      {"path": "promptnotes/src/lib/domain/app-startup/scan-vault.ts", "lines": "100-117"},
+      {"path": "promptnotes/src/lib/domain/app-startup/scan-vault.ts", "lines": "126-136"},
+      {"path": "docs/domain/code/rust/src/value_objects.rs", "lines": "245-287"},
+      {"path": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "lines": "77-85"}
+    ],
+    "specReferences": ["REQ-002", "PROP-002"]
+  },
+  "suggestedRoute": "2b",
+  "rationale": "The NoteId for an existing on-disk note must come from the parsed frontmatter or filename that already conforms to the canonical format. Phase 2b should either source the NoteId via NoteId.tryNew on the file stem (and route invalid stems into a hydrate failure) or read it from frontmatter, then add a Phase 2a test that verifies a non-conforming filename produces a `{kind:'hydrate', reason:'invalid-value' | 'missing-field'}` CorruptedFile."
+}
