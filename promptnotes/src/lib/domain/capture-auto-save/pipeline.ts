@@ -2,40 +2,46 @@
 // Full CaptureAutoSave pipeline — orchestrates Steps 1 through 4.
 //
 // REQ-001: Happy path → Result<NoteFileSaved, SaveError>
+// REQ-003: EmptyNoteDiscarded → Ok channel (not Err)
 // REQ-008: SaveNoteRequested emitted at editing → saving transition
 // REQ-015: EditingSessionState transitions (editing → saving → editing/save-failed)
 // REQ-016: I/O confinement — clockNow exactly once
-// REQ-017: Pipeline function signature matches CaptureAutoSave type
+// REQ-017: Pipeline function signature
 //
-// FIND-001 (Sprint 1 Phase 3): State machine transitions now invoked
-// FIND-002 (Sprint 1 Phase 3): updateProjections now called
-// FIND-004 (Sprint 1 Phase 3): EmptyNoteDiscarded returns Err with validation error
-// FIND-011 (Sprint 1 Phase 3): SaveNoteRequested emitted at state transition
+// Sprint 2 fixes: FIND-001 state transitions, FIND-002 updateProjections called
+// Sprint 3 fixes: FIND-001 EmptyNoteDiscarded Ok channel, FIND-002 CaptureDeps,
+//   FIND-005 remove dead dispatch-save-request, FIND-007 typed publish
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type { Timestamp, Frontmatter, VaultPath } from "promptnotes-domain-types/shared/value-objects";
 import type { FsError, SaveError } from "promptnotes-domain-types/shared/errors";
 import type {
   NoteFileSaved,
+  NoteSaveFailed,
+  EmptyNoteDiscarded,
   SaveNoteRequested,
   PublicDomainEvent,
 } from "promptnotes-domain-types/shared/events";
 import type { Note } from "promptnotes-domain-types/shared/note";
 import type { EditingState, SavingState, SaveFailedState } from "promptnotes-domain-types/capture/states";
+import type { CaptureDeps } from "promptnotes-domain-types/capture/ports";
 import type { DirtyEditingSession, ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
 import { prepareSaveRequest, type PrepareSaveRequestDeps } from "./prepare-save-request.js";
 import { serializeNote } from "./serialize-note.js";
-import { dispatchSaveRequest, type DispatchSaveRequestDeps } from "./dispatch-save-request.js";
 import { updateProjections, type UpdateProjectionsDeps } from "./update-projections.js";
 
 /**
- * Extended ports for the CaptureAutoSave pipeline.
- * Includes CaptureDeps (clockNow, publish) plus pipeline-specific ports.
+ * Pipeline result: either NoteFileSaved or EmptyNoteDiscarded (both Ok channel).
+ * EmptyNoteDiscarded is a valid early-exit, not an error (REQ-003, FIND-001).
  */
-export type CaptureAutoSavePorts = {
-  // CaptureDeps core
-  readonly clockNow: () => Timestamp;
-  readonly publish: (event: PublicDomainEvent) => void;
+export type CaptureAutoSaveResult = NoteFileSaved | EmptyNoteDiscarded;
+
+/**
+ * Extended ports for the CaptureAutoSave pipeline.
+ * Extends CaptureDeps with pipeline-specific ports.
+ * REQ-017 / FIND-002: The base CaptureDeps fields are included.
+ */
+export type CaptureAutoSavePorts = CaptureDeps & {
   // Step 1 ports
   readonly noteIsEmpty: (note: Note) => boolean;
   readonly getCurrentNote: () => Note;
@@ -54,11 +60,11 @@ export type CaptureAutoSavePorts = {
 
 export function captureAutoSave(
   ports: CaptureAutoSavePorts,
-): (state: EditingState, trigger: "idle" | "blur") => Promise<Result<NoteFileSaved, SaveError>> {
+): (state: EditingState, trigger: "idle" | "blur") => Promise<Result<CaptureAutoSaveResult, SaveError>> {
   return async (
     state: EditingState,
     trigger: "idle" | "blur",
-  ): Promise<Result<NoteFileSaved, SaveError>> => {
+  ): Promise<Result<CaptureAutoSaveResult, SaveError>> => {
     const note = ports.getCurrentNote();
     const previousFrontmatter = ports.getPreviousFrontmatter();
 
@@ -82,28 +88,19 @@ export function captureAutoSave(
       return prepareResult;
     }
 
-    // FIND-004: EmptyNoteDiscarded — state does NOT transition to saving.
-    // Event was already emitted by prepareSaveRequest. Return early without
-    // fabricating a NoteFileSaved.
+    // REQ-003 / FIND-001 Sprint 3: EmptyNoteDiscarded in Ok channel.
+    // Event was already emitted by prepareSaveRequest.
+    // State does NOT transition to saving (PROP-023).
     if (prepareResult.value.kind === "empty-discarded") {
-      // Per REQ-003 and FIND-004: EmptyNoteDiscarded is not an error in the
-      // domain sense, but the pipeline return type is Result<NoteFileSaved, SaveError>.
-      // We encode it as a validation error since no file was saved.
-      return {
-        ok: false,
-        error: {
-          kind: "validation",
-          reason: { kind: "empty-body-on-idle" },
-        },
-      };
+      return { ok: true, value: prepareResult.value.event };
     }
 
     const validatedRequest = prepareResult.value.request;
 
-    // FIND-001 / REQ-015: transition editing → saving
+    // REQ-015: transition editing → saving
     const savingState = ports.beginAutoSave(state, validatedRequest.requestedAt);
 
-    // FIND-011 / REQ-008: emit SaveNoteRequested at the state transition point
+    // REQ-008: emit SaveNoteRequested at the state transition point
     const saveRequested: SaveNoteRequested = {
       kind: "save-note-requested",
       noteId: validatedRequest.noteId,
@@ -125,16 +122,16 @@ export function captureAutoSave(
     if (!writeResult.ok) {
       // REQ-010: emit NoteSaveFailed
       const fsError = writeResult.error;
-      ports.publish({
+      const failEvent: NoteSaveFailed = {
         kind: "note-save-failed",
         noteId: validatedRequest.noteId,
         reason: mapFsErrorToReason(fsError),
         occurredOn: validatedRequest.requestedAt,
-      });
+      };
+      ports.publish(failEvent);
 
       const saveError: SaveError = { kind: "fs", reason: fsError };
-
-      // FIND-001 / REQ-015: transition saving → save-failed
+      // REQ-015: transition saving → save-failed
       ports.onSaveFailed(savingState, saveError);
 
       return { ok: false, error: saveError };
@@ -151,14 +148,14 @@ export function captureAutoSave(
     };
     ports.publish(savedEvent);
 
-    // FIND-001 / REQ-015: transition saving → editing (success)
+    // REQ-015: transition saving → editing (success)
     ports.onSaveSucceeded(savingState, validatedRequest.requestedAt);
 
-    // FIND-002 / REQ-011 / REQ-012: Step 4 — updateProjections
+    // REQ-011 / REQ-012: Step 4 — updateProjections
     const projDeps: UpdateProjectionsDeps = {
       refreshSort: ports.refreshSort,
       applyTagDelta: ports.applyTagDelta,
-      publish: ports.publish as any,
+      publish: (event) => ports.publish(event as unknown as PublicDomainEvent),
     };
     updateProjections(projDeps)(savedEvent);
 

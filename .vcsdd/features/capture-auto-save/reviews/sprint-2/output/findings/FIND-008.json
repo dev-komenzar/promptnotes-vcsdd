@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "major",
+  "description": "No pipeline-level test covers the EmptyNoteDiscarded path. The pipeline test (pipeline.test.ts) has no test case where noteIsEmpty returns true. This means: (1) PROP-023 is untested at the pipeline level (beginAutoSave must NOT be called), (2) the pipeline's EmptyNoteDiscarded encoding as SaveError (FIND-001) is untested, (3) PROP-014's Clock.now budget on the empty-idle path is untested. The empty-idle path is one of the most important behavioral branches per REQ-003.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts",
+    "lineRange": "1-357",
+    "snippet": "(no test case with noteIsEmpty: () => true exists in pipeline.test.ts)"
+  },
+  "specRef": "REQ-003, PROP-023, PROP-014",
+  "routeToPhase": "2a"
+}

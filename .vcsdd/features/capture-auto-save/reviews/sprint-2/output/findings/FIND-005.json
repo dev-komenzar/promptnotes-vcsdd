@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "major",
+  "description": "dispatch-save-request.ts is imported in pipeline.ts (line 28) but never called. The pipeline handles Step 3 inline (lines 122-140) rather than delegating to dispatchSaveRequest. This creates dead code. Furthermore, DispatchSaveRequestDeps includes serializeNote as an injected port (line 25), which contradicts REQ-006 and the purity boundary design where serializeNote is called directly as a pure function. Additionally, dispatchSaveRequest's return type is Promise<Result<NoteFileSaved, SaveError>> (line 48), but the canonical DispatchSaveRequest type in workflows.ts lines 61-65 returns Promise<Result<NoteFileSaved, NoteSaveFailed>>. Three compounding issues in one unused module.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "28",
+    "snippet": "import { dispatchSaveRequest, type DispatchSaveRequestDeps } from \"./dispatch-save-request.js\";"
+  },
+  "specRef": "REQ-006, REQ-007",
+  "routeToPhase": "2c"
+}

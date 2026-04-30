@@ -1,0 +1,110 @@
+{
+  "sprintNumber": 2,
+  "feature": "capture-auto-save",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T15:00:00Z",
+  "iteration": 1,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-001", "FIND-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+          "description": "EmptyNoteDiscarded encoded as Err(SaveError) at lines 92-98, violating REQ-003 and REQ-017 which mandate the success channel"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+          "description": "CaptureAutoSavePorts at lines 35-53 does not match canonical CaptureDeps from ports.ts, violating REQ-017"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-008"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts",
+          "description": "No pipeline-level test for EmptyNoteDiscarded path (noteIsEmpty: true). REQ-003 happy-exit path completely untested at integration level."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-006", "FIND-007"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+          "description": "State transitions (FIND-001 Sprint 1) now invoked at pipeline.ts lines 104, 138, 155 -- RESOLVED"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+          "description": "updateProjections now called at line 163 -- RESOLVED (FIND-002 Sprint 1)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+          "description": "SaveNoteRequested now emitted at pipeline orchestration layer line 116 -- RESOLVED (FIND-011 Sprint 1)"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-005"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/capture-auto-save/dispatch-save-request.ts",
+          "description": "Entire module is dead code -- imported but never called in pipeline.ts. Also has canonical type mismatch (NoteSaveFailed vs SaveError return)."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-003", "FIND-004"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts",
+          "description": "PROP-001 and PROP-002 are example-based, not property-based with fast-check as required by verification-architecture.md Tier 1"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts",
+          "description": "PROP-023 test is tautological -- same issue as Sprint 1 FIND-007, unresolved"
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 8,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": []
+  },
+  "previousFindingResolution": {
+    "resolved": [
+      "Sprint1-FIND-001 (state machine transitions): RESOLVED -- beginAutoSave, onSaveSucceeded, onSaveFailed now called in pipeline.ts",
+      "Sprint1-FIND-002 (updateProjections never called): RESOLVED -- called at pipeline.ts line 163",
+      "Sprint1-FIND-010 (dispatchSaveRequest return type): PARTIALLY RESOLVED -- pipeline no longer uses dispatchSaveRequest, but the dead module retains the mismatch",
+      "Sprint1-FIND-011 (SaveNoteRequested emitted wrong place): RESOLVED -- emitted at pipeline orchestration layer"
+    ],
+    "unresolved": [
+      "Sprint1-FIND-003 (CaptureAutoSavePorts vs CaptureDeps): UNRESOLVED -- see FIND-002",
+      "Sprint1-FIND-004 (EmptyNoteDiscarded fabricated NoteFileSaved): PARTIALLY RESOLVED -- no longer fabricates NoteFileSaved, but now returns Err which violates REQ-003 -- see FIND-001",
+      "Sprint1-FIND-005 (No property-based tests for PROP-001/002): UNRESOLVED -- see FIND-003",
+      "Sprint1-FIND-006 (PROP-019/020 state transition tests missing): RESOLVED -- tests added in pipeline.test.ts",
+      "Sprint1-FIND-007 (PROP-023 test tautological): UNRESOLVED -- see FIND-004"
+    ]
+  }
+}

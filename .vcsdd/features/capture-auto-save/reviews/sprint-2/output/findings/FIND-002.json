@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "The canonical CaptureAutoSave type in workflows.ts line 68-73 takes CaptureDeps as its parameter. CaptureDeps (ports.ts lines 23-28) contains clockNow, allocateNoteId, clipboardWrite, publish. The implementation at pipeline.ts line 55 uses CaptureAutoSavePorts, a completely different type with 12 fields including noteIsEmpty, getCurrentNote, getPreviousFrontmatter, writeFileAtomic, vaultPath, refreshSort, applyTagDelta, beginAutoSave, onSaveSucceeded, onSaveFailed. This is not a superset -- it is a different interface altogether. REQ-017 explicitly requires conformance to 'the type signature: (deps: CaptureDeps) => (state: EditingState, trigger) => Promise<Result<NoteFileSaved, SaveError>>'.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "35-57",
+    "snippet": "export type CaptureAutoSavePorts = {\n  // CaptureDeps core\n  readonly clockNow: () => Timestamp;\n  readonly publish: (event: PublicDomainEvent) => void;\n  // ... 10 more fields\n};\n\nexport function captureAutoSave(\n  ports: CaptureAutoSavePorts,\n): (state: EditingState, trigger: \"idle\" | \"blur\") => Promise<Result<NoteFileSaved, SaveError>>"
+  },
+  "specRef": "REQ-017",
+  "routeToPhase": "2b"
+}

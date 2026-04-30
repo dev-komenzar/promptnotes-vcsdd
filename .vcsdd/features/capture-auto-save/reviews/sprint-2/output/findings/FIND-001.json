@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-003 states EmptyNoteDiscarded is routed through the success channel and 'EmptyNoteDiscarded NEVER appears in the Err channel'. REQ-017 states 'The EmptyNoteDiscarded route is handled internally and does not appear in the top-level return type'. However, pipeline.ts lines 92-98 return the EmptyNoteDiscarded case as { ok: false, error: { kind: 'validation', reason: { kind: 'empty-body-on-idle' } } } -- an explicit Err with a SaveError. This directly violates both requirements. The comment at pipeline.ts line 91 even acknowledges this tension but chooses the wrong resolution.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "88-99",
+    "snippet": "if (prepareResult.value.kind === \"empty-discarded\") {\n      // Per REQ-003 and FIND-004: EmptyNoteDiscarded is not an error in the\n      // domain sense, but the pipeline return type is Result<NoteFileSaved, SaveError>.\n      // We encode it as a validation error since no file was saved.\n      return {\n        ok: false,\n        error: {\n          kind: \"validation\",\n          reason: { kind: \"empty-body-on-idle\" },\n        },\n      };\n    }"
+  },
+  "specRef": "REQ-003, REQ-017",
+  "routeToPhase": "2b"
+}

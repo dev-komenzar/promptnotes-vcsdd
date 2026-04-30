@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "implementation_correctness",
+  "category": "security_surface",
+  "severity": "minor",
+  "description": "update-projections.ts line 13 types publish as (event: { kind: string; [key: string]: unknown }) => void, accepting arbitrary objects. This is not type-safe against the PublicDomainEvent union. pipeline.ts line 162 casts ports.publish with 'as any' to bridge the type mismatch. TagInventoryUpdated is emitted as { kind: 'tag-inventory-updated' } without occurredOn, noteId, or other standard event fields that downstream consumers may expect. This loose typing could allow malformed events to enter the event bus.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/update-projections.ts",
+    "lineRange": "13-14",
+    "snippet": "readonly publish: (event: { kind: string; [key: string]: unknown }) => void;"
+  },
+  "specRef": "REQ-012",
+  "routeToPhase": "2b"
+}

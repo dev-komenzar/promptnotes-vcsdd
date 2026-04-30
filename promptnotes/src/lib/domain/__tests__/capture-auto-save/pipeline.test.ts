@@ -21,7 +21,7 @@ import { describe, test, expect } from "bun:test";
 import type { Result } from "promptnotes-domain-types/util/result";
 import type { NoteId, Body, Frontmatter, Timestamp, Tag, VaultPath } from "promptnotes-domain-types/shared/value-objects";
 import type { FsError, SaveError } from "promptnotes-domain-types/shared/errors";
-import type { NoteFileSaved, PublicDomainEvent } from "promptnotes-domain-types/shared/events";
+import type { NoteFileSaved, EmptyNoteDiscarded, PublicDomainEvent } from "promptnotes-domain-types/shared/events";
 import type { EditingState, SavingState, SaveFailedState } from "promptnotes-domain-types/capture/states";
 import type { Note } from "promptnotes-domain-types/shared/note";
 
@@ -108,16 +108,20 @@ function makeHappyPorts(
   };
 
   return {
+    // CaptureDeps core fields
     clockNow: () => {
       clockCallCount++;
       return makeTimestamp(5000);
     },
+    allocateNoteId: (preferred: Timestamp) => makeNoteId("allocated-id"),
+    clipboardWrite: (_text: string) => ({ ok: true, value: undefined } as Result<void, FsError>),
+    publish: (e: PublicDomainEvent) => emitted.push(e as unknown as EmittedEvent),
+    // Pipeline-specific ports
     noteIsEmpty: () => false,
     writeFileAtomic: (_path: string, _content: string) => {
       writeCallCount++;
       return { ok: true, value: undefined } as Result<void, FsError>;
     },
-    publish: (e: PublicDomainEvent) => emitted.push(e as unknown as EmittedEvent),
     vaultPath: "/vault" as unknown as VaultPath,
     getCurrentNote: () => makeNote(),
     getPreviousFrontmatter: () => null,
@@ -352,5 +356,100 @@ describe("PROP-020: State transitions on failure", () => {
     await captureAutoSave(makeFailingPorts({ kind: "lock" }, [], log))(state, "idle");
 
     expect(log.onSaveSucceededCalls.length).toBe(0);
+  });
+});
+
+// ── FIND-008: Pipeline EmptyNoteDiscarded path ──────────────────────────
+
+describe("REQ-003: EmptyNoteDiscarded pipeline integration", () => {
+  test("empty-idle returns Ok with EmptyNoteDiscarded (not Err)", async () => {
+    const ports = makeHappyPorts();
+    // Override noteIsEmpty to return true
+    const emptyPorts = { ...ports, noteIsEmpty: () => true };
+    const state = makeEditingState();
+
+    const result = await captureAutoSave(emptyPorts)(state, "idle");
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.kind).toBe("empty-note-discarded");
+  });
+
+  test("empty-idle emits EmptyNoteDiscarded event", async () => {
+    const emitted: EmittedEvent[] = [];
+    const ports = makeHappyPorts(emitted);
+    const emptyPorts = { ...ports, noteIsEmpty: () => true, publish: ports.publish };
+    const state = makeEditingState();
+
+    await captureAutoSave(emptyPorts)(state, "idle");
+
+    const discarded = emitted.filter((e) => e.kind === "empty-note-discarded");
+    expect(discarded.length).toBe(1);
+  });
+
+  test("empty-idle does NOT emit SaveNoteRequested or NoteFileSaved", async () => {
+    const emitted: EmittedEvent[] = [];
+    const ports = makeHappyPorts(emitted);
+    const emptyPorts = { ...ports, noteIsEmpty: () => true, publish: ports.publish };
+    const state = makeEditingState();
+
+    await captureAutoSave(emptyPorts)(state, "idle");
+
+    expect(emitted.filter((e) => e.kind === "save-note-requested").length).toBe(0);
+    expect(emitted.filter((e) => e.kind === "note-file-saved").length).toBe(0);
+  });
+
+  // FIND-004 / PROP-023: beginAutoSave NOT called on empty-idle path
+  test("PROP-023: beginAutoSave NOT called on empty-idle path", async () => {
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const ports = makeHappyPorts([], log);
+    const emptyPorts = { ...ports, noteIsEmpty: () => true };
+    const state = makeEditingState();
+
+    await captureAutoSave(emptyPorts)(state, "idle");
+
+    expect(log.beginAutoSaveCalls.length).toBe(0);
+  });
+});
+
+// ── FIND-006: Clock.now budget on all paths ─────────────────────────────
+
+describe("PROP-014: Clock.now budget (all paths)", () => {
+  test("Clock.now called exactly once on empty-idle path", async () => {
+    const ports = makeHappyPorts();
+    const emptyPorts = { ...ports, noteIsEmpty: () => true, clockNow: ports.clockNow };
+    const state = makeEditingState();
+
+    await captureAutoSave(emptyPorts)(state, "idle");
+
+    expect((ports as any)._clockCallCount).toBe(1);
+  });
+
+  test("Clock.now called exactly once on write failure path", async () => {
+    let clockCallCount = 0;
+    const emitted: EmittedEvent[] = [];
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const base = makeHappyPorts(emitted, log);
+    const ports: CaptureAutoSavePorts = {
+      ...base,
+      clockNow: () => {
+        clockCallCount++;
+        return makeTimestamp(5000);
+      },
+      writeFileAtomic: () => ({ ok: false, error: { kind: "permission" } } as Result<void, FsError>),
+    };
+    const state = makeEditingState();
+
+    await captureAutoSave(ports)(state, "idle");
+
+    expect(clockCallCount).toBe(1);
   });
 });
