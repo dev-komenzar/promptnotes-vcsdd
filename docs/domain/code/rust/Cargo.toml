@@ -12,6 +12,9 @@ path = "src/lib.rs"
 # 実プロジェクトで ts-rs を有効化する想定だが、Phase 10 の型定義段階では
 # unused-dep 回避のため optional feature にしておく。
 
+# UTC timestamp formatting for next_available_note_id (Phase 2b).
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+
 [features]
 default = []
 ts_rs = []

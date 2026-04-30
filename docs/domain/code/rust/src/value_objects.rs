@@ -26,8 +26,14 @@ pub enum NoteIdError {
 impl NoteId {
     /// 文字列から NoteId を構築する。形式違反は `InvalidFormat`。
     /// 衝突回避サフィックス `-N` (N >= 1) を含む形式も許容する。
-    pub fn try_new(_raw: &str) -> DomainResult<Self, NoteIdError> {
-        todo!("Phase 11+ 実装")
+    ///
+    /// 有効形式: `YYYY-MM-DD-HHmmss-SSS` または `YYYY-MM-DD-HHmmss-SSS-N` (N >= 1)
+    pub fn try_new(raw: &str) -> DomainResult<Self, NoteIdError> {
+        if is_valid_note_id(raw) {
+            Ok(Self(raw.to_string()))
+        } else {
+            Err(NoteIdError::InvalidFormat)
+        }
     }
 
     /// `Vault::allocate_note_id` 内部から呼ばれる、検証済み文字列の信頼性昇格。
@@ -59,8 +65,12 @@ pub enum TimestampError {
 }
 
 impl Timestamp {
-    pub fn try_from_epoch_millis(_ms: i64) -> DomainResult<Self, TimestampError> {
-        todo!("Phase 11+ 実装")
+    pub fn try_from_epoch_millis(ms: i64) -> DomainResult<Self, TimestampError> {
+        if ms < 0 {
+            Err(TimestampError::Negative)
+        } else {
+            Ok(Self { epoch_millis: ms })
+        }
     }
 
     pub fn epoch_millis(&self) -> i64 {
@@ -226,4 +236,57 @@ impl VaultId {
     pub fn as_str(&self) -> &str {
         &self.0
     }
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// NoteId format validation (private helper)
+// ──────────────────────────────────────────────────────────────────────
+
+/// Validate NoteId format: `YYYY-MM-DD-HHmmss-SSS` with optional `-N` suffix (N >= 1).
+///
+/// Pattern breakdown:
+///   YYYY  : 4 decimal digits
+///   -MM   : hyphen + 2 decimal digits
+///   -DD   : hyphen + 2 decimal digits
+///   -HHmmss : hyphen + 6 decimal digits
+///   -SSS  : hyphen + 3 decimal digits
+///   (-N)? : optional hyphen + one or more decimal digits (collision suffix)
+fn is_valid_note_id(raw: &str) -> bool {
+    // Minimum base length: 4+1+2+1+2+1+6+1+3 = 21 chars ("YYYY-MM-DD-HHmmss-SSS")
+    let bytes = raw.as_bytes();
+    if bytes.len() < 21 {
+        return false;
+    }
+
+    // Validate fixed-position characters.
+    // Positions: 0-3=YYYY, 4=-, 5-6=MM, 7=-, 8-9=DD, 10=-, 11-16=HHmmss, 17=-, 18-20=SSS
+    if bytes[4] != b'-' || bytes[7] != b'-' || bytes[10] != b'-' || bytes[17] != b'-' {
+        return false;
+    }
+
+    // Validate digit groups.
+    if !all_digits(&bytes[0..4])     // YYYY
+        || !all_digits(&bytes[5..7]) // MM
+        || !all_digits(&bytes[8..10])// DD
+        || !all_digits(&bytes[11..17])// HHmmss
+        || !all_digits(&bytes[18..21])// SSS
+    {
+        return false;
+    }
+
+    // Handle optional suffix: nothing, or "-N" where N >= 1 and all digits.
+    match bytes.get(21) {
+        None => true, // base format, no suffix
+        Some(&b'-') => {
+            // Collision suffix: must have at least one digit after the hyphen.
+            let suffix = &bytes[22..];
+            !suffix.is_empty() && all_digits(suffix)
+        }
+        _ => false, // unexpected character at position 21
+    }
+}
+
+#[inline]
+fn all_digits(slice: &[u8]) -> bool {
+    slice.iter().all(|b| b.is_ascii_digit())
 }

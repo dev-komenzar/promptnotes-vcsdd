@@ -74,12 +74,47 @@ pub trait ClockPort {
 /// Pure helper — 既存 NoteId 集合と希望 Timestamp から衝突なき NoteId を返す。
 /// 副作用なし、同一入力 → 同一出力。fast-check property test の対象。
 ///
-/// Phase 11+ 実装。Tier 1 検証可能。
+/// Format: `YYYY-MM-DD-HHmmss-SSS` (UTC) with optional `-N` collision suffix (N >= 1).
+/// PROP-003: result ∉ existing_ids.
+/// PROP-022: deterministic — same inputs produce same NoteId.
 pub fn next_available_note_id(
-    _preferred: Timestamp,
-    _existing_ids: &std::collections::HashSet<NoteId>,
+    preferred: Timestamp,
+    existing_ids: &std::collections::HashSet<NoteId>,
 ) -> NoteId {
-    todo!("Phase 11+ 実装：preferred と衝突するなら -1, -2 ... を付与")
+    let base = format_base_note_id(preferred);
+
+    if !existing_ids.contains(&NoteId::from_validated(base.clone())) {
+        return NoteId::from_validated(base.clone());
+    }
+
+    // Collision: try suffix -1, -2, ... until a free slot is found.
+    let mut i: u32 = 1;
+    loop {
+        let candidate = format!("{}-{}", base, i);
+        if !existing_ids.contains(&NoteId::from_validated(candidate.clone())) {
+            return NoteId::from_validated(candidate);
+        }
+        i += 1;
+    }
+}
+
+/// Format a Timestamp as a NoteId base string: `YYYY-MM-DD-HHmmss-SSS` (UTC).
+/// Pure — no system clock access; deterministic for any fixed Timestamp.
+fn format_base_note_id(ts: Timestamp) -> String {
+    use chrono::{DateTime, Utc};
+
+    let ms = ts.epoch_millis();
+    let secs = ms / 1000;
+    let millis_part = (ms % 1000) as u32;
+
+    let dt: DateTime<Utc> = DateTime::from_timestamp(secs, 0)
+        .unwrap_or_else(|| DateTime::from_timestamp(0, 0).unwrap());
+
+    format!(
+        "{}-{:03}",
+        dt.format("%Y-%m-%d-%H%M%S"),
+        millis_part
+    )
 }
 
 /// Effectful Aggregate method — Vault 内部 NoteId 集合を読み取り、

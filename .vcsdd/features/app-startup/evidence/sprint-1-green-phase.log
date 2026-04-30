@@ -1,0 +1,45 @@
+target-feature-tests: PARTIAL_PASS (80/81 TS pass, 7/7 Rust pass)
+regression-baseline: PASS
+
+=== TypeScript: bun test ===
+bun test v1.3.11 (af24e281)
+
+80 pass
+1 fail
+187 expect() calls
+Ran 81 tests across 6 files. [132.00ms]
+
+Failing test:
+  REQ-011 / PROP-003 / PROP-022: nextAvailableNoteId pure helper
+  > REQ-011: no collision suffix for empty existingIds
+
+Root cause: test assertion `expect(resultStr).not.toMatch(/-\d+$/)` is
+internally inconsistent with spec REQ-011 which mandates the format
+`YYYY-MM-DD-HHmmss-SSS`. The milliseconds segment `-SSS` (e.g., `-000`)
+always ends with `/-\d+$/`, making the regex fire on the base format itself
+rather than only on the collision suffix `-N`. Implementation faithfully
+matches the spec format. The other collision tests use hardcoded IDs
+(`"2026-04-28-120000-000"`) that do not collide with the actual computed
+base for timestamp 1714298400000 (`"2024-04-28-100000-000"`), so they pass.
+
+Phase 4 finding: test `step4-initialize-capture.test.ts:337` assertion
+`not.toMatch(/-\d+$/)` is faulty — should use a more specific regex like
+`not.toMatch(/-\d{1,5}$/)` (small N suffix only) or `/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}-[0-9]{3}$/`
+(exact base format). Route to Phase 2a for test correction.
+
+=== TypeScript: bun run check ===
+1 pre-existing ERROR in vite.config.js (Unused '@ts-expect-error' directive)
+0 errors in src/lib/domain/app-startup/**
+Files with problems: 1 (pre-existing, not introduced by Phase 2b)
+
+=== Rust: cargo test --lib ===
+running 7 tests
+test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_empty_set ... ok
+test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_double_collision ... ok
+test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_with_collision ... ok
+test domain::vault::note_id::tests::prop022_deterministic_empty_set ... ok
+test domain::vault::note_id::tests::prop022_deterministic_with_collision ... ok
+test domain::vault::note_id::tests::prop003_proptest_uniqueness ... ok
+test domain::vault::note_id::tests::prop022_proptest_determinism ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s

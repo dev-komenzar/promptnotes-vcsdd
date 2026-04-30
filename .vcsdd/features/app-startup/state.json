@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -24,13 +24,28 @@
       "to": "2a",
       "timestamp": "2026-04-27T22:53:10.498Z",
       "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-04-30T02:47:50.014458Z",
+      "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-04-30T03:15:00.000000Z",
+      "sprint": 1,
+      "note": "80/81 TS tests pass; 7/7 Rust tests pass. 1 residual TS failure (faulty test assertion in step4-initialize-capture.test.ts:337) routed to Phase 4."
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
     "1c": 1,
-    "2a": 1
+    "2a": 1,
+    "2b": 1,
+    "2c": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -527,7 +542,7 @@
         "beadId": "BEAD-039",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/errors.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-003",
           "BEAD-004",
@@ -546,7 +561,7 @@
         "beadId": "BEAD-040",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-001",
           "BEAD-003",
@@ -567,7 +582,7 @@
         "beadId": "BEAD-041",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-007",
@@ -589,7 +604,7 @@
         "beadId": "BEAD-042",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-008",
           "BEAD-009",
@@ -607,7 +622,7 @@
         "beadId": "BEAD-043",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts",
-        "status": "red",
+        "status": "partial-green",
         "linkedBeads": [
           "BEAD-010",
           "BEAD-011",
@@ -625,7 +640,7 @@
         "beadId": "BEAD-044",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-001",
           "BEAD-002",
@@ -644,7 +659,7 @@
         "beadId": "BEAD-045",
         "type": "test-case",
         "artifactPath": "promptnotes/src-tauri/src/domain/vault/note_id.rs",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-011",
           "BEAD-018",
@@ -674,5 +689,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-27T23:04:55.627Z"
+  "updatedAt": "2026-04-30T03:15:00.000000Z"
 }

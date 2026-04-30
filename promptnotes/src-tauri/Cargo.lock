@@ -2791,6 +2791,9 @@ dependencies = [
 [[package]]
 name = "promptnotes_domain"
 version = "0.1.0"
+dependencies = [
+ "chrono",
+]
 
 [[package]]
 name = "proptest"
