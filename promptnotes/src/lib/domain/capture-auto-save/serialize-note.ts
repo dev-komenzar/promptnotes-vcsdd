@@ -6,6 +6,7 @@
 
 import type { Frontmatter, Timestamp, Tag } from "promptnotes-domain-types/shared/value-objects";
 import type { ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
+import { toEpochMillis } from "./timestamp-utils.js";
 
 /**
  * Serialize a ValidatedSaveRequest into Obsidian-compatible markdown.
@@ -19,9 +20,9 @@ export function serializeNote(request: ValidatedSaveRequest): string {
 /** Internal pure helper — NOT an injected port. */
 function frontmatterToYaml(fm: Frontmatter): string {
   const lines: string[] = [];
-  const tags = (fm as { tags: readonly Tag[] }).tags;
-  const createdAt = (fm as { createdAt: Timestamp }).createdAt;
-  const updatedAt = (fm as { updatedAt: Timestamp }).updatedAt;
+  const tags = (fm as unknown as { tags: readonly Tag[] }).tags;
+  const createdAt = (fm as unknown as { createdAt: Timestamp }).createdAt;
+  const updatedAt = (fm as unknown as { updatedAt: Timestamp }).updatedAt;
 
   if (tags && tags.length > 0) {
     lines.push("tags:");
@@ -39,9 +40,6 @@ function frontmatterToYaml(fm: Frontmatter): string {
 }
 
 function formatTimestamp(ts: Timestamp): string {
-  const epochMillis = (ts as { epochMillis: number }).epochMillis;
-  if (typeof epochMillis === "number") {
-    return new Date(epochMillis).toISOString();
-  }
-  return String(ts);
+  const epochMillis = toEpochMillis(ts);
+  return new Date(epochMillis).toISOString();
 }

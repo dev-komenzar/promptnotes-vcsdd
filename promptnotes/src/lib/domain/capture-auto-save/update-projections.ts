@@ -3,14 +3,22 @@
 //
 // REQ-011: Refreshes Feed and TagInventory (in-memory, no file I/O)
 // REQ-012: TagInventoryUpdated emitted on tag delta
+//
+// TagInventoryUpdated is a Curate-internal event, NOT a PublicDomainEvent.
+// It is emitted via a separate internal callback, not the public event bus.
 
 import type { Frontmatter } from "promptnotes-domain-types/shared/value-objects";
 import type { NoteFileSaved } from "promptnotes-domain-types/shared/events";
 
+/** Curate-internal event (not in PublicDomainEvent union). */
+export type TagInventoryUpdated = {
+  readonly kind: "tag-inventory-updated";
+};
+
 export type UpdateProjectionsDeps = {
   readonly refreshSort: () => void;
   readonly applyTagDelta: (prev: Frontmatter | null, next: Frontmatter) => boolean;
-  readonly publish: (event: { kind: string; [key: string]: unknown }) => void;
+  readonly emitInternal: (event: TagInventoryUpdated) => void;
 };
 
 export type IndexedNote = {
@@ -27,7 +35,7 @@ export function updateProjections(
     // REQ-012: check for tag delta and emit if changed
     const tagsChanged = deps.applyTagDelta(saved.previousFrontmatter, saved.frontmatter);
     if (tagsChanged) {
-      deps.publish({ kind: "tag-inventory-updated" });
+      deps.emitInternal({ kind: "tag-inventory-updated" });
     }
 
     return { kind: "IndexedNote" };

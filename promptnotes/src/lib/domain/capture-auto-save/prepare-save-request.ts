@@ -13,6 +13,7 @@ import type { SaveError } from "promptnotes-domain-types/shared/errors";
 import type { EmptyNoteDiscarded, PublicDomainEvent } from "promptnotes-domain-types/shared/events";
 import type { Note } from "promptnotes-domain-types/shared/note";
 import type { DirtyEditingSession, ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
+import { isBefore, toEpochMillis } from "./timestamp-utils.js";
 
 export type PrepareSaveRequestDeps = {
   readonly clockNow: () => Timestamp;
@@ -44,16 +45,14 @@ export function prepareSaveRequest(
     const now = deps.clockNow();
 
     // REQ-005: invariant check — updatedAt must be >= createdAt
-    const createdAtMs = (input.note.frontmatter.createdAt as any).epochMillis;
-    const nowMs = (now as any).epochMillis;
-    if (nowMs < createdAtMs) {
+    if (isBefore(now, input.note.frontmatter.createdAt)) {
       return {
         ok: false,
         error: {
           kind: "validation",
           reason: {
             kind: "invariant-violated",
-            detail: `updatedAt (${nowMs}) < createdAt (${createdAtMs})`,
+            detail: `updatedAt (${toEpochMillis(now)}) < createdAt (${toEpochMillis(input.note.frontmatter.createdAt)})`,
           },
         },
       };

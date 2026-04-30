@@ -12,10 +12,10 @@ import { describe, test, expect } from "bun:test";
 import type { Frontmatter, Tag, Timestamp } from "promptnotes-domain-types/shared/value-objects";
 import type { NoteFileSaved } from "promptnotes-domain-types/shared/events";
 
-// Red phase: this import will fail
 import {
   updateProjections,
   type UpdateProjectionsDeps,
+  type TagInventoryUpdated,
 } from "$lib/domain/capture-auto-save/update-projections";
 
 // ── Test helpers ──────────────────────────────────────────────────────────
@@ -54,18 +54,15 @@ function makeNoteFileSaved(overrides: Partial<{
   } as NoteFileSaved;
 }
 
-type EmittedEvent = { kind: string; [key: string]: unknown };
-
-function makeDeps(emitted: EmittedEvent[] = []): UpdateProjectionsDeps {
+function makeDeps(emitted: TagInventoryUpdated[] = []): UpdateProjectionsDeps {
   return {
     refreshSort: () => {},
     applyTagDelta: (_prev: Frontmatter | null, _next: Frontmatter) => {
-      // Return whether tags changed (simplified for test setup)
-      const prevTags = _prev?.tags ?? [];
-      const nextTags = _next.tags ?? [];
+      const prevTags = _prev ? ((_prev as any).tags ?? []) : [];
+      const nextTags = (_next as any).tags ?? [];
       return JSON.stringify(prevTags) !== JSON.stringify(nextTags);
     },
-    publish: (e: any) => emitted.push(e),
+    emitInternal: (e: TagInventoryUpdated) => emitted.push(e),
   };
 }
 
@@ -76,25 +73,15 @@ describe("REQ-011: updateProjections refreshes Feed and TagInventory", () => {
     const saved = makeNoteFileSaved();
     const result = updateProjections(makeDeps())(saved);
     expect(result).toBeDefined();
-  });
-
-  test("no file I/O occurs (in-memory only)", () => {
-    // This is a structural test: updateProjections should not call any fs ports
-    const saved = makeNoteFileSaved();
-    const deps = makeDeps();
-    // If updateProjections tries to do file I/O, it would need an fs port
-    // which is not in UpdateProjectionsDeps
-    const result = updateProjections(deps)(saved);
-    expect(result).toBeDefined();
+    expect(result.kind).toBe("IndexedNote");
   });
 });
 
 // ── REQ-012: TagInventoryUpdated emitted on tag delta ───────────────────
 
 describe("REQ-012: TagInventoryUpdated emitted on tag delta", () => {
-  // PROP-012: emitted iff tag delta exists
   test("PROP-012: tags changed → TagInventoryUpdated emitted", () => {
-    const emitted: EmittedEvent[] = [];
+    const emitted: TagInventoryUpdated[] = [];
     const prevFm = makeFrontmatter({ tags: [makeTag("old")] });
     const nextFm = makeFrontmatter({ tags: [makeTag("new")] });
     const saved = makeNoteFileSaved({
@@ -104,12 +91,12 @@ describe("REQ-012: TagInventoryUpdated emitted on tag delta", () => {
 
     updateProjections(makeDeps(emitted))(saved);
 
-    const tagUpdated = emitted.filter((e) => e.kind === "tag-inventory-updated");
-    expect(tagUpdated.length).toBe(1);
+    expect(emitted.length).toBe(1);
+    expect(emitted[0].kind).toBe("tag-inventory-updated");
   });
 
   test("no tag change → TagInventoryUpdated NOT emitted", () => {
-    const emitted: EmittedEvent[] = [];
+    const emitted: TagInventoryUpdated[] = [];
     const fm = makeFrontmatter({ tags: [makeTag("same")] });
     const saved = makeNoteFileSaved({
       frontmatter: fm,
@@ -118,12 +105,11 @@ describe("REQ-012: TagInventoryUpdated emitted on tag delta", () => {
 
     updateProjections(makeDeps(emitted))(saved);
 
-    const tagUpdated = emitted.filter((e) => e.kind === "tag-inventory-updated");
-    expect(tagUpdated.length).toBe(0);
+    expect(emitted.length).toBe(0);
   });
 
   test("previousFrontmatter null + new note with tags → TagInventoryUpdated emitted", () => {
-    const emitted: EmittedEvent[] = [];
+    const emitted: TagInventoryUpdated[] = [];
     const nextFm = makeFrontmatter({ tags: [makeTag("new-tag")] });
     const saved = makeNoteFileSaved({
       frontmatter: nextFm,
@@ -132,13 +118,11 @@ describe("REQ-012: TagInventoryUpdated emitted on tag delta", () => {
 
     updateProjections(makeDeps(emitted))(saved);
 
-    const tagUpdated = emitted.filter((e) => e.kind === "tag-inventory-updated");
-    expect(tagUpdated.length).toBe(1);
+    expect(emitted.length).toBe(1);
   });
 
-  // PROP-013: null previousFrontmatter + no tags → NOT emitted
   test("PROP-013: previousFrontmatter null + no tags → TagInventoryUpdated NOT emitted", () => {
-    const emitted: EmittedEvent[] = [];
+    const emitted: TagInventoryUpdated[] = [];
     const nextFm = makeFrontmatter({ tags: [] });
     const saved = makeNoteFileSaved({
       frontmatter: nextFm,
@@ -147,7 +131,6 @@ describe("REQ-012: TagInventoryUpdated emitted on tag delta", () => {
 
     updateProjections(makeDeps(emitted))(saved);
 
-    const tagUpdated = emitted.filter((e) => e.kind === "tag-inventory-updated");
-    expect(tagUpdated.length).toBe(0);
+    expect(emitted.length).toBe(0);
   });
 });

@@ -30,6 +30,7 @@ import type { CaptureDeps } from "promptnotes-domain-types/capture/ports";
 import type { DirtyEditingSession } from "promptnotes-domain-types/capture/stages";
 import { prepareSaveRequest, type PrepareSaveRequestDeps } from "./prepare-save-request.js";
 import { serializeNote } from "./serialize-note.js";
+import { updateProjections, type UpdateProjectionsDeps, type TagInventoryUpdated } from "./update-projections.js";
 
 /**
  * Infrastructure ports that are NOT part of CaptureDeps.
@@ -43,7 +44,7 @@ export type PipelineInfra = {
   readonly vaultPath: VaultPath;
   readonly refreshSort: () => void;
   readonly applyTagDelta: (prev: Frontmatter | null, next: Frontmatter) => boolean;
-  readonly emitInternal: (event: { kind: string }) => void;
+  readonly emitInternal: (event: TagInventoryUpdated) => void;
   readonly beginAutoSave: (state: EditingState, now: Timestamp) => SavingState;
   readonly onSaveSucceeded: (state: SavingState, now: Timestamp) => EditingState;
   readonly onSaveFailed: (state: SavingState, error: SaveError) => SaveFailedState;
@@ -153,12 +154,12 @@ export function makeCaptureAutoSavePipeline(
       infra.onSaveSucceeded(savingState, validatedRequest.requestedAt);
 
       // REQ-011 / REQ-012: Step 4 — updateProjections
-      infra.refreshSort();
-      const tagsChanged = infra.applyTagDelta(savedEvent.previousFrontmatter, savedEvent.frontmatter);
-      if (tagsChanged) {
-        // FIND-004: emit via internal callback, not PublicDomainEvent bus
-        infra.emitInternal({ kind: "tag-inventory-updated" });
-      }
+      const projDeps: UpdateProjectionsDeps = {
+        refreshSort: infra.refreshSort,
+        applyTagDelta: infra.applyTagDelta,
+        emitInternal: infra.emitInternal,
+      };
+      updateProjections(projDeps)(savedEvent);
 
       return { ok: true, value: savedEvent };
     };
