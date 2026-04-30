@@ -1,0 +1,17 @@
+{
+  "featureName": "capture-auto-save",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "init",
+  "phaseHistory": [],
+  "iterations": {},
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-capture-auto-save-1777552191428",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-04-30T12:29:51.428Z",
+  "updatedAt": "2026-04-30T12:29:51.428Z"
+}

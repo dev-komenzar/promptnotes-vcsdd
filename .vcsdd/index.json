@@ -8,7 +8,15 @@
       "language": "typescript",
       "currentPhase": "2c",
       "updatedAt": "2026-04-30T17:30:01Z"
+    },
+    "capture-auto-save": {
+      "status": "active",
+      "createdAt": "2026-04-30T12:29:51.428Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "init",
+      "updatedAt": "2026-04-30T12:29:51.428Z"
     }
   },
-  "activeFeature": "app-startup"
+  "activeFeature": "capture-auto-save"
 }
