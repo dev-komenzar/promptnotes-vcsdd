@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "structural_integrity",
+  "category": "purity_boundary",
+  "severity": "minor",
+  "description": "REQ-016 states Clock.now() is called exactly once in the pipeline (in Step 1). In prepare-save-request.ts, clockNow() is called on the EmptyNoteDiscarded path (line 33) to set occurredOn. This means on the empty-idle path, a clock call is consumed for an event timestamp rather than for the save timestamp. While this is functionally one call per execution path, it deviates from the spec's intent that Clock.now() serves Step 1's timestamp propagation. The dispatch-save-request.ts also declares clockNow in its deps (line 23), though the pipeline injects a cached value to avoid a second call. The architectural coupling is fragile -- nothing prevents a future caller of dispatchSaveRequest from injecting a real clock.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+    "lineRange": "33",
+    "snippet": "const now = deps.clockNow();"
+  },
+  "routeToPhase": "2c"
+}

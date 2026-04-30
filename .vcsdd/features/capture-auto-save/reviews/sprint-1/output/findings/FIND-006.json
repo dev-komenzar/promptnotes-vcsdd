@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "major",
+  "description": "PROP-019 (editing -> saving -> editing on success) and PROP-020 (editing -> saving -> save-failed on failure) have zero test coverage. The pipeline.test.ts file references these in its header comment but contains no test cases for state transitions. Since the implementation also lacks state transition logic (FIND-001), these proof obligations are entirely unverified.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts",
+    "lineRange": "1-18",
+    "snippet": "Header comment lists PROP-019 and PROP-020 but no corresponding describe/test blocks exist in the file."
+  },
+  "routeToPhase": "2a"
+}

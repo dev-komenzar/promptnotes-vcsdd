@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "major",
+  "description": "PROP-001 and PROP-002 are marked required:true in the verification architecture and specify fast-check property-based tests. The test file step2-serialize-note.test.ts imports fc from @fast-check/vitest at line 12 but never uses it. PROP-001 is covered only by a single example-based test (line 125-133) that calls serializeNote twice with the same hardcoded input. PROP-002 is similarly covered by a single example. Property-based testing with generated random inputs -- as mandated by the verification architecture Tier 1 -- is absent.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts",
+    "lineRange": "12,124-133",
+    "snippet": "import { fc } from \"@fast-check/vitest\";\n...\ntest(\"PROP-001: same input always produces identical output\", () => {\n  const request = makeValidatedSaveRequest();\n  const result1 = serializeNote(request);\n  const result2 = serializeNote(request);\n  expect(result1).toBe(result2);\n});"
+  },
+  "routeToPhase": "2a"
+}

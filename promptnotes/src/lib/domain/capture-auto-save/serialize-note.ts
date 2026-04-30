@@ -4,6 +4,7 @@
 // REQ-006: Produces `---\n{yaml}\n---\n{body}` format
 // No CaptureDeps port calls — this is a pure function.
 
+import type { Frontmatter, Timestamp, Tag } from "promptnotes-domain-types/shared/value-objects";
 import type { ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
 
 /**
@@ -16,31 +17,31 @@ export function serializeNote(request: ValidatedSaveRequest): string {
 }
 
 /** Internal pure helper — NOT an injected port. */
-function frontmatterToYaml(fm: any): string {
+function frontmatterToYaml(fm: Frontmatter): string {
   const lines: string[] = [];
+  const tags = (fm as { tags: readonly Tag[] }).tags;
+  const createdAt = (fm as { createdAt: Timestamp }).createdAt;
+  const updatedAt = (fm as { updatedAt: Timestamp }).updatedAt;
 
-  // tags
-  if (fm.tags && fm.tags.length > 0) {
+  if (tags && tags.length > 0) {
     lines.push("tags:");
-    for (const tag of fm.tags) {
+    for (const tag of tags) {
       lines.push(`  - ${tag}`);
     }
   } else {
     lines.push("tags: []");
   }
 
-  // createdAt
-  lines.push(`createdAt: ${formatTimestamp(fm.createdAt)}`);
-
-  // updatedAt
-  lines.push(`updatedAt: ${formatTimestamp(fm.updatedAt)}`);
+  lines.push(`createdAt: ${formatTimestamp(createdAt)}`);
+  lines.push(`updatedAt: ${formatTimestamp(updatedAt)}`);
 
   return lines.join("\n") + "\n";
 }
 
-function formatTimestamp(ts: any): string {
-  if (ts && typeof ts.epochMillis === "number") {
-    return new Date(ts.epochMillis).toISOString();
+function formatTimestamp(ts: Timestamp): string {
+  const epochMillis = (ts as { epochMillis: number }).epochMillis;
+  if (typeof epochMillis === "number") {
+    return new Date(epochMillis).toISOString();
   }
   return String(ts);
 }

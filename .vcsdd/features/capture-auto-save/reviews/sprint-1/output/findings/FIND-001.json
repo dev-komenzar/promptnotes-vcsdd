@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-015 requires EditingSessionState transitions: editing -> saving (via beginAutoSave) on pipeline entry, saving -> editing (via onSaveSucceeded) on success, saving -> save-failed (via onSaveFailed) on failure. The pipeline implementation does not perform any state transitions. Neither beginAutoSave, onSaveSucceeded, nor onSaveFailed is called anywhere in the codebase. The EditingState input is read-only and never mutated or transitioned.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "30-103",
+    "snippet": "The function receives EditingState at line 33 but never calls beginAutoSave, onSaveSucceeded, or onSaveFailed. No SavingState is ever constructed."
+  },
+  "routeToPhase": "2b"
+}

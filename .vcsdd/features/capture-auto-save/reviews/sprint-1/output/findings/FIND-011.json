@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-011",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-008 specifies that SaveNoteRequested is emitted at the editing -> saving state transition, AFTER Step 1 produces ValidatedSaveRequest and BEFORE Step 3 write. The spec ties emission to the EmitSaveAndTransition orchestration (workflows.ts lines 129-134). In the implementation, SaveNoteRequested is emitted inside dispatchSaveRequest (Step 3, dispatch-save-request.ts line 62), not at the orchestration layer during state transition. Since no state transition occurs (FIND-001), the emission timing violates REQ-008's coupling of SaveNoteRequested to the editing -> saving transition.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/dispatch-save-request.ts",
+    "lineRange": "52-62",
+    "snippet": "// REQ-008: emit SaveNoteRequested before write\nconst saveRequested: SaveNoteRequested = {...};\ndeps.publish(saveRequested);"
+  },
+  "routeToPhase": "2b"
+}

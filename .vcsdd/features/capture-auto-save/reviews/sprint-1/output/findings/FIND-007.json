@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "major",
+  "description": "PROP-023 test (step1-prepare-save-request.test.ts lines 277-295) is tautological. It asserts result.value.kind === 'empty-discarded' and result.value.kind !== 'validated', which is the exact same assertion already made in the PROP-003 test. The proof obligation for PROP-023 is to verify that EditingSessionState does NOT transition to 'saving', but the test makes no assertion about state whatsoever. It tests return value shape, not state non-transition.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts",
+    "lineRange": "277-295",
+    "snippet": "test(\"Empty-idle path: state does not transition to saving\", () => {\n  ...\n  expect(result.value.kind).toBe(\"empty-discarded\");\n  expect(result.value.kind).not.toBe(\"validated\");\n});"
+  },
+  "routeToPhase": "2a"
+}

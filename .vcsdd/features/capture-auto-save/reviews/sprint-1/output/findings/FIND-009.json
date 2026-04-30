@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-009",
+  "dimension": "implementation_correctness",
+  "category": "security_surface",
+  "severity": "minor",
+  "description": "serialize-note.ts lines 47 and 19 use 'any' type for frontmatter and timestamp parameters, bypassing TypeScript type safety. The frontmatterToYaml function accepts 'any' and accesses fm.tags, fm.createdAt, fm.updatedAt without type guards. The formatTimestamp function also accepts 'any'. If the frontmatter structure ever diverges from the expected shape, errors will surface at runtime rather than compile time. This undermines PROP-005's type exhaustiveness guarantee at the serialization boundary.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts",
+    "lineRange": "19,41",
+    "snippet": "function frontmatterToYaml(fm: any): string {\n...\nfunction formatTimestamp(ts: any): string {"
+  },
+  "routeToPhase": "2c"
+}

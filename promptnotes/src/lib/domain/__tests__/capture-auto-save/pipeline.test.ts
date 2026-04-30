@@ -22,10 +22,9 @@ import type { Result } from "promptnotes-domain-types/util/result";
 import type { NoteId, Body, Frontmatter, Timestamp, Tag, VaultPath } from "promptnotes-domain-types/shared/value-objects";
 import type { FsError, SaveError } from "promptnotes-domain-types/shared/errors";
 import type { NoteFileSaved, PublicDomainEvent } from "promptnotes-domain-types/shared/events";
-import type { EditingState } from "promptnotes-domain-types/capture/states";
+import type { EditingState, SavingState, SaveFailedState } from "promptnotes-domain-types/capture/states";
 import type { Note } from "promptnotes-domain-types/shared/note";
 
-// Red phase: this import will fail
 import {
   captureAutoSave,
   type CaptureAutoSavePorts,
@@ -80,11 +79,34 @@ function makeEditingState(overrides: Partial<EditingState> = {}): EditingState {
   } as EditingState;
 }
 
+function makeSavingState(noteId: NoteId, now: Timestamp): SavingState {
+  return {
+    status: "saving",
+    currentNoteId: noteId,
+    savingStartedAt: now,
+  } as SavingState;
+}
+
 type EmittedEvent = { kind: string; [key: string]: unknown };
 
-function makeHappyPorts(emitted: EmittedEvent[] = []): CaptureAutoSavePorts {
+type TransitionLog = {
+  beginAutoSaveCalls: Array<{ state: EditingState; now: Timestamp }>;
+  onSaveSucceededCalls: Array<{ state: SavingState; now: Timestamp }>;
+  onSaveFailedCalls: Array<{ state: SavingState; error: SaveError }>;
+};
+
+function makeHappyPorts(
+  emitted: EmittedEvent[] = [],
+  transitionLog?: TransitionLog,
+): CaptureAutoSavePorts {
   let clockCallCount = 0;
   let writeCallCount = 0;
+  const log: TransitionLog = transitionLog ?? {
+    beginAutoSaveCalls: [],
+    onSaveSucceededCalls: [],
+    onSaveFailedCalls: [],
+  };
+
   return {
     clockNow: () => {
       clockCallCount++;
@@ -99,17 +121,50 @@ function makeHappyPorts(emitted: EmittedEvent[] = []): CaptureAutoSavePorts {
     vaultPath: "/vault" as unknown as VaultPath,
     getCurrentNote: () => makeNote(),
     getPreviousFrontmatter: () => null,
+    refreshSort: () => {},
+    applyTagDelta: () => false,
+    beginAutoSave: (state: EditingState, now: Timestamp) => {
+      log.beginAutoSaveCalls.push({ state, now });
+      return makeSavingState(state.currentNoteId, now);
+    },
+    onSaveSucceeded: (state: SavingState, now: Timestamp) => {
+      log.onSaveSucceededCalls.push({ state, now });
+      return {
+        status: "editing",
+        currentNoteId: state.currentNoteId,
+        isDirty: false,
+        lastInputAt: null,
+        idleTimerHandle: null,
+        lastSaveResult: "success",
+      } as EditingState;
+    },
+    onSaveFailed: (state: SavingState, error: SaveError) => {
+      log.onSaveFailedCalls.push({ state, error });
+      return {
+        status: "save-failed",
+        currentNoteId: state.currentNoteId,
+        pendingNextNoteId: null,
+        lastSaveError: error,
+      } as SaveFailedState;
+    },
     get _clockCallCount() { return clockCallCount; },
     get _writeCallCount() { return writeCallCount; },
-  };
+  } as CaptureAutoSavePorts & { _clockCallCount: number; _writeCallCount: number };
 }
 
 function makeFailingPorts(
   fsError: FsError,
-  emitted: EmittedEvent[] = []
+  emitted: EmittedEvent[] = [],
+  transitionLog?: TransitionLog,
 ): CaptureAutoSavePorts {
+  const log: TransitionLog = transitionLog ?? {
+    beginAutoSaveCalls: [],
+    onSaveSucceededCalls: [],
+    onSaveFailedCalls: [],
+  };
+  const base = makeHappyPorts(emitted, log);
   return {
-    ...makeHappyPorts(emitted),
+    ...base,
     writeFileAtomic: (_path: string, _content: string) => ({
       ok: false,
       error: fsError,
@@ -192,19 +247,16 @@ describe("PROP-015: writeFileAtomic call count", () => {
 
 describe("PROP-005: SaveError type exhaustiveness", () => {
   test("SaveError has exactly two variants: validation and fs", () => {
-    // Type-level exhaustiveness check
     function assertExhaustive(err: SaveError): string {
       switch (err.kind) {
         case "validation": return "validation";
         case "fs": return "fs";
         default: {
-          // If TypeScript doesn't flag this as unreachable, the type is not exhaustive
           const _never: never = err;
           return _never;
         }
       }
     }
-    // Just verify the function compiles — that's the proof
     expect(assertExhaustive).toBeDefined();
   });
 });
@@ -216,5 +268,89 @@ describe("REQ-017: CaptureAutoSave function signature", () => {
     const ports = makeHappyPorts();
     const bound = captureAutoSave(ports);
     expect(typeof bound).toBe("function");
+  });
+});
+
+// ── PROP-019: State transition editing → saving → editing on success ────
+
+describe("PROP-019: State transitions on success", () => {
+  test("beginAutoSave called with editing state", async () => {
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const state = makeEditingState();
+    await captureAutoSave(makeHappyPorts([], log))(state, "idle");
+
+    expect(log.beginAutoSaveCalls.length).toBe(1);
+    expect(log.beginAutoSaveCalls[0].state.status).toBe("editing");
+  });
+
+  test("onSaveSucceeded called after successful write", async () => {
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const state = makeEditingState();
+    await captureAutoSave(makeHappyPorts([], log))(state, "idle");
+
+    expect(log.onSaveSucceededCalls.length).toBe(1);
+    expect(log.onSaveSucceededCalls[0].state.status).toBe("saving");
+  });
+
+  test("onSaveFailed NOT called on success", async () => {
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const state = makeEditingState();
+    await captureAutoSave(makeHappyPorts([], log))(state, "idle");
+
+    expect(log.onSaveFailedCalls.length).toBe(0);
+  });
+});
+
+// ── PROP-020: State transition editing → saving → save-failed on failure ─
+
+describe("PROP-020: State transitions on failure", () => {
+  test("beginAutoSave called before write attempt", async () => {
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const state = makeEditingState();
+    await captureAutoSave(makeFailingPorts({ kind: "permission" }, [], log))(state, "idle");
+
+    expect(log.beginAutoSaveCalls.length).toBe(1);
+  });
+
+  test("onSaveFailed called with saving state and error", async () => {
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const state = makeEditingState();
+    await captureAutoSave(makeFailingPorts({ kind: "disk-full" }, [], log))(state, "idle");
+
+    expect(log.onSaveFailedCalls.length).toBe(1);
+    expect(log.onSaveFailedCalls[0].state.status).toBe("saving");
+    expect(log.onSaveFailedCalls[0].error.kind).toBe("fs");
+  });
+
+  test("onSaveSucceeded NOT called on failure", async () => {
+    const log: TransitionLog = {
+      beginAutoSaveCalls: [],
+      onSaveSucceededCalls: [],
+      onSaveFailedCalls: [],
+    };
+    const state = makeEditingState();
+    await captureAutoSave(makeFailingPorts({ kind: "lock" }, [], log))(state, "idle");
+
+    expect(log.onSaveSucceededCalls.length).toBe(0);
   });
 });

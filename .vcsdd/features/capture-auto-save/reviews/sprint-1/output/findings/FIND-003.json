@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-017 specifies the pipeline must conform to the canonical CaptureAutoSave type: (deps: CaptureDeps) => (state: EditingState, trigger) => Promise<Result<NoteFileSaved, SaveError>>. The implementation defines its own CaptureAutoSavePorts type that diverges from canonical CaptureDeps (ports.ts). CaptureAutoSavePorts includes writeFileAtomic, vaultPath, getCurrentNote, getPreviousFrontmatter, and noteIsEmpty -- none of which exist in canonical CaptureDeps. Conversely, canonical CaptureDeps includes allocateNoteId and clipboardWrite which are absent from CaptureAutoSavePorts. The implementation does not accept CaptureDeps as specified.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+    "lineRange": "20-28",
+    "snippet": "export type CaptureAutoSavePorts = {\n  readonly clockNow: () => Timestamp;\n  readonly noteIsEmpty: (note: Note) => boolean;\n  readonly writeFileAtomic: (path: string, content: string) => Result<void, FsError>;\n  readonly publish: (event: PublicDomainEvent) => void;\n  readonly vaultPath: VaultPath;\n  readonly getCurrentNote: () => Note;\n  readonly getPreviousFrontmatter: () => import(\"promptnotes-domain-types/shared/value-objects\").Frontmatter | null;\n};"
+  },
+  "routeToPhase": "2b"
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-010",
+  "dimension": "structural_integrity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "The canonical DispatchSaveRequest type in workflows.ts line 61-65 specifies the return type as Promise<Result<NoteFileSaved, NoteSaveFailed>>. The implementation in dispatch-save-request.ts line 48 returns Promise<Result<NoteFileSaved, SaveError>>. These are different error types: NoteSaveFailed is a domain event (with kind, noteId, reason, occurredOn), while SaveError is a structured error (with kind: 'fs', reason: FsError). The implementation's return type does not conform to the canonical workflow type.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/capture-auto-save/dispatch-save-request.ts",
+    "lineRange": "48",
+    "snippet": "): (request: ValidatedSaveRequest) => Promise<Result<NoteFileSaved, SaveError>> {"
+  },
+  "routeToPhase": "2b"
+}

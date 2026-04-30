@@ -1,0 +1,45 @@
+{
+  "sprintNumber": 1,
+  "feature": "capture-auto-save",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T16:00:00Z",
+  "iteration": 1,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-001", "FIND-002", "FIND-003", "FIND-011"],
+      "evidence": []
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-006"],
+      "evidence": []
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-004", "FIND-009"],
+      "evidence": []
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-008", "FIND-010"],
+      "evidence": []
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-005", "FIND-007"],
+      "evidence": []
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 11,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": []
+  }
+}
