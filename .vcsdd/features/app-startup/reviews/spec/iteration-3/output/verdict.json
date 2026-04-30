@@ -1,0 +1,60 @@
+{
+  "feature": "app-startup",
+  "iteration": 3,
+  "phase": "1c",
+  "reviewer": "adversary",
+  "reviewedAt": "2026-04-30T00:00:00Z",
+  "mode": "lean",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "summary": "Both routed findings are addressed with concrete, falsifiable contracts in behavioral-spec.md revision 4. FIND-003: REQ-015 (behavioral-spec.md:276-302) explicitly enumerates the inter-step orchestration phase (lines 278, 282-285) as the fourth permitted I/O site, with a normative call-site budget table at lines 291-293 (Call 1 inter-step, Call 2 Step 4). AC-3 (line 298) bounds Clock.now to ≤2 calls per pipeline run; AC-4 (line 299) constrains hydrateFeed's signature to accept only ScannedVault — both falsifiable via spy + TypeScript type assertion. Rejected alternatives Option B and Option C are reasoned at lines 287-289 with concrete justifications (avoid coupling, preserve domain-events.md contract). FIND-010: REQ-004 (behavioral-spec.md:110-134) now enumerates all 7 statDir outcomes via the rationale table at lines 116-122 with explicit per-row justification for the disk-full/lock/unknown collapse. AC entries at lines 128-132 give one falsifiable assertion per kind (Ok(false), Err(not-found), Err(disk-full), Err(lock), Err(unknown) all → path-not-found). The rejected 'unavailable' alternative is reasoned at line 124. Cross-checked the FsError.kind enumeration against glossary.md:135 and behavioral-spec.md:93 — exactly 5 kinds (permission, disk-full, lock, not-found, unknown), consistent with the 7-row table (2 Ok variants + 5 Err kinds). REQ-001 edge-case list (lines 35-39) is updated to reference the new collapsed mapping. The Pipeline Overview (line 21), Purity Boundary Candidates table (lines 326-336), and glossary references remain consistent across the revision. EARS syntax is preserved on all amended REQs (REQ-004 line 112, REQ-015 line 277). No prior resolution (F-001..F-005) regresses: REQ-011 two-layer split is intact (lines 213-217), REQ-013a/b split is intact (lines 240-260), REQ-001 statDir contract retains Ok(true)/Ok(false)/Err(not-found)/Err(permission) treatment with the new collapsed Err mapping merely extending the existing branches.",
+      "findings": []
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "summary": "verification-architecture.md revision 4 introduces well-formed PROP-023 and PROP-024 with correct tier placement. PROP-023 (line 147) binds Clock.now ≤ 2 to REQ-015 with a falsifiable testing strategy: counter-instrument Clock.now via spy wrapper, run pipeline, assert counter ≤ 2; additionally verify hydrateFeed signature has no Timestamp parameter via TypeScript type assertion. Tier 1, required: true is defensible because the property is the load-bearing purity-boundary invariant — line 164 explicitly justifies this (violation silently introduces hidden effectful dependency in the nominally-pure core). PROP-024 (line 148) enumerates exactly 7 statDir outcomes matching the REQ-004 rationale table 1-for-1 (Ok(true), Ok(false), Err{not-found,permission,disk-full,lock,unknown}). Tier 1, required: false is defensible because REQ-004 also has PROP-004 (exhaustive error variants) and PROP-006 (non-null path requirement) as backup coverage; PROP-024's 7-case enumeration is purely an additive completeness check. The Purity Boundary Map (lines 22-30) gains the inter-step (2→3) row at line 25 with rationale explicitly tied to REQ-015. The statDir Port Contract docstring (lines 48-61) enumerates the 5 statDir outcome categories and includes the collapse rationale. Coverage matrix updates (REQ-004 → PROP-024 at line 175; REQ-015 → PROP-023 at line 187) are present and correct. Verified all 17 REQs have ≥1 PROP and all 24 PROPs trace to ≥1 REQ — no orphans detected. The required: true set is now 5 (PROP-001/002/003/004/023, lines 160-164) — appropriate growth for a load-bearing addition. Lean-mode tier discipline is preserved.",
+      "findings": []
+    }
+  },
+  "overallVerdict": "PASS",
+  "priorFindingStatus": [
+    {
+      "id": "FIND-003",
+      "status": "resolved",
+      "justification": "REQ-015 EARS at behavioral-spec.md:277-278 explicitly names the inter-step orchestration phase as a permitted I/O site for one Clock.now call. Lines 280-285 specify exactly one call, shared across the three events, not passed into hydrateFeed. AC-3 (line 298) and AC-4 (line 299) are both falsifiable via spy + type assertion. PROP-023 in verification-architecture.md:147 binds the contract to a Tier 1, required: true property with a concrete testing strategy. Rejected alternatives (Option B, C) are reasoned at lines 287-289."
+    },
+    {
+      "id": "FIND-010",
+      "status": "resolved",
+      "justification": "REQ-004 EARS at behavioral-spec.md:112 explicitly includes Err(disk-full|lock|unknown) in the trigger conditions for path-not-found. The rationale table at lines 116-122 gives per-row justification distinguishing permission-denied (chmod/chown remediation) from the collapsed bucket (no distinct UX recovery). ACs at lines 128-132 give one falsifiable assertion per Err kind. The rejected 'unavailable' alternative is reasoned at line 124. PROP-024 in verification-architecture.md:148 enumerates exactly the same 7 outcomes for property testing. The statDir Port Contract docstring at lines 48-61 mirrors the contract on the port-signature side."
+    },
+    {
+      "id": "F-001",
+      "status": "still-resolved",
+      "justification": "REQ-011 two-layer split is intact at behavioral-spec.md:213-217 (pure helper nextAvailableNoteId + effectful vault.allocateNoteId). PROP-003 (verification-architecture.md:127) and PROP-022 (line 146) remain coverage-matrix-bound to REQ-011 (line 182). Revision 4 amendments did not touch this area."
+    },
+    {
+      "id": "F-002",
+      "status": "still-resolved",
+      "justification": "PROP-021 (verification-architecture.md:145) intact: covers VaultScanned → FeedRestored → TagInventoryBuilt ordering, VaultScanned payload {vaultId, snapshots, corruptedFiles, occurredOn} with CorruptedFile.failure: ScanFileFailure shape, and PublicDomainEvent union membership constraint. Coverage matrix lines 184-185 still route REQ-013a/b to PROP-021."
+    },
+    {
+      "id": "F-003",
+      "status": "still-resolved",
+      "justification": "REQ-013 split into REQ-013a (behavioral-spec.md:238-247) and REQ-013b (lines 251-260) preserved verbatim. Emitter responsibility (Vault vs Curate) and PublicDomainEvent membership remain explicit ACs. Revision 4 did not modify these REQs."
+    },
+    {
+      "id": "F-004",
+      "status": "still-resolved",
+      "justification": "REQ-015 ACs are intact and now extended. AC-1 (purity, behavioral-spec.md:296) and AC-2 (sync vs async deferred to Phase 2b, line 297) remain split. New AC-3 and AC-4 add to — not replace — the previously-resolved AC-1/AC-2 partitioning. FrontmatterParser.parse purity restated at line 301."
+    },
+    {
+      "id": "F-005",
+      "status": "still-resolved",
+      "justification": "REQ-001 statDir outcome contract at behavioral-spec.md:41-48 retains the four-outcome enumeration (Ok(true)/Ok(false)/Err(not-found)/Err(permission)) and now extends to the disk-full/lock/unknown collapse — strictly additive to the prior resolution. verification-architecture.md:48-61 mirrors the extension on the port-contract side. No regression."
+    }
+  ],
+  "newFindings": [],
+  "judgment": "Proceed to Phase 2a (Sprint 2). Both routed findings (FIND-003, FIND-010) are resolved with falsifiable contracts; PROP-023 and PROP-024 are well-formed and traceable; coverage matrix is complete with no orphans; lean-mode required-property set has grown appropriately to 5 entries reflecting the load-bearing nature of the Clock.now budget invariant. Minor stylistic looseness exists (e.g., AC-3/PROP-023 use 'at most twice' while REQ-015 prose says 'exactly once' for the inter-step call and one for Step 4 — total is effectively exactly 2, but the upper-bound phrasing is the testable property and preserves backward compatibility with paths that might short-circuit before Step 4). This phrasing choice is defensible and does not introduce ambiguity sufficient to fail the gate."
+}

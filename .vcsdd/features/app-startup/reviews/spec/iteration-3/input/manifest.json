@@ -1,0 +1,60 @@
+{
+  "feature": "app-startup",
+  "iteration": 3,
+  "phase": "1c",
+  "reviewType": "spec",
+  "mode": "lean",
+  "reviewer": "adversary",
+  "artifactsToReview": [
+    ".vcsdd/features/app-startup/specs/behavioral-spec.md",
+    ".vcsdd/features/app-startup/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "context": {
+    "rationale": "Phase 4 routed Phase 3 adversary FAIL findings (FIND-003, FIND-010) back to Phase 1a. Spec was refined to revision 4 (behavioral-spec.md) and revision 4 (verification-architecture.md). Re-running spec review gate to confirm the refinements adequately resolve the routed findings and do not introduce new ambiguity.",
+    "priorIterations": [
+      {"iteration": 1, "verdict": "PASS-with-findings (F-001..F-005)", "outputPath": ".vcsdd/features/app-startup/reviews/spec/iteration-1/output/verdict.json"},
+      {"iteration": 2, "verdict": "PASS (F-001..F-005 resolved)", "outputPath": ".vcsdd/features/app-startup/reviews/spec/iteration-2/output/verdict.json"}
+    ],
+    "routedFindings": [
+      {
+        "id": "FIND-003",
+        "fromPhase": "3",
+        "dimension": "implementation_correctness",
+        "severity": "major",
+        "summary": "Pipeline calls Clock.now() between Step 2 and Step 3, contradicting REQ-015 I/O confinement (which only permitted Steps 1, 2, 4)",
+        "specReferences": ["REQ-015", "REQ-013a", "REQ-013b"],
+        "specResolution": "behavioral-spec.md REQ-015 amended to explicitly permit one inter-step Clock.now call between Steps 2 and 3 (Option A). Adds AC-3 (≤2 Clock.now calls per run) and AC-4 (hydrateFeed accepts no timestamp argument). verification-architecture.md adds Inter-step row to Purity Boundary Map and adds PROP-023 (Tier 1, required: true) to verify the Clock.now call budget."
+      },
+      {
+        "id": "FIND-010",
+        "fromPhase": "3",
+        "dimension": "edge_case_coverage",
+        "severity": "minor",
+        "summary": "REQ-004 silent on how statDir Err(disk-full|lock|unknown) maps; implementation collapses to path-not-found without spec authority",
+        "specReferences": ["REQ-004", "REQ-005"],
+        "specResolution": "behavioral-spec.md REQ-004 EARS expanded to enumerate Err(disk-full|lock|unknown) → path-not-found (collapsed) with explicit rationale table. Adds 3 ACs (one per collapsed kind). Rejects alternative 'unavailable' reason. verification-architecture.md statDir port docstring updated; PROP-024 (Tier 1, required: false) added to verify the 7-row mapping."
+      }
+    ],
+    "domainSourceOfTruth": [
+      "docs/domain/workflows.md (Workflow 1: アプリ初期化)",
+      "docs/domain/aggregates.md §1 衝突回避設計, §4 vault.allocateNoteId",
+      "docs/domain/domain-events.md (VaultScanned public; FeedRestored, TagInventoryBuilt internal)",
+      "docs/domain/glossary.md",
+      "docs/domain/code/ts/src/shared/snapshots.ts",
+      "docs/domain/code/rust/src/vault/ports.rs"
+    ]
+  },
+  "instructions": {
+    "scope": "Review specs/behavioral-spec.md (revision 4) and specs/verification-architecture.md (revision 4) ONLY. Do NOT read source code under promptnotes/ — Phase 3 will re-review the implementation later.",
+    "focus": [
+      "Confirm FIND-003 is fully addressed (REQ-015 EARS now matches the inter-step allowance; AC-3/AC-4 are testable; PROP-023 is well-formed).",
+      "Confirm FIND-010 is fully addressed (REQ-004 EARS + AC table cover all 7 statDir outcomes; PROP-024 enumerates the same 7 cases).",
+      "Detect any new spec ambiguity introduced by these amendments.",
+      "Confirm prior PASS findings (F-001..F-005) remain resolved — no regression.",
+      "Verify coverage matrix completeness: every REQ has ≥1 PROP; every PROP traces to ≥1 REQ.",
+      "Check EARS syntax preservation throughout."
+    ],
+    "outputContract": "Write reviews/spec/iteration-3/output/verdict.json with the standard schema: feature, iteration, phase, reviewer, reviewedAt, mode, dimensions{spec_fidelity, verification_readiness}, overallVerdict, priorFindingStatus (FIND-003, FIND-010, plus F-001..F-005 regression check), newFindings (if any), judgment."
+  }
+}
