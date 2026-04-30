@@ -16,23 +16,13 @@ import type {
 } from "promptnotes-domain-types/shared/value-objects";
 import type { AppStartupError, FsError } from "promptnotes-domain-types/shared/errors";
 import type { HydrationFailureReason } from "promptnotes-domain-types/shared/snapshots";
-import type { InitialUIState } from "./stages.js";
+import type { InitialUIState, ParsedNote } from "./stages.js";
 import { loadVaultConfig } from "./load-vault-config.js";
 import { scanVault } from "./scan-vault.js";
 import { hydrateFeed } from "./hydrate-feed.js";
 import { initializeCaptureSession } from "./initialize-capture.js";
 
 // ── Port definitions ────────────────────────────────────────────────────────
-
-/** Parsed note content — mirrors ScanVaultPorts.parseNote return type. */
-type ParsedNote = {
-  readonly body: string;
-  readonly fm: {
-    readonly tags: readonly unknown[];
-    readonly createdAt: Timestamp;
-    readonly updatedAt: Timestamp;
-  };
-};
 
 /**
  * All ports required to run the full AppStartup pipeline.

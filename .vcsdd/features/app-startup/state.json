@@ -34,9 +34,8 @@
     {
       "from": "2b",
       "to": "2c",
-      "timestamp": "2026-04-30T03:15:00.000000Z",
-      "sprint": 1,
-      "note": "80/81 TS tests pass; 7/7 Rust tests pass. 1 residual TS failure (faulty test assertion in step4-initialize-capture.test.ts:337) routed to Phase 4."
+      "timestamp": "2026-04-30T03:03:28.992919Z",
+      "sprint": 1
     }
   ],
   "iterations": {
@@ -668,6 +667,120 @@
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "2a",
         "externalId": "TEST-rust-note-id"
+      },
+      {
+        "beadId": "BEAD-046",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-040",
+          "BEAD-039"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-load-vault-config"
+      },
+      {
+        "beadId": "BEAD-047",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-041",
+          "BEAD-039"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-scan-vault"
+      },
+      {
+        "beadId": "BEAD-048",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-042"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-hydrate-feed"
+      },
+      {
+        "beadId": "BEAD-049",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-043"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-initialize-capture"
+      },
+      {
+        "beadId": "BEAD-050",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/app-startup/pipeline.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-044"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-pipeline"
+      },
+      {
+        "beadId": "BEAD-051",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/app-startup/stages.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-040",
+          "BEAD-041",
+          "BEAD-042",
+          "BEAD-043",
+          "BEAD-044"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-stages"
+      },
+      {
+        "beadId": "BEAD-052",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/app-startup/errors.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-039"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-errors"
+      },
+      {
+        "beadId": "BEAD-053",
+        "type": "implementation",
+        "artifactPath": "docs/domain/code/rust/src/vault/ports.rs",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-045"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-rust-next-available-note-id"
+      },
+      {
+        "beadId": "BEAD-054",
+        "type": "implementation",
+        "artifactPath": "docs/domain/code/rust/src/value_objects.rs",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-045"
+        ],
+        "createdAt": "2026-04-30T03:03:28.992919Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-rust-value-objects"
       }
     ]
   },
@@ -689,5 +802,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-30T03:15:00.000000Z"
+  "updatedAt": "2026-04-30T03:06:41.010506Z"
 }

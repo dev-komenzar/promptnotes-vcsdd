@@ -13,7 +13,12 @@
 // PROP-020: permission-denied readFile → failure {kind:'read', fsError:{kind:'permission'}}.
 
 import type { Result } from "promptnotes-domain-types/util/result";
-import type { VaultPath, NoteId, Timestamp } from "promptnotes-domain-types/shared/value-objects";
+import type {
+  Body,
+  Frontmatter,
+  NoteId,
+  VaultPath,
+} from "promptnotes-domain-types/shared/value-objects";
 import type {
   AppStartupError,
   FsError,
@@ -23,19 +28,9 @@ import type {
   HydrationFailureReason,
   NoteFileSnapshot,
 } from "promptnotes-domain-types/shared/snapshots";
-import type { ScannedVault } from "./stages.js";
+import type { ParsedNote, ScannedVault } from "./stages.js";
 
 // ── Port definitions ────────────────────────────────────────────────────────
-
-/** Parsed note content — the shape returned by parseNote on success. */
-type ParsedNote = {
-  readonly body: string;
-  readonly fm: {
-    readonly tags: readonly unknown[];
-    readonly createdAt: Timestamp;
-    readonly updatedAt: Timestamp;
-  };
-};
 
 export type ScanVaultPorts = {
   /** List all .md file paths in the vault directory. */
@@ -103,19 +98,18 @@ export async function scanVault(
       continue;
     }
 
-    // Build a minimal NoteFileSnapshot from parsed content.
-    // The noteId is derived from the filePath stem (best-effort for Phase 2b).
-    // Tests do not inspect snapshot fields beyond count, so this is minimal.
+    // Build a minimal NoteFileSnapshot from parsed content. The NoteId is
+    // derived from the file stem; the canonical NoteId allocator runs later
+    // in Step 4 only for the new note being created at session start.
     const parsed = parseResult.value;
-    const noteId = filePathToNoteId(filePath);
     const snapshot: NoteFileSnapshot = {
-      noteId,
-      body: parsed.body as unknown as import("promptnotes-domain-types/shared/value-objects").Body,
+      noteId: filePathToNoteId(filePath),
+      body: parsed.body as unknown as Body,
       frontmatter: {
         tags: parsed.fm.tags,
         createdAt: parsed.fm.createdAt,
         updatedAt: parsed.fm.updatedAt,
-      } as unknown as import("promptnotes-domain-types/shared/value-objects").Frontmatter,
+      } as unknown as Frontmatter,
       filePath,
       fileMtime: parsed.fm.updatedAt,
     };

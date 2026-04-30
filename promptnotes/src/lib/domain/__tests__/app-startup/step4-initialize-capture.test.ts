@@ -332,9 +332,11 @@ describe("REQ-011 / PROP-003 / PROP-022: nextAvailableNoteId pure helper", () =>
     const preferred = makeTimestamp(1714298400000);
     const result = nextAvailableNoteId(preferred, new Set());
 
-    // Result should be a string in timestamp format (not contain -1, -2 suffix)
+    // Result must be the bare base format `YYYY-MM-DD-HHmmss-SSS`
+    // (no `-N` collision suffix appended). Anchored regex distinguishes
+    // the trailing `-SSS` millis segment from an actual collision suffix.
     const resultStr = result as unknown as string;
-    expect(resultStr).not.toMatch(/-\d+$/);
+    expect(resultStr).toMatch(/^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}$/);
   });
 
   test("REQ-011: suffix appended on collision — base occupied → -1 tried", () => {

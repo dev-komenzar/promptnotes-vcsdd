@@ -42,3 +42,7 @@
 {"timestamp":"2026-04-27T22:53:10.499Z","event":"phase_transition","featureName":"app-startup","from":"1c","to":"2a","iteration":1,"phase":"2a"}
 {"timestamp":"2026-04-27T22:53:10.499Z","event":"sprint_started","featureName":"app-startup","sprintNumber":1,"phase":"2a"}
 {"timestamp":"2026-04-27T23:05:03.869Z","event":"sprint_red_recorded","featureName":"app-startup","sprintN":1,"phase":"2a","evidencePath":".vcsdd/features/app-startup/evidence/sprint-1-red-phase.log","newFeatureTests":"FAIL","regressionBaseline":"PASS"}
+{"timestamp": "2026-04-30T02:47:50.055490Z", "feature": "app-startup", "event": "phase-transition", "from": "2a", "to": "2b", "sprint": 1}
+{"timestamp": "2026-04-30T03:03:29.013571Z", "feature": "app-startup", "event": "green-phase-pass", "sprint": 1, "tsTests": 81, "rustTests": 7}
+{"timestamp": "2026-04-30T03:03:29.013571Z", "feature": "app-startup", "event": "phase-transition", "from": "2b", "to": "2c", "sprint": 1}
+{"timestamp": "2026-04-30T03:06:41.010506Z", "feature": "app-startup", "event": "refactor-pass", "sprint": 1, "tsTests": 81, "rustTests": 7}

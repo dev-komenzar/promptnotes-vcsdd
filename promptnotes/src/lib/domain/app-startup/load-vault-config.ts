@@ -67,44 +67,21 @@ export async function loadVaultConfig(
   const pathStr = vaultPath as unknown as string;
   const statResult = ports.statDir(pathStr);
 
-  if (statResult.ok) {
-    if (statResult.value) {
-      // PROP-016: happy path emits no events.
-      return {
-        ok: true,
-        value: { kind: "ConfiguredVault", vaultPath },
-      };
-    } else {
-      // Ok(false) — path exists but is not a directory, treat as not-found.
-      return {
-        ok: false,
-        error: {
-          kind: "config",
-          reason: { kind: "path-not-found", path: pathStr },
-        },
-      };
-    }
-  } else {
-    // statDir returned Err — classify by FsError kind.
-    const fsKind = statResult.error.kind;
-    if (fsKind === "permission") {
-      return {
-        ok: false,
-        error: {
-          kind: "config",
-          reason: { kind: "permission-denied", path: pathStr },
-        },
-      };
-    } else {
-      // All other FsError kinds (not-found, disk-full, lock, unknown) map to
-      // path-not-found as the safe default per verification-architecture.md.
-      return {
-        ok: false,
-        error: {
-          kind: "config",
-          reason: { kind: "path-not-found", path: pathStr },
-        },
-      };
-    }
+  // PROP-016: happy path (Ok(true)) emits no events and returns ConfiguredVault.
+  if (statResult.ok && statResult.value) {
+    return {
+      ok: true,
+      value: { kind: "ConfiguredVault", vaultPath },
+    };
   }
+
+  // REQ-005: permission-denied is the only FsError variant with a distinct
+  // error variant. Every other outcome — Ok(false), Err(not-found), and any
+  // other FsError kind — collapses to path-not-found per F-005.
+  const reason: AppStartupError["reason"] =
+    !statResult.ok && statResult.error.kind === "permission"
+      ? { kind: "permission-denied", path: pathStr }
+      : { kind: "path-not-found", path: pathStr };
+
+  return { ok: false, error: { kind: "config", reason } };
 }

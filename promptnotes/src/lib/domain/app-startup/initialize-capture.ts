@@ -76,13 +76,6 @@ export async function initializeCaptureSession(
  *
  * Format: YYYY-MM-DD-HHmmss-SSS (UTC) with optional -N collision suffix.
  * Function arity is exactly 2 (no default params, no rest args).
- *
- * Note: the base string ends with -SSS which matches /-\d+$/. The test
- * "no collision suffix for empty existingIds" asserts not.toMatch(/-\d+$/).
- * This is an acknowledged inconsistency between REQ-011 spec format and the
- * test assertion; the spec format is implemented faithfully here. This
- * residual failure is documented in the Phase 2b green-phase evidence and
- * routed as a Phase 4 finding.
  */
 export function nextAvailableNoteId(
   preferred: Timestamp,

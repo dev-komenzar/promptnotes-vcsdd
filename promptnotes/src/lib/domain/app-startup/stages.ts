@@ -5,6 +5,7 @@
 
 import type {
   NoteId,
+  Timestamp,
   VaultPath,
 } from "promptnotes-domain-types/shared/value-objects";
 import type {
@@ -13,6 +14,23 @@ import type {
 } from "promptnotes-domain-types/shared/snapshots";
 import type { Feed } from "promptnotes-domain-types/curate/aggregates";
 import type { TagInventory } from "promptnotes-domain-types/curate/read-models";
+
+// ── Parser-result shape (shared by Step 2 and the pipeline ports) ─────────
+
+/**
+ * Structured parse result returned by the FrontmatterParser port.
+ * The body is a raw string (Body VO conversion happens inside scanVault).
+ * The frontmatter fields are typed as Timestamp because port implementations
+ * are expected to construct VO-validated values.
+ */
+export type ParsedNote = {
+  readonly body: string;
+  readonly fm: {
+    readonly tags: readonly unknown[];
+    readonly createdAt: Timestamp;
+    readonly updatedAt: Timestamp;
+  };
+};
 
 // ── Step 1 output ──────────────────────────────────────────────────────────
 

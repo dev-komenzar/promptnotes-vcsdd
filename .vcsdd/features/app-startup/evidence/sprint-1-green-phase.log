@@ -1,38 +1,65 @@
-target-feature-tests: PARTIAL_PASS (80/81 TS pass, 7/7 Rust pass)
+target-feature-tests: PASS
 regression-baseline: PASS
 
-=== TypeScript: bun test ===
+=== Phase 2c (post-refactor) summary ===
+- All 81 TypeScript app-startup tests pass under bun test
+- All 7 Rust note_id tests pass under cargo test --lib
+- bun run check: 0 errors in src/lib/domain/app-startup/**; the single
+  unused-directive error in vite.config.js is pre-existing — present in
+  sprint-1-red-phase.log and unrelated to this feature.
+
+=== Phase 2c refactors applied (no behavior change) ===
+1. load-vault-config.ts — collapsed nested if/else FsError dispatch into a
+   single conditional. The two redundant `path-not-found` branches now share
+   one return statement; only `permission` is special-cased to permission-denied.
+2. stages.ts — extracted shared `ParsedNote` type. Previously duplicated
+   inline in scan-vault.ts and pipeline.ts; now defined once and imported
+   by both. No behavioral change; ports retain identical signatures.
+3. scan-vault.ts — replaced inline `import("...").Body / Frontmatter` casts
+   with named imports at the top of the file. Improves readability without
+   altering the runtime cast behavior.
+4. initialize-capture.ts — removed obsolete docstring paragraph that
+   referenced the now-corrected regex test (the Phase 2a test fix made the
+   note stale).
+
+=== Test correction note (Phase 2a iteration-2 scaffolding fix) ===
+During Phase 2b, identified that step4-initialize-capture.test.ts:337
+contained a regex `/-\d+$/` that was mathematically impossible to satisfy
+with REQ-011 spec format `YYYY-MM-DD-HHmmss-SSS` (the trailing `-SSS`
+millis segment always matches). Replaced with anchored positive assertion
+/^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}$/ to validate exact base format. The
+implementation matches the spec faithfully.
+
+=== Implementation files (final) ===
+TypeScript (under promptnotes/src/lib/domain/app-startup/):
+  errors.ts, stages.ts, load-vault-config.ts, scan-vault.ts,
+  hydrate-feed.ts, initialize-capture.ts, pipeline.ts
+
+Rust (filling todo!() bodies in the type contract crate):
+  docs/domain/code/rust/Cargo.toml — added `chrono = "0.4"`
+  docs/domain/code/rust/src/value_objects.rs — Timestamp::try_from_epoch_millis,
+                                                 NoteId::try_new
+  docs/domain/code/rust/src/vault/ports.rs — next_available_note_id
+
+=== TypeScript: bun test (runtime, post-refactor) ===
 bun test v1.3.11 (af24e281)
 
-80 pass
-1 fail
-187 expect() calls
-Ran 81 tests across 6 files. [132.00ms]
+ 81 pass
+ 0 fail
+ 187 expect() calls
+Ran 81 tests across 6 files. [97.00ms]
 
-Failing test:
-  REQ-011 / PROP-003 / PROP-022: nextAvailableNoteId pure helper
-  > REQ-011: no collision suffix for empty existingIds
+=== TypeScript: bun run check (svelte-check, post-refactor) ===
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+1777518367895 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes"
+1777518367896 ERROR "vite.config.js" 4:1 "Unused '@ts-expect-error' directive."
+1777518367897 COMPLETED 308 FILES 1 ERRORS 0 WARNINGS 1 FILES_WITH_PROBLEMS
+error: script "check" exited with code 1
 
-Root cause: test assertion `expect(resultStr).not.toMatch(/-\d+$/)` is
-internally inconsistent with spec REQ-011 which mandates the format
-`YYYY-MM-DD-HHmmss-SSS`. The milliseconds segment `-SSS` (e.g., `-000`)
-always ends with `/-\d+$/`, making the regex fire on the base format itself
-rather than only on the collision suffix `-N`. Implementation faithfully
-matches the spec format. The other collision tests use hardcoded IDs
-(`"2026-04-28-120000-000"`) that do not collide with the actual computed
-base for timestamp 1714298400000 (`"2024-04-28-100000-000"`), so they pass.
+=== Rust: cargo test --lib (post-refactor) ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running unittests src/lib.rs (target/debug/deps/promptnotes_lib-124e1f498dd9f54c)
 
-Phase 4 finding: test `step4-initialize-capture.test.ts:337` assertion
-`not.toMatch(/-\d+$/)` is faulty — should use a more specific regex like
-`not.toMatch(/-\d{1,5}$/)` (small N suffix only) or `/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}-[0-9]{3}$/`
-(exact base format). Route to Phase 2a for test correction.
-
-=== TypeScript: bun run check ===
-1 pre-existing ERROR in vite.config.js (Unused '@ts-expect-error' directive)
-0 errors in src/lib/domain/app-startup/**
-Files with problems: 1 (pre-existing, not introduced by Phase 2b)
-
-=== Rust: cargo test --lib ===
 running 7 tests
 test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_empty_set ... ok
 test domain::vault::note_id::tests::prop003_result_not_in_existing_ids_double_collision ... ok
@@ -42,4 +69,5 @@ test domain::vault::note_id::tests::prop022_deterministic_with_collision ... ok
 test domain::vault::note_id::tests::prop003_proptest_uniqueness ... ok
 test domain::vault::note_id::tests::prop022_proptest_determinism ... ok
 
-test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
