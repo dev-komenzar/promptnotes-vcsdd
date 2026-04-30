@@ -1,0 +1,18 @@
+{
+  "id": "FIND-015",
+  "dimension": "structural_integrity",
+  "severity": "critical",
+  "title": "PROP-003 衝突回避テストはタイムスタンプ生成基準値の不一致により衝突パスを実行していない",
+  "description": "PROP-003 は required:true の Tier-1 不変条件であり、`nextAvailableNoteId` の衝突回避ロジック（initialize-capture.ts:97-103 のループ）が NoteId の一意性を保証する根幹である。しかし step4-initialize-capture.test.ts の3つの例ベース衝突テストとfast-check プロパティテストは、すべて衝突パスを実行できていない:\n\n1. step4-initialize-capture.test.ts:421-430 — preferred=makeTimestamp(1714298400000) に対し existingIds=Set(['2026-04-28-120000-000'])。1714298400000 ms (= UNIX epoch 2024-04-28T10:00:00Z) は formatBaseId で '2024-04-28-100000-000' 系の文字列を生成するため、existingIds の '2026-...' とは決して衝突しない。`existingIds.has(base)` は false → ループ未実行で base 即返却 → assertion `!existingIds.has(result)` は真空に成立。\n\n2. step4-initialize-capture.test.ts:498-510 — 同じ手口で「base が衝突した場合 -1 を試す」と称するが preferred=2024 系/baseId='2026-...-000' のため衝突せず、result===base==='2024-...' で `result !== baseId(2026-...)` が真空に成立。コメント `must match preferred's timestamp format` は事実誤認。\n\n3. step4-initialize-capture.test.ts:512-524 — `-2` 抽出の衝突テストも同様に baseId='2026-...' で existingIds={2026-..., 2026-...-1} を構築するが、formatBaseId 出力は 2024 系のため衝突なし。\n\n4. step4-initialize-capture.test.ts:432-451 fast-check プロパティテスト — `fc.string({minLength:20, maxLength:30})` で任意の文字列を NoteId として生成しているため、formatBaseId 出力の決定的な書式と一致する確率は天文学的に低く、衝突パスは実質的にカバレッジから除外されている。\n\nつまり initialize-capture.ts:97-103 の `for (let i = 1; ; i++) { const candidate = `${base}-${i}`; ... }` 部分はランタイム/プロパティテストの両方で実行されない。PROP-003 の required:true 主張が成り立たず、衝突回避ロジックを破壊する変更（例: ループ脱出条件の反転、`-${i}` を `-${i+1}` にする等のオフバイワン）は静かに通る。Phase 3 の `dimensionVerdicts.structural_integrity = PASS` の前提を覆す。",
+  "evidence": [
+    "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:421-430",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:432-451",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:498-510",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:512-524",
+    "promptnotes/src/lib/domain/app-startup/initialize-capture.ts:97-103",
+    "promptnotes/src/lib/domain/app-startup/initialize-capture.ts:112-126"
+  ],
+  "specReference": "PROP-003",
+  "recommendation": "preferred Timestamp と existingIds の base 文字列を実際に一致させる。具体的には: (a) テストでまず `const base = nextAvailableNoteId(preferred, new Set())` で実際の base を取得し、その値を existingIds に投入する、または (b) ヘルパー関数 `expectedBaseId(epochMs)` を test ファイル内に定義し formatBaseId と同じ書式で計算した文字列を baseId として使う。さらに fast-check プロパティテストでは `fc.tuple(fc.integer, ...)` から base を計算し existingIds に必ず混ぜる戦略へ変更し、衝突パスを統計的に網羅する。コメントの '2024' / '2026' のミスマッチも合わせて修正し、テストが実際に検証している不変量を明示する。",
+  "routeTo": "2a"
+}

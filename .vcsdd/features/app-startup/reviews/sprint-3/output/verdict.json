@@ -1,0 +1,21 @@
+{
+  "reviewType": "implementation",
+  "featureName": "app-startup",
+  "sprintNumber": 3,
+  "iteration": 1,
+  "reviewedAt": "2026-04-30T18:30:00Z",
+  "dimensionVerdicts": {
+    "spec_fidelity": "FAIL",
+    "edge_case_coverage": "PASS",
+    "implementation_correctness": "PASS",
+    "structural_integrity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "overallVerdict": "FAIL",
+  "findingsCount": 2,
+  "findingsBySeverity": { "critical": 1, "major": 1, "minor": 0 },
+  "priorSprintFindingsResolved": ["FIND-011", "FIND-012", "FIND-013", "FIND-014"],
+  "priorSprintFindingsKeptOpen": ["FIND-008"],
+  "priorSprintFindingsPartiallyResolved": [],
+  "summary": "Sprint 3 は前スプリントの FIND-011 / FIND-012 / FIND-013 / FIND-014 をすべて実体的に解決しているが、新規に critical 1 件・major 1 件の欠陥が露見したため overallVerdict は FAIL とする。\n\n[前スプリント解決の検証] \nFIND-011: step3-hydrate-feed.test.ts:44-65 で `_IsNever<T>` 述語と arity/tuple/Extract の3段防衛が再構築されており、`undefined as never` の常真パターンは完全に置換されている (line 49 / 57 / 64 のいずれも `true = false` で compile-fail する load-bearing 形)。FIND-012: pipeline.test.ts:53-67 の `_feedRestoredNeverPublic` と `_tagInventoryBuiltNeverPublic` も同様に `_IsNever` 述語化されており、FeedRestored/TagInventoryBuilt が PublicDomainEvent に紛れ込めば compile-fail する。FIND-013: stages.ts:33 で `body: Body` に締まり、scan-vault.ts:126 から `as unknown as Body` キャストは除去された。対応する Tier-0 ガード step2-scan-vault.test.ts:91-92 / 100-105 はいずれも `true = false` で落ちる load-bearing 形。FIND-014: 仕様 REQ-010 NOTE で Note 集約の非保持が明文化され、pipeline.test.ts:192-220 の Object.keys 厳密比較と pipeline.test.ts:222-280 の sentinel ベースの非保持検証が watchpoint として配置されている。Bun テスト 115/115 PASS、svelte-check 0 errors の green-phase ログ (.vcsdd/features/app-startup/evidence/sprint-3-green-phase.log) も整合する。\n\n[新規欠陥] \nFIND-015 (critical / structural_integrity / PROP-003): step4-initialize-capture.test.ts の衝突回避テスト (lines 421-430, 432-451, 498-510, 512-524) はすべて preferred=makeTimestamp(1714298400000) (= 2024-04-28 UTC) に対して existingIds に '2026-04-28-120000-000' 系の文字列を投入しており、formatBaseId (initialize-capture.ts:112-126) が出力する '2024-04-28-100000-000' 系とは決して一致しないため、initialize-capture.ts:97-103 の衝突回避ループは実行されない。fast-check プロパティテストも `fc.string({minLength:20, maxLength:30})` で任意文字列を生成するため衝突確率は実質ゼロ。required:true の Tier-1 主張 PROP-003 は名目だけで、collision-suffix ロジックを破壊する変更がテスト緑のまま通る。\n\nFIND-016 (major / spec_fidelity): verification-architecture.md:77-79 の port catalog は `parseNote: (raw) => Result<{ body: Body; fm: Frontmatter }, ...>` を規定しているが、stages.ts:32-39 の ParsedNote.fm は branded Frontmatter ではなく構造的オブジェクトのまま、scan-vault.ts:131 で `as unknown as Frontmatter` キャストが残存している。FIND-013 で body について解決した同型の anti-pattern が fm に残っており、Frontmatter.tryNew (aggregates.md §1) の不変条件 (`updated-before-created` / `duplicate-tag`) が parseNote ポート境界で enforce されない。テストスタブ (pipeline.test.ts:127-135 / step2-scan-vault.test.ts:160-167) は `as any` で覆い隠している。\n\n[ディメンション別根拠] \nspec_fidelity = FAIL: FIND-016 により verification-architecture.md:79 の Frontmatter port 契約が実装で破られている。\nedge_case_coverage = PASS: REQ-004 の statDir 7-case マッピング (PROP-024) は step1-load-vault-config.test.ts:428-590 で全変種カバー、REQ-016 readFile 失敗の各 FsError kind は step2-scan-vault.test.ts:336-466 で網羅、PROP-013 の Object.keys 厳密一致は pipeline.test.ts:192-220 で encode 済み。\nimplementation_correctness = PASS: REQ-001/REQ-003/REQ-004/REQ-005 は load-vault-config.ts:48-94 で正しくマップ、REQ-010 の noteCreate 起動は initialize-capture.ts:59 で確認、REQ-013a/REQ-013b の event 順序は pipeline.ts:93-107 で正しく構築、Clock.now 呼び出しは load-vault-config.ts:65 / pipeline.ts:93 / initialize-capture.ts:52 の3箇所すべて clockNow port 経由 (Date.now 直呼び出しなし)。\nstructural_integrity = FAIL: FIND-015 により PROP-003 の衝突回避テスト群が tautological。Tier-1 required:true の load-bearing 性が崩壊している。\nverification_readiness = FAIL: FIND-015 (PROP-003 untestable) と FIND-016 (Frontmatter VO 未強制) の双方が Phase 5 形式化前に塞ぐべき gap である。FIND-008 (Rust path 不在) は Sprint 2 から継続して open だが Phase 5 deferred の合意のもと keptOpen に分類。\n\n[ルーティング] FIND-015 → 2a (test logic 修正)、FIND-016 → 2b (stages.ts/scan-vault.ts 締めとTier-0 ガード追加)。"
+}

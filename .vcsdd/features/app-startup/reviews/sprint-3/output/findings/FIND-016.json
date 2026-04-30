@@ -1,0 +1,17 @@
+{
+  "id": "FIND-016",
+  "dimension": "spec_fidelity",
+  "severity": "major",
+  "title": "ParsedNote.fm が verification-architecture のポート契約 (Frontmatter VO) と一致せず scan-vault.ts:131 で as unknown as Frontmatter キャストが残存",
+  "description": "FIND-013 の解決により ParsedNote.body は Body VO (branded) に締まり、scan-vault.ts:127 の `as unknown as Body` キャストは消えた。しかし port catalog (verification-architecture.md:77-79) は `parseNote: (raw: string) => Result<{ body: Body; fm: Frontmatter }, HydrationFailureReason>` と定義しており、`fm` も branded `Frontmatter` を要求している。\n\n実装側は次の2点で契約違反:\n\n1. promptnotes/src/lib/domain/app-startup/stages.ts:32-39 — ParsedNote.fm は `readonly { tags; createdAt; updatedAt }` という構造的型のみで、`Frontmatter` (Brand<{...}, 'Frontmatter'>) ではない。これは architecture が明示的に指定する VO 境界を実装が無視している状態であり、FIND-005/FIND-013 が `body` について解決した同一の anti-pattern が `fm` に残っている。\n\n2. promptnotes/src/lib/domain/app-startup/scan-vault.ts:127-131 — snapshot 構築時に `frontmatter: { tags, createdAt, updatedAt } as unknown as Frontmatter` という unknown 経由の二段キャストがあり、Frontmatter Smart Constructor (`Frontmatter.tryNew`、aggregates.md §1) が enforce するはずの不変条件 (`updated-before-created` / `duplicate-tag`) を完全にバイパスしている。これは port catalog が parseNote ポートに割り当てた責務を scanVault が担うことになっており、purity boundary の責任分担にも反する。\n\nテスト側もこの不整合を覆い隠している: pipeline.test.ts:127-135 と step2-scan-vault.test.ts:160-167 のパーサスタブはどちらも `fm: { ... } as any` で構築され、契約違反を補正してしまう。\n\nSprint 3 のスコープは FIND-013 (body) のみだが、PROP-013 と REQ-014 の post-condition における ScannedVault → NoteFileSnapshot.frontmatter の整合性は同じ性質の問題を共有しており、verification_readiness 観点で Phase 5 形式化の前にクローズすべき。",
+  "evidence": [
+    ".vcsdd/features/app-startup/specs/verification-architecture.md:77-79",
+    "promptnotes/src/lib/domain/app-startup/stages.ts:32-39",
+    "promptnotes/src/lib/domain/app-startup/scan-vault.ts:124-134",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:158-167",
+    "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts:122-135"
+  ],
+  "specReference": "REQ-002, PROP-019",
+  "recommendation": "stages.ts:34 の ParsedNote.fm を `Frontmatter` (branded VO) に締め、scan-vault.ts:131 の `as unknown as Frontmatter` を撤去する。同時に step2-scan-vault.test.ts に FIND-013 と同型の Tier-0 タイプガードを追加: `type _FmIsFrontmatter = ParsedNote['fm'] extends Frontmatter ? true : false; const _: _FmIsFrontmatter = true;`。この変更により `Frontmatter.tryNew` が parseNote ポート境界で確実に呼ばれるようになり、purity boundary が architecture の指示通りに保たれる。",
+  "routeTo": "2b"
+}

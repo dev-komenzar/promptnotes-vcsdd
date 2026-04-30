@@ -1,0 +1,74 @@
+{
+  "reviewType": "implementation",
+  "featureName": "app-startup",
+  "sprintNumber": 3,
+  "iteration": 1,
+  "mode": "lean",
+  "language": "typescript",
+  "priorReview": {
+    "sprintNumber": 2,
+    "verdict": "FAIL",
+    "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/verdict.json",
+    "findingsRoutedThisSprint": [
+      "FIND-011",
+      "FIND-012",
+      "FIND-013",
+      "FIND-014"
+    ],
+    "findingsRoutingMap": {
+      "FIND-011": "2a (replace tautological negative-membership type assertion at hydrate-feed test with extends-never guard)",
+      "FIND-012": "2a (replace tautological negative-membership assertions at pipeline.test.ts FeedRestored/TagInventoryBuilt with extends-never guard)",
+      "FIND-013": "2b (tighten ParsedNote.body to Body and remove `as unknown as Body` cast at scan-vault snapshot construction)",
+      "FIND-014": "1a (clarify whether REQ-010 expects Note aggregate persistence after noteCreate); resolved by spec-iter-4 watchpoint as Tier-2 runtime guard"
+    },
+    "findingsKeptOpen": [
+      "FIND-008"
+    ]
+  },
+  "specRefinementContext": {
+    "behavioralSpecRevision": 5,
+    "verificationArchitectureRevision": 5,
+    "specGateIteration": 4,
+    "specGateVerdict": "PASS"
+  },
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/app-startup/specs/behavioral-spec.md",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/domain/__tests__/app-startup/errors.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
+      "promptnotes/src-tauri/src/domain/vault/note_id.rs"
+    ],
+    "source": [
+      "promptnotes/src/lib/domain/app-startup/errors.ts",
+      "promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+      "promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
+      "promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "promptnotes/src/lib/domain/app-startup/stages.ts",
+      "promptnotes/src-tauri/src/domain/vault/mod.rs",
+      "promptnotes/src-tauri/src/domain/vault/note_id.rs",
+      "docs/domain/code/rust/src/value_objects.rs"
+    ]
+  },
+  "evidence": {
+    "redPhase": ".vcsdd/features/app-startup/evidence/sprint-3-red-phase.log",
+    "greenPhase": ".vcsdd/features/app-startup/evidence/sprint-3-green-phase.log"
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "outputDirectory": ".vcsdd/features/app-startup/reviews/sprint-3/output",
+  "createdAt": "2026-04-30T18:00:00Z"
+}

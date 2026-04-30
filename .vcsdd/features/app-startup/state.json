@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -163,6 +163,14 @@
       "timestamp": "2026-04-30T17:30:00Z",
       "sprint": 3,
       "reason": "sprint-3 green phase complete (115 pass / 0 type errors); FIND-013 resolved at stages.ts + scan-vault.ts; transitioning to refactor"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-04-30T18:30:00Z",
+      "sprint": 3,
+      "iteration": 1,
+      "reason": "sprint-3 adversary review FAIL \u2014 2 new findings (FIND-015 critical structural_integrity, FIND-016 major spec_fidelity); prior FIND-011/012/013/014 all resolved"
     }
   ],
   "iterations": {
@@ -1506,45 +1514,37 @@
     },
     "3": {
       "verdict": "FAIL",
-      "timestamp": "2026-04-30T14:30:00Z",
+      "timestamp": "2026-04-30T18:30:00Z",
       "reviewedBy": "adversary",
-      "sprint": 2,
+      "sprint": 3,
       "iteration": 1,
       "details": {
-        "spec_fidelity": "PASS",
+        "spec_fidelity": "FAIL",
         "edge_case_coverage": "PASS",
         "implementation_correctness": "PASS",
         "structural_integrity": "FAIL",
         "verification_readiness": "FAIL",
-        "findingsCount": 4,
+        "findingsCount": 2,
         "findingsBySeverity": {
-          "critical": 0,
-          "major": 3,
-          "minor": 1
+          "critical": 1,
+          "major": 1,
+          "minor": 0
         },
         "priorSprintFindingsResolved": [
-          "FIND-001",
-          "FIND-002",
-          "FIND-004",
-          "FIND-006",
-          "FIND-007",
-          "FIND-009"
+          "FIND-011",
+          "FIND-012",
+          "FIND-013",
+          "FIND-014"
         ],
         "priorSprintFindingsKeptOpen": [
           "FIND-008"
         ],
-        "priorSprintFindingsRoutedToSpec": [
-          "FIND-003",
-          "FIND-010"
-        ],
-        "priorSprintFindingsPartiallyResolved": [
-          "FIND-005"
-        ],
-        "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/verdict.json",
-        "findingsDir": ".vcsdd/features/app-startup/reviews/sprint-2/output/findings/"
+        "priorSprintFindingsPartiallyResolved": [],
+        "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-3/output/verdict.json",
+        "findingsDir": ".vcsdd/features/app-startup/reviews/sprint-3/output/findings/"
       },
       "adversaryVerdict": "FAIL",
-      "adversaryReviewedAt": "2026-04-30T14:30:00Z",
+      "adversaryReviewedAt": "2026-04-30T18:30:00Z",
       "history": [
         {
           "sprint": 1,
@@ -1557,6 +1557,19 @@
             "critical": 2,
             "major": 5,
             "minor": 3
+          }
+        },
+        {
+          "sprint": 2,
+          "iteration": 1,
+          "verdict": "FAIL",
+          "timestamp": "2026-04-30T14:30:00Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/verdict.json",
+          "findingsCount": 4,
+          "findingsBySeverity": {
+            "critical": 0,
+            "major": 3,
+            "minor": 1
           }
         }
       ]
@@ -1640,7 +1653,7 @@
   },
   "sprintCount": 3,
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-30T17:30:01Z",
+  "updatedAt": "2026-04-30T18:30:00Z",
   "sprints": {
     "sprint-3": {
       "startedAt": "2026-04-30T15:05:01Z",
