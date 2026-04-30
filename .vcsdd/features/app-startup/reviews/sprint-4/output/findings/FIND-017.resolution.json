@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-017",
+  "resolvedAt": "2026-04-30T20:45:00Z",
+  "resolvedDuringPhase": "5",
+  "resolution": "inline-cleanup",
+  "filesChanged": [
+    {
+      "path": "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
+      "stubs": [
+        {"line": "~798-810", "before": "tags/createdAt/updatedAt/outer all `as any`", "after": "all `as unknown as Tag[]/Timestamp/Frontmatter`"},
+        {"line": "~843-854", "before": "same anti-pattern", "after": "same fix"},
+        {"line": "~885-895", "before": "same anti-pattern", "after": "same fix"}
+      ]
+    }
+  ],
+  "verification": {
+    "bunTest": "137 pass / 0 fail",
+    "svelteCheck": "0 errors / 0 warnings"
+  },
+  "rationale": "minor structural cleanup; FIND-016 で締めた branded Frontmatter 契約を test stub 全域に統一。"
+}

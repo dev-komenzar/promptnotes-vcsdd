@@ -795,16 +795,17 @@ describe("FIND-006 / REQ-002: invalid-value via real VO rejection — malformed 
       }),
       // Parser SUCCEEDS but returns a tag that violates Tag VO ("" is empty string).
       // scanVault must run Tag.tryNew on each tag and detect the violation.
+      // FIND-017: parser スタブも `as unknown as Frontmatter` 形式に統一し、
+      // FIND-016 のブランド契約をテスト全域で守る。
       parseNote: (_raw: string) => ({
         ok: true as const,
         value: {
           body: makeBody("body"),
           fm: {
-            // The empty string tag is malformed — Tag.tryNew("") rejects it.
-            tags: [""] as any, // raw value: would fail Tag.tryNew
-            createdAt: { epochMillis: 1714298400000 } as any,
-            updatedAt: { epochMillis: 1714298400000 } as any,
-          } as any,
+            tags: [""] as unknown as readonly Tag[], // 空文字 tag は Tag.tryNew が拒否
+            createdAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+            updatedAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+          } as unknown as Frontmatter,
         },
       }),
     };
@@ -840,16 +841,17 @@ describe("FIND-006 / REQ-002: invalid-value via real VO rejection — malformed 
           value: "---\ntags: [\"  \"]\ncreatedAt: 2026-04-28\nupdatedAt: 2026-04-28\n---\nbody",
         },
       }),
+      // FIND-017: ブランド契約統一 (`as unknown as Frontmatter`)
       parseNote: (_raw: string) => ({
         ok: true as const,
         value: {
           body: makeBody("body"),
           fm: {
             // "  " (whitespace-only) would fail Tag.tryNew with {kind:'only-whitespace'}
-            tags: ["  "] as any,
-            createdAt: { epochMillis: 1714298400000 } as any,
-            updatedAt: { epochMillis: 1714298400000 } as any,
-          } as any,
+            tags: ["  "] as unknown as readonly Tag[],
+            createdAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+            updatedAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+          } as unknown as Frontmatter,
         },
       }),
     };
@@ -882,15 +884,16 @@ describe("FIND-006 / REQ-002: invalid-value via real VO rejection — malformed 
           value: makeValidMarkdownContent("2026-04-28-120000-003"),
         },
       }),
+      // FIND-017: ブランド契約統一
       parseNote: (_raw: string) => ({
         ok: true as const,
         value: {
           body: makeBody("body"),
           fm: {
-            tags: ["rust"] as any, // "rust" is a valid tag
-            createdAt: { epochMillis: 1714298400000 } as any,
-            updatedAt: { epochMillis: 1714298400000 } as any,
-          } as any,
+            tags: ["rust"] as unknown as readonly Tag[], // "rust" is a valid tag
+            createdAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+            updatedAt: { epochMillis: 1714298400000 } as unknown as Timestamp,
+          } as unknown as Frontmatter,
         },
       }),
     };

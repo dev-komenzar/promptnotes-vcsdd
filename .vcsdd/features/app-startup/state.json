@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -75,7 +75,7 @@
       "to": "2a",
       "timestamp": "2026-04-30T13:00:01Z",
       "sprint": 2,
-      "reason": "lean-mode adversary PASS — start sprint 2 with refined spec"
+      "reason": "lean-mode adversary PASS \u2014 start sprint 2 with refined spec"
     },
     {
       "from": "2a",
@@ -118,7 +118,7 @@
       "to": "1a",
       "timestamp": "2026-04-30T14:35:00Z",
       "sprint": 2,
-      "reason": "earliest-affected-phase: FIND-014 raises REQ-010 spec ambiguity (Note aggregate disposition). FIND-011/012 → 2a, FIND-013 → 2b will be picked up after spec refinement."
+      "reason": "earliest-affected-phase: FIND-014 raises REQ-010 spec ambiguity (Note aggregate disposition). FIND-011/012 \u2192 2a, FIND-013 \u2192 2b will be picked up after spec refinement."
     },
     {
       "from": "1a",
@@ -126,7 +126,7 @@
       "timestamp": "2026-04-30T14:50:00Z",
       "sprint": 2,
       "iteration": 3,
-      "reason": "spec refinement complete (FIND-014 Option A: REQ-010 NOTE — Note aggregate not retained; behavioral-spec.md Revision 5)"
+      "reason": "spec refinement complete (FIND-014 Option A: REQ-010 NOTE \u2014 Note aggregate not retained; behavioral-spec.md Revision 5)"
     },
     {
       "from": "1b",
@@ -140,7 +140,7 @@
       "to": "2a",
       "timestamp": "2026-04-30T15:05:01Z",
       "sprint": 3,
-      "reason": "lean-mode adversary PASS (iteration 4) — start sprint 3 with FIND-011/012/013 + REQ-010 refinement"
+      "reason": "lean-mode adversary PASS (iteration 4) \u2014 start sprint 3 with FIND-011/012/013 + REQ-010 refinement"
     },
     {
       "from": "2a",
@@ -170,7 +170,7 @@
       "timestamp": "2026-04-30T18:30:00Z",
       "sprint": 3,
       "iteration": 1,
-      "reason": "sprint-3 adversary review FAIL — 2 new findings (FIND-015 critical structural_integrity, FIND-016 major spec_fidelity); prior FIND-011/012/013/014 all resolved"
+      "reason": "sprint-3 adversary review FAIL \u2014 2 new findings (FIND-015 critical structural_integrity, FIND-016 major spec_fidelity); prior FIND-011/012/013/014 all resolved"
     },
     {
       "from": "3",
@@ -186,7 +186,7 @@
       "timestamp": "2026-04-30T18:45:00Z",
       "sprint": 4,
       "iteration": 1,
-      "reason": "earliest-affected-phase: FIND-015 → 2a, FIND-016 → 2b; sprint-4 starts at 2a (red phase rework)"
+      "reason": "earliest-affected-phase: FIND-015 \u2192 2a, FIND-016 \u2192 2b; sprint-4 starts at 2a (red phase rework)"
     },
     {
       "from": "2a",
@@ -194,7 +194,7 @@
       "timestamp": "2026-04-30T19:30:00Z",
       "sprint": 4,
       "iteration": 1,
-      "reason": "sprint-4 red phase complete: coverage-retrofit (FIND-015 PROP-003/REQ-011 6 tests load-bearing 化) + genuine RED (FIND-016 _FmIsFrontmatter / _FmTypeMatchesPort 2 type-check errors). 115 pass / 0 fail / 2 type-check errors."
+      "reason": "sprint-4 red phase complete: coverage-retrofit (FIND-015 PROP-003/REQ-011 6 tests load-bearing \u5316) + genuine RED (FIND-016 _FmIsFrontmatter / _FmTypeMatchesPort 2 type-check errors). 115 pass / 0 fail / 2 type-check errors."
     },
     {
       "from": "2a",
@@ -202,7 +202,7 @@
       "timestamp": "2026-04-30T19:35:00Z",
       "sprint": 4,
       "iteration": 1,
-      "reason": "sprint-4 green phase complete: FIND-016 解消 (ParsedNote.fm → Frontmatter VO)。115/115 pass, 0 type-check errors"
+      "reason": "sprint-4 green phase complete: FIND-016 \u89e3\u6d88 (ParsedNote.fm \u2192 Frontmatter VO)\u3002115/115 pass, 0 type-check errors"
     },
     {
       "from": "2b",
@@ -210,7 +210,7 @@
       "timestamp": "2026-04-30T19:45:00Z",
       "sprint": 4,
       "iteration": 1,
-      "reason": "sprint-4 refactor phase complete: scan-vault.ts dead import 削除。テスト・型チェック Green 維持"
+      "reason": "sprint-4 refactor phase complete: scan-vault.ts dead import \u524a\u9664\u3002\u30c6\u30b9\u30c8\u30fb\u578b\u30c1\u30a7\u30c3\u30af Green \u7dad\u6301"
     },
     {
       "from": "2c",
@@ -218,7 +218,7 @@
       "timestamp": "2026-04-30T19:15:00Z",
       "sprint": 4,
       "escalationApproved": true,
-      "reason": "Architect escalation approved: lean phase-3 cap (3) reached after sprint-3 review; reset iterations.3 from 3 to 2 to allow sprint-4 phase-3 attempt. FIND-015/FIND-016 解消済み (115 pass / 0 type errors)."
+      "reason": "Architect escalation approved: lean phase-3 cap (3) reached after sprint-3 review; reset iterations.3 from 3 to 2 to allow sprint-4 phase-3 attempt. FIND-015/FIND-016 \u89e3\u6d88\u6e08\u307f (115 pass / 0 type errors)."
     },
     {
       "from": "2c",
@@ -234,7 +234,7 @@
       "timestamp": "2026-04-30T19:45:00Z",
       "sprint": 4,
       "iteration": 1,
-      "reason": "Phase 3 PASS — transition to Phase 5 (formal hardening)"
+      "reason": "Phase 3 PASS \u2014 transition to Phase 5 (formal hardening)"
     },
     {
       "from": "5",
@@ -256,18 +256,43 @@
       "timestamp": "2026-04-30T20:30:00Z",
       "sprint": 4,
       "reason": "Phase 5 purity audit: all modules pass purity boundary check. hydrate-feed.ts pure (0 Date.now calls, arity 1). FIND-008 disposition: Option B (Rust proptest already exists in src-tauri with proptest=1 and passes 7 tests including 2 proptest runs)."
+    },
+    {
+      "from": "5",
+      "to": "5",
+      "timestamp": "2026-04-30T20:45:00Z",
+      "sprint": 4,
+      "iteration": 2,
+      "reason": "Phase 5 cleanup: FIND-017 (test stub `as any` \u2192 `as unknown as Frontmatter`) \u3068 FIND-018 (stages.ts dead import) \u3092 inline \u89e3\u6d88\u3002bun test 137/0, svelte-check 0 errors\u3002"
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-04-30T20:50:00Z",
+      "sprint": 4,
+      "iteration": 1,
+      "reason": "Phase 5 \u5b8c\u4e86 (5/5 required proofs proved + security/purity reports). Phase 6 convergence check \u5165\u5834."
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-04-30T20:50:00Z",
+      "sprint": 4,
+      "iteration": 1,
+      "reason": "\u5168 4 dimension PASS: finding diminishment (10\u21924\u21922\u21922\u21920), specificity (18 findings \u5168\u5f15\u7528\u691c\u8a3c), criteria coverage (5/5 dims + 5/5 required proofs), duplicate detection (no duplicates). Feature complete."
     }
   ],
   "iterations": {
     "3": 3,
     "4": 3,
-    "5": 1,
+    "5": 2,
     "1a": 3,
     "1b": 3,
     "1c": 4,
     "2a": 5,
     "2b": 4,
-    "2c": 4
+    "2c": 4,
+    "6": 1
   },
   "proofObligations": [
     {
@@ -1344,7 +1369,7 @@
           "routeToPhase": "2a",
           "sprint": 2,
           "category": "test_quality",
-          "title": "PROP-023 type-level assertion is tautological — `undefined as never` does not enforce hydrateFeed signature"
+          "title": "PROP-023 type-level assertion is tautological \u2014 `undefined as never` does not enforce hydrateFeed signature"
         }
       },
       {
@@ -1388,7 +1413,7 @@
           "routeToPhase": "2b",
           "sprint": 2,
           "category": "code_structure",
-          "title": "ParsedNote.body retained as string — port contract requires Body VO (FIND-005 partial regression)"
+          "title": "ParsedNote.body retained as string \u2014 port contract requires Body VO (FIND-005 partial regression)"
         }
       },
       {
@@ -1410,7 +1435,7 @@
           "routeToPhase": "1a",
           "sprint": 2,
           "category": "spec_ambiguity",
-          "title": "REQ-010: Step 4 calls noteCreate but discards the constructed Note — disposition unclear",
+          "title": "REQ-010: Step 4 calls noteCreate but discards the constructed Note \u2014 disposition unclear",
           "resolution": "Option A: REQ-010 NOTE clarifies Note aggregate is constructed for invariant + event-emission semantics, not retention. PROP-013 description tightened to encode non-retention as a TypeScript shape constraint (REQ-010 added to PROP-013 Covers REQ).",
           "resolvedAt": "2026-04-30T14:50:00Z"
         }
@@ -1441,7 +1466,7 @@
             "_noTimestampParamAnywhere: _IsNever<_NoTimestampParam> = true"
           ],
           "replacedTautologicalGuard": "_noTimestamp: _NoTimestampParam = undefined as never",
-          "note": "PROP-023b strengthened — fails compile if hydrateFeed gains a Timestamp parameter or arity grows."
+          "note": "PROP-023b strengthened \u2014 fails compile if hydrateFeed gains a Timestamp parameter or arity grows."
         }
       },
       {
@@ -1468,7 +1493,7 @@
             "_tagInventoryBuiltNeverPublic: _IsNever<_TagInventoryBuiltNotPublic> = true"
           ],
           "replacedTautologicalGuard": "_f / _t: _XxxNotPublic = undefined as never",
-          "note": "PROP-021 negative-membership strengthened — fails compile if feed-restored or tag-inventory-built is added to PublicDomainEvent."
+          "note": "PROP-021 negative-membership strengthened \u2014 fails compile if feed-restored or tag-inventory-built is added to PublicDomainEvent."
         }
       },
       {
@@ -1497,8 +1522,8 @@
             "_bodyTypeMatchesPort: _BodyTypeMatchesPort = true (line 105)"
           ],
           "currentTypeCheckErrors": 2,
-          "remediationTarget": "promptnotes/src/lib/domain/app-startup/stages.ts:32 (ParsedNote.body: string → Body) + scan-vault.ts:127 (drop `as unknown as Body` cast)",
-          "note": "Tightens PROP-001 port contract: ParsedNote.body must be Body VO end-to-end. Genuine Red — fails compile until 2b updates stages.ts."
+          "remediationTarget": "promptnotes/src/lib/domain/app-startup/stages.ts:32 (ParsedNote.body: string \u2192 Body) + scan-vault.ts:127 (drop `as unknown as Body` cast)",
+          "note": "Tightens PROP-001 port contract: ParsedNote.body must be Body VO end-to-end. Genuine Red \u2014 fails compile until 2b updates stages.ts."
         }
       },
       {
@@ -1551,7 +1576,7 @@
           "addressesRequirement": "REQ-010 NOTE",
           "assertion": "noteCreate spy returns a sentinel-marked Note; no top-level InitialUIState value === sentinel and no value carries __noteCreateSentinel__ marker",
           "regressionGuard": "FIND-002 (noteCreate must still be invoked)",
-          "note": "Negative test — proves Note aggregate constructed by Step 4 is discarded, not retained on InitialUIState."
+          "note": "Negative test \u2014 proves Note aggregate constructed by Step 4 is discarded, not retained on InitialUIState."
         }
       },
       {
@@ -1580,7 +1605,7 @@
       {
         "id": "BEAD-078",
         "type": "test",
-        "summary": "step2-scan-vault.test.ts: makeBody helper + 5 parser-stub raw-string → makeBody updates",
+        "summary": "step2-scan-vault.test.ts: makeBody helper + 5 parser-stub raw-string \u2192 makeBody updates",
         "parents": [
           "BEAD-076"
         ],
@@ -1633,7 +1658,27 @@
         "newMinorFindings": [
           "FIND-017",
           "FIND-018"
-        ]
+        ],
+        "convergenceSignals": {
+          "findingCount": 0,
+          "previousFindingCount": 4,
+          "diminishmentTrend": [
+            10,
+            4,
+            2,
+            2
+          ],
+          "postCleanupFindingCount": 0,
+          "allCriteriaEvaluated": true,
+          "duplicateFindings": [],
+          "evaluatedDimensions": [
+            "spec_fidelity",
+            "edge_case_coverage",
+            "implementation_correctness",
+            "structural_integrity",
+            "verification_readiness"
+          ]
+        }
       },
       "adversaryVerdict": "PASS",
       "adversaryReviewedAt": "2026-04-30T19:45:00Z",
@@ -1730,6 +1775,51 @@
           ]
         }
       ]
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T20:50:00Z",
+      "reviewedBy": "convergence-check",
+      "details": {
+        "findingDiminishment": {
+          "verdict": "PASS",
+          "trend": [
+            10,
+            4,
+            2,
+            2,
+            0
+          ],
+          "currentFindingCount": 0
+        },
+        "findingSpecificity": {
+          "verdict": "PASS",
+          "totalFindingsChecked": 18,
+          "hallucinatedCitations": 0
+        },
+        "criteriaCoverage": {
+          "verdict": "PASS",
+          "dimensionsPassed": 5,
+          "requiredProofsProved": 5,
+          "totalRequiredProofs": 5
+        },
+        "duplicateDetection": {
+          "verdict": "PASS",
+          "duplicatesFound": 0
+        },
+        "phase5ArtifactsGate": {
+          "verdict": "PASS",
+          "artifactsPresent": [
+            "verification-report.md",
+            "security-report.md",
+            "purity-audit.md",
+            "security-results/ (3 files)",
+            "proof-harnesses/ (5 harnesses)",
+            "fuzz-results/ (5 logs)"
+          ]
+        },
+        "convergenceReportPath": ".vcsdd/features/app-startup/convergence-report.md"
+      }
     }
   },
   "feedbackRouting": {
@@ -1781,7 +1871,7 @@
       "routedAt": "2026-04-30T14:35:00Z",
       "fromPhase": "3",
       "targetPhase": "1a",
-      "reason": "earliest-affected-phase: spec ambiguity in REQ-010 raised by FIND-014 (Note aggregate disposition unclear). Other findings will be addressed in 2a (FIND-011, FIND-012 — type-level assertion strengthening) and 2b (FIND-013 — ParsedNote.body Body VO) once the spec is refined.",
+      "reason": "earliest-affected-phase: spec ambiguity in REQ-010 raised by FIND-014 (Note aggregate disposition unclear). Other findings will be addressed in 2a (FIND-011, FIND-012 \u2014 type-level assertion strengthening) and 2b (FIND-013 \u2014 ParsedNote.body Body VO) once the spec is refined.",
       "iterationLimit": {
         "phase": "3",
         "mode": "lean",
@@ -1811,7 +1901,7 @@
       "routedAt": "2026-04-30T18:45:00Z",
       "fromPhase": "3",
       "targetPhase": "2a",
-      "reason": "earliest-affected-phase: FIND-015 (PROP-003 衝突回避テストの tautological 化, route 2a) は FIND-016 (Frontmatter port 契約違反, route 2b) より早いフェーズ。2a への直接ルーティングで両方を sprint-4 サイクル内で解消する。",
+      "reason": "earliest-affected-phase: FIND-015 (PROP-003 \u885d\u7a81\u56de\u907f\u30c6\u30b9\u30c8\u306e tautological \u5316, route 2a) \u306f FIND-016 (Frontmatter port \u5951\u7d04\u9055\u53cd, route 2b) \u3088\u308a\u65e9\u3044\u30d5\u30a7\u30fc\u30ba\u30022a \u3078\u306e\u76f4\u63a5\u30eb\u30fc\u30c6\u30a3\u30f3\u30b0\u3067\u4e21\u65b9\u3092 sprint-4 \u30b5\u30a4\u30af\u30eb\u5185\u3067\u89e3\u6d88\u3059\u308b\u3002",
       "iterationLimit": {
         "phase": "3",
         "mode": "lean",
@@ -1833,14 +1923,14 @@
           "severity": "critical",
           "dimension": "structural_integrity",
           "routeTo": "2a",
-          "title": "PROP-003 衝突回避テストはタイムスタンプ生成基準値の不一致により衝突パスを実行していない"
+          "title": "PROP-003 \u885d\u7a81\u56de\u907f\u30c6\u30b9\u30c8\u306f\u30bf\u30a4\u30e0\u30b9\u30bf\u30f3\u30d7\u751f\u6210\u57fa\u6e96\u5024\u306e\u4e0d\u4e00\u81f4\u306b\u3088\u308a\u885d\u7a81\u30d1\u30b9\u3092\u5b9f\u884c\u3057\u3066\u3044\u306a\u3044"
         },
         {
           "id": "FIND-016",
           "severity": "major",
           "dimension": "spec_fidelity",
           "routeTo": "2b",
-          "title": "ParsedNote.fm が verification-architecture のポート契約 (Frontmatter VO) と一致せず scan-vault.ts:131 で as unknown as Frontmatter キャストが残存"
+          "title": "ParsedNote.fm \u304c verification-architecture \u306e\u30dd\u30fc\u30c8\u5951\u7d04 (Frontmatter VO) \u3068\u4e00\u81f4\u305b\u305a scan-vault.ts:131 \u3067 as unknown as Frontmatter \u30ad\u30e3\u30b9\u30c8\u304c\u6b8b\u5b58"
         }
       ],
       "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-3/output/verdict.json",
@@ -1850,7 +1940,7 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-04-27T21:10:34.186Z",
-  "updatedAt": "2026-04-30T20:30:00Z",
+  "updatedAt": "2026-04-30T20:50:00Z",
   "sprints": {
     "sprint-3": {
       "startedAt": "2026-04-30T15:05:01Z",
@@ -1895,7 +1985,7 @@
               "_BodyIsBody",
               "_BodyTypeMatchesPort"
             ],
-            "remediationTarget": "promptnotes/src/lib/domain/app-startup/stages.ts:32 (ParsedNote.body: string → Body) + scan-vault.ts:127 (drop `as unknown as Body` cast)"
+            "remediationTarget": "promptnotes/src/lib/domain/app-startup/stages.ts:32 (ParsedNote.body: string \u2192 Body) + scan-vault.ts:127 (drop `as unknown as Body` cast)"
           }
         },
         "coverageRetrofit": {
@@ -1926,7 +2016,7 @@
             "files": [
               "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts"
             ],
-            "note": "Phase 1c iteration-4 watchpoint — Object.keys(state).sort() === ['corruptedFiles','editingSessionState','feed','kind','tagInventory'] runtime assertion + Note non-retention sentinel test. Structural typing cannot prove non-retention; runtime is load-bearing."
+            "note": "Phase 1c iteration-4 watchpoint \u2014 Object.keys(state).sort() === ['corruptedFiles','editingSessionState','feed','kind','tagInventory'] runtime assertion + Note non-retention sentinel test. Structural typing cannot prove non-retention; runtime is load-bearing."
           }
         },
         "testBeads": [
@@ -1951,7 +2041,7 @@
           "FIND-013"
         ],
         "implChanges": [
-          "promptnotes/src/lib/domain/app-startup/stages.ts: ParsedNote.body: string → Body; added Body import; updated docstring (FIND-005 + FIND-013)",
+          "promptnotes/src/lib/domain/app-startup/stages.ts: ParsedNote.body: string \u2192 Body; added Body import; updated docstring (FIND-005 + FIND-013)",
           "promptnotes/src/lib/domain/app-startup/scan-vault.ts: removed `parsed.body as unknown as Body` cast at snapshot construction; removed unused Body import"
         ],
         "testStubUpdates": [
@@ -2095,7 +2185,7 @@
           "initialize-capture: extract makeEditingState + emitCaptureSessionStartEvents helpers",
           "pipeline: header doc refresh referencing PROP-023, FIND-002, FIND-009"
         ],
-        "find008Disposition": "kept open — referenced Rust path does not exist; Phase 5 to decide"
+        "find008Disposition": "kept open \u2014 referenced Rust path does not exist; Phase 5 to decide"
       }
     },
     "sprint-4": {
@@ -2112,26 +2202,26 @@
         "mixedMode": true,
         "coverageRetrofit": {
           "finding": "FIND-015",
-          "description": "PROP-003/REQ-011 衝突回避テストを load-bearing に載せ替え。base を先行取得し existingIds に必ず含めて衝突ループを確実に実行させる。",
+          "description": "PROP-003/REQ-011 \u885d\u7a81\u56de\u907f\u30c6\u30b9\u30c8\u3092 load-bearing \u306b\u8f09\u305b\u66ff\u3048\u3002base \u3092\u5148\u884c\u53d6\u5f97\u3057 existingIds \u306b\u5fc5\u305a\u542b\u3081\u3066\u885d\u7a81\u30eb\u30fc\u30d7\u3092\u78ba\u5b9f\u306b\u5b9f\u884c\u3055\u305b\u308b\u3002",
           "testsModified": [
-            "step4-initialize-capture.test.ts: PROP-003 example (衝突ループ実行 + result !== base アサート追加)",
-            "step4-initialize-capture.test.ts: PROP-003 fast-check (base 先行取得 + 多段衝突)",
-            "step4-initialize-capture.test.ts: PROP-022 example (base 先行取得で衝突状態で決定性確認)",
-            "step4-initialize-capture.test.ts: PROP-022 fast-check (base 先行取得 + 多段衝突)",
-            "step4-initialize-capture.test.ts: REQ-011 -1 suffix (base → result === base-1 厳格アサート)",
-            "step4-initialize-capture.test.ts: REQ-011 -2 suffix (base + base-1 → result === base-2 厳格アサート)"
+            "step4-initialize-capture.test.ts: PROP-003 example (\u885d\u7a81\u30eb\u30fc\u30d7\u5b9f\u884c + result !== base \u30a2\u30b5\u30fc\u30c8\u8ffd\u52a0)",
+            "step4-initialize-capture.test.ts: PROP-003 fast-check (base \u5148\u884c\u53d6\u5f97 + \u591a\u6bb5\u885d\u7a81)",
+            "step4-initialize-capture.test.ts: PROP-022 example (base \u5148\u884c\u53d6\u5f97\u3067\u885d\u7a81\u72b6\u614b\u3067\u6c7a\u5b9a\u6027\u78ba\u8a8d)",
+            "step4-initialize-capture.test.ts: PROP-022 fast-check (base \u5148\u884c\u53d6\u5f97 + \u591a\u6bb5\u885d\u7a81)",
+            "step4-initialize-capture.test.ts: REQ-011 -1 suffix (base \u2192 result === base-1 \u53b3\u683c\u30a2\u30b5\u30fc\u30c8)",
+            "step4-initialize-capture.test.ts: REQ-011 -2 suffix (base + base-1 \u2192 result === base-2 \u53b3\u683c\u30a2\u30b5\u30fc\u30c8)"
           ],
           "testsStatus": "PASS (115/115)"
         },
         "redSignalSources": [
           {
             "finding": "FIND-016",
-            "description": "ParsedNote.fm が branded Frontmatter VO を持たないことの compile-time Tier-0 ガード追加。2 type-check errors を genuine RED として確認。",
+            "description": "ParsedNote.fm \u304c branded Frontmatter VO \u3092\u6301\u305f\u306a\u3044\u3053\u3068\u306e compile-time Tier-0 \u30ac\u30fc\u30c9\u8ffd\u52a0\u30022 type-check errors \u3092 genuine RED \u3068\u3057\u3066\u78ba\u8a8d\u3002",
             "guardsAdded": [
               "step2-scan-vault.test.ts:113 type _FmIsFrontmatter = ParsedNote['fm'] extends Frontmatter ? true : false",
-              "step2-scan-vault.test.ts:114 const _parsedNoteFmIsFrontmatter: _FmIsFrontmatter = true  ← Type 'true' is not assignable to type 'false'",
-              "step2-scan-vault.test.ts:119-123 type _FmTypeMatchesPort (双方向等価チェック)",
-              "step2-scan-vault.test.ts:124 const _fmTypeMatchesPort: _FmTypeMatchesPort = true  ← Type 'true' is not assignable to type 'false'"
+              "step2-scan-vault.test.ts:114 const _parsedNoteFmIsFrontmatter: _FmIsFrontmatter = true  \u2190 Type 'true' is not assignable to type 'false'",
+              "step2-scan-vault.test.ts:119-123 type _FmTypeMatchesPort (\u53cc\u65b9\u5411\u7b49\u4fa1\u30c1\u30a7\u30c3\u30af)",
+              "step2-scan-vault.test.ts:124 const _fmTypeMatchesPort: _FmTypeMatchesPort = true  \u2190 Type 'true' is not assignable to type 'false'"
             ],
             "typeCheckErrors": 2
           }
@@ -2153,29 +2243,46 @@
           "FIND-016"
         ],
         "implChanges": [
-          "stages.ts: import に Frontmatter 追加",
-          "stages.ts: ParsedNote.fm を構造的型 → branded Frontmatter VO に変更。docstring に FIND-016 説明追記",
-          "scan-vault.ts: NoteFileSnapshot.frontmatter の再構築を撤廃し parsed.fm 直接代入。`as unknown as Frontmatter` キャスト除去"
+          "stages.ts: import \u306b Frontmatter \u8ffd\u52a0",
+          "stages.ts: ParsedNote.fm \u3092\u69cb\u9020\u7684\u578b \u2192 branded Frontmatter VO \u306b\u5909\u66f4\u3002docstring \u306b FIND-016 \u8aac\u660e\u8ffd\u8a18",
+          "scan-vault.ts: NoteFileSnapshot.frontmatter \u306e\u518d\u69cb\u7bc9\u3092\u64a4\u5ec3\u3057 parsed.fm \u76f4\u63a5\u4ee3\u5165\u3002`as unknown as Frontmatter` \u30ad\u30e3\u30b9\u30c8\u9664\u53bb"
         ],
         "testStubUpdates": [
-          "step2-scan-vault.test.ts: Timestamp を import に追加",
-          "step2-scan-vault.test.ts: makeParserAlwaysSucceed の fm を `as unknown as Frontmatter` 形式に変更",
-          "pipeline.test.ts: Frontmatter / Tag を import に追加",
-          "pipeline.test.ts: parseNote スタブの fm を `as unknown as Frontmatter` 形式に変更"
+          "step2-scan-vault.test.ts: Timestamp \u3092 import \u306b\u8ffd\u52a0",
+          "step2-scan-vault.test.ts: makeParserAlwaysSucceed \u306e fm \u3092 `as unknown as Frontmatter` \u5f62\u5f0f\u306b\u5909\u66f4",
+          "pipeline.test.ts: Frontmatter / Tag \u3092 import \u306b\u8ffd\u52a0",
+          "pipeline.test.ts: parseNote \u30b9\u30bf\u30d6\u306e fm \u3092 `as unknown as Frontmatter` \u5f62\u5f0f\u306b\u5909\u66f4"
         ]
       },
       "refactorPhase": {
         "completedAt": "2026-04-30T19:45:00Z",
         "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-4-green-phase.log",
         "verdict": "PASS",
-        "rationale": "scan-vault.ts の Frontmatter import が FIND-016 対応後 dead code となったため削除。stages.ts docstring は Green phase で追記済み。それ以外の重複・不要抽象化は認められなかった。",
+        "rationale": "scan-vault.ts \u306e Frontmatter import \u304c FIND-016 \u5bfe\u5fdc\u5f8c dead code \u3068\u306a\u3063\u305f\u305f\u3081\u524a\u9664\u3002stages.ts docstring \u306f Green phase \u3067\u8ffd\u8a18\u6e08\u307f\u3002\u305d\u308c\u4ee5\u5916\u306e\u91cd\u8907\u30fb\u4e0d\u8981\u62bd\u8c61\u5316\u306f\u8a8d\u3081\u3089\u308c\u306a\u304b\u3063\u305f\u3002",
         "totalTests": 115,
         "passingTests": 115,
         "failingTests": 0,
         "typeCheckErrors": 0,
         "openFollowups": [
-          "FIND-008: Tag VO 正式スマートコンストラクタ注入は未対応。次 sprint 持ち越し。"
+          "FIND-008: Tag VO \u6b63\u5f0f\u30b9\u30de\u30fc\u30c8\u30b3\u30f3\u30b9\u30c8\u30e9\u30af\u30bf\u6ce8\u5165\u306f\u672a\u5bfe\u5fdc\u3002\u6b21 sprint \u6301\u3061\u8d8a\u3057\u3002"
         ]
+      },
+      "cleanupPhase": {
+        "completedAt": "2026-04-30T20:45:00Z",
+        "phase": "5",
+        "rationale": "Phase 5 minor finding cleanup: FIND-017 (test stub `as any` \u2192 `as unknown as Frontmatter`) \u3068 FIND-018 (stages.ts dead import \u524a\u9664) \u3092 inline \u3067\u89e3\u6d88\u3002Phase 6 convergence dimension 1 (findingCount=0) \u3092\u6e80\u305f\u3059\u305f\u3081\u3002",
+        "findingsResolved": [
+          "FIND-017",
+          "FIND-018"
+        ],
+        "filesChanged": [
+          "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts (3 stubs)",
+          "promptnotes/src/lib/domain/app-startup/stages.ts (dead Tag/Timestamp imports)"
+        ],
+        "verification": {
+          "bunTest": "137 pass / 0 fail",
+          "svelteCheck": "0 errors / 0 warnings"
+        }
       }
     }
   },
@@ -2191,5 +2298,26 @@
       "iterationsAfterReset": 2,
       "phaseLimit": 3
     }
-  ]
+  ],
+  "findingsResolved": [
+    "FIND-017",
+    "FIND-018"
+  ],
+  "completedAt": "2026-04-30T20:50:00Z",
+  "convergenceVerdict": {
+    "overallVerdict": "PASS",
+    "convergedAt": "2026-04-30T20:50:00Z",
+    "totalSprints": 4,
+    "totalAdversaryReviews": 4,
+    "totalSpecGateIterations": 4,
+    "totalEscalations": 1,
+    "finalTestCounts": {
+      "bunTest": "137 pass / 0 fail",
+      "svelteCheck": "0 errors / 0 warnings",
+      "cargoTest": "7 pass / 0 fail"
+    },
+    "totalFindingsLifetime": 18,
+    "findingsResolved": 18,
+    "findingsKeptOpen": 0
+  }
 }

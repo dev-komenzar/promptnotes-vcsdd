@@ -1,0 +1,17 @@
+{
+  "findingId": "FIND-018",
+  "resolvedAt": "2026-04-30T20:45:00Z",
+  "resolvedDuringPhase": "5",
+  "resolution": "inline-cleanup",
+  "filesChanged": [
+    {
+      "path": "promptnotes/src/lib/domain/app-startup/stages.ts",
+      "change": "dead import 削除: `Tag`, `Timestamp` を value-objects import 文から除去 (Body, Frontmatter, VaultPath のみ残存)。docstring も Tag/Timestamp 注記を FIND-018 説明に書き換え。"
+    }
+  ],
+  "verification": {
+    "bunTest": "137 pass / 0 fail",
+    "svelteCheck": "0 errors / 0 warnings"
+  },
+  "rationale": "minor structural cleanup; Sprint-4 2c refactor の網羅性向上。"
+}

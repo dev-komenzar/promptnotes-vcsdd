@@ -6,8 +6,6 @@
 import type {
   Body,
   Frontmatter,
-  Tag,
-  Timestamp,
   VaultPath,
 } from "promptnotes-domain-types/shared/value-objects";
 import type {
@@ -34,8 +32,10 @@ import type { EditingState } from "promptnotes-domain-types/capture/states";
  * branded `Frontmatter` VO に締め直す。parser port が Frontmatter.tryNew に
  * よる構築責任を持つ。scan-vault.ts は受け取った Frontmatter を直接
  * NoteFileSnapshot.frontmatter に代入し、スキャン境界で再構築しない。
- * `Tag` / `Timestamp` は EditingState / ScannedVault 経由で他の型から引き続き
- * 参照されるため引き続き import を維持する。
+ *
+ * FIND-018 (Sprint-4 2c follow-up): `Tag` / `Timestamp` は本ファイルで
+ * 直接参照されないため import から除去（dead import 解消）。Frontmatter
+ * brand 内部 / EditingState / NoteFileSnapshot の transitive 参照だけで足りる。
  */
 export type ParsedNote = {
   readonly body: Body;
