@@ -1,0 +1,42 @@
+{
+  "reviewType": "implementation",
+  "featureName": "capture-auto-save",
+  "sprintNumber": 1,
+  "mode": "lean",
+  "artifactsToReview": {
+    "spec": [
+      "specs/behavioral-spec.md",
+      "specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts",
+      "promptnotes/src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts",
+      "promptnotes/src/lib/domain/__tests__/capture-auto-save/step3-write-markdown.test.ts",
+      "promptnotes/src/lib/domain/__tests__/capture-auto-save/step4-update-projections.test.ts",
+      "promptnotes/src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts"
+    ],
+    "source": [
+      "promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+      "promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts",
+      "promptnotes/src/lib/domain/capture-auto-save/dispatch-save-request.ts",
+      "promptnotes/src/lib/domain/capture-auto-save/update-projections.ts",
+      "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts"
+    ]
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "sourceOfTruth": [
+    "docs/domain/workflows.md",
+    "docs/domain/code/ts/src/capture/stages.ts",
+    "docs/domain/code/ts/src/capture/workflows.ts",
+    "docs/domain/code/ts/src/capture/ports.ts",
+    "docs/domain/code/ts/src/capture/states.ts",
+    "docs/domain/code/ts/src/shared/errors.ts",
+    "docs/domain/code/ts/src/shared/events.ts"
+  ]
+}

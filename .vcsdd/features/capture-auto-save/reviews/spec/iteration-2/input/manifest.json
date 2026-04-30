@@ -1,0 +1,21 @@
+{
+  "reviewType": "spec",
+  "feature": "capture-auto-save",
+  "iteration": 2,
+  "mode": "lean",
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "previousFindings": ["FIND-001", "FIND-002", "FIND-003", "FIND-004", "FIND-005", "FIND-006", "FIND-007"],
+  "sourceOfTruth": [
+    "docs/domain/workflows.md",
+    "docs/domain/code/ts/src/capture/stages.ts",
+    "docs/domain/code/ts/src/capture/workflows.ts",
+    "docs/domain/code/ts/src/capture/ports.ts",
+    "docs/domain/code/ts/src/capture/states.ts",
+    "docs/domain/code/ts/src/shared/errors.ts",
+    "docs/domain/code/ts/src/shared/events.ts"
+  ]
+}

@@ -1,0 +1,50 @@
+new-feature-tests: FAIL
+regression-baseline: PASS (9 pass, 5 fail due to pre-existing missing deps)
+total-new-tests: 5 files
+---
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/pipeline' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/promptnotes/src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step3-write-markdown.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/dispatch-save-request' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/promptnotes/src/lib/domain/__tests__/capture-auto-save/step3-write-markdown.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/prepare-save-request' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step4-update-projections.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/update-projections' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/promptnotes/src/lib/domain/__tests__/capture-auto-save/step4-update-projections.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/serialize-note' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-capture-auto-save/promptnotes/src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 5 fail
+ 5 errors
+Ran 5 tests across 5 files. [10.00ms]

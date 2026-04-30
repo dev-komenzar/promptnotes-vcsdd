@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-001 states the pipeline produces 'Result<IndexedNote, SaveError>' and acceptance criteria says 'returns { ok: true, value: IndexedNote }'. But REQ-017 states the function signature returns 'Promise<Result<NoteFileSaved, SaveError>>', matching the canonical workflows.ts CaptureAutoSave type (line 73). These two requirements contradict each other on the return type. Additionally, workflows.md line 179 uses yet another type 'Result<SavedNoteAck, SaveError>' which neither REQ matches.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/capture/workflows.ts",
+    "lineRange": "68-73",
+    "snippet": "export type CaptureAutoSave = (\n  deps: CaptureDeps,\n) => (\n  state: EditingState,\n  trigger: \"idle\" | \"blur\",\n) => Promise<Result<NoteFileSaved, SaveError>>;"
+  },
+  "routeToPhase": "1a"
+}

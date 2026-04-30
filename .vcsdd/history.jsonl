@@ -81,3 +81,23 @@
 {"timestamp": "2026-04-30T17:30:00Z", "feature": "app-startup", "phase": "2b", "sprint": 3, "iteration": 1, "event": "green-phase-complete", "targetFeatureTests": "PASS", "regressionBaseline": "PASS", "totalTests": 115, "passingTests": 115, "failingTests": 0, "typeCheckErrors": 0, "redSignalsResolved": ["FIND-013"], "implFiles": ["promptnotes/src/lib/domain/app-startup/stages.ts", "promptnotes/src/lib/domain/app-startup/scan-vault.ts"], "testStubFiles": ["promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts", "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts"], "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-3-green-phase.log", "implBeads": ["BEAD-076", "BEAD-077", "BEAD-078", "BEAD-079"]}
 {"timestamp": "2026-04-30T17:30:00Z", "feature": "app-startup", "event": "phase-transition", "from": "2b", "to": "2c", "sprint": 3, "iteration": 1, "reason": "sprint-3 green phase complete; FIND-013 resolved; transitioning to refactor"}
 {"timestamp": "2026-04-30T17:30:01Z", "feature": "app-startup", "phase": "2c", "sprint": 3, "iteration": 1, "event": "refactor-phase-complete", "verdict": "NO_REFACTOR_WARRANTED", "rationale": "Phase 2b changes are minimal and clean; makeBody helper duplication matches existing per-file convention", "targetFeatureTests": "PASS", "regressionBaseline": "PASS", "totalTests": 115, "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-3-green-phase.log", "openFollowups": ["FIND-008 (route 2c, minor) \u2014 Rust path absent; Phase 5 decides"]}
+{"timestamp":"2026-04-30T12:29:51.431Z","event":"feature_created","featureName":"capture-auto-save","mode":"lean","language":"typescript"}
+{"timestamp":"2026-04-30T12:39:52.551Z","event":"phase_transition","featureName":"capture-auto-save","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-04-30T12:39:52.552Z","event":"phase_transition","featureName":"capture-auto-save","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-04-30T12:45:03.591Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T12:52:42.615Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T12:52:42.617Z","event":"phase_transition","featureName":"capture-auto-save","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-04-30T12:53:30.316Z","event":"phase_transition","featureName":"capture-auto-save","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-04-30T12:53:30.316Z","event":"sprint_started","featureName":"capture-auto-save","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-04-30T12:58:15.753Z","event":"phase_transition","featureName":"capture-auto-save","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-04-30T13:01:09.875Z","event":"phase_transition","featureName":"capture-auto-save","from":"2b","to":"2c","iteration":1,"phase":"2c"}
+{"timestamp":"2026-04-30T13:05:09.691Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:12:25.686Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:18:30.746Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:35:36.496Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:45:46.605Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"PASS","reviewedBy":"human"}
+{"timestamp":"2026-04-30T13:45:51.252Z","event":"phase_transition","featureName":"capture-auto-save","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-04-30T13:45:51.253Z","event":"phase_transition","featureName":"capture-auto-save","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-04-30T13:55:11.389Z","event":"phase_transition","featureName":"capture-auto-save","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-04-30T13:55:34.162Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:58:31.774Z","event":"phase_transition","featureName":"capture-auto-save","from":"6","to":"complete","iteration":1,"phase":"complete"}

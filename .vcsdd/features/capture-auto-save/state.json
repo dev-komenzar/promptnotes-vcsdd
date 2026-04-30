@@ -1,0 +1,152 @@
+{
+  "featureName": "capture-auto-save",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "complete",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-04-30T12:39:52.549Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-04-30T12:39:52.552Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-04-30T12:52:42.616Z"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-04-30T12:53:30.314Z",
+      "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-04-30T12:58:15.751Z",
+      "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-04-30T13:01:09.873Z",
+      "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-04-30T13:45:51.250Z",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-04-30T13:45:51.252Z",
+      "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-04-30T13:55:11.388Z",
+      "sprint": 1
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-04-30T13:58:31.772Z",
+      "sprint": 1
+    }
+  ],
+  "iterations": {
+    "3": 1,
+    "5": 1,
+    "6": 1,
+    "1a": 1,
+    "1b": 1,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1,
+    "2c": 1,
+    "complete": 1
+  },
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-001-serialize-note-purity.harness.test.ts"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-002-serialize-note-format.harness.test.ts"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-003-empty-idle-discard.harness.test.ts"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-004-empty-blur-save.harness.test.ts"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-005-save-error-exhaustiveness.harness.test.ts"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-014-clock-now-budget.harness.test.ts"
+    }
+  ],
+  "traceability": {
+    "epicId": "VCSDD-capture-auto-save-1777552191428",
+    "beads": []
+  },
+  "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T13:45:46.604Z",
+      "reviewedBy": "human",
+      "details": {
+        "reason": "Escalation approved: spec reconciled, remaining findings are deferred to Phase 5"
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-04-30T13:45:46.604Z"
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T13:55:34.161Z",
+      "reviewedBy": "adversary"
+    },
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-04-30T12:52:42.614Z",
+      "reviewedBy": "adversary",
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-04-30T12:52:42.614Z"
+    }
+  },
+  "sprintCount": 1,
+  "createdAt": "2026-04-30T12:29:51.428Z",
+  "updatedAt": "2026-04-30T13:58:31.772Z"
+}

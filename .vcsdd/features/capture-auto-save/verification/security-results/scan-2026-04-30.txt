@@ -1,0 +1,56 @@
+Security Scan Results — capture-auto-save
+Date: 2026-04-30
+Feature: capture-auto-save
+Phase: 5 (Formal Hardening)
+
+== Tool Availability Check ==
+
+semgrep: NOT INSTALLED (install: pip install semgrep)
+Wycheproof: NOT APPLICABLE (no cryptographic operations in this feature)
+kani: NOT INSTALLED (Rust-only tool, not applicable to TypeScript)
+hypothesis: NOT INSTALLED (Python-only tool, not applicable to TypeScript)
+fast-check: INSTALLED (v4.7.0, used for property-based proof harnesses)
+
+== Security-Critical Operations Assessment ==
+
+Feature: capture-auto-save (Workflow 2: CaptureAutoSave)
+Nature: File I/O via ports (FileSystem.writeFileAtomic), event bus publication
+
+Cryptographic operations: NONE
+Authentication/authorization logic: NONE
+Network communication: NONE
+SQL / query construction: NONE
+Deserialization of untrusted input: NONE
+Secret handling: NONE
+
+== Manual Review Findings ==
+
+1. Input handling:
+   - `serializeNote` takes a ValidatedSaveRequest (already validated by Step 1).
+   - Tag values are inserted into YAML via string interpolation.
+   - No HTML escaping needed — output is Markdown/YAML, not HTML.
+   - Malicious tag values (e.g., containing "---") cannot inject additional YAML
+     delimiters because the YAML serializer wraps them as list items ("  - <tag>").
+     Confirmed by fast-check property test (PROP-002) finding counterexample
+     "a---" and verifying the regex /^---\n[\s\S]*\n---\n[\s\S]*$/ still holds.
+
+2. File path construction:
+   - Path constructed as `${infra.vaultPath}/${validatedRequest.noteId}.md`
+   - NoteId is a branded type — callers are responsible for ensuring it is safe.
+   - No path traversal sanitization is performed in the domain layer; this is
+     correctly deferred to the Vault Context (Rust) per architectural boundary.
+
+3. Atomic writes:
+   - `FileSystem.writeFileAtomic` is a port — implementation performs temp → rename
+     for crash safety. The domain layer does not implement the atomic write itself.
+
+4. Event publication:
+   - Events are plain data objects; no deserialization from untrusted input.
+   - `publish()` is a port — domain layer emits typed events only.
+
+== Summary ==
+
+No security-critical operations (cryptography, auth, network, SQL) exist in this feature.
+Semgrep scan skipped — tool not installed; manual review performed instead.
+No findings that require remediation before Phase 6.
+All security concerns are correctly deferred to port implementations (Vault Context / Rust).
