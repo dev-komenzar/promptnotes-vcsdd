@@ -1,0 +1,75 @@
+{
+  "sprintNumber": 2,
+  "feature": "copy-body",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-01T08:50:00Z",
+  "iteration": 1,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/copy-body/pipeline.ts",
+          "description": "Implementation conforms to canonical CopyBody type from capture/workflows.ts and satisfies REQ-001..REQ-012."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-008-empty-body-copy.harness.test.ts",
+          "description": "Empty / whitespace-only bodies covered. PROP-010 enumerates all 5 FsError variants. PROP-007 deep-freezes inputs."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/copy-body/pipeline.ts",
+          "description": "All four Phase 3 minor findings (FIND-001..004) were resolved in-place before this verdict was finalised. CopyBodyDeps narrowing removes the unsound CaptureDeps cast; deepFreeze added to PROP-007."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts",
+          "description": "Pure core is single-line. Effectful shell confines I/O to clockNow + clipboardWrite + emitInternal."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/",
+          "description": "10 PROP harnesses pass. fast-check property tests with deterministic seeds. 449 expect calls across the harnesses."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": []
+  }
+}

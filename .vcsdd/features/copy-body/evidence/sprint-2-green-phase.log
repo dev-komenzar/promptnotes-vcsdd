@@ -1,0 +1,14 @@
+VCSDD green-phase evidence — copy-body sprint 2
+
+target-feature-tests: passing (45 / 45)
+regression-baseline: passing (320 / 320)
+
+All copy-body tests pass; no regression on edit-past-note-start, capture-auto-save, or app-startup.
+svelte-check: 2 pre-existing edit-past-note-start type errors carried over from commit c121d35 (out of scope for copy-body).
+
+bun test v1.3.11 (af24e281)
+
+ 320 pass
+ 0 fail
+ 11115 expect() calls
+Ran 320 tests across 43 files. [908.00ms]

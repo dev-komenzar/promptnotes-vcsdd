@@ -1,0 +1,10 @@
+copy-body OWASP visual inspection
+2026-05-01
+
+scope: CopyBody pipeline (Workflow 6)
+files reviewed:
+  - promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts
+  - promptnotes/src/lib/domain/copy-body/pipeline.ts
+
+findings: none
+notes: lean mode visual inspection only
