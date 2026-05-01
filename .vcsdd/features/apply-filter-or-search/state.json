@@ -2,7 +2,7 @@
   "featureName": "apply-filter-or-search",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -47,10 +47,18 @@
       "timestamp": "2026-05-01T12:40:25.943Z",
       "reason": "sprint 1 adversary review PASS — advancing toward 5",
       "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-01T12:40:47.792Z",
+      "reason": "sprint 1 advancing 3->5: adversary PASS, formal hardening begin",
+      "sprint": 1
     }
   ],
   "iterations": {
     "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -58,7 +66,134 @@
     "2b": 1,
     "2c": 1
   },
-  "proofObligations": [],
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-001.log"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-002.log"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-003.log"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-004.log"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-005.log"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-006.log"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-007.log"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-008.log"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-009.log"
+    },
+    {
+      "id": "PROP-010",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-010.log"
+    },
+    {
+      "id": "PROP-011",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-011b.log"
+    },
+    {
+      "id": "PROP-012",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-012.log"
+    },
+    {
+      "id": "PROP-013",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-013.log"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-014.log"
+    },
+    {
+      "id": "PROP-015",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-015.log"
+    },
+    {
+      "id": "PROP-016",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-016.log"
+    },
+    {
+      "id": "PROP-017",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-017.log"
+    },
+    {
+      "id": "PROP-018",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-018.log"
+    }
+  ],
   "traceability": {
     "epicId": "VCSDD-apply-filter-or-search-1777635345124",
     "beads": []
@@ -91,5 +226,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-01T11:35:45.124Z",
-  "updatedAt": "2026-05-01T12:40:25.943Z"
+  "updatedAt": "2026-05-01T12:45:08.737Z"
 }

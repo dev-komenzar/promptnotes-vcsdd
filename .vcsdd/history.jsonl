@@ -145,3 +145,4 @@
 {"timestamp":"2026-05-01T12:29:16.165Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"2b","to":"2c","iteration":1,"phase":"2c"}
 {"timestamp":"2026-05-01T12:40:25.942Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T12:40:25.945Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-05-01T12:40:47.794Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"3","to":"5","iteration":1,"phase":"5"}
