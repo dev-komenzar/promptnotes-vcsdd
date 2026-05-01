@@ -24,7 +24,10 @@ import type {
 import type {
   SaveFailedStage,
 } from "promptnotes-domain-types/capture/stages";
-import type { CaptureInternalEvent } from "promptnotes-domain-types/capture/internal-events";
+import type {
+  CaptureInternalEvent,
+  EditingSessionDiscarded,
+} from "promptnotes-domain-types/capture/internal-events";
 
 import {
   runHandleSaveFailurePipeline,
@@ -128,7 +131,7 @@ describe("discard-current-session (no pendingNextNoteId)", () => {
     );
 
     expect(spy.events).toHaveLength(1);
-    const event = spy.events[0];
+    const event = spy.events[0] as EditingSessionDiscarded;
     expect(event.kind).toBe("editing-session-discarded");
     expect(event.noteId).toBe(currentNoteId);
   });
@@ -271,7 +274,7 @@ describe("discard-current-session (with pendingNextNoteId)", () => {
     );
 
     expect(spy.events).toHaveLength(1);
-    const event = spy.events[0];
+    const event = spy.events[0] as EditingSessionDiscarded;
     expect(event.kind).toBe("editing-session-discarded");
     expect(event.noteId).toBe(currentNoteId);
     expect(event.noteId).not.toBe(pendingNextNoteId);

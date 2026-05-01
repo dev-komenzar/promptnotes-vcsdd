@@ -119,9 +119,9 @@ describe("PROP-HSF-020: Clock.now() called 0 times on cancel-switch-invalid bran
 
   test(
     "∀ SaveFailedState with pendingNextNoteId=null, cancel-switch → clockNow called 0 times (200 runs)",
-    () => {
-      fc.assert(
-        fc.property(
+    async () => {
+      await fc.assert(
+        fc.asyncProperty(
           arbSaveFailedStateNoPending,
           arbSaveFailedStage,
           async (state, stage) => {
@@ -150,7 +150,7 @@ describe("PROP-HSF-020: Clock.now() called 0 times on cancel-switch-invalid bran
   // Contrast: valid cancel-switch (pendingNextNoteId non-null) → Clock.now() called once
   test(
     "∀ SaveFailedState with pendingNextNoteId non-null, cancel-switch → clockNow called exactly 1 time (200 runs)",
-    () => {
+    async () => {
       const arbSaveFailedStateWithPending: fc.Arbitrary<SaveFailedState> = fc
         .tuple(arbNoteId, arbNoteId, arbSaveError)
         .map(([noteId, pendingId, error]) => ({
@@ -160,8 +160,8 @@ describe("PROP-HSF-020: Clock.now() called 0 times on cancel-switch-invalid bran
           lastSaveError: error,
         }));
 
-      fc.assert(
-        fc.property(
+      await fc.assert(
+        fc.asyncProperty(
           arbSaveFailedStateWithPending,
           arbSaveFailedStage,
           async (state, stage) => {

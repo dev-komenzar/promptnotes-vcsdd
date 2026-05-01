@@ -150,7 +150,7 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
   });
 
   // fast-check: for all non-save-failed status values, the invariant guard fires
-  test("∀ non-save-failed status values → invariant-violated rejection (property, 50 runs)", () => {
+  test("∀ non-save-failed status values → invariant-violated rejection (property, 50 runs)", async () => {
     const nonSaveFailedStates = fc.oneof(
       fc.constant({ status: "idle" as const }),
       arbNoteId.map((id) => ({
@@ -166,7 +166,7 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
         currentNoteId: id,
         savingStartedAt: makeTimestamp(1000),
       })),
-      arbNoteId.flatMap((id1) =>
+      arbNoteId.chain((id1) =>
         arbNoteId.map((id2) => ({
           status: "switching" as const,
           currentNoteId: id1,
@@ -176,8 +176,8 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
       ),
     );
 
-    fc.assert(
-      fc.property(nonSaveFailedStates, async (state) => {
+    await fc.assert(
+      fc.asyncProperty(nonSaveFailedStates, async (state) => {
         const stage = makeSaveFailedStage();
         const events: CaptureInternalEvent[] = [];
 

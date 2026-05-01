@@ -23,7 +23,10 @@ import type {
   SaveFailedStage,
   UserDecision,
 } from "promptnotes-domain-types/capture/stages";
-import type { CaptureInternalEvent } from "promptnotes-domain-types/capture/internal-events";
+import type {
+  CaptureInternalEvent,
+  RetrySaveRequested,
+} from "promptnotes-domain-types/capture/internal-events";
 
 import {
   runHandleSaveFailurePipeline,
@@ -122,7 +125,7 @@ describe("retry-save branch", () => {
     );
 
     expect(spy.events).toHaveLength(1);
-    const event = spy.events[0];
+    const event = spy.events[0] as RetrySaveRequested;
     expect(event.kind).toBe("retry-save-requested");
     expect(event.noteId).toBe(currentNoteId);
   });
@@ -163,7 +166,7 @@ describe("retry-save branch", () => {
     );
 
     const nextState = result.nextSessionState as SavingState;
-    const event = spy.events[0];
+    const event = spy.events[0] as RetrySaveRequested;
     expect(nextState.savingStartedAt).toBe(fixedNow);
     expect(event.occurredOn).toBe(fixedNow);
     expect(nextState.savingStartedAt).toBe(event.occurredOn);
@@ -207,7 +210,7 @@ describe("retry-save branch", () => {
     expect(nextState.status).toBe("saving");
     expect(nextState.currentNoteId).toBe(currentNoteId);
     // RetrySaveRequested should carry currentNoteId, not pendingNextNoteId
-    expect(spy.events[0].noteId).toBe(currentNoteId);
+    expect((spy.events[0] as RetrySaveRequested).noteId).toBe(currentNoteId);
   });
 
   // REQ-HSF-002 edge: pendingNextNoteId null — retry proceeds identically

@@ -86,9 +86,9 @@ const arbSaveFailedStage: fc.Arbitrary<SaveFailedStage> = fc
 describe("PROP-HSF-001: retry transition determinism", () => {
   test(
     "∀ SaveFailedState, running retry-save twice with identical fixed clock → identical SavingState outputs (1000 runs)",
-    () => {
-      fc.assert(
-        fc.property(
+    async () => {
+      await fc.assert(
+        fc.asyncProperty(
           arbSaveFailedState,
           arbSaveFailedStage,
           arbTimestamp,
@@ -129,9 +129,9 @@ describe("PROP-HSF-001: retry transition determinism", () => {
 
   test(
     "PROP-HSF-002: ∀ SaveFailedState, retry → SavingState.status='saving' ∧ currentNoteId preserved (500 runs)",
-    () => {
-      fc.assert(
-        fc.property(
+    async () => {
+      await fc.assert(
+        fc.asyncProperty(
           arbSaveFailedState,
           arbSaveFailedStage,
           arbTimestamp,

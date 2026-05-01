@@ -45,7 +45,11 @@ import type {
   UserDecision,
   ResolvedState,
 } from "promptnotes-domain-types/capture/stages";
-import type { CaptureInternalEvent } from "promptnotes-domain-types/capture/internal-events";
+import type {
+  CaptureInternalEvent,
+  RetrySaveRequested,
+  EditingSessionDiscarded,
+} from "promptnotes-domain-types/capture/internal-events";
 
 import {
   runHandleSaveFailurePipeline,
@@ -150,7 +154,7 @@ describe("HandleSaveFailure pipeline", () => {
 
     // Exactly one event: RetrySaveRequested
     expect(spy.events).toHaveLength(1);
-    const event = spy.events[0];
+    const event = spy.events[0] as RetrySaveRequested;
     expect(event.kind).toBe("retry-save-requested");
     expect(event.noteId).toBe(currentNoteId);
     expect(event.occurredOn).toBe(clock.fixedNow);
@@ -233,7 +237,7 @@ describe("HandleSaveFailure pipeline", () => {
 
     // Exactly one event: EditingSessionDiscarded
     expect(spy.events).toHaveLength(1);
-    const event = spy.events[0];
+    const event = spy.events[0] as EditingSessionDiscarded;
     expect(event.kind).toBe("editing-session-discarded");
     expect(event.noteId).toBe(currentNoteId);
     expect(event.occurredOn).toBe(clock.fixedNow);
@@ -300,7 +304,7 @@ describe("HandleSaveFailure pipeline", () => {
 
     // Exactly one event: EditingSessionDiscarded with currentNoteId (not pendingNextNoteId)
     expect(spy.events).toHaveLength(1);
-    const event = spy.events[0];
+    const event = spy.events[0] as EditingSessionDiscarded;
     expect(event.kind).toBe("editing-session-discarded");
     expect(event.noteId).toBe(currentNoteId);                 // discarded note
     expect(event.occurredOn).toBe(clock.fixedNow);
@@ -322,8 +326,8 @@ describe("HandleSaveFailure pipeline", () => {
 
     await runHandleSaveFailurePipeline(stage, state, decision, ports);
 
-    expect(spy.events[0].noteId).toBe(currentNoteId);
-    expect(spy.events[0].noteId).not.toBe(pendingNextNoteId);
+    expect((spy.events[0] as EditingSessionDiscarded).noteId).toBe(currentNoteId);
+    expect((spy.events[0] as EditingSessionDiscarded).noteId).not.toBe(pendingNextNoteId);
     // pendingNextNoteId must not appear in event payload
     expect("pendingNextNoteId" in spy.events[0]).toBe(false);
   });
