@@ -2,7 +2,7 @@
   "featureName": "apply-filter-or-search",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -26,13 +26,29 @@
       "timestamp": "2026-05-01T12:18:52.162Z",
       "reason": "sprint 1 red phase begin",
       "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-01T12:22:51.899Z",
+      "reason": "sprint 1 green phase begin",
+      "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-01T12:29:16.164Z",
+      "reason": "sprint 1 refactor begin",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
     "1c": 1,
-    "2a": 1
+    "2a": 1,
+    "2b": 1,
+    "2c": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -56,5 +72,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-01T11:35:45.124Z",
-  "updatedAt": "2026-05-01T12:18:52.162Z"
+  "updatedAt": "2026-05-01T12:29:16.164Z"
 }
