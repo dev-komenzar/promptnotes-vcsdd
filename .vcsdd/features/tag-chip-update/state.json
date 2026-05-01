@@ -2,7 +2,7 @@
   "featureName": "tag-chip-update",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -49,16 +49,40 @@
       "timestamp": "2026-05-01T09:31:55.120Z",
       "reason": "tdd cycle complete; awaiting adversarial review",
       "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-01T10:22:12.667Z",
+      "reason": "phase 3 PASS at iter-2; advancing to formal hardening",
+      "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-01T10:28:23.141Z",
+      "reason": "formal hardening complete",
+      "sprint": 1
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-01T10:33:39.304Z",
+      "reason": "feature complete; ready for commit + push",
+      "sprint": 1
     }
   ],
   "iterations": {
     "3": 1,
+    "5": 1,
+    "6": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
     "2a": 1,
     "2b": 1,
-    "2c": 1
+    "2c": 1,
+    "complete": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -67,19 +91,29 @@
   },
   "gates": {
     "3": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-01T09:42:19.295Z",
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T10:22:12.665Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 1,
-        "findings": [
-          "FIND-IMPL-TCU-001",
-          "FIND-IMPL-TCU-002",
-          "FIND-IMPL-TCU-003",
-          "FIND-IMPL-TCU-004",
-          "FIND-IMPL-TCU-005",
-          "FIND-IMPL-TCU-006"
-        ]
+        "iteration": 2,
+        "findings": [],
+        "note": "all 6 iter-1 findings resolved"
+      }
+    },
+    "5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T10:27:41.939Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "evidence": "verification + security + purity all PASS; 127/127 tests green; 21/21 PROP-TCU proved; 7/7 required obligations proved; zero errors in tag-chip-update impl and tests"
+      }
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T10:33:39.299Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "convergence": "all 4 dimensions PASS"
       }
     },
     "1c": {
@@ -127,5 +161,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-01T08:26:29.095Z",
-  "updatedAt": "2026-05-01T09:42:19.295Z"
+  "updatedAt": "2026-05-01T10:33:39.304Z"
 }

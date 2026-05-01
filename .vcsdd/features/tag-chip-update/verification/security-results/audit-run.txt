@@ -1,0 +1,55 @@
+Phase 5 Security Audit — tag-chip-update — 2026-05-01
+=======================================================
+
+Tool availability check:
+  semgrep: NOT INSTALLED (install: pip install semgrep)
+  Wycheproof: NOT APPLICABLE (no cryptographic primitives in this feature)
+  bun run check (svelte-check): AVAILABLE — used for type-level security assertions
+
+Audit performed as manual static review of:
+  promptnotes/src/lib/domain/tag-chip-update/pipeline.ts
+  promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts
+  promptnotes/src/lib/domain/tag-chip-update/update-projections.ts
+  promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts
+  promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts
+  promptnotes/src/lib/domain/tag-chip-update/_deltas.ts
+
+Audit checks:
+  [1] Path traversal — CLEAN
+      tag-chip-update does not accept file paths from user input.
+      Command input is NoteId (branded VO) + Tag (branded VO).
+      writeMarkdown port receives SaveNoteRequested which contains branded NoteId.
+      Path construction occurs in the Vault adapter layer, outside this feature.
+
+  [2] YAML injection in serialized content — INHERITED CLEAN
+      serializeNote is reused from CaptureAutoSave; YAML escaping handled by that layer.
+      tag-chip-update only constructs SaveNoteRequested with typed domain values;
+      raw string injection into YAML is not possible via the typed port surface.
+
+  [3] PII leakage in error detail strings — CLEAN
+      pipeline.ts line 49: detail = "note not found in snapshot store: ${String(command.noteId)}"
+        → NoteId is a branded opaque timestamp-based ID (e.g. "2026-04-30-120000-001"), not PII.
+      load-current-note.ts line 47: detail = "hydrateNote failed for noteId=..."
+        → Same NoteId; no user-authored content echoed.
+      apply-tag-operation-pure.ts line 161: detail = err.reason.kind ("updated-before-created")
+        → Static string literal; no user content echoed.
+      update-projections.ts line 107-109: throw message is a static string literal; no user content.
+      No error.detail string echoes body text, tag values, or frontmatter content.
+
+  [4] Prototype pollution via Tag/Frontmatter inputs — CLEAN
+      Tag is a branded primitive (string brand); no object construction from Tag.
+      Frontmatter spread in apply-tag-operation-pure.ts line 42-46:
+        { ...fm, tags: [...fm.tags, tag], updatedAt: now }
+        → Spread from typed Frontmatter VO; no arbitrary key injection possible.
+        → tag is a branded string VO, not a property key.
+      TagInventory.entries manipulation in update-projections.ts uses findIndex by String comparison;
+        no prototype chain traversal possible through branded Tag values.
+      All smart constructors are canonical VOs with no user-controlled key injection.
+
+  [5] Injection in publishInternal payload — CLEAN
+      TagInventoryUpdated payload (update-projections.ts line 118-123):
+        { kind: "tag-inventory-updated", addedTags: Tag[], removedTags: Tag[], occurredOn: Timestamp }
+        → addedTags/removedTags are subsets of the input Frontmatter.tags (branded Tag VOs);
+          no raw string passed through; no injection vector.
+
+Result: ALL 5 checks CLEAN. No security findings.
