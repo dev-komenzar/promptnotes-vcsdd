@@ -2,7 +2,7 @@
 
 **Feature**: `apply-filter-or-search`
 **Phase**: 1a
-**Revision**: 1
+**Revision**: 2
 **Source of truth**:
 - `docs/domain/workflows.md` Workflow 7 (ApplyFilterOrSearch)
 - `docs/domain/aggregates.md` §2 Feed Aggregate (FilterCriteria semantics, computeVisible)
@@ -19,6 +19,28 @@
 
 ---
 
+## Design Decisions
+
+These decisions are recorded here because they are not yet reflected in the upstream domain docs (`aggregates.md`, `glossary.md`). Each requires a future amendment to those files.
+
+### DD-1: NoteId-lexicographic tiebreak direction follows sortOrder
+
+**Decision**: When two snapshots have identical `updatedAt.epochMillis`, the sort tiebreak on `NoteId` (lexicographic) follows the primary sort direction: ascending `sortOrder.direction` → NoteId ascending; descending `sortOrder.direction` → NoteId descending. This ensures a consistent total order where secondary key direction mirrors primary key direction.
+
+**Rationale**: The source docs (`aggregates.md` §2, `glossary.md`) specify only "timestamp desc/asc" — no tiebreak is documented. A tiebreak is required to produce a deterministic total order when timestamps collide. Pinning the tiebreak to match the primary direction (rather than always ascending) avoids the anomaly where a desc-sorted feed would prefer a lexicographically later NoteId even though the user selected "newest first."
+
+**Open question for future amendment**: Add `DD-1` tiebreak rule to `aggregates.md` §2 불변条件 and `glossary.md` ソート entry.
+
+### DD-2: Full-text search scope for frontmatter is `tags` only (MVP)
+
+**Decision**: For MVP, the `"body+frontmatter"` search scope covers `snapshot.body` and the string representations of `snapshot.frontmatter.tags`. It does NOT cover `createdAt`/`updatedAt` timestamps (not natural search targets) nor future user-defined frontmatter fields (not yet in the MVP schema).
+
+**Rationale**: `aggregates.ts` defines `SearchScope = "body+frontmatter" | "body" | "frontmatter"`. The MVP frontmatter schema has only `tags`, `createdAt`, and `updatedAt`. Timestamps are not natural free-text targets. No other text-typed frontmatter fields exist in MVP. REQ-011 scopes to tag name strings only. If future text-typed frontmatter fields are added, a spec amendment is required.
+
+**Open question for future amendment**: Extend REQ-011 and the search implementation to cover additional text-typed frontmatter fields when they are added to the schema.
+
+---
+
 ## Pipeline Overview
 
 ```
@@ -30,7 +52,7 @@ Stages:
 | Stage | Guarantee |
 |-------|-----------|
 | `UnvalidatedFilterInput` | Raw strings from UI; tags not yet validated; search text may be empty/whitespace |
-| `AppliedFilter` | All tags are valid `Tag` VOs; search query is `null` if input was empty/whitespace; sortOrder passed through |
+| `AppliedFilter` | All tags are valid `Tag` VOs; search query is `null` if input was empty/whitespace-only; sortOrder passed through verbatim |
 | `VisibleNoteIds` | Post-filter, post-search, post-sort `NoteId[]`; `hasZeroResults` flag set correctly |
 
 The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state. Both functions are referentially transparent.
@@ -43,12 +65,14 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 
 **EARS**: WHEN `parseFilterInput` is called with a `UnvalidatedFilterInput` whose `tagsRaw` are all parseable tags AND `fieldsRaw` contains only well-formed entries THEN the system SHALL return `Ok(AppliedFilter { kind: "AppliedFilter", criteria, query, sortOrder })` where every `tagsRaw` element has been converted to a `Tag` VO via `tryNewTag`, `fieldsRaw` is passed through as `criteria.frontmatterFields`, and `sortOrder` is passed through unchanged.
 
+**Dedup rule (normative)**: WHEN `tagsRaw` contains multiple raw strings whose `tryNewTag` outputs are equal `Tag` instances (i.e., they normalize to the same value), `criteria.tags` SHALL contain that `Tag` exactly once, preserving first-occurrence order. See also REQ-002.
+
 **Source**: `workflows.ts` `ParseFilterInput` type; `stages.ts` `AppliedFilter`; `aggregates.ts` `FilterCriteria`.
 
 **Acceptance Criteria**:
 - Return value is `{ ok: true, value: AppliedFilter }`.
 - `AppliedFilter.kind === "AppliedFilter"`.
-- `AppliedFilter.criteria.tags` has the same length as `tagsRaw` and each element is a valid `Tag` VO.
+- `AppliedFilter.criteria.tags` contains each unique normalized tag exactly once (deduplicated, first-occurrence order).
 - `AppliedFilter.criteria.frontmatterFields` equals `fieldsRaw` (reference or structural equality — same entries).
 - `AppliedFilter.sortOrder` is structurally identical to `raw.sortOrder`.
 - The function is **pure**: no I/O, no mutations, no clock reads.
@@ -57,7 +81,7 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 
 ### REQ-002: ParseFilterInput — tag normalization via Tag Smart Constructor
 
-**EARS**: WHEN `parseFilterInput` processes a `tagsRaw` entry THEN the system SHALL delegate normalization to `tryNewTag` (the Tag Smart Constructor) and SHALL NOT implement parallel normalization logic. The returned `Tag` VO reflects the normalized form (trimmed, lowercased, leading `#` removed).
+**EARS**: WHEN `parseFilterInput` processes a `tagsRaw` entry THEN the system SHALL delegate normalization to `tryNewTag` (the Tag Smart Constructor) and SHALL NOT implement parallel normalization logic. The returned `Tag` VO reflects the normalized form (trimmed, lowercased, leading `#` removed). WHEN `tagsRaw` contains multiple entries that normalize to the same `Tag`, `criteria.tags` SHALL contain that `Tag` exactly once (first occurrence wins, subsequent duplicates discarded).
 
 **Source**: `value-objects.ts` `TagSmartCtor.tryNew`; aggregates.md §1 ("Tag は string の Smart Constructor で：空文字不可・空白文字不可・小文字正規化・先頭 `#` 除去"); ui-fields.md §1A-2 ("各要素 `try_new_tag` で正規化").
 
@@ -67,12 +91,14 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 - A `tagsRaw` entry `"draft"` (already normalized) becomes `"draft"` unchanged.
 - Normalization is idempotent: applying the same transformation twice yields the same `Tag`.
 - `parseFilterInput` does not contain a hand-rolled lowercase/trim — it calls `tryNewTag` and propagates its `Result`.
+- `tagsRaw: ["claude-code", "Claude-Code", "  claude-code  "]` → `criteria.tags` contains `Tag("claude-code")` exactly once (dedup, first-occurrence order).
+- `tagsRaw: ["draft", "review", "Draft"]` → `criteria.tags` contains `[Tag("draft"), Tag("review")]` exactly (second `"Draft"` deduplicated).
 
 ---
 
 ### REQ-003: ParseFilterInput — invalid tag produces Err
 
-**EARS**: WHEN any element of `tagsRaw` causes `tryNewTag` to return an error (empty string, whitespace-only string, or any string rejected by the Smart Constructor) THEN `parseFilterInput` SHALL return `Err({ kind: "invalid-tag", raw: <the offending string> })` and SHALL NOT return a partial `AppliedFilter`.
+**EARS**: WHEN any element of `tagsRaw` causes `tryNewTag` to return an error (empty string, whitespace-only string, or any string rejected by the Smart Constructor) THEN `parseFilterInput` SHALL return `Err({ kind: "invalid-tag", raw: <the offending string> })` and SHALL NOT return a partial `AppliedFilter`. The function SHALL fail on the **first** invalid tag encountered (fail-fast left-to-right traversal).
 
 **Source**: `workflows.ts` `ParseFilterInput` return type — `Result<AppliedFilter, { kind: "invalid-tag"; raw: string }>`; `value-objects.ts` `TagError`; simulation `05_apply_filter_search.spec.ts` invalid-input test.
 
@@ -80,7 +106,8 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 - `tagsRaw: [""]` → `Err({ kind: "invalid-tag", raw: "" })`.
 - `tagsRaw: ["   "]` (whitespace-only) → `Err({ kind: "invalid-tag", raw: "   " })`.
 - The `raw` field in the error preserves the original pre-normalization string verbatim (not normalized).
-- When `tagsRaw` contains multiple elements and the *first* is valid but a later one is invalid, the first valid parse is discarded and `Err` is returned (fail-fast on first invalid tag encountered).
+- When `tagsRaw: ["valid-tag", ""]`, the function returns `Err({ kind: "invalid-tag", raw: "" })` (fail-fast on first invalid entry, valid prefix discarded).
+- When `tagsRaw: ["", "valid-tag"]`, the function returns `Err({ kind: "invalid-tag", raw: "" })` (first entry is invalid).
 - `AppliedFilter` is **never** returned when any tag is invalid.
 
 ---
@@ -100,16 +127,18 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 
 ### REQ-005: ParseFilterInput — searchTextRaw normalization
 
-**EARS**: WHEN `searchTextRaw` is `null` OR is an empty string `""` OR is a whitespace-only string (e.g., `"   "`) THEN the system SHALL produce `query: null` in `AppliedFilter`. WHEN `searchTextRaw` is a non-empty, non-whitespace-only string THEN the system SHALL produce `query: { text: searchTextRaw.trim(), scope: "body+frontmatter" }`.
+**EARS**: WHEN `searchTextRaw` is `null` OR is an empty string `""` OR is a whitespace-only string (e.g., `"   "`, where `searchTextRaw.trim() === ""`) THEN the system SHALL produce `query: null` in `AppliedFilter`. WHEN `searchTextRaw` is a non-null string where `searchTextRaw.trim() !== ""` THEN the system SHALL produce `query: { text: searchTextRaw, scope: "body+frontmatter" }` — with `query.text` set to `searchTextRaw` **verbatim** (no trimming of the resulting text value).
 
-**Source**: ui-fields.md §1D ("空文字許容、空はクリア扱い"); aggregates.ts `SearchQuery.scope` ("MVP は 'body+frontmatter' のみ採用"); workflows.md Workflow 7.
+**Source**: ui-fields.md §1D ("空文字許容、空はクリア扱い"; "MVP は部分一致前提で `searchTextRaw: string` を `SearchQuery.text: string` に直流し" — direct passthrough); aggregates.ts `SearchQuery.scope` ("MVP は 'body+frontmatter' のみ採用"); workflows.md Workflow 7.
+
+**Note on whitespace-only collapse**: The predicate `searchTextRaw.trim() === ""` is used only to determine whether to produce `null`; it does NOT trim the resulting `query.text`. Leading/trailing whitespace in a non-whitespace-only string is preserved in `query.text`.
 
 **Acceptance Criteria**:
 - `searchTextRaw: null` → `query: null`.
 - `searchTextRaw: ""` → `query: null`.
 - `searchTextRaw: "   "` (whitespace-only) → `query: null`.
 - `searchTextRaw: "middleware"` → `query: { text: "middleware", scope: "body+frontmatter" }`.
-- `searchTextRaw: "  middleware  "` (leading/trailing whitespace with content) → `query: { text: "middleware", scope: "body+frontmatter" }` (trimmed).
+- `searchTextRaw: "  middleware  "` (leading/trailing whitespace with non-whitespace content) → `query: { text: "  middleware  ", scope: "body+frontmatter" }` (verbatim passthrough, NOT trimmed).
 - `scope` is always `"body+frontmatter"` (MVP fixed; never `"body"` or `"frontmatter"`).
 
 ---
@@ -121,22 +150,24 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 **Source**: `stages.ts` `AppliedFilter.sortOrder: SortOrder`; aggregates.ts `SortOrder = { field: "timestamp"; direction: "desc" | "asc" }`.
 
 **Acceptance Criteria**:
-- `sortOrder: { field: "timestamp", direction: "desc" }` → `AppliedFilter.sortOrder === { field: "timestamp", direction: "desc" }` (structural equality).
-- `sortOrder: { field: "timestamp", direction: "asc" }` → `AppliedFilter.sortOrder === { field: "timestamp", direction: "asc" }`.
+- `sortOrder: { field: "timestamp", direction: "desc" }` → `AppliedFilter.sortOrder` deepEquals `{ field: "timestamp", direction: "desc" }`.
+- `sortOrder: { field: "timestamp", direction: "asc" }` → `AppliedFilter.sortOrder` deepEquals `{ field: "timestamp", direction: "asc" }`.
 - `parseFilterInput` does not synthesize or override the sortOrder.
+- For all valid `raw` inputs, `parseFilterInput(raw).value.sortOrder` deepEquals `raw.sortOrder` (structural deep equality, not reference equality).
 
 ---
 
 ### REQ-007: ApplyFilterOrSearch — feed.noteRefs is the candidate set
 
-**EARS**: WHEN `applyFilterOrSearch` is invoked THEN the output `VisibleNoteIds.ids` SHALL be a subset of `feed.noteRefs`. Any `NoteFileSnapshot` whose `noteId` is NOT in `feed.noteRefs` SHALL NOT appear in the output, even if it passes all filter/search criteria.
+**EARS**: WHEN `applyFilterOrSearch` is invoked THEN the output `VisibleNoteIds.ids` SHALL be a subset of `feed.noteRefs`. Any `NoteFileSnapshot` whose `noteId` is NOT in `feed.noteRefs` SHALL NOT appear in the output, even if it passes all filter/search criteria. Any `NoteId` present in `feed.noteRefs` but absent from `snapshots` (no matching snapshot resolvable) SHALL NOT appear in the output.
 
 **Source**: aggregates.md §2 (`noteRefs: NoteId[]` — "表示候補のノート ID 集合（vault 内の全ノート）"); aggregates.ts `Feed.noteRefs`; simulation `05_apply_filter_search.spec.ts` (`initialFeed.noteRefs = noteIds`).
 
 **Acceptance Criteria**:
 - A snapshot present in `snapshots` but absent from `feed.noteRefs` does NOT appear in `ids`.
 - A `NoteId` present in `feed.noteRefs` but absent from `snapshots` does NOT appear in `ids` (no unresolvable refs in output).
-- All `NoteId` values in the output are members of `feed.noteRefs`.
+- All `NoteId` values in the output are members of both `feed.noteRefs` AND `snapshots[*].noteId`.
+- For every `id` in `result.ids`, there exists a snapshot `s` in `snapshots` such that `s.noteId === id`.
 
 ---
 
@@ -144,7 +175,7 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 
 **EARS**: WHEN `applied.criteria.tags` contains one or more `Tag` values THEN a snapshot SHALL be included in the candidate set if and only if at least one of its `frontmatter.tags` is present in `criteria.tags` (OR semantics within the tag set).
 
-**Source**: aggregates.md §2 불변条件 3 ("同タグ複数選択は OR：タグ A と B を選んだ場合 `A OR B`"); aggregates.ts `FilterCriteria` comment ("同タグ間 OR"); validation.md Scenario 5 ("12 + 3 - 重複 = N 件").
+**Source**: aggregates.md §2 不変条件 3 ("同タグ複数選択は OR：タグ A と B を選んだ場合 `A OR B`"); aggregates.ts `FilterCriteria` comment ("同タグ間 OR"); validation.md Scenario 5 ("12 + 3 - 重複 = N 件").
 
 **Acceptance Criteria**:
 - A snapshot with `tags: ["claude-code"]` passes when `criteria.tags = [Tag("claude-code")]`.
@@ -169,48 +200,55 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 
 ---
 
-### REQ-010: ApplyFilterOrSearch — frontmatter field filter uses exact match per field
+### REQ-010: ApplyFilterOrSearch — frontmatter field filter uses case-sensitive exact match per field
 
-**EARS**: WHEN `applied.criteria.frontmatterFields` is non-empty THEN a snapshot SHALL be included in the candidate set for this criterion if and only if for every `(field, value)` entry in `frontmatterFields`, the snapshot's `frontmatter` has that exact field with that exact value (case-sensitive exact match).
+**EARS**: WHEN `applied.criteria.frontmatterFields` is non-empty THEN a snapshot SHALL be included in the candidate set for this criterion if and only if for every `(field, value)` entry in `frontmatterFields`, the snapshot's `frontmatter` has that exact field with that exact value (case-sensitive exact string match). All entries in the map must match (AND within the map itself). WHEN `frontmatterFields` is empty, all snapshots pass (no-op).
 
 **Source**: aggregates.md §2 `FilterCriteria.frontmatterFields: Map<string, string>` ("field → value"); ui-fields.md §1C ("MVP は frontmatter フィルタ UI を提供しないため発火しない" — but the type supports it).
 
 **Acceptance Criteria**:
 - `frontmatterFields: { status: "open" }` passes a snapshot with `frontmatter.status === "open"`.
-- `frontmatterFields: { status: "open" }` does NOT pass a snapshot with `frontmatter.status === "Open"` (case-sensitive).
+- `frontmatterFields: { status: "open" }` does NOT pass a snapshot with `frontmatter.status === "Open"` (case-sensitive: `"open" !== "Open"`).
 - `frontmatterFields: { status: "open" }` does NOT pass a snapshot with `frontmatter.status === "closed"`.
+- `frontmatterFields: { status: "open", priority: "high" }` passes only a snapshot where BOTH `status === "open"` AND `priority === "high"` (AND across map entries).
+- `frontmatterFields: { status: "open", priority: "high" }` does NOT pass a snapshot where only `status === "open"` but `priority !== "high"`.
 - When `frontmatterFields` is empty (no entries), all snapshots pass this criterion (no-op).
-- Multiple `frontmatterFields` entries must all match (AND within the map itself).
 
 ---
 
-### REQ-011: ApplyFilterOrSearch — search uses case-insensitive substring match on body and frontmatter
+### REQ-011: ApplyFilterOrSearch — search uses case-insensitive substring match on body and frontmatter tag names
 
 **EARS**: WHEN `applied.query` is non-null THEN a snapshot SHALL be included if and only if `query.text` (as a literal substring, case-insensitive) appears in the snapshot's `body` string OR in any of its `frontmatter.tags` string representations. No regex semantics apply.
 
-**Source**: aggregates.md §2 `SearchQuery.scope: 'body+frontmatter'` and the `applySearch` operation; ui-fields.md §1D ("部分一致、大文字小文字無視 = MVP 仕様"); validation.md Scenario 6 ("検索でハイライト確認"); glossary.md ("検索：フリーテキストによる絞り込み（本文 + frontmatter）").
+**Search scope (Design Decision DD-2)**: Frontmatter search covers `frontmatter.tags` string representations only. Timestamps (`createdAt`, `updatedAt`) are excluded — they are not natural free-text search targets. No other text-typed frontmatter fields exist in the MVP schema. See DD-2 in the Design Decisions section above.
+
+**Source**: aggregates.md §2 `SearchQuery.scope: 'body+frontmatter'` and the `applySearch` operation; ui-fields.md §1D ("部分一致、大文字小文字無視 = MVP 仕様"; "MVP は部分一致前提で `searchTextRaw: string` を `SearchQuery.text: string` に直流し"); validation.md Scenario 6 ("検索でハイライト確認"); glossary.md ("検索：フリーテキストによる絞り込み（本文 + frontmatter）").
 
 **Acceptance Criteria**:
 - `query.text = "middleware"` matches a snapshot with `body` containing `"Refactor the auth middleware to..."` (substring found in body).
 - `query.text = "MIDDLEWARE"` also matches the same snapshot (case-insensitive).
-- `query.text = "claude"` matches a snapshot with `frontmatter.tags = [Tag("claude-code")]` (substring found in a tag name).
-- `query.text = "xyzqwerty"` does NOT match any snapshot that lacks this string in body or tag names.
-- Special characters in `query.text` (e.g., `.`, `*`, `(`) are treated as literal characters, not regex patterns.
-- Scope is always `"body+frontmatter"` for MVP; frontmatter search covers tag name strings only (not `createdAt`/`updatedAt` timestamps).
+- `query.text = "claude"` matches a snapshot with `frontmatter.tags = [Tag("claude-code")]` (substring `"claude"` found within tag string `"claude-code"`).
+- `query.text = "xyzqwerty"` does NOT match any snapshot that lacks this string in body or tag name strings.
+- Special characters in `query.text` (e.g., `.`, `*`, `(`, `[`) are treated as literal characters, not regex patterns.
+- Scope for frontmatter: tag name strings only (not `createdAt`/`updatedAt` timestamps). Per DD-2.
+- The match predicate is: `(snapshot.body + ' ' + snapshot.frontmatter.tags.join(' ')).toLowerCase().includes(query.text.toLowerCase())`.
 
 ---
 
-### REQ-012: ApplyFilterOrSearch — sort by updatedAt with NoteId tiebreak
+### REQ-012: ApplyFilterOrSearch — sort by updatedAt with direction-consistent NoteId tiebreak
 
-**EARS**: WHEN `applyFilterOrSearch` sorts the filtered result set THEN it SHALL sort by `frontmatter.updatedAt.epochMillis` in the direction specified by `applied.sortOrder.direction`. WHEN two snapshots have identical `updatedAt` values THEN the sort SHALL use `NoteId` (lexicographic ascending) as a tiebreak to produce a deterministic total order.
+**EARS**: WHEN `applyFilterOrSearch` sorts the filtered result set THEN it SHALL sort by `frontmatter.updatedAt.epochMillis` in the direction specified by `applied.sortOrder.direction`. WHEN two snapshots have identical `updatedAt` values THEN the sort SHALL use `NoteId` lexicographic order in the **same direction** as `sortOrder.direction` (ascending direction → NoteId ascending tiebreak; descending direction → NoteId descending tiebreak) to produce a deterministic total order.
 
-**Source**: aggregates.md §2 불변条件 4 ("既定ソートはタイムスタンプ降順：最新が上"); aggregates.ts `SortOrder = { field: "timestamp", direction: "desc" | "asc" }`; glossary.md ("ソート：タイムスタンプ昇順／降順、既定は降順").
+**Design decision**: DD-1 (see Design Decisions section). The tiebreak direction mirrors the primary sort direction. This is recorded here pending amendment of `aggregates.md` and `glossary.md`.
+
+**Source**: aggregates.md §2 不変条件 4 ("既定ソートはタイムスタンプ降順：最新が上"); aggregates.ts `SortOrder = { field: "timestamp", direction: "desc" | "asc" }`; glossary.md ("ソート：タイムスタンプ昇順／降順、既定は降順").
 
 **Acceptance Criteria**:
 - With `sortOrder.direction = "desc"`, a snapshot with later `updatedAt` appears before one with earlier `updatedAt`.
 - With `sortOrder.direction = "asc"`, a snapshot with earlier `updatedAt` appears before one with later `updatedAt`.
-- Two snapshots with identical `updatedAt.epochMillis` are ordered by `NoteId` ascending (lexicographic).
-- The sort is stable with respect to the tiebreak: the same input always produces the same output order (determinism).
+- Two snapshots with identical `updatedAt.epochMillis` and `sortOrder.direction = "asc"` are ordered by `NoteId` ascending (lexicographic).
+- Two snapshots with identical `updatedAt.epochMillis` and `sortOrder.direction = "desc"` are ordered by `NoteId` descending (lexicographic).
+- The sort is total: the same input always produces the same output order (determinism via tiebreak).
 - The sort criterion is `updatedAt`, not `createdAt` or `fileMtime`.
 
 ---
@@ -229,16 +267,18 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 
 ---
 
-### REQ-014: ApplyFilterOrSearch — no-filter, no-search returns all feed.noteRefs in sort order
+### REQ-014: ApplyFilterOrSearch — no-filter, no-search returns exactly the resolvable intersection in sort order
 
-**EARS**: WHEN `applied.criteria.tags` is empty AND `applied.criteria.frontmatterFields` is empty AND `applied.query` is null THEN the system SHALL return all `NoteId` values resolvable from both `feed.noteRefs` and `snapshots`, sorted according to `applied.sortOrder`.
+**EARS**: WHEN `applied.criteria.tags` is empty AND `applied.criteria.frontmatterFields` is empty AND `applied.query` is null THEN the system SHALL return `VisibleNoteIds.ids` containing **exactly** the `NoteId` values that appear in both `feed.noteRefs` AND `snapshots[*].noteId` (the intersection), sorted according to `applied.sortOrder`. No IDs may be added (no inflation) and no resolvable IDs may be omitted (no deflation).
 
 **Source**: aggregates.md §2 `clearFilter` / `clearSearch` operations; validation.md Scenario 5 ("フィルタを解除する → 47 件すべて表示").
 
 **Acceptance Criteria**:
-- The returned `ids` contains exactly the intersection of `feed.noteRefs` and `snapshots[*].noteId`, no more, no less.
+- The returned `ids` contains exactly the intersection of `feed.noteRefs` and `snapshots[*].noteId`, no more, no less (two-sided: both subset and superset hold simultaneously).
 - The returned `ids` are sorted per REQ-012.
 - `hasZeroResults` is `false` when the feed contains at least one resolvable snapshot.
+- An empty `feed.noteRefs` → `ids: []` regardless of `snapshots` content.
+- A non-empty `feed.noteRefs` with all snapshots missing → `ids: []` (all unresolvable).
 
 ---
 
@@ -249,8 +289,8 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 **Source**: workflows.md Workflow 7 ("依存：なし（純粋）", "副作用：none"); aggregates.md §2 `computeVisible` — "Pure Function".
 
 **Acceptance Criteria**:
-- `parseFilterInput(x) === parseFilterInput(x)` (deep equality) for all valid inputs.
-- `applyFilterOrSearch(feed, applied, snapshots) === applyFilterOrSearch(feed, applied, snapshots)` for all valid inputs.
+- `parseFilterInput(x)` deepEquals `parseFilterInput(x)` for all valid inputs (called twice).
+- `applyFilterOrSearch(feed, applied, snapshots)` deepEquals `applyFilterOrSearch(feed, applied, snapshots)` for all valid inputs.
 - No `Date.now()`, `Math.random()`, `fetch()`, file system access, or Tauri command call occurs inside either function.
 - Input arguments (`feed`, `applied`, `snapshots`, `raw`) are not mutated by either function.
 - No module-level mutable state is read or written by either function.
@@ -259,12 +299,14 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 
 ### REQ-016: Non-functional — performance bound for MVP scale
 
-**EARS**: WHEN `applyFilterOrSearch` is invoked with up to 1000 `NoteFileSnapshot` entries, up to 5 selected tags, and 1 search term THEN the function SHALL complete in less than 50ms in a standard V8 runtime environment.
+**EARS**: WHEN `applyFilterOrSearch` is invoked with up to 1000 `NoteFileSnapshot` entries, up to 5 selected tags, and 1 search term THEN the function SHALL complete in less than 50ms as a soft regression bound.
 
 **Source**: workflows.md Workflow 7 ("MVP は同期で十分"); validation.md §後回しで良い未検証項目 ("MVP の想定規模は数百件まで").
 
+**Test methodology**: Measured using `bun:test` with `performance.now()`. Protocol: 1 warmup run (discarded), then median of 5 measurement runs. Threshold: 50ms on a development machine. This is a **soft regression bound**, not a hard correctness invariant — CI may be slower; the bound is enforced locally and noted as advisory in CI.
+
 **Acceptance Criteria**:
-- A benchmark with 1000 snapshots, 5 `criteria.tags`, and `query.text = "test"` completes in < 50ms (wall clock, non-minified Bun runtime).
+- A benchmark with 1000 snapshots, 5 `criteria.tags`, and `query.text = "test"` completes in < 50ms (median of 5 runs after 1 warmup, `bun:test` runtime, development machine).
 - `parseFilterInput` with 10 tags completes in < 5ms.
 - The implementation uses linear scan; no index structures are required at this scale.
 
@@ -313,19 +355,27 @@ UI mapping:
 | `tagsRaw: ["   "]` | `Err({ kind: "invalid-tag", raw: "   " })` | REQ-003 |
 | `tagsRaw: ["  Claude-Code  "]` | `criteria.tags: [Tag("claude-code")]` | REQ-002 |
 | `tagsRaw: ["#draft"]` | `criteria.tags: [Tag("draft")]` (leading `#` removed) | REQ-002 |
+| `tagsRaw: ["claude-code", "Claude-Code", "  claude-code  "]` | `criteria.tags: [Tag("claude-code")]` (deduplicated, first-occurrence) | REQ-001, REQ-002 |
+| `tagsRaw: ["draft", "review", "Draft"]` | `criteria.tags: [Tag("draft"), Tag("review")]` (second "Draft" deduplicated) | REQ-001, REQ-002 |
+| `tagsRaw: ["valid-tag", ""]` | `Err({ kind: "invalid-tag", raw: "" })` (fail-fast, valid prefix discarded) | REQ-003 |
 | `searchTextRaw: null` | `query: null` | REQ-005 |
 | `searchTextRaw: ""` | `query: null` | REQ-005 |
 | `searchTextRaw: "   "` | `query: null` | REQ-005 |
-| `searchTextRaw: "  foo  "` | `query: { text: "foo", scope: "body+frontmatter" }` | REQ-005 |
+| `searchTextRaw: "  foo  "` | `query: { text: "  foo  ", scope: "body+frontmatter" }` (verbatim, NOT trimmed) | REQ-005 |
 | `snapshots` contains noteId not in `feed.noteRefs` | Not included in output | REQ-007 |
 | `feed.noteRefs` contains noteId with no matching snapshot | Not included in output | REQ-007 |
 | All snapshots filtered out | `{ ids: [], hasZeroResults: true }` | REQ-013 |
-| Two snapshots with identical `updatedAt` | Tiebreak by NoteId ascending | REQ-012 |
+| Two snapshots with identical `updatedAt`, `direction="desc"` | Tiebreak by NoteId descending (DD-1) | REQ-012 |
+| Two snapshots with identical `updatedAt`, `direction="asc"` | Tiebreak by NoteId ascending (DD-1) | REQ-012 |
 | `criteria.tags` non-empty, `frontmatterFields` empty, `query` null | Only tag filter applied | REQ-009 |
-| All criteria empty/null | All resolvable snapshots returned sorted | REQ-014 |
-| Search text with special chars (`.`, `*`) | Literal substring match, no regex | REQ-011 |
+| All criteria empty/null | All resolvable snapshots returned sorted (exactly the intersection) | REQ-014 |
+| Search text with special chars (`.`, `*`, `(`, `[`) | Literal substring match, no regex | REQ-011 |
 | `feed.noteRefs` is empty | `{ ids: [], hasZeroResults: true }` | REQ-013, REQ-014 |
 | `snapshots` is empty | `{ ids: [], hasZeroResults: true }` | REQ-013, REQ-014 |
+| `frontmatterFields: { status: "open", priority: "high" }` where only status matches | Not included (AND within map) | REQ-010 |
+| `frontmatterFields: { status: "Open" }` vs snapshot `status: "open"` | Not included (case-sensitive) | REQ-010 |
+| `query.text = "MIDDLEWARE"` vs snapshot body `"middleware"` | Included (case-insensitive search) | REQ-011 |
+| `query.text = "."` | Literal dot substring match, not regex wildcard | REQ-011 |
 
 ---
 
@@ -333,10 +383,10 @@ UI mapping:
 
 1. **Duplicate NoteId in snapshots array**: Declared impossible by Feed invariant 1 (`noteRefs` has no duplicates). This spec does not define behavior for duplicate `noteId` in the `snapshots` argument — callers may assume the harness provides unique IDs.
 
-2. **Search scope for frontmatter**: MVP scope is `"body+frontmatter"`. For frontmatter, search currently matches against tag name strings only (not `createdAt`/`updatedAt` timestamps). Whether future frontmatter fields (e.g., `status`) should be included in search is deferred to post-MVP.
+2. **Search method — substring vs. fuzzy**: Confirmed substring (case-insensitive) for MVP per ui-fields.md §1D ("未確定" note and "部分一致前提"). Fuzzy/regex search deferred per validation.md §後回しで良い未検証項目.
 
-3. **Search method — substring vs. fuzzy**: Confirmed substring (case-insensitive) for MVP per ui-fields.md §1D ("未確定" note and "部分一致前提"). Fuzzy/regex search deferred per validation.md §後回しで良い未検証項目.
+3. **`frontmatterFields` matching against MVP-fixed schema**: The MVP frontmatter schema has only `tags`, `createdAt`, `updatedAt`. The `frontmatterFields` filter targets future user-defined fields. The MVP UI does not expose this filter (ui-fields.md §1C "MVP は frontmatter フィルタ UI を提供しない") — therefore REQ-010 is spec'd but will not be triggered in MVP flows. The implementation must still handle it correctly per the type contract.
 
-4. **`frontmatterFields` matching against MVP-fixed schema**: The MVP frontmatter schema has only `tags`, `createdAt`, `updatedAt`. The `frontmatterFields` filter targets future user-defined fields. The MVP UI does not expose this filter (ui-fields.md §1C "MVP は frontmatter フィルタ UI を提供しない") — therefore REQ-010 is spec'd but will not be triggered in MVP flows. The implementation must still handle it correctly per the type contract.
+4. **Tag normalization for non-ASCII input**: Behavior of `tryNewTag` for Japanese characters, emoji, or full-width characters is deferred to the Tag Smart Constructor's implementation. This spec constrains only that `parseFilterInput` must call `tryNewTag` (REQ-002) and propagate its errors (REQ-003).
 
-5. **Tag normalization for non-ASCII input**: Behavior of `tryNewTag` for Japanese characters, emoji, or full-width characters is deferred to the Tag Smart Constructor's implementation. This spec constrains only that `parseFilterInput` must call `tryNewTag` (REQ-002) and propagate its errors (REQ-003).
+   *(Open Question previously labeled Q2 — search scope for frontmatter — has been resolved and recorded as Design Decision DD-2.)*

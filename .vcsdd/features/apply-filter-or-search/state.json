@@ -2,7 +2,7 @@
   "featureName": "apply-filter-or-search",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "1c",
   "phaseHistory": [
     {
       "from": "init",
@@ -13,19 +13,40 @@
       "from": "1a",
       "to": "1b",
       "timestamp": "2026-05-01T11:41:30.758Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-01T12:04:43.919Z",
+      "reason": "spec gate PASS iteration 2 — 0c/0M/2m"
     }
   ],
   "iterations": {
     "1a": 1,
-    "1b": 1
+    "1b": 1,
+    "1c": 1
   },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-apply-filter-or-search-1777635345124",
     "beads": []
   },
-  "gates": {},
+  "gates": {
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T12:04:43.917Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2,
+        "criticals": 0,
+        "majors": 0,
+        "minors": 2
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-01T12:04:43.917Z"
+    }
+  },
   "sprintCount": 0,
   "createdAt": "2026-05-01T11:35:45.124Z",
-  "updatedAt": "2026-05-01T11:41:30.758Z"
+  "updatedAt": "2026-05-01T12:04:43.919Z"
 }

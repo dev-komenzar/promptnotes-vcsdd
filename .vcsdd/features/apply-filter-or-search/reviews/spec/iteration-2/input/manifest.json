@@ -1,0 +1,21 @@
+{
+  "reviewType": "spec",
+  "feature": "apply-filter-or-search",
+  "phase": "1c",
+  "iteration": 2,
+  "mode": "lean",
+  "language": "typescript",
+  "artifactsToReview": [
+    ".vcsdd/features/apply-filter-or-search/specs/behavioral-spec.md",
+    ".vcsdd/features/apply-filter-or-search/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "outputDir": ".vcsdd/features/apply-filter-or-search/reviews/spec/iteration-2/output",
+  "priorIteration": {
+    "iteration": 1,
+    "verdict": "FAIL",
+    "criticalFindings": ["F-1c-001", "F-1c-002"],
+    "majorFindings": ["F-1c-003", "F-1c-004", "F-1c-005", "F-1c-006", "F-1c-007", "F-1c-008", "F-1c-009", "F-1c-010"],
+    "minorFindings": ["F-1c-011", "F-1c-012", "F-1c-013", "F-1c-014"]
+  }
+}

@@ -135,3 +135,7 @@
 {"timestamp":"2026-05-01T11:35:45.127Z","event":"feature_created","featureName":"apply-filter-or-search","mode":"lean","language":"typescript"}
 {"timestamp":"2026-05-01T11:41:30.758Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"init","to":"1a","iteration":1,"phase":"1a"}
 {"timestamp":"2026-05-01T11:41:30.758Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-05-01T11:49:10.645Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:04:31.178Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:04:43.918Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:04:43.920Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"1b","to":"1c","iteration":1,"phase":"1c"}
