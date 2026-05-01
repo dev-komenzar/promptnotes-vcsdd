@@ -8,27 +8,25 @@
 //   2. Strip leading '#'.
 //   3. Lowercase.
 // Rejection rules (checked after each step):
-//   - Pre-trim was empty string                       → { kind: "empty" }
-//   - Post-trim is empty (whitespace-only input)      → { kind: "only-whitespace" }
-//   - Post-normalize contains chars outside [a-z0-9-] → { kind: "invalid-tag" }
+//   - Pre-trim was empty string                  → { kind: "empty" }
+//   - Post-trim is empty (whitespace-only input) → { kind: "only-whitespace" }
+//
+// Character-set policy is deferred to a future spec amendment per behavioral-spec.md
+// Open Question 4. The canonical TagError from docs/domain/code/ts/src/shared/value-objects.ts
+// declares exactly two variants: { kind: "empty" } | { kind: "only-whitespace" }.
 
-import type { Tag } from "promptnotes-domain-types/shared/value-objects";
+import type { Tag, TagError } from "promptnotes-domain-types/shared/value-objects";
 import { ok, err } from "promptnotes-domain-types/util/result";
 import type { Result } from "promptnotes-domain-types/util/result";
-
-type TagValidationError =
-  | { kind: "empty" }
-  | { kind: "only-whitespace" }
-  | { kind: "invalid-tag" };
 
 /**
  * Validate and normalize a raw tag string into a Tag value object.
  *
- * Normalization: strip leading '#', lowercase, trim.
- * Returns Err if the result is empty, was whitespace-only, or contains
- * characters outside [a-z0-9-].
+ * Normalization: trim, strip leading '#', lowercase.
+ * Returns Err with the canonical TagError shape if the result is empty or was
+ * whitespace-only. Character-set validation is deferred per Open Question 4.
  */
-export function tryNewTag(raw: string): Result<Tag, TagValidationError> {
+export function tryNewTag(raw: string): Result<Tag, TagError> {
   if (raw.length === 0) {
     return err({ kind: "empty" });
   }
@@ -48,11 +46,6 @@ export function tryNewTag(raw: string): Result<Tag, TagValidationError> {
   if (normalized.length === 0) {
     // Was only a '#' or '#' + whitespace
     return err({ kind: "only-whitespace" });
-  }
-
-  // Validate character set: only [a-z0-9-] allowed
-  if (!/^[a-z0-9-]+$/.test(normalized)) {
-    return err({ kind: "invalid-tag" });
   }
 
   return ok(normalized as unknown as Tag);

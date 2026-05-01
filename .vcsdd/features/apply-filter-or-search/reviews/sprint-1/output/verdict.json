@@ -1,22 +1,78 @@
 {
-  "phase": "3",
-  "sprint": 1,
-  "iteration": 1,
+  "sprintNumber": 1,
   "feature": "apply-filter-or-search",
-  "mode": "lean",
-  "dimensions": {
-    "spec_fidelity": "PASS",
-    "edge_case_coverage": "PASS",
-    "implementation_correctness": "PASS",
-    "structural_integrity": "PASS",
-    "verification_readiness": "PASS"
-  },
+  "iteration": 2,
+  "timestamp": "2026-05-01T12:50:00Z",
   "overallVerdict": "PASS",
-  "findingsCount": { "critical": 0, "major": 0, "minor": 3 },
-  "rationale": "All 18 PROPs are implemented with explicit fast-check harnesses (≥200 runs for tier-1, 1000 for PROP-001/002, 500 for PROP-009 zero-result both directions); both example-based test files cover REQ-001..REQ-014 line by line including DD-1 tiebreak in both directions, DD-2 frontmatter scope, fail-fast verbatim raw, dedup-after-normalization, regex-metacharacter literal treatment, case-sensitive frontmatter field AND/OR semantics, and the two-sided exact-intersection no-op case; purity is checked by patched-sentinel runtime tests (Date.now, Math.random, fetch) and Object.freeze inputs; PROP-011a static inspection (carry-forward F-1c-101) and PROP-004 dual (a)/(b) assertion (carry-forward F-1c-100) are honored. Source files contain no I/O, no mutation of inputs (verified by frozen-input test), and parseFilterInput correctly delegates to tryNewTag for normalization and dedups before pushing. The three minor findings are non-blocking: (FIND-001) tryNewTag introduces a third TagError variant beyond the canonical two-variant TagError type — public ParseFilterInput contract still matches REQ-003 because parseFilterInput rewraps every failure as { kind: 'invalid-tag', raw }, but the local Tag contract drifts from value-objects.ts:43; (FIND-002) PROP-002 and PROP-007 only exercise arbAppliedFilterNoOp(), so the universal determinism claim across non-trivial AppliedFilter cases is under-witnessed; (FIND-003) the perf harness asserts the 50ms / 5ms bounds with hard expect() despite verification-architecture.md pinning them as advisory in CI. None of these violate the lean threshold (0 critical, 0 major). All five dimensions PASS.",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/apply-filter-or-search/specs/behavioral-spec.md",
+          "description": "16 EARS REQs, DD-1 NoteId tiebreak direction-consistent, DD-2 search scope = body + tag-names; all matched by impl"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/apply-filter-or-search/evidence/sprint-1-green-phase.log",
+          "description": "480 pass / 0 fail across 66 files including dedup, fail-fast, regex-metacharacter literal, two-sided intersection edge cases"
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+          "description": "Composition order, comparator with direction-consistent tiebreak, no input mutation"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+          "description": "Public surface is parseFilterInput + applyFilterOrSearch only; tryNewTag is module-private (FIND-001 fix)"
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "proof-result",
+          "location": ".vcsdd/features/apply-filter-or-search/verification/verification-report.md",
+          "description": "19/19 PROP harnesses proved; PROP-002/PROP-007 strengthened (FIND-002 fix); perf advisory bound (FIND-003 fix)"
+        }
+      ]
+    }
+  ],
+  "reviewContext": {
+    "reviewType": "implementation"
+  },
   "convergenceSignals": {
-    "findingCount": 3,
-    "dimensionsFailed": [],
-    "carryForwardHonored": ["F-1c-100 (PROP-004 dual assertion verified at prop-004-tag-or-semantics.harness.test.ts describe blocks (a) and (b))", "F-1c-101 (PROP-011a static source inspection verified at prop-011a-trynew-tag-reuse.harness.test.ts via readFileSync + import-pattern regex + forbidden-pattern regex)"]
+    "findingCount": 0,
+    "previousFindingCount": 3,
+    "allCriteriaEvaluated": true,
+    "duplicateFindings": []
   }
 }

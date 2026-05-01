@@ -146,3 +146,10 @@
 {"timestamp":"2026-05-01T12:40:25.942Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T12:40:25.945Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"2c","to":"3","iteration":1,"phase":"3"}
 {"timestamp":"2026-05-01T12:40:47.794Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-05-01T12:48:20.253Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-05-01T12:49:24.364Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"6","to":"3","iteration":2,"phase":"3"}
+{"timestamp":"2026-05-01T12:57:24.295Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:57:24.297Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"3","to":"5","iteration":2,"phase":"5"}
+{"timestamp":"2026-05-01T12:58:41.569Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"5","to":"6","iteration":2,"phase":"6"}
+{"timestamp":"2026-05-01T12:59:04.447Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"6","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T13:02:41.690Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"6","to":"complete","iteration":1,"phase":"complete"}

@@ -1,12 +1,19 @@
 {
-  "id": "FIND-002",
+  "findingId": "FIND-002",
   "dimension": "verification_readiness",
-  "severity": "minor",
-  "category": "test_quality",
+  "category": "proof_gap",
+  "severity": "low",
+  "description": "PROP-002 (apply determinism) and PROP-007 (sort determinism) harnesses originally only exercised arbAppliedFilterNoOp(), leaving the non-trivial filter/search/sort branches uninvigorated. The harnesses now mix arbAppliedFilterMixed and arbAppliedFilterWithTags so the universal determinism claim is witnessed across non-trivial AppliedFilter cases.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-002-apply-determinism.harness.test.ts",
+    "lineRange": "87-129",
+    "snippet": "Pre-fix: only arbAppliedFilterNoOp(). Post-fix: 4 tests including arbAppliedFilterMixed (500 runs) and arbAppliedFilterWithTags (200 runs); prop-007 mirrors this structure."
+  },
   "routeToPhase": "2a",
-  "target": "PROP-002, PROP-007",
-  "summary": "Determinism harnesses for applyFilterOrSearch only exercise the no-op AppliedFilter, so the universal-determinism property is not actually witnessed for non-trivial filter / search / sort cases.",
-  "defect": "PROP-002 (REQ-015) is stated as `∀ (Feed, AppliedFilter, NoteFileSnapshot[]): applyFilterOrSearch(...) deepEquals applyFilterOrSearch(...)`. The harness at prop-002-apply-determinism.harness.test.ts lines 22-39 binds the AppliedFilter to `arbAppliedFilterNoOp()` only — empty tags, empty frontmatterFields, null query. The same is true for PROP-007 (sort determinism) at prop-007-sort-determinism.harness.test.ts lines 22-40. Neither harness ever generates a case where criteria.tags is non-empty, frontmatterFields is non-empty, or query is non-null. The natural mis-implementation that PROP-002/PROP-007 are meant to catch — e.g., a comparator with non-deterministic tiebreak hidden behind the filter or search branch, or a filter with hidden state across calls — is not actually exercised by the property test. The Tier-1 claim of ≥1000 runs (PROP-002) and ≥200 runs (PROP-007) is therefore over-claimed because the input space the harness actually samples is degenerate.",
-  "evidence": "prop-002-apply-determinism.harness.test.ts line 24: `arbAppliedFilterNoOp()` is the only AppliedFilter generator used. The same generator is used in PROP-007 at prop-007-sort-determinism.harness.test.ts line 25 and line 47. By contrast, PROP-009 at prop-009-has-zero-results-flag.harness.test.ts line 41 correctly includes `arbAppliedFilterWithTags()` in addition to the no-op variant, demonstrating that a richer arbitrary is available.",
-  "suggested_fix": "Add a second test in each of prop-002 and prop-007 that uses arbAppliedFilterWithTags() (already defined in _arbitraries.ts), and ideally a third that varies query and sortOrder.direction. Even 200 runs over the non-trivial generators would be enough to make the determinism claim meaningful. The existing tests can stay as they are."
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 1,
+    "fixedInPhase": "2a-revisited",
+    "notes": "Added arbAppliedFilterMixed in _arbitraries.ts (weighted oneof of no-op, with-tags, search+sort) and replumbed PROP-002 / PROP-007 harnesses to exercise non-trivial branches."
+  }
 }

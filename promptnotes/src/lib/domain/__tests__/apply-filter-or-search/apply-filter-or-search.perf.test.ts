@@ -13,6 +13,13 @@
  */
 
 import { describe, test, expect } from "bun:test";
+
+// Soft regression bounds — advisory in CI environments per verification-architecture.md.
+// Hard assertions use a 5× safety multiplier so only catastrophic regressions fail CI.
+const ADVISORY_APPLY_MS = 50;
+const CATASTROPHIC_APPLY_MS = ADVISORY_APPLY_MS * 5; // 250ms
+const ADVISORY_PARSE_MS = 5;
+const CATASTROPHIC_PARSE_MS = ADVISORY_PARSE_MS * 5; // 25ms
 import type {
   Body,
   Frontmatter,
@@ -105,8 +112,15 @@ describe("perf", () => {
     });
 
     const median = medianOf(times);
-    // soft regression bound — advisory in CI
-    expect(median).toBeLessThan(50); // soft regression bound
+    // soft regression bound — advisory in CI environments (verification-architecture.md)
+    console.log(`[perf] applyFilterOrSearch median: ${median.toFixed(3)}ms (advisory bound: ${ADVISORY_APPLY_MS}ms)`);
+    if (median >= ADVISORY_APPLY_MS) {
+      console.warn(
+        `[perf] ADVISORY EXCEEDED: applyFilterOrSearch median ${median.toFixed(3)}ms >= ${ADVISORY_APPLY_MS}ms soft bound`,
+      );
+    }
+    // Hard sanity check: only catastrophic regressions (5× advisory) fail CI
+    expect(median).toBeLessThan(CATASTROPHIC_APPLY_MS);
   });
 
   test("parseFilterInput with 10 tags completes in < 5ms", () => {
@@ -130,6 +144,14 @@ describe("perf", () => {
     });
 
     const median = medianOf(times);
-    expect(median).toBeLessThan(5); // soft regression bound
+    // soft regression bound — advisory in CI environments (verification-architecture.md)
+    console.log(`[perf] parseFilterInput median: ${median.toFixed(3)}ms (advisory bound: ${ADVISORY_PARSE_MS}ms)`);
+    if (median >= ADVISORY_PARSE_MS) {
+      console.warn(
+        `[perf] ADVISORY EXCEEDED: parseFilterInput median ${median.toFixed(3)}ms >= ${ADVISORY_PARSE_MS}ms soft bound`,
+      );
+    }
+    // Hard sanity check: only catastrophic regressions (5× advisory) fail CI
+    expect(median).toBeLessThan(CATASTROPHIC_PARSE_MS);
   });
 });

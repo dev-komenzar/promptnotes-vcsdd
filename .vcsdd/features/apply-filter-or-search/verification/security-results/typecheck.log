@@ -1,7 +1,5 @@
-$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
-1777639409714 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes"
-1777639409717 ERROR "src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-011a-trynew-tag-reuse.harness.test.ts" 109:48 "No overload matches this call.\n  Overload 1 of 2, '(expected: Tag): void', gave the following error.\n    Argument of type 'string' is not assignable to parameter of type 'Tag'.\n      Type 'string' is not assignable to type '{ readonly [__brand]: \"Tag\"; }'.\n  Overload 2 of 2, '(expected: NoInfer<Tag>): void', gave the following error.\n    Argument of type 'string' is not assignable to parameter of type 'Tag'.\n      Type 'string' is not assignable to type '{ readonly [__brand]: \"Tag\"; }'."
-1777639409717 ERROR "src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts" 58:13 "Type 'SwitchError' is not assignable to type 'never'."
-1777639409717 ERROR "src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts" 19:13 "Type 'SwitchError' is not assignable to type 'never'."
-1777639409718 COMPLETED 532 FILES 3 ERRORS 0 WARNINGS 3 FILES_WITH_PROBLEMS
-error: script "check" exited with code 1
+1777640291919 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes"
+1777640291923 ERROR "src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-011a-trynew-tag-reuse.harness.test.ts" 109:48 "No overload matches this call.\n  Overload 1 of 2, '(expected: Tag): void', gave the following error.\n    Argument of type 'string' is not assignable to parameter of type 'Tag'.\n      Type 'string' is not assignable to type '{ readonly [__brand]: \"Tag\"; }'.\n  Overload 2 of 2, '(expected: NoInfer<Tag>): void', gave the following error.\n    Argument of type 'string' is not assignable to parameter of type 'Tag'.\n      Type 'string' is not assignable to type '{ readonly [__brand]: \"Tag\"; }'."
+1777640291923 ERROR "src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts" 58:13 "Type 'SwitchError' is not assignable to type 'never'."
+1777640291923 ERROR "src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts" 19:13 "Type 'SwitchError' is not assignable to type 'never'."
+1777640291924 COMPLETED 532 FILES 3 ERRORS 0 WARNINGS 3 FILES_WITH_PROBLEMS

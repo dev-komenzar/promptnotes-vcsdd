@@ -20,6 +20,20 @@
 
 **Fix applied**: Initial implementation stripped `#` before trimming, so `"  #Claude-Code  "` → withoutHash was `"  #Claude-Code  "` (no `#` at start) → lowercase → `"  #claude-code  "` → trim → `"#claude-code"` → rejected as invalid. Correct order is: trim first, then strip `#`, then lowercase.
 
+## Adversary iteration 1 finding fixes (post Phase 3, pre re-review)
+
+### FIND-001: tryNewTag third error variant removed (2b fix)
+
+Removed the `{ kind: "invalid-tag" }` variant from `tryNewTag`'s local error type and dropped the `/^[a-z0-9-]+$/` character-set guard. The function now returns only the canonical `TagError` variants (`empty`, `only-whitespace`) as declared in `docs/domain/code/ts/src/shared/value-objects.ts:43`. Character-set policy is deferred per behavioral-spec.md Open Question 4. `tryNewTag` is also no longer re-exported from `index.ts` — it is now an implementation-private detail consumed solely by `parseFilterInput`, which continues to rewrap any failure as `{ kind: "invalid-tag", raw }` per REQ-003.
+
+### FIND-002: PROP-002 and PROP-007 extended to non-trivial AppliedFilter (2a fix)
+
+Added two new tests to each of `prop-002-apply-determinism.harness.test.ts` and `prop-007-sort-determinism.harness.test.ts`. Each harness now includes a frequency-mixed arbitrary (`arbAppliedFilterMixed`) that combines `arbAppliedFilterNoOp` (weight 2), `arbAppliedFilterWithTags` (weight 3), and a search+sort variant (weight 2). The ∀ determinism claim is now witnessed over non-trivial filter, search, and sort cases (500 runs mixed + 200 runs tag-only). Total new tests: 4 (2 per harness).
+
+### FIND-003: Performance harness converted to soft advisory pattern (2a fix)
+
+Replaced hard `expect(median).toBeLessThan(50)` and `expect(median).toBeLessThan(5)` with a three-part pattern: `console.log` the measured median, `console.warn` if the advisory bound is exceeded, and a hard `expect` only against a 5× catastrophic bound (250ms / 25ms). This matches the "soft regression bound, advisory in CI" methodology in verification-architecture.md. A 60ms median no longer fails CI; a 1000ms median still does.
+
 ## Refactor changes (Phase 2c)
 
 - `apply-filter-or-search.ts`: Extracted per-snapshot predicate functions (`matchesTagFilter`, `matchesFieldFilter`, `matchesSearchQuery`) instead of per-array filter functions. This eliminates the `as NoteFileSnapshot[]` casts on no-op returns and chains the filters naturally with `.filter()`. The `byUpdatedAtThenNoteId` comparator is unchanged.
