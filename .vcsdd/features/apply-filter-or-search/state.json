@@ -1,0 +1,31 @@
+{
+  "featureName": "apply-filter-or-search",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-01T11:41:30.756Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-01T11:41:30.758Z"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-apply-filter-or-search-1777635345124",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-05-01T11:35:45.124Z",
+  "updatedAt": "2026-05-01T11:41:30.758Z"
+}
