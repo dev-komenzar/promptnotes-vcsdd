@@ -40,9 +40,11 @@ describe("PROP-011a: parseFilterInput imports tryNewTag from ./try-new-tag.ts", 
     "source file parse-filter-input.ts contains import of tryNewTag from try-new-tag",
     () => {
       // Tier-0 static source inspection: read the implementation file and check for import.
+      // import.meta.dir → __tests__/apply-filter-or-search/__verify__/
+      // 3 levels up → domain/, then sibling apply-filter-or-search/.
       const implPath = path.resolve(
         import.meta.dir,
-        "../../../../../../../lib/domain/apply-filter-or-search/parse-filter-input.ts",
+        "../../../apply-filter-or-search/parse-filter-input.ts",
       );
       let source: string;
       try {
@@ -65,7 +67,7 @@ describe("PROP-011a: parseFilterInput imports tryNewTag from ./try-new-tag.ts", 
     () => {
       const implPath = path.resolve(
         import.meta.dir,
-        "../../../../../../../lib/domain/apply-filter-or-search/parse-filter-input.ts",
+        "../../../apply-filter-or-search/parse-filter-input.ts",
       );
       let source: string;
       try {
