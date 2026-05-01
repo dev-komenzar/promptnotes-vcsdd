@@ -2,9 +2,9 @@
 
 **Feature**: `handle-save-failure`
 **Phase**: 1b
-**Revision**: 1
+**Revision**: 2
 **Mode**: lean
-**Source**: `docs/domain/workflows.md` Workflow 8, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/capture/internal-events.ts`, `docs/domain/code/ts/src/shared/errors.ts`
+**Source**: `docs/domain/workflows.md` Workflow 8, `docs/domain/aggregates.md` §CaptureSession §EditingSessionState, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/internal-events.ts`, `docs/domain/code/ts/src/shared/errors.ts`
 
 ---
 
@@ -18,7 +18,7 @@
 | State transition — discard | `EditingSessionTransitions.discard(state, now)` | **Pure core** | `(SaveFailedState, Timestamp) → EditingState \| IdleState`; routing by `pendingNextNoteId`; deterministic. Property-test target. |
 | State transition — cancelSwitch | `EditingSessionTransitions.cancelSwitch(state, now)` | **Pure core** | `(SaveFailedState, Timestamp) → EditingState`; deterministic; no I/O. Property-test target. |
 | ResolvedState construction | `{ kind: 'ResolvedState', resolution: R }` | **Pure core** | Deterministic value construction; no ports |
-| `Clock.now()` call | Timestamp acquisition | **Effectful shell** | Impure; called exactly once per invocation in the orchestrator |
+| `Clock.now()` call | Timestamp acquisition | **Effectful shell** | Impure; called exactly once per invocation in the orchestrator on valid branches; 0 times on cancel-switch-invalid |
 | `emit(RetrySaveRequested)` | Event publication | **Effectful shell** | Side effect; impure; called on retry branch only |
 | `emit(EditingSessionDiscarded)` | Event publication | **Effectful shell** | Side effect; impure; called on both discard sub-cases |
 
@@ -32,7 +32,9 @@
 
 ```typescript
 // ── Clock ──────────────────────────────────────────────────────────────
-/** Returns the current wall-clock time. Called exactly once per workflow invocation.
+/** Returns the current wall-clock time. Called exactly once per workflow invocation
+ *  on valid branches (retry, discard, cancel-switch valid). Called 0 times on the
+ *  cancel-switch-invalid branch (short-circuit before timestamp acquisition).
  *  The same `now` value is used for both the state transition's `now` parameter
  *  and the emitted event's `occurredOn` field. */
 type ClockNow = () => Timestamp;
@@ -43,7 +45,9 @@ type ClockNow = () => Timestamp;
  *    - retry-save branch: exactly 1 call (RetrySaveRequested)
  *    - discard branch: exactly 1 call (EditingSessionDiscarded)
  *    - cancel-switch (valid) branch: 0 calls
- *  Does NOT accept PublicDomainEvent; HandleSaveFailure emits no public events. */
+ *    - cancel-switch (invalid) branch: 0 calls
+ *  Does NOT accept PublicDomainEvent; HandleSaveFailure emits no public events.
+ *  Event payloads do NOT carry SaveError; error is for logging only (REQ-HSF-012). */
 type EmitInternal = (event: CaptureInternalEvent) => void;
 
 // ── EditingSessionTransitions (pure, injected or static) ──────────────
@@ -53,7 +57,7 @@ type Retry = (state: SaveFailedState, now: Timestamp) => SavingState;
 /** discard: save-failed → editing(pendingNextNoteId) | idle */
 type Discard = (state: SaveFailedState, now: Timestamp) => EditingState | IdleState;
 
-/** cancelSwitch: save-failed → editing(currentNoteId) with isDirty=true preserved */
+/** cancelSwitch: save-failed → editing(currentNoteId) with isDirty=true, lastSaveResult='failed' */
 type CancelSwitch = (state: SaveFailedState, now: Timestamp) => EditingState;
 ```
 
@@ -63,40 +67,60 @@ type CancelSwitch = (state: SaveFailedState, now: Timestamp) => EditingState;
 
 | ID | Description | Covers REQ | Tier | Required | Tool |
 |----|-------------|-----------|------|----------|------|
-| PROP-HSF-001 | `retry` transition purity: `∀ (state: SaveFailedState, now: Timestamp)`, calling `retry(state, now)` twice with identical inputs produces structurally equal `SavingState` outputs | REQ-HSF-002, REQ-HSF-009 | 1 | **true** | fast-check (property: retry(s, t) deepEquals retry(s, t)) |
+| PROP-HSF-001 | `retry` transition determinism (`retry-determinism`): `∀ (state: SaveFailedState, now: Timestamp)`, calling `retry(state, now)` twice with identical inputs produces structurally equal `SavingState` outputs | REQ-HSF-002, REQ-HSF-009 | 1 | **true** | fast-check (property: retry(s, t) deepEquals retry(s, t)) |
 | PROP-HSF-002 | `retry` state shape: `retry(state, now).status === 'saving'` AND `retry(state, now).currentNoteId === state.currentNoteId` for all valid `SaveFailedState` inputs | REQ-HSF-002 | 1 | **true** | fast-check (property: ∀ SaveFailedState s, retry(s, now).status === 'saving' ∧ retry(s, now).currentNoteId === s.currentNoteId) |
 | PROP-HSF-003 | `discard` routing: `∀ state` where `state.pendingNextNoteId === null`, `discard(state, now).status === 'idle'`; `∀ state` where `state.pendingNextNoteId !== null`, `discard(state, now).status === 'editing'` AND `discard(state, now).currentNoteId === state.pendingNextNoteId` | REQ-HSF-003, REQ-HSF-004 | 1 | **true** | fast-check (property: pendingNextNoteId null → idle; non-null → editing with currentNoteId === pendingNextNoteId) |
-| PROP-HSF-004 | `cancelSwitch` state shape: `cancelSwitch(state, now).status === 'editing'` AND `cancelSwitch(state, now).currentNoteId === state.currentNoteId` AND `cancelSwitch(state, now).isDirty === true` for all valid `SaveFailedState` inputs | REQ-HSF-005 | 1 | **true** | fast-check (property: ∀ SaveFailedState s, cancelSwitch(s, now).status === 'editing' ∧ isDirty === true ∧ currentNoteId === s.currentNoteId) |
-| PROP-HSF-005 | `UserDecision` exhaustiveness: the implementation's switch over `decision.kind` has a `never` branch that makes adding a new `UserDecision` variant a compile-time error | REQ-HSF-007 | 0 | **true** | TypeScript type exhaustiveness (never branch: `const _: never = decision` in default case) |
-| PROP-HSF-006 | `pendingNextNoteId` routing — discard with pending: the `EditingSessionDiscarded` event carries `noteId === state.currentNoteId` (not `pendingNextNoteId`); the resulting state has `currentNoteId === state.pendingNextNoteId` | REQ-HSF-004, REQ-HSF-008 | 2 | false | Example-based test: SaveFailedState with pendingNextNoteId='note-B', currentNoteId='note-A' → event.noteId==='note-A', newState.currentNoteId==='note-B' |
-| PROP-HSF-007 | `pendingNextNoteId` routing — cancel-switch: resulting `EditingState` has `currentNoteId === state.currentNoteId`; `pendingNextNoteId` is absent from `EditingState` (the type has no such field) | REQ-HSF-005 | 2 | false | Example-based test: SaveFailedState with pendingNextNoteId='note-B' → cancelSwitch → EditingState.currentNoteId === 'note-A'; no pendingNextNoteId field on EditingState |
+| PROP-HSF-004 | `cancelSwitch` state shape: `cancelSwitch(state, now).status === 'editing'` AND `cancelSwitch(state, now).currentNoteId === state.currentNoteId` AND `cancelSwitch(state, now).isDirty === true` AND `cancelSwitch(state, now).lastSaveResult === 'failed'` for all valid `SaveFailedState` inputs with non-null `pendingNextNoteId` | REQ-HSF-005 | 1 | **true** | fast-check (property: ∀ SaveFailedState s with non-null pendingNextNoteId, cancelSwitch(s, now).status === 'editing' ∧ isDirty === true ∧ currentNoteId === s.currentNoteId ∧ lastSaveResult === 'failed') |
+| PROP-HSF-005 | `UserDecision` exhaustiveness: the implementation's switch over `decision.kind` has a `never` branch that makes adding a new `UserDecision` variant a compile-time error | REQ-HSF-007 | 0 | **true** | TypeScript type exhaustiveness — encoded in `tests/types/handle-save-failure.type-test.ts` using `@ts-expect-error`; `tsc --noEmit` runs in CI |
+| PROP-HSF-006 | `pendingNextNoteId` routing — discard with pending: the `EditingSessionDiscarded` event carries `noteId === state.currentNoteId` (not `pendingNextNoteId`); the resulting state has `currentNoteId === state.pendingNextNoteId`; `lastInputAt: null`, `idleTimerHandle: null`, `lastSaveResult: null`, `isDirty: false` | REQ-HSF-004, REQ-HSF-008 | 2 | false | Example-based test: SaveFailedState with pendingNextNoteId='note-B', currentNoteId='note-A' → event.noteId==='note-A', newState.currentNoteId==='note-B'; assert all 6 EditingState fields |
+| PROP-HSF-007 | `pendingNextNoteId` routing — cancel-switch: resulting `EditingState` has `currentNoteId === state.currentNoteId`; `isDirty === true`; `lastSaveResult === 'failed'`; `lastInputAt: null`; `idleTimerHandle: null`; `pendingNextNoteId` is absent from `EditingState` | REQ-HSF-005 | 2 | false | Example-based test: SaveFailedState with pendingNextNoteId='note-B' → cancelSwitch → assert all 6 EditingState fields; assert no pendingNextNoteId field on EditingState |
 | PROP-HSF-008 | `pendingNextNoteId` never leaks: after any resolution (retry/discard/cancel), the emitted event payload does not contain `pendingNextNoteId`; `RetrySaveRequested` and `EditingSessionDiscarded` payloads contain only `noteId` (= `currentNoteId`) | REQ-HSF-002, REQ-HSF-003, REQ-HSF-004, REQ-HSF-008 | 2 | false | Example-based test with emit spy: inspect event payload fields; assert absence of `pendingNextNoteId` key |
 | PROP-HSF-009 | Exactly-one event constraint — retry branch: emit spy called exactly once with `RetrySaveRequested { kind: 'retry-save-requested', noteId: state.currentNoteId }` | REQ-HSF-002, REQ-HSF-008 | 2 | false | Example-based test with emit spy |
 | PROP-HSF-010 | Exactly-one event constraint — discard branch (both sub-cases): emit spy called exactly once with `EditingSessionDiscarded { kind: 'editing-session-discarded', noteId: state.currentNoteId }` | REQ-HSF-003, REQ-HSF-004, REQ-HSF-008 | 2 | false | Example-based test with emit spy: verify call count === 1 for no-pending and with-pending sub-cases |
 | PROP-HSF-011 | Zero events — cancel-switch valid branch: emit spy called zero times | REQ-HSF-005, REQ-HSF-008 | 2 | false | Example-based test with emit spy: SaveFailedState with non-null pendingNextNoteId, cancel-switch → emit count === 0 |
-| PROP-HSF-012 | Cancel-switch invalid guard: when `state.pendingNextNoteId === null` and `decision.kind === 'cancel-switch'`, the function throws/rejects; no state transition occurs; no event emitted | REQ-HSF-006 | 2 | false | Example-based test: SaveFailedState with pendingNextNoteId=null, cancel-switch → expect thrown InvariantViolated; emit spy not called |
-| PROP-HSF-013 | Clock.now() call count: spy confirms exactly 1 call on retry, discard-no-pending, discard-with-pending, and cancel-switch-valid branches | REQ-HSF-009 | 2 | false | Example-based test: instrument Clock.now with spy; verify count === 1 per branch |
+| PROP-HSF-012 | Cancel-switch invalid guard: when `state.pendingNextNoteId === null` and `decision.kind === 'cancel-switch'`, the function returns `Promise.reject(SaveError { kind: 'validation', reason: { kind: 'invariant-violated' } })`; no state transition occurs; no event emitted | REQ-HSF-006 | 2 | false | Example-based test: SaveFailedState with pendingNextNoteId=null, cancel-switch → expect Promise.reject with InvariantViolated; emit spy not called |
+| PROP-HSF-013 | Clock.now() call count — valid branches: spy confirms exactly 1 call on retry, discard-no-pending, discard-with-pending, and cancel-switch-valid branches | REQ-HSF-009 | 2 | false | Example-based test: instrument Clock.now with spy; verify count === 1 per valid branch |
 | PROP-HSF-014 | Timestamp reuse — retry branch: `RetrySaveRequested.occurredOn` equals the `SavingState.savingStartedAt` (both sourced from the same `Clock.now()` call) | REQ-HSF-002, REQ-HSF-009 | 2 | false | Example-based test: capture Clock.now() return value; assert event.occurredOn === state.savingStartedAt |
 | PROP-HSF-015 | Timestamp reuse — discard branch: `EditingSessionDiscarded.occurredOn` equals the `now` value passed to `discard(state, now)` | REQ-HSF-003, REQ-HSF-004, REQ-HSF-009 | 2 | false | Example-based test: capture Clock.now() return value; assert event.occurredOn === captured now |
-| PROP-HSF-016 | Event type classification: all emitted events are members of `CaptureInternalEvent`; no `PublicDomainEvent` is emitted by `handleSaveFailure` | REQ-HSF-008 | 0 | false | TypeScript type assertion: `EmitInternal` parameter type is `CaptureInternalEvent`; assign `RetrySaveRequested` and `EditingSessionDiscarded` to `CaptureInternalEvent` — compile-time proof |
+| PROP-HSF-016 | Event type classification: all emitted events are members of `CaptureInternalEvent`; no `PublicDomainEvent` is emitted by `handleSaveFailure` | REQ-HSF-008 | 0 | false | TypeScript type assertion — encoded in `tests/types/handle-save-failure.type-test.ts` using `@ts-expect-error`; `tsc --noEmit` runs in CI |
 | PROP-HSF-017 | `ResolvedState` shape: `resolution` is `'retried'` on retry branch, `'discarded'` on both discard sub-cases, `'cancelled'` on cancel-switch-valid | REQ-HSF-010 | 2 | false | Example-based test: one example per branch; assert ResolvedState.resolution |
 | PROP-HSF-018 | Full integration — all four valid branches return a `ResolvedState` with the correct `resolution` and produce the correct resulting `EditingSessionState` kind | REQ-HSF-002 through REQ-HSF-005, REQ-HSF-010 | 3 | false | Integration test with port fakes (Clock stub, emit spy, real transition functions) |
+| PROP-HSF-019 | `invariant-on-non-save-failed`: given a deliberately-cast non-`save-failed` state (e.g. `EditingState` cast to `SaveFailedState`), `handleSaveFailure` returns `Promise.reject(SaveError { kind: 'validation', reason: { kind: 'invariant-violated' } })`; no transition occurs; no event emitted | REQ-HSF-001 | 2 | false | Example-based test: construct `{ status: 'editing', ... } as unknown as SaveFailedState`; pass to handleSaveFailure; expect rejection with InvariantViolated; emit spy not called |
+| PROP-HSF-020 | Clock.now() call count — cancel-switch-invalid branch: spy confirms exactly 0 calls when `pendingNextNoteId === null` and `decision.kind === 'cancel-switch'` (invariant guard fires before timestamp acquisition) | REQ-HSF-006, REQ-HSF-009 | 2 | false | Example-based test: instrument Clock.now with spy; cancel-switch-invalid path → verify count === 0 |
+| PROP-HSF-021 | `pure-transition-no-side-effect`: the pure transition functions `retry`, `discard`, and `cancelSwitch` do not call `Clock.now` or `emit` internally; sentinel spy counts for both ports remain 0 when the functions are called directly (bypassing the orchestrator) | REQ-HSF-002, REQ-HSF-003, REQ-HSF-004, REQ-HSF-005 | 1 | false | fast-check (property: ∀ SaveFailedState s, call retry/discard/cancelSwitch with injected Clock spy + emit spy; assert both call counts === 0 after each pure function call) |
+
+---
+
+## Tier 0 Encoding
+
+Tier 0 PROPs (PROP-HSF-005, PROP-HSF-016) are type-level proofs. They are encoded in `tests/types/handle-save-failure.type-test.ts` using `@ts-expect-error` annotations. `tsc --noEmit` runs in CI; absence of the expected errors is treated as a test failure (the `@ts-expect-error` annotation itself will produce a TS error if the type violation no longer exists, alerting CI).
+
+Example encoding pattern:
+```typescript
+// PROP-HSF-005: adding an unhandled UserDecision variant must cause a compile error
+// @ts-expect-error — 'unknown-variant' is not a valid UserDecision.kind
+const _: never = { kind: 'unknown-variant' } satisfies UserDecision;
+
+// PROP-HSF-016: passing a PublicDomainEvent to EmitInternal must cause a compile error
+// @ts-expect-error — PublicDomainEvent is not assignable to CaptureInternalEvent
+const _emitTyped: EmitInternal = (e: PublicDomainEvent) => {};
+```
 
 ---
 
 ## Verification Tiers
 
-- **Tier 0**: TypeScript type-level proof. No runtime test needed; the type system enforces it at compile time. Applies to `UserDecision` exhaustiveness (PROP-HSF-005) and event type classification (PROP-HSF-016).
-- **Tier 1**: Property-based test with fast-check. Generated random inputs; checks structural invariants of the pure transition functions. Applies to `retry`, `discard`, and `cancelSwitch` purity and output shape (PROP-HSF-001 through PROP-HSF-004).
-- **Tier 2**: Example-based unit test. Concrete inputs and expected outputs; verifies specific behaviors including event emission, routing, and Clock budget (PROP-HSF-006 through PROP-HSF-017).
+- **Tier 0**: TypeScript type-level proof. Encoded in `tests/types/handle-save-failure.type-test.ts` using `@ts-expect-error`; `tsc --noEmit` enforces them in CI. Applies to `UserDecision` exhaustiveness (PROP-HSF-005) and event type classification (PROP-HSF-016).
+- **Tier 1**: Property-based test with fast-check. Generated random inputs; checks structural invariants of the pure transition functions. Applies to `retry`, `discard`, and `cancelSwitch` purity and output shape (PROP-HSF-001 through PROP-HSF-004, PROP-HSF-021).
+- **Tier 2**: Example-based unit test. Concrete inputs and expected outputs; verifies specific behaviors including event emission, routing, Clock budget, invariant rejection, and full `EditingState` struct (PROP-HSF-006 through PROP-HSF-017, PROP-HSF-019, PROP-HSF-020).
 - **Tier 3**: Integration test. Exercises the full workflow with real transition functions and port fakes/stubs; tests cross-step coordination (PROP-HSF-018).
 
 In lean mode, `required: true` is reserved for the highest-risk invariants. The five required properties are:
 
-- **PROP-HSF-001** (`retry` purity) — confirms the core transition is side-effect-free and referentially transparent; if this fails, property-based testing of the whole retry path is invalid.
+- **PROP-HSF-001** (`retry-determinism`) — confirms the core transition is referentially transparent; if this fails, property-based testing of the whole retry path is invalid.
 - **PROP-HSF-002** (`retry` state shape) — data-correctness invariant; wrong `currentNoteId` after retry would send the re-save to the wrong note.
 - **PROP-HSF-003** (`discard` routing) — highest data-loss risk: if routing by `pendingNextNoteId` is wrong, a user either gets stuck in idle instead of opening the pending note, or vice versa.
-- **PROP-HSF-004** (`cancelSwitch` state shape) — data-integrity risk: if `isDirty` is not preserved, the user's unsaved edits become invisible to the auto-save system.
+- **PROP-HSF-004** (`cancelSwitch` state shape) — data-integrity risk: if `isDirty` or `lastSaveResult` is not correctly set, the user's unsaved edits become invisible to the auto-save system or the failure indicator is lost.
 - **PROP-HSF-005** (`UserDecision` exhaustiveness) — forward-compatibility invariant; any new decision variant that is not handled silently becomes a dead branch otherwise.
 
 ---
@@ -105,15 +129,17 @@ In lean mode, `required: true` is reserved for the highest-risk invariants. The 
 
 | Requirement | PROP IDs |
 |-------------|---------|
-| REQ-HSF-001 | PROP-HSF-005 (type-enforced precondition) |
-| REQ-HSF-002 | PROP-HSF-001, PROP-HSF-002, PROP-HSF-009, PROP-HSF-013, PROP-HSF-014, PROP-HSF-018 |
-| REQ-HSF-003 | PROP-HSF-003, PROP-HSF-010, PROP-HSF-013, PROP-HSF-015, PROP-HSF-018 |
-| REQ-HSF-004 | PROP-HSF-003, PROP-HSF-006, PROP-HSF-008, PROP-HSF-010, PROP-HSF-013, PROP-HSF-015, PROP-HSF-018 |
-| REQ-HSF-005 | PROP-HSF-004, PROP-HSF-007, PROP-HSF-011, PROP-HSF-013, PROP-HSF-018 |
-| REQ-HSF-006 | PROP-HSF-012 |
+| REQ-HSF-001 | PROP-HSF-005 (type-enforced precondition), PROP-HSF-019 (runtime invariant-on-non-save-failed) |
+| REQ-HSF-002 | PROP-HSF-001, PROP-HSF-002, PROP-HSF-009, PROP-HSF-013, PROP-HSF-014, PROP-HSF-018, PROP-HSF-021 |
+| REQ-HSF-003 | PROP-HSF-003, PROP-HSF-010, PROP-HSF-013, PROP-HSF-015, PROP-HSF-018, PROP-HSF-021 |
+| REQ-HSF-004 | PROP-HSF-003, PROP-HSF-006, PROP-HSF-008, PROP-HSF-010, PROP-HSF-013, PROP-HSF-015, PROP-HSF-018, PROP-HSF-021 |
+| REQ-HSF-005 | PROP-HSF-004, PROP-HSF-007, PROP-HSF-011, PROP-HSF-013, PROP-HSF-018, PROP-HSF-021 |
+| REQ-HSF-006 | PROP-HSF-012, PROP-HSF-020 |
 | REQ-HSF-007 | PROP-HSF-005 |
 | REQ-HSF-008 | PROP-HSF-008, PROP-HSF-009, PROP-HSF-010, PROP-HSF-011, PROP-HSF-016 |
-| REQ-HSF-009 | PROP-HSF-001, PROP-HSF-013, PROP-HSF-014, PROP-HSF-015 |
+| REQ-HSF-009 | PROP-HSF-001, PROP-HSF-013, PROP-HSF-014, PROP-HSF-015, PROP-HSF-020 |
 | REQ-HSF-010 | PROP-HSF-017, PROP-HSF-018 |
+| REQ-HSF-011 | PROP-HSF-005 (type-level: callers missing `state` parameter produce a compile error) |
+| REQ-HSF-012 | PROP-HSF-008 (emit spy payload inspection confirms no error field) |
 
-Every requirement has at least one proof obligation. Five `required: true` obligations (PROP-HSF-001 through PROP-HSF-005) cover the highest-risk invariants and span Tiers 0–1. Total proof obligations: 18 (PROP-HSF-001 through PROP-HSF-018).
+Every requirement has at least one proof obligation. Five `required: true` obligations (PROP-HSF-001 through PROP-HSF-005) cover the highest-risk invariants and span Tiers 0–1. Total proof obligations: 21 (PROP-HSF-001 through PROP-HSF-021).
