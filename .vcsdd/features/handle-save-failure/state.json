@@ -1,0 +1,33 @@
+{
+  "featureName": "handle-save-failure",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-01T15:17:37.461Z",
+      "reason": "Phase 1a behavioral spec written"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-01T15:17:53.690Z",
+      "reason": "Phase 1b verification architecture written"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-handle-save-failure-1777648370376",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-05-01T15:12:50.376Z",
+  "updatedAt": "2026-05-01T15:17:53.690Z"
+}
