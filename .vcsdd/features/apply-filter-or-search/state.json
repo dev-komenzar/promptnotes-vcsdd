@@ -2,7 +2,7 @@
   "featureName": "apply-filter-or-search",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -19,12 +19,20 @@
       "to": "1c",
       "timestamp": "2026-05-01T12:04:43.919Z",
       "reason": "spec gate PASS iteration 2 — 0c/0M/2m"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-01T12:18:52.162Z",
+      "reason": "sprint 1 red phase begin",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
-    "1c": 1
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -46,7 +54,7 @@
       "adversaryReviewedAt": "2026-05-01T12:04:43.917Z"
     }
   },
-  "sprintCount": 0,
+  "sprintCount": 1,
   "createdAt": "2026-05-01T11:35:45.124Z",
-  "updatedAt": "2026-05-01T12:04:43.919Z"
+  "updatedAt": "2026-05-01T12:18:52.162Z"
 }

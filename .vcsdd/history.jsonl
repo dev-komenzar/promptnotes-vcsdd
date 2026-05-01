@@ -139,3 +139,5 @@
 {"timestamp":"2026-05-01T12:04:31.178Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T12:04:43.918Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T12:04:43.920Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-05-01T12:18:52.164Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-05-01T12:18:52.164Z","event":"sprint_started","featureName":"apply-filter-or-search","sprintNumber":1,"phase":"2a"}
