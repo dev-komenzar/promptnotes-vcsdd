@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "low",
+  "description": "Performance harness originally asserted the 50ms / 5ms advisory bounds with hard expect().toBeLessThan() despite verification-architecture.md pinning them as advisory-in-CI soft bounds. The harness now logs the measured median, emits console.warn on advisory-bound exceedance, and only hard-fails on a 5x catastrophic regression bound (250ms / 25ms).",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts",
+    "lineRange": "115-155",
+    "snippet": "Pre-fix: expect(median).toBeLessThan(50). Post-fix: console.log(median); if (median > advisory) console.warn(...); expect(median).toBeLessThan(advisory * 5)."
+  },
+  "routeToPhase": "2a",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 1,
+    "fixedInPhase": "2a-revisited",
+    "notes": "Three-part advisory pattern matches the soft-bound methodology in verification-architecture.md."
+  }
+}

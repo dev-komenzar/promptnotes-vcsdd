@@ -1,0 +1,37 @@
+{
+  "phase": "1c",
+  "iteration": 1,
+  "feature": "apply-filter-or-search",
+  "mode": "lean",
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "verdict": "FAIL",
+  "findingsCount": {
+    "critical": 2,
+    "major": 8,
+    "minor": 4
+  },
+  "rationale": "Two critical verification-readiness gaps block PASS: REQ-006 (sortOrder passthrough) is mapped only to a determinism PROP that cannot detect a hardcoded sortOrder, and REQ-011 (case-insensitive substring search across body+frontmatter) is mapped to PROPs whose stated invariants do not exercise substring, case-insensitivity, or scope. Eight major findings further undermine coverage: REQ-007/REQ-010/REQ-014's matrix entries are one-sided, REQ-003's fail-fast-across-mixed-validity invariant is unverified, PROP-011 is mis-tiered (claims compile-time verification of a runtime equality), and on the fidelity side REQ-012 invents an undocumented NoteId-lexicographic tiebreak, REQ-011 silently narrows the documented `body+frontmatter` scope to tag names, and tag-array deduplication after normalization is left unspecified. Two minor findings note inconsistencies between Bun-pinned perf bounds and a vitest-based harness, an unverified claim that vitest is already present in package.json, and an undocumented `searchTextRaw.trim()` rule that contradicts ui-fields.md's `直流し` directive. Lean mode tolerates ≤2 majors but this iteration has 8 majors and 2 criticals — exceeds the FAIL threshold on both axes.",
+  "findings": [
+    "F-1c-001",
+    "F-1c-002",
+    "F-1c-003",
+    "F-1c-004",
+    "F-1c-005",
+    "F-1c-006",
+    "F-1c-007",
+    "F-1c-008",
+    "F-1c-009",
+    "F-1c-010",
+    "F-1c-011",
+    "F-1c-012",
+    "F-1c-013",
+    "F-1c-014"
+  ],
+  "reviewedArtifacts": [
+    ".vcsdd/features/apply-filter-or-search/specs/behavioral-spec.md",
+    ".vcsdd/features/apply-filter-or-search/specs/verification-architecture.md"
+  ]
+}

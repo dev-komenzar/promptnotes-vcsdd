@@ -40,7 +40,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-05-01T10:33:39.304Z"
+    },
+    "apply-filter-or-search": {
+      "status": "active",
+      "createdAt": "2026-05-01T11:35:45.124Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "complete",
+      "updatedAt": "2026-05-01T13:02:41.688Z"
     }
   },
-  "activeFeature": "tag-chip-update"
+  "activeFeature": "apply-filter-or-search"
 }

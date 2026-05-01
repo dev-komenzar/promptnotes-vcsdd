@@ -1,0 +1,311 @@
+{
+  "featureName": "apply-filter-or-search",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "complete",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-01T11:41:30.756Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-01T11:41:30.758Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-01T12:04:43.919Z",
+      "reason": "spec gate PASS iteration 2 — 0c/0M/2m"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-01T12:18:52.162Z",
+      "reason": "sprint 1 red phase begin",
+      "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-01T12:22:51.899Z",
+      "reason": "sprint 1 green phase begin",
+      "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-01T12:29:16.164Z",
+      "reason": "sprint 1 refactor begin",
+      "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-01T12:40:25.943Z",
+      "reason": "sprint 1 adversary review PASS — advancing toward 5",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-01T12:40:47.792Z",
+      "reason": "sprint 1 advancing 3->5: adversary PASS, formal hardening begin",
+      "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-01T12:48:20.251Z",
+      "reason": "sprint 1 phase 5 complete; entering convergence check",
+      "sprint": 1
+    },
+    {
+      "from": "6",
+      "to": "3",
+      "timestamp": "2026-05-01T12:49:24.362Z",
+      "reason": "sprint 1 iter 2: re-enter adversary review after addressing 3 minors",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-01T12:57:24.296Z",
+      "reason": "sprint 1 iter 2: adversary PASS findings=0; re-enter hardening for refresh",
+      "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-01T12:58:41.567Z",
+      "reason": "sprint 1 iter 2: hardening artifacts refreshed; convergence retry",
+      "sprint": 1
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-01T13:02:41.688Z",
+      "reason": "sprint 1 iter 2: 4D convergence PASS — feature complete",
+      "sprint": 1
+    }
+  ],
+  "iterations": {
+    "3": 2,
+    "5": 2,
+    "6": 2,
+    "1a": 1,
+    "1b": 1,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1,
+    "2c": 1,
+    "complete": 1
+  },
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-001.log"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-002.log"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-003.log"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-004.log"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-005.log"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-006.log"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-007.log"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-008.log"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-009.log"
+    },
+    {
+      "id": "PROP-010",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-010.log"
+    },
+    {
+      "id": "PROP-011",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-011b.log"
+    },
+    {
+      "id": "PROP-012",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-012.log"
+    },
+    {
+      "id": "PROP-013",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-013.log"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-014.log"
+    },
+    {
+      "id": "PROP-015",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-015.log"
+    },
+    {
+      "id": "PROP-016",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-016.log"
+    },
+    {
+      "id": "PROP-017",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-017.log"
+    },
+    {
+      "id": "PROP-018",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "verification/fuzz-results/prop-018.log"
+    }
+  ],
+  "traceability": {
+    "epicId": "VCSDD-apply-filter-or-search-1777635345124",
+    "beads": [
+      {
+        "beadId": "BEAD-001",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/apply-filter-or-search/reviews/sprint-1/output/findings/FIND-001.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-01T13:01:43.398Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-001"
+      },
+      {
+        "beadId": "BEAD-002",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/apply-filter-or-search/reviews/sprint-1/output/findings/FIND-002.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-01T13:01:43.398Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-002"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/apply-filter-or-search/reviews/sprint-1/output/findings/FIND-003.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-01T13:01:43.398Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-003"
+      }
+    ]
+  },
+  "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T12:57:24.294Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 1,
+        "iteration": 2,
+        "criticals": 0,
+        "majors": 0,
+        "minors": 0
+      }
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T12:59:04.445Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "sprint": 1,
+        "iteration": 2,
+        "criticals": 0,
+        "majors": 0,
+        "minors": 0
+      }
+    },
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T12:04:43.917Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2,
+        "criticals": 0,
+        "majors": 0,
+        "minors": 2
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-01T12:04:43.917Z"
+    }
+  },
+  "sprintCount": 1,
+  "createdAt": "2026-05-01T11:35:45.124Z",
+  "updatedAt": "2026-05-01T13:02:41.688Z"
+}

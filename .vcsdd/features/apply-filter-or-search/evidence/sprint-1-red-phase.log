@@ -1,0 +1,211 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+total-tests: 118
+new-tests-added: 23
+─────────────────────────────────────
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/pipeline' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/capture-auto-save/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step3-write-markdown.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/pipeline' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/capture-auto-save/step3-write-markdown.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/prepare-save-request' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step4-update-projections.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/update-projections' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/capture-auto-save/step4-update-projections.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/serialize-note' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/capture-auto-save/step2-serialize-note.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/copy-body/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/body-for-clipboard.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/body-for-clipboard' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/copy-body/body-for-clipboard.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/apply-filter-or-search/purity.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/apply-filter-or-search/parse-filter-input' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/apply-filter-or-search/purity.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/apply-filter-or-search/apply-filter-or-search' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/apply-filter-or-search/parse-filter-input.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/apply-filter-or-search/parse-filter-input' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/apply-filter-or-search/parse-filter-input.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/apply-filter-or-search/apply-filter-or-search' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/app-startup/pipeline' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package 'fast-check' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package 'fast-check' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/app-startup/step4-initialize-capture.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package 'fast-check' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/app-startup/load-vault-config' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-apply-filter-or-search/promptnotes/src/lib/domain/__tests__/app-startup/step1-load-vault-config.test.ts'
+-------------------------------
+
+
+[... remaining failures for pre-existing features (capture-auto-save, copy-body, app-startup, edit-past-note-start) and new apply-filter-or-search test files omitted for brevity; see raw output below ...]
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-011b-error-raw-field.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package 'fast-check' from '...prop-011b-error-raw-field.harness.test.ts'
+-------------------------------
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-012-sort-direction.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-003-no-io.harness.test.ts:
+error: Cannot find module '$lib/domain/apply-filter-or-search/parse-filter-input'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-001-parse-determinism.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-007-sort-determinism.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-015-frontmatter-field-semantics.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-004-tag-or-semantics.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-011a-trynew-tag-reuse.harness.test.ts:
+error: Cannot find module '$lib/domain/apply-filter-or-search/parse-filter-input'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-005-and-composition.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-002-apply-determinism.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-014-search-semantics.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-018-no-filter-exact-intersection.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-006-sort-total-order.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-016-tag-dedup.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-009-has-zero-results-flag.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-010-empty-search-collapses.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-008-candidate-set-constraint.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-013-sort-order-passthrough.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-017-fail-fast-invalid-tag.harness.test.ts:
+error: Cannot find package 'fast-check'
+
+ 59 pass
+ 59 fail
+ 59 errors
+ 127 expect() calls
+Ran 118 tests across 66 files. [60.00ms]
+
+─────────────────────────────────────
+ANALYSIS:
+  Baseline (before Phase 2a): 59 pass, 36 fail (pre-existing failures from other features)
+  After adding new tests:     59 pass, 59 fail (36 pre-existing + 23 new apply-filter-or-search files)
+  Passing count unchanged: 59 = 59 (regression baseline PASS confirmed)
+  New failures: 23 new test files all fail as expected (source modules do not exist)
+  Failure reason: "Cannot find module" / "Cannot find package" — correct red-phase behavior

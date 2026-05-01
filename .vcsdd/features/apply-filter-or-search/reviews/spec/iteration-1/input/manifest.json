@@ -1,0 +1,14 @@
+{
+  "reviewType": "spec",
+  "feature": "apply-filter-or-search",
+  "phase": "1c",
+  "iteration": 1,
+  "mode": "lean",
+  "language": "typescript",
+  "artifactsToReview": [
+    ".vcsdd/features/apply-filter-or-search/specs/behavioral-spec.md",
+    ".vcsdd/features/apply-filter-or-search/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "outputDir": ".vcsdd/features/apply-filter-or-search/reviews/spec/iteration-1/output"
+}
