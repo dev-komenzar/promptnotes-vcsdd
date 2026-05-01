@@ -32,7 +32,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-05-01T08:52:00.075Z"
+    },
+    "tag-chip-update": {
+      "status": "active",
+      "createdAt": "2026-05-01T08:26:29.095Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-01T08:35:11.131Z"
     }
   },
-  "activeFeature": "copy-body"
+  "activeFeature": "tag-chip-update"
 }

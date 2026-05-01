@@ -1,0 +1,49 @@
+{
+  "featureName": "tag-chip-update",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-01T08:35:11.128Z",
+      "reason": "behavioral-spec drafted"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-01T08:35:11.131Z",
+      "reason": "verification-architecture drafted"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-tag-chip-update-1777623989096",
+    "beads": []
+  },
+  "gates": {
+    "1c": {
+      "verdict": "FAIL",
+      "timestamp": "2026-05-01T08:56:12.033Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2,
+        "findings": [
+          "FIND-SPEC-TCU-021",
+          "FIND-SPEC-TCU-022",
+          "FIND-SPEC-TCU-023"
+        ]
+      },
+      "adversaryVerdict": "FAIL",
+      "adversaryReviewedAt": "2026-05-01T08:56:12.033Z"
+    }
+  },
+  "sprintCount": 0,
+  "createdAt": "2026-05-01T08:26:29.095Z",
+  "updatedAt": "2026-05-01T08:56:12.033Z"
+}
