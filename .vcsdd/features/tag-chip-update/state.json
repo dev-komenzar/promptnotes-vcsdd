@@ -2,7 +2,7 @@
   "featureName": "tag-chip-update",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -15,11 +15,34 @@
       "to": "1b",
       "timestamp": "2026-05-01T08:35:11.131Z",
       "reason": "verification-architecture drafted"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-01T09:06:47.929Z",
+      "reason": "spec review iter-3 PASS"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-01T09:06:47.936Z",
+      "reason": "beginning TDD red phase",
+      "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-01T09:20:18.701Z",
+      "reason": "red phase complete; beginning green",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
-    "1b": 1
+    "1b": 1,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -28,22 +51,32 @@
   },
   "gates": {
     "1c": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-01T08:56:12.033Z",
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T09:06:27.532Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 2,
+        "iteration": 3,
         "findings": [
-          "FIND-SPEC-TCU-021",
-          "FIND-SPEC-TCU-022",
-          "FIND-SPEC-TCU-023"
-        ]
+          "FIND-SPEC-TCU-024"
+        ],
+        "note": "FIND-024 is informational/non-blocking"
       },
-      "adversaryVerdict": "FAIL",
-      "adversaryReviewedAt": "2026-05-01T08:56:12.033Z"
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-01T09:06:27.532Z"
+    },
+    "2a": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T09:19:47.958Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "redEvidence": "tests fail with module-not-found as expected; 19 Tier-0 type-level tests pass; 11 fail on missing impl module imports",
+        "testCount": 30,
+        "failCount": 11,
+        "passCount": 19
+      }
     }
   },
-  "sprintCount": 0,
+  "sprintCount": 1,
   "createdAt": "2026-05-01T08:26:29.095Z",
-  "updatedAt": "2026-05-01T08:56:12.033Z"
+  "updatedAt": "2026-05-01T09:20:18.701Z"
 }
