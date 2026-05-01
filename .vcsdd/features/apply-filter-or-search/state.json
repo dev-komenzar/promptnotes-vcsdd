@@ -2,7 +2,7 @@
   "featureName": "apply-filter-or-search",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -40,9 +40,17 @@
       "timestamp": "2026-05-01T12:29:16.164Z",
       "reason": "sprint 1 refactor begin",
       "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-01T12:40:25.943Z",
+      "reason": "sprint 1 adversary review PASS — advancing toward 5",
+      "sprint": 1
     }
   ],
   "iterations": {
+    "3": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -56,6 +64,17 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T12:40:25.941Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 1,
+        "criticals": 0,
+        "majors": 0,
+        "minors": 3
+      }
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-05-01T12:04:43.917Z",
@@ -72,5 +91,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-01T11:35:45.124Z",
-  "updatedAt": "2026-05-01T12:29:16.164Z"
+  "updatedAt": "2026-05-01T12:40:25.943Z"
 }

@@ -1,0 +1,12 @@
+{
+  "id": "FIND-003",
+  "dimension": "verification_readiness",
+  "severity": "minor",
+  "category": "test_quality",
+  "routeToPhase": "2a",
+  "target": "REQ-016, promptnotes/src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:109",
+  "summary": "Performance harness asserts the 50ms bound as a hard expect() instead of the 'soft regression bound, advisory in CI' methodology pinned in verification-architecture.md.",
+  "defect": "behavioral-spec.md REQ-016 calls the 50ms threshold a 'soft regression bound, not a hard correctness invariant — CI may be slower; the bound is enforced locally and noted as advisory in CI'. verification-architecture.md line 162 reaffirms 'Soft regression bound — advisory in CI environments'. The harness at apply-filter-or-search.perf.test.ts line 109 implements `expect(median).toBeLessThan(50)` with no environment branching. In a slow CI runner the test will fail the suite even though the spec says the bound is advisory there. The same pattern is used at line 133 for the parseFilterInput < 5ms assertion. This couples a local-only soft bound to the green-phase gate, which contradicts the documented methodology and risks future flaky CI without the team realising they need to relax the bound.",
+  "evidence": "apply-filter-or-search.perf.test.ts:109 — `expect(median).toBeLessThan(50); // soft regression bound`. The trailing comment acknowledges the bound is soft, but the expect is hard. Same pattern at line 133 for the 5ms parseFilterInput bound.",
+  "suggested_fix": "Either (a) gate the assertion with an environment variable such as `if (!process.env.CI) expect(median).toBeLessThan(50)` and `console.log` the median in CI for visibility; or (b) relax to a strictly larger bound in CI (e.g. 200ms) while keeping 50ms locally. Option (a) is closer to the documented intent."
+}

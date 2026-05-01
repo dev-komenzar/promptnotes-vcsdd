@@ -1,0 +1,45 @@
+{
+  "reviewType": "implementation",
+  "featureName": "apply-filter-or-search",
+  "sprintNumber": 1,
+  "mode": "lean",
+  "language": "typescript",
+  "phase": "3",
+  "iteration": 1,
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/apply-filter-or-search/specs/behavioral-spec.md",
+      ".vcsdd/features/apply-filter-or-search/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/parse-filter-input.test.ts",
+      "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.test.ts",
+      "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/purity.test.ts",
+      "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts",
+      "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/__verify__/"
+    ],
+    "source": [
+      "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+      "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+      "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+      "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
+    ],
+    "evidence": [
+      ".vcsdd/features/apply-filter-or-search/evidence/sprint-1-red-phase.log",
+      ".vcsdd/features/apply-filter-or-search/evidence/sprint-1-green-phase.log",
+      ".vcsdd/features/apply-filter-or-search/evidence/sprint-1-impl-notes.md"
+    ]
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "outputDir": ".vcsdd/features/apply-filter-or-search/reviews/sprint-1/output",
+  "carryForwardFromSpecGate": [
+    "F-1c-100 (PROP-004 wording)",
+    "F-1c-101 (tryNewTag concrete TS implementation)"
+  ]
+}

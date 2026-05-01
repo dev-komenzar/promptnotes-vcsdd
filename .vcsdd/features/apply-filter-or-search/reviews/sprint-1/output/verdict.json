@@ -1,0 +1,22 @@
+{
+  "phase": "3",
+  "sprint": 1,
+  "iteration": 1,
+  "feature": "apply-filter-or-search",
+  "mode": "lean",
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "edge_case_coverage": "PASS",
+    "implementation_correctness": "PASS",
+    "structural_integrity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "overallVerdict": "PASS",
+  "findingsCount": { "critical": 0, "major": 0, "minor": 3 },
+  "rationale": "All 18 PROPs are implemented with explicit fast-check harnesses (≥200 runs for tier-1, 1000 for PROP-001/002, 500 for PROP-009 zero-result both directions); both example-based test files cover REQ-001..REQ-014 line by line including DD-1 tiebreak in both directions, DD-2 frontmatter scope, fail-fast verbatim raw, dedup-after-normalization, regex-metacharacter literal treatment, case-sensitive frontmatter field AND/OR semantics, and the two-sided exact-intersection no-op case; purity is checked by patched-sentinel runtime tests (Date.now, Math.random, fetch) and Object.freeze inputs; PROP-011a static inspection (carry-forward F-1c-101) and PROP-004 dual (a)/(b) assertion (carry-forward F-1c-100) are honored. Source files contain no I/O, no mutation of inputs (verified by frozen-input test), and parseFilterInput correctly delegates to tryNewTag for normalization and dedups before pushing. The three minor findings are non-blocking: (FIND-001) tryNewTag introduces a third TagError variant beyond the canonical two-variant TagError type — public ParseFilterInput contract still matches REQ-003 because parseFilterInput rewraps every failure as { kind: 'invalid-tag', raw }, but the local Tag contract drifts from value-objects.ts:43; (FIND-002) PROP-002 and PROP-007 only exercise arbAppliedFilterNoOp(), so the universal determinism claim across non-trivial AppliedFilter cases is under-witnessed; (FIND-003) the perf harness asserts the 50ms / 5ms bounds with hard expect() despite verification-architecture.md pinning them as advisory in CI. None of these violate the lean threshold (0 critical, 0 major). All five dimensions PASS.",
+  "convergenceSignals": {
+    "findingCount": 3,
+    "dimensionsFailed": [],
+    "carryForwardHonored": ["F-1c-100 (PROP-004 dual assertion verified at prop-004-tag-or-semantics.harness.test.ts describe blocks (a) and (b))", "F-1c-101 (PROP-011a static source inspection verified at prop-011a-trynew-tag-reuse.harness.test.ts via readFileSync + import-pattern regex + forbidden-pattern regex)"]
+  }
+}
