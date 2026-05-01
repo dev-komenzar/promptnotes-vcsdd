@@ -109,3 +109,21 @@ Phase 2c refactor-phase evidence summary:
 
 target feature tests: pass (73/78 feature; 125/130 combined)
 regression baseline: pass
+bun test v1.3.11 (af24e281)
+
+ 398 pass
+ 0 fail
+ 20587 expect() calls
+Ran 398 tests across 51 files. [740.00ms]
+
+---
+## Phase 2c FINAL test output (post-FIND-001/002/003/004 fix)
+- FIND-001 (PROP-HSF-021): replaced vacuous sentinel spy with spyOn(Date, "now") + input mutation check
+- FIND-002 (PROP-HSF-001): replaced orchestrator import with direct retryTransition; tests are now synchronous
+- FIND-003 (evidence log): this section
+- FIND-004 (PROP-HSF-019): raised numRuns 50 → 200; fixed flatMap → fc.tuple (pre-existing TypeError)
+
+target feature tests: pass
+regression baseline: pass
+Total: 398 pass, 0 fail across 51 files
+Timestamp: 2026-05-01

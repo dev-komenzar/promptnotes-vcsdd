@@ -2,7 +2,7 @@
   "featureName": "handle-save-failure",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -49,10 +49,18 @@
       "timestamp": "2026-05-01T15:51:19.894Z",
       "reason": "refactor complete, ready for adversarial review",
       "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-01T16:11:05.501Z",
+      "reason": "adversarial review PASS, advance to formal hardening",
+      "sprint": 1
     }
   ],
   "iterations": {
     "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -66,6 +74,14 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T16:11:05.499Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2
+      }
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-05-01T15:35:26.208Z",
@@ -84,5 +100,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-01T15:12:50.376Z",
-  "updatedAt": "2026-05-01T15:51:19.894Z"
+  "updatedAt": "2026-05-01T16:11:05.501Z"
 }

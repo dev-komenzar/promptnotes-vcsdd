@@ -150,7 +150,7 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
   });
 
   // fast-check: for all non-save-failed status values, the invariant guard fires
-  test("∀ non-save-failed status values → invariant-violated rejection (property, 50 runs)", async () => {
+  test("∀ non-save-failed status values → invariant-violated rejection (property, 200 runs)", async () => {
     const nonSaveFailedStates = fc.oneof(
       fc.constant({ status: "idle" as const }),
       arbNoteId.map((id) => ({
@@ -166,14 +166,12 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
         currentNoteId: id,
         savingStartedAt: makeTimestamp(1000),
       })),
-      arbNoteId.chain((id1) =>
-        arbNoteId.map((id2) => ({
-          status: "switching" as const,
-          currentNoteId: id1,
-          pendingNextNoteId: id2,
-          savingStartedAt: makeTimestamp(1000),
-        }))
-      ),
+      fc.tuple(arbNoteId, arbNoteId).map(([id1, id2]) => ({
+        status: "switching" as const,
+        currentNoteId: id1,
+        pendingNextNoteId: id2,
+        savingStartedAt: makeTimestamp(1000),
+      })),
     );
 
     await fc.assert(
@@ -203,7 +201,7 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
         expect(rejectionIsInvariantViolated).toBe(true);
         expect(events).toHaveLength(0);
       }),
-      { numRuns: 50 },
+      { numRuns: 200 },
     );
   });
 });

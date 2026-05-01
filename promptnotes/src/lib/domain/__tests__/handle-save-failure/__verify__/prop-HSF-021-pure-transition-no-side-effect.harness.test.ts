@@ -1,20 +1,21 @@
 /**
  * PROP-HSF-021: pure-transition-no-side-effect
- * Tier 1 — fast-check sentinel spy
+ * Tier 1 — fast-check + spyOn(Date, "now") + input mutation check
  * Required: false
  *
  * Property: the pure transition functions (retry, discard, cancelSwitch) do NOT call
- * Clock.now() or emit() internally. Sentinel spy counts for both ports remain 0 when
- * the functions are called directly (bypassing the orchestrator).
+ * Date.now() internally, and do NOT mutate their input state.
+ *
+ * Implementation note: the pure transitions accept `now: Timestamp` as a parameter
+ * (injected by the orchestrator). They have no Clock port DI seam, so the correct
+ * assertion is:
+ *   1. spyOn(Date, "now") → assert spy.mock.calls.length === 0 (no Date.now() call)
+ *   2. deep-equality of state before/after → assert input not mutated
  *
  * Covers: REQ-HSF-002, REQ-HSF-003, REQ-HSF-004, REQ-HSF-005, PROP-HSF-021
- *
- * Note: the pure transition functions are imported from the transitions module
- * once the implementation exists. Until then, this test imports from the
- * (future) implementation's transitions module.
  */
 
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect, spyOn } from "bun:test";
 import fc from "fast-check";
 import type {
   NoteId,
@@ -22,7 +23,6 @@ import type {
 } from "promptnotes-domain-types/shared/value-objects";
 import type { SaveError } from "promptnotes-domain-types/shared/errors";
 import type { SaveFailedState } from "promptnotes-domain-types/capture/states";
-import type { CaptureInternalEvent } from "promptnotes-domain-types/capture/internal-events";
 
 import {
   retryTransition,
@@ -78,39 +78,22 @@ const arbSaveFailedState: fc.Arbitrary<SaveFailedState> = fc
     lastSaveError: error,
   }));
 
-// ── Sentinel factories ─────────────────────────────────────────────────────
-
-function makeClockSentinel() {
-  let count = 0;
-  return {
-    clockNow: (): Timestamp => { count++; return makeTimestamp(1); },
-    getCount: () => count,
-  };
-}
-
-function makeEmitSentinel() {
-  let count = 0;
-  return {
-    emit: (_: CaptureInternalEvent): void => { count++; },
-    getCount: () => count,
-  };
-}
-
 // ── PROP-HSF-021 tests ─────────────────────────────────────────────────────
 
 describe("PROP-HSF-021: pure-transition-no-side-effect", () => {
   test(
-    "∀ SaveFailedState, retryTransition(state, now) → clockSpy=0, emitSpy=0 (500 runs)",
+    "∀ SaveFailedState, retryTransition(state, now) → Date.now spy=0, state not mutated (500 runs)",
     () => {
       fc.assert(
         fc.property(arbSaveFailedState, arbTimestamp, (state, now) => {
-          const clock = makeClockSentinel();
-          const emit = makeEmitSentinel();
+          const stateBefore = JSON.parse(JSON.stringify(state)) as SaveFailedState;
+          const dateSpy = spyOn(Date, "now");
 
           retryTransition(state, now);
 
-          expect(clock.getCount()).toBe(0);
-          expect(emit.getCount()).toBe(0);
+          expect(dateSpy.mock.calls.length).toBe(0);
+          expect(state).toEqual(stateBefore); // input not mutated
+          dateSpy.mockRestore();
         }),
         { numRuns: 500 },
       );
@@ -118,17 +101,18 @@ describe("PROP-HSF-021: pure-transition-no-side-effect", () => {
   );
 
   test(
-    "∀ SaveFailedState, discardTransition(state, now) → clockSpy=0, emitSpy=0 (500 runs)",
+    "∀ SaveFailedState, discardTransition(state, now) → Date.now spy=0, state not mutated (500 runs)",
     () => {
       fc.assert(
         fc.property(arbSaveFailedState, arbTimestamp, (state, now) => {
-          const clock = makeClockSentinel();
-          const emit = makeEmitSentinel();
+          const stateBefore = JSON.parse(JSON.stringify(state)) as SaveFailedState;
+          const dateSpy = spyOn(Date, "now");
 
           discardTransition(state, now);
 
-          expect(clock.getCount()).toBe(0);
-          expect(emit.getCount()).toBe(0);
+          expect(dateSpy.mock.calls.length).toBe(0);
+          expect(state).toEqual(stateBefore); // input not mutated
+          dateSpy.mockRestore();
         }),
         { numRuns: 500 },
       );
@@ -136,17 +120,18 @@ describe("PROP-HSF-021: pure-transition-no-side-effect", () => {
   );
 
   test(
-    "∀ SaveFailedState with non-null pendingNextNoteId, cancelSwitchTransition(state, now) → clockSpy=0, emitSpy=0 (500 runs)",
+    "∀ SaveFailedState with non-null pendingNextNoteId, cancelSwitchTransition(state, now) → Date.now spy=0, state not mutated (500 runs)",
     () => {
       fc.assert(
         fc.property(arbSaveFailedStateWithPending, arbTimestamp, (state, now) => {
-          const clock = makeClockSentinel();
-          const emit = makeEmitSentinel();
+          const stateBefore = JSON.parse(JSON.stringify(state)) as SaveFailedState;
+          const dateSpy = spyOn(Date, "now");
 
           cancelSwitchTransition(state, now);
 
-          expect(clock.getCount()).toBe(0);
-          expect(emit.getCount()).toBe(0);
+          expect(dateSpy.mock.calls.length).toBe(0);
+          expect(state).toEqual(stateBefore); // input not mutated
+          dateSpy.mockRestore();
         }),
         { numRuns: 500 },
       );
