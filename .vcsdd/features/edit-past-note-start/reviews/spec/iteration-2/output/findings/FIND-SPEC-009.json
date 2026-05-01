@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-009",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "critical",
+  "description": "REQ-EPNS-012 line 275 states 'Clock.now() at most once per workflow invocation' but the detailed breakdown at lines 281-282 states 'the total per-workflow budget remains <=2 calls' for the empty path (flush step EmptyNoteDiscarded.occurredOn + startNewSession). These two statements directly contradict each other. The empty path requires 2 Clock.now() calls (one in flushCurrentSession for EmptyNoteDiscarded.occurredOn, one in startNewSession for NewSession.startedAt), making the '<=1' claim false. The spec is self-contradictory on a non-functional constraint that directly affects implementation.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "275-288",
+    "snippet": "WHEN the EditPastNoteStart workflow executes THEN the system SHALL call Clock.now() at most once per workflow invocation. [...] Total Clock.now() call budget per workflow run: <=2 calls (flush + startNewSession on empty path"
+  },
+  "routeToPhase": "1a"
+}

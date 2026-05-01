@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "PROP-EPNS-013 specifies Clock.now() call count per path including dirty-success=1 and same-note=1. The pipeline tests cover idle=1, empty=2, dirty-fail=1, but omit explicit pipeline-level clock count verification for dirty-success (1) and same-note (1). While the individual step tests establish flush=0 and startNewSession=1 separately, no integration test confirms the combined count for dirty-success or same-note paths. PROP-EPNS-013 calls for verifying all five paths.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+    "lineRange": "470-545",
+    "snippet": "// Only three of five PROP-EPNS-013 paths have pipeline-level clockCalls assertions:\n// idle=1 (line 491), empty=2 (line 514), dirty-fail=1 (line 544)\n// Missing: dirty-success=1, same-note=1"
+  },
+  "routeToPhase": "2a"
+}

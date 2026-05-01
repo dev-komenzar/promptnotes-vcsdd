@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "PROP-EPNS-018 (Tier 3, required: false) remains without a dedicated test. The proof obligation states: 'Full workflow integration — all three happy paths produce EditingSessionState.status === editing with currentNoteId === selectedNoteId'. The pipeline function does not return EditingSessionState, so this property is architecturally untestable at the current pipeline boundary. The individual pipeline tests verify noteId on the result but not the EditingSessionState transition. Carried forward from sprint 4 FIND-003.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+    "lineRange": "113",
+    "snippet": "| PROP-EPNS-018 | Full workflow integration — all three happy paths produce `EditingSessionState.status === 'editing'` with `currentNoteId === selectedNoteId` | REQ-EPNS-001 through REQ-EPNS-003, REQ-EPNS-008 | 3 | false |"
+  },
+  "routeToPhase": "1b"
+}

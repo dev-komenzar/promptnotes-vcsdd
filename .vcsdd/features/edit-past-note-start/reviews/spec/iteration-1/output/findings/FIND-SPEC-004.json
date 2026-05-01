@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-004",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "title": "PROP-EPNS-004 (SaveFailedState classification) should be required: true given data-loss risk",
+  "description": "PROP-EPNS-004 verifies that classifyCurrentSession(SaveFailedState) returns { kind: 'dirty' }. This is a high-risk invariant: if SaveFailedState is misclassified (e.g., as 'empty'), the unsaved content would be silently discarded, causing data loss. Despite this risk, PROP-EPNS-004 is marked required: false. The justification for required: true on PROP-EPNS-003 ('misclassification would either cause data loss') applies identically here. The verification architecture document (line 87) does not provide rationale for why this obligation is optional.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+    "lineRange": "87",
+    "snippet": "| PROP-EPNS-004 | classifyCurrentSession(SaveFailedState) always returns { kind: 'dirty', noteId, note } regardless of pendingNextNoteId value | REQ-EPNS-006, REQ-EPNS-007 | 1 | false |"
+  },
+  "recommendation": "Change PROP-EPNS-004 to required: true with the same data-loss rationale used for PROP-EPNS-003.",
+  "routeToPhase": "1b"
+}

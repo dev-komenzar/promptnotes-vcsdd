@@ -1,0 +1,27 @@
+{
+  "sprintNumber": null,
+  "feature": "edit-past-note-start",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T12:00:00Z",
+  "iteration": 1,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-SPEC-001", "FIND-SPEC-002", "FIND-SPEC-003", "FIND-SPEC-005", "FIND-SPEC-006"],
+      "evidence": []
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-SPEC-004", "FIND-SPEC-007", "FIND-SPEC-008"],
+      "evidence": []
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 8,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": []
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-010",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "major",
+  "description": "REQ-EPNS-009 (line 242) says EmptyNoteDiscarded.occurredOn is 'sourced from Clock.now() called by the flush step.' REQ-EPNS-012 (line 281) says 'EmptyNoteDiscarded.occurredOn is sourced from the same Clock.now() as startNewSession, OR from its own call.' The use of 'OR' makes the sourcing non-deterministic from the implementer's perspective: should flushCurrentSession call Clock.now() independently, or should it receive a pre-computed timestamp from a shared Clock.now() call? These two requirements give contradictory answers. REQ-EPNS-009 says flush step calls it; REQ-EPNS-012 says it might share the startNewSession call. Only one answer can be correct.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "242,281",
+    "snippet": "Line 242: 'EmptyNoteDiscarded.occurredOn is sourced from Clock.now() called by the flush step.' | Line 281: 'EmptyNoteDiscarded.occurredOn is sourced from the same Clock.now() as startNewSession, OR from its own call.'"
+  },
+  "routeToPhase": "1a"
+}

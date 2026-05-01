@@ -1,0 +1,11 @@
+{
+  "reviewType": "spec",
+  "feature": "edit-past-note-start",
+  "iteration": 3,
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "previousFindings": "reviews/spec/iteration-2/output/verdict.json"
+}

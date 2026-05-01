@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-007",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "major",
+  "title": "No proof obligation covers the same-note re-selection Clock.now() and EditorFocusedOnPastNote.occurredOn sourcing",
+  "description": "PROP-EPNS-010 verifies same-note re-selection behavior (no flush, no save, event emitted) but does not cover how EditorFocusedOnPastNote.occurredOn is obtained. PROP-EPNS-013 states Clock.now() is called exactly once per successful workflow run inside startNewSession, but the same-note path does not invoke startNewSession. There is no proof obligation that addresses: (a) whether Clock.now() is called at all in the same-note path, (b) what value EditorFocusedOnPastNote.occurredOn takes, or (c) the total Clock.now() call budget when the same-note path is taken. This gap means the implementation could use any timestamp (including stale or zero values) without a test catching it.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+    "lineRange": "93",
+    "snippet": "| PROP-EPNS-010 | Same-note re-selection: no flush, no save I/O, EmptyNoteDiscarded NOT emitted, EditingSessionState unchanged, EditorFocusedOnPastNote emitted |"
+  },
+  "recommendation": "Add a proof obligation that specifies Clock.now() behavior in the same-note path and verifies EditorFocusedOnPastNote.occurredOn is a valid timestamp. This also requires resolving FIND-SPEC-002 first (the behavioral spec must define the same-note path's Clock.now() usage).",
+  "routeToPhase": "1b"
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-011",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "major",
+  "description": "The BlurSave port contract (verification-architecture.md line 48-52) requires previousFrontmatter: Frontmatter | null as a parameter. REQ-EPNS-003 (line 95) says this comes from 'DirtyEditingSession.previousFrontmatter (tracked by Capture state)'. However, EditPastNoteStartInput (behavioral-spec.md lines 32-36) does not include previousFrontmatter. EditingState (states.ts lines 24-32) does not carry previousFrontmatter either. The spec references DirtyEditingSession as the source, but never explains how the pipeline constructs a DirtyEditingSession — specifically where previousFrontmatter enters the data flow. This is a data-flow gap: the pipeline input lacks a field that the blur save port requires.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "32-36,91-96",
+    "snippet": "type EditPastNoteStartInput = { readonly selection: PastNoteSelection; readonly currentState: EditingSessionState; readonly currentNote: Note | null; }; [...] previousFrontmatter: from the DirtyEditingSession.previousFrontmatter (tracked by Capture state)"
+  },
+  "routeToPhase": "1a"
+}

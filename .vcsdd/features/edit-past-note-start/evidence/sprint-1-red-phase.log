@@ -1,0 +1,12 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+=== bun test (runtime) ===
+bun test v1.3.11 (af24e281)
+
+8 fail, 8 errors — Cannot find module implementations
+
+All 8 test files failed due to missing implementation modules.
+1 pass (prop-005 Tier 0 compile-time only)
+
+Ran 9 tests across 9 files.

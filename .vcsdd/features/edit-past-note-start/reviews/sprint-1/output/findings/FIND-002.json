@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "structural_integrity",
+  "category": "purity_boundary",
+  "severity": "major",
+  "title": "classifyCurrentSession embeds its own isEmpty instead of using NoteOps.isEmpty port",
+  "description": "The spec (REQ-EPNS-002, REQ-EPNS-003, REQ-EPNS-007) requires classification to be based on `NoteOps.isEmpty`. The verification architecture (port contracts) defines `NoteOps.isEmpty` as a pure predicate. The pipeline (pipeline.ts) defines `ports.isEmpty` in `EditPastNoteStartPorts`. However, classify-current-session.ts at lines 57-61 implements its own inline `isEmpty` function that re-implements the logic (`raw.trim().length === 0`). This means: (1) the pipeline's `ports.isEmpty` is never used by anyone, (2) the isEmpty behavior is duplicated and decoupled from the canonical NoteOps.isEmpty, and (3) if NoteOps.isEmpty semantics change, classifyCurrentSession will silently diverge. The spec's pure core claim for classifyCurrentSession does allow inline pure logic, but the specific reliance on NoteOps.isEmpty as a shared domain predicate means the duplication creates a correctness risk.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+    "lineRange": "57-61",
+    "snippet": "function isEmpty(note: Note): boolean {\n  const raw = note.body as unknown as string;\n  return raw.trim().length === 0;\n}"
+  },
+  "recommendation": "Either (a) pass NoteOps.isEmpty as a parameter to classifyCurrentSession, making the dependency explicit while preserving purity (it is a pure predicate), or (b) import and re-export the canonical NoteOps.isEmpty implementation. Remove the unused `isEmpty` from `EditPastNoteStartPorts` if option (a) is chosen.",
+  "routeToPhase": "2c"
+}

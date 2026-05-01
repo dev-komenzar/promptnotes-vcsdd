@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "PROP-EPNS-014 in verification-architecture.md states 'Clock.now() is NOT called when the workflow terminates with SwitchError'. However, the behavioral-spec.md REQ-EPNS-012 Clock budget table explicitly allocates 1 Clock.now() call on the dirty-fail path for NoteSaveFailed.occurredOn. The implementation (flush-current-session.ts:76) calls ports.clockNow() once. The pipeline test (pipeline.test.ts:544) asserts clockCalls===1. The proof obligation description contradicts the spec and implementation. PROP-EPNS-014 must be updated to say 'Clock.now() is called exactly once for NoteSaveFailed.occurredOn' or the proof obligation must be retired/replaced.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+    "lineRange": "109",
+    "snippet": "PROP-EPNS-014 | `Clock.now()` is NOT called when the workflow terminates with `SwitchError`"
+  },
+  "crossReference": {
+    "specLine": "behavioral-spec.md:294 — dirty-fail total=1",
+    "implLine": "flush-current-session.ts:76 — const failOccurredOn = ports.clockNow()",
+    "testLine": "pipeline.test.ts:544 — expect(clockCalls).toBe(1)"
+  },
+  "routeToPhase": "1b"
+}

@@ -1,0 +1,88 @@
+{
+  "sprintNumber": 1,
+  "feature": "edit-past-note-start",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T12:00:00Z",
+  "iteration": 1,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-003"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+          "description": "Same-note guard (lines 68-86) returns a synthetic NewSession instead of a no-op, violating REQ-EPNS-005 which says 'no new session creation'."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-004", "FIND-005"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "No test for same-note on SaveFailedState (REQ-EPNS-005). SaveError mapping tested only for 'permission' variant, 5 of 6 mapping entries from REQ-EPNS-004 untested."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-001", "FIND-006", "FIND-007"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+          "description": "Line 79: Date.now() used directly instead of ports.clockNow() for NoteSaveFailed.occurredOn."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+          "description": "Lines 51-54: default branch silently returns no-current for invalid states instead of failing fast per REQ-EPNS-007."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+          "description": "Lines 57-61: inline isEmpty reimplements NoteOps.isEmpty, creating duplication with the unused ports.isEmpty in pipeline.ts."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+          "description": "Line 38: EditPastNoteStartPorts.isEmpty is defined but never consumed by classifyCurrentSession or any other function."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-008"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "PROP-EPNS-013 clock budget verification uses example-based tests instead of the specified fast-check property tests."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 8,
+    "criticalFindings": 1,
+    "majorFindings": 5,
+    "minorFindings": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": []
+  }
+}

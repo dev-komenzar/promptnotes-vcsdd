@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "classifyCurrentSession silently returns { kind: 'no-current' } when EditingState or SaveFailedState is provided with currentNote===null (lines 35-37 and 50-52). The spec classification table in REQ-EPNS-007 defines EditingState with Note (non-null) and SaveFailedState with Note (non-null) as the only valid input combinations. currentNote===null is only valid for IdleState. Returning 'no-current' for an EditingState with null note is dangerous: it causes the pipeline to skip the flush step entirely, potentially losing unsaved content. This should throw an error (consistent with the saving/switching guard at lines 60-66) rather than silently misclassifying.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+    "lineRange": "34-37",
+    "snippet": "if (currentNote === null) {\n        return { kind: \"no-current\" };\n      }"
+  },
+  "specReference": "REQ-EPNS-007 classification table: EditingState requires Note (non-null), SaveFailedState requires Note (non-null)",
+  "routeToPhase": "2b"
+}

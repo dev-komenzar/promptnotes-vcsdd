@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-012",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "minor",
+  "description": "REQ-EPNS-005 (line 156) states 'EditingSessionState is unchanged' as an acceptance criterion for same-note re-selection. When the current state is SaveFailedState, this means the system emits EditorFocusedOnPastNote while the session has an unresolved save error. The spec does not address whether emitting a 'focused' event from a 'save-failed' state is semantically valid. An implementer could reasonably question whether the editor can truly 'focus' on a note whose last save failed. This is an edge case that should be explicitly acknowledged or the same-note guard should exclude SaveFailedState.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "140-160",
+    "snippet": "SaveFailedState.currentNoteId -- the note whose save failed (NOT pendingNextNoteId) [...] EditingSessionState is unchanged (same currentNoteId, same isDirty)"
+  },
+  "routeToPhase": "1a"
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-015",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "minor",
+  "description": "REQ-EPNS-012 states 'I/O occurs only in flushCurrentSession (CaptureAutoSave blur save)' as a non-functional constraint. The coverage matrix maps REQ-EPNS-012 to PROP-EPNS-001, PROP-EPNS-013, and PROP-EPNS-014. PROP-EPNS-001 verifies classifyCurrentSession purity (no ports), and PROP-EPNS-013/014 verify Clock.now() call counts. However, no proof obligation verifies that startNewSession performs zero I/O (it is classified as 'effectful shell' because it calls Clock.now() and emit, but the I/O isolation claim -- that it never calls CaptureAutoSave or filesystem -- has no dedicated proof obligation). The purity boundary map labels it effectful, but the only 'effect' should be Clock.now() + emit, not file I/O. A missing port-spy assertion for startNewSession means an implementation that accidentally invokes BlurSave in startNewSession would not be caught by any listed proof obligation.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+    "lineRange": "31,149",
+    "snippet": "Line 31: 'Step 3b | startNewSession | Effectful shell | Calls Clock.now() exactly once; calls emit(EditorFocusedOnPastNote)' | Line 149: 'REQ-EPNS-012 | PROP-EPNS-001, PROP-EPNS-013, PROP-EPNS-014'"
+  },
+  "routeToPhase": "1b"
+}

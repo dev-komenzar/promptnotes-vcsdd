@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "implementation_correctness",
+  "category": "purity_boundary",
+  "severity": "critical",
+  "title": "Date.now() used directly in flushCurrentSession error path instead of ports.clockNow()",
+  "description": "In flush-current-session.ts line 79, the NoteSaveFailed event's occurredOn field is sourced from `Date.now()` wrapped in a raw cast (`{ epochMillis: Date.now() } as unknown as Timestamp`), bypassing the `ports.clockNow()` port entirely. This violates REQ-EPNS-012 which states all timestamps flow through the Clock port, and it breaks the effectful shell boundary by introducing a hidden I/O dependency. The direct Date.now() call is non-deterministic and untestable via port stubs. Tests for this path do not verify the occurredOn value, so this defect is invisible to the test suite.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+    "lineRange": "78-79",
+    "snippet": "occurredOn: { epochMillis: Date.now() } as unknown as Timestamp,"
+  },
+  "recommendation": "Replace `{ epochMillis: Date.now() } as unknown as Timestamp` with `ports.clockNow()`. Note that REQ-EPNS-012 states Clock.now() is NOT called on the dirty path by flushCurrentSession (CaptureAutoSave handles its own timestamps for the success path). However, NoteSaveFailed still needs a timestamp and the spec does not prohibit a Clock.now() call for NoteSaveFailed.occurredOn specifically. The implementation must use the port, not raw Date.now(). Update the Clock.now() budget documentation if this adds a call.",
+  "routeToPhase": "2b"
+}

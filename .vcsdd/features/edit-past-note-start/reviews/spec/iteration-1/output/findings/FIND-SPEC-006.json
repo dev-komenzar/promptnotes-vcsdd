@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-006",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "title": "REQ-EPNS-005 same-note detection is undefined for IdleState and SaveFailedState",
+  "description": "REQ-EPNS-005 triggers when 'selectedNoteId equals EditingSessionState.currentNoteId'. However, IdleState (states.ts line 19-21) has no currentNoteId field. SaveFailedState has currentNoteId but also pendingNextNoteId. The spec does not clarify: (a) whether the same-note check applies before or after classifyCurrentSession, (b) whether it applies at all when status is 'idle' (since there is no currentNoteId to compare), and (c) for SaveFailedState, whether the comparison is against currentNoteId or pendingNextNoteId. This ambiguity could lead to inconsistent implementations.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "103-106",
+    "snippet": "WHEN PastNoteSelected arrives AND the selected noteId equals EditingSessionState.currentNoteId THEN the system SHALL treat the selection as a no-op"
+  },
+  "recommendation": "Specify that the same-note check: (a) is a pre-pipeline guard that runs before classifyCurrentSession, (b) only applies when the state has a currentNoteId (i.e., status !== 'idle'), and (c) for SaveFailedState, compares against currentNoteId (the note being edited, not pendingNextNoteId).",
+  "routeToPhase": "1a"
+}

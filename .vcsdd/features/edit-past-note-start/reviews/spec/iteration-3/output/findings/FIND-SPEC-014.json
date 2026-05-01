@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-SPEC-014",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "REQ-EPNS-004 line 130 states 'This mapping is the responsibility of the flushCurrentSession step (or the CaptureAutoSave port adapter).' The 'or' creates ambiguity about which component emits NoteSaveFailed and, critically, who provides NoteSaveFailed.occurredOn. The Clock budget table (line 294) shows 0 Clock.now() calls on the dirty-fail path, meaning the workflow itself cannot stamp occurredOn. If CaptureAutoSave stamps it internally, the spec should say so explicitly. If flushCurrentSession emits NoteSaveFailed, it needs a Clock.now() call that contradicts the budget of 0. The scope statement excludes CaptureAutoSave internals, but the spec should still clarify the emission boundary for NoteSaveFailed to avoid implementer confusion.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+    "lineRange": "130-131,294",
+    "snippet": "Line 130: 'This mapping is the responsibility of the flushCurrentSession step (or the CaptureAutoSave port adapter).' | Line 294: 'Dirty (save fails) | 0 | 0 (not reached) | 0'"
+  },
+  "routeToPhase": "1a"
+}

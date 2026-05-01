@@ -1,0 +1,111 @@
+{
+  "sprintNumber": 3,
+  "feature": "edit-past-note-start",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T17:00:00Z",
+  "iteration": 3,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-001"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md:109",
+          "description": "PROP-EPNS-014 says Clock.now() is NOT called on SwitchError path, but behavioral-spec.md:294 says dirty-fail=1 and implementation calls clockNow once. Proof obligation contradicts spec."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md:294",
+          "description": "Dirty (save fails) row in Clock budget table shows total=1 for NoteSaveFailed.occurredOn."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": ["FIND-004", "FIND-005", "FIND-006"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step1-classify-current-session.test.ts",
+          "description": "All classification edge cases covered: idle, empty, whitespace-only, dirty, save-failed with/without pendingNextNoteId, saving/switching throws, null-note throws. Sprint 2 FIND-004/005 resolved."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "Integration tests cover no-current, empty, dirty-success, dirty-fail, same-note, save-failed-retry-success, save-failed-retry-fail paths. Event ordering verified for empty and dirty-success paths. Three minor gaps remain (FIND-004/005/006) but no critical or major edge case omissions."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-003"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts:42",
+          "description": "previousFrontmatter is declared optional (?:) but the spec and pipeline input type require it. Optional parameter allows callers to omit it without type errors, silently coercing undefined to null at line 64."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": ["FIND-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+          "description": "Module structure is clean: pure classify function with no port dependencies (lines 23-67), private isEmpty helper (lines 69-73). Sprint 2 FIND-003 resolved: isEmpty removed from signature, function arity is 2."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+          "description": "Pipeline orchestration is well-structured: pre-guard → classify → flush → startNewSession. SameNoteNoOp vs NewSession discrimination is clean. Port threading is explicit."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-001-classify-purity.harness.test.ts",
+          "description": "PROP-EPNS-001: 1000-run property test with valid (state, note) pairs. Sprint 2 FIND-006 resolved: arbValidStateAndNote generates idle→null, editing→Note, save-failed→Note pairs correctly."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-003-classify-editing.harness.test.ts",
+          "description": "PROP-EPNS-003: Property test uses direct classifyCurrentSession call, testing the production isEmpty implementation (no injection needed since isEmpty is now a private module function). Sprint 2 FIND-006 concern about isEmpty injection is no longer applicable."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts",
+          "description": "PROP-EPNS-005: Tier-0 compile-time exhaustiveness check with never branch. Verified at both pipeline.test.ts (lines 53-63) and dedicated harness."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 6,
+    "criticalFindings": 0,
+    "majorFindings": 2,
+    "minorFindings": 4,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": [],
+    "sprint2ResolutionStatus": {
+      "FIND-001_clockBudgetDirtyFail": "RESOLVED — spec updated to dirty-fail=1, implementation and tests match",
+      "FIND-002_selectedNoteIdNullGuard": "RESOLVED — explicit null check at flush-current-session.ts:84-87",
+      "FIND-003_isEmptyRemovedFromSignature": "RESOLVED — classifyCurrentSession now (state, note) with private isEmpty at line 70",
+      "FIND-004_nullNoteThrows": "RESOLVED — throws at lines 33-36 and 49-52, tests at step1 lines 187-196",
+      "FIND-005_savingSwitchingThrowsTests": "RESOLVED — tests at step1 lines 167-184",
+      "FIND-006_propertyTestValidPairs": "RESOLVED — arbValidStateAndNote generates correct pairs in prop-001"
+    }
+  }
+}

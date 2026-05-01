@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-SPEC-008",
+  "dimension": "verification_readiness",
+  "category": "purity_boundary",
+  "severity": "minor",
+  "title": "classifyCurrentSession purity claim is unimplementable for SaveFailedState without external Note source",
+  "description": "The verification architecture (line 15) classifies classifyCurrentSession as 'Pure core' with 'No ports, no side effects, deterministic'. PROP-EPNS-001 verifies referential transparency. However, as identified in FIND-SPEC-001, SaveFailedState does not carry a Note. If the implementation needs to retrieve the Note from an external source (e.g., a note repository or the editor's current buffer), classifyCurrentSession can no longer be pure. This undermines the entire purity boundary design for Step 1. The proof obligation PROP-EPNS-001 would be unfalsifiable because the function's purity depends on its input type carrying all needed data.",
+  "evidence": {
+    "filePath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+    "lineRange": "15",
+    "snippet": "| Step 1 | classifyCurrentSession | **Pure core** | Accepts only EditingSessionState; returns CurrentSessionDecision; no ports, no side effects, deterministic. Property-test target. |"
+  },
+  "recommendation": "This finding is a downstream consequence of FIND-SPEC-001. Once SaveFailedState is amended to carry Note, the purity claim becomes valid. No separate fix needed beyond resolving FIND-SPEC-001.",
+  "routeToPhase": "1a"
+}

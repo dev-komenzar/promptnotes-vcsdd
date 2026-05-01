@@ -1,0 +1,54 @@
+{
+  "sprintNumber": null,
+  "feature": "edit-past-note-start",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-04-30T14:00:00Z",
+  "iteration": 2,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-SPEC-009", "FIND-SPEC-010", "FIND-SPEC-011", "FIND-SPEC-012"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/behavioral-spec.md",
+          "description": "All 8 previous findings (FIND-SPEC-001 through FIND-SPEC-008) verified as resolved: pipeline input includes currentNote, same-note is pre-pipeline guard, SaveError mapping defined, PROP-EPNS-004 required, NoteFileSaved field sourcing specified, IdleState same-note clarified, PROP-EPNS-019 added, classifyCurrentSession signature updated."
+        },
+        {
+          "type": "file",
+          "location": "docs/domain/code/ts/src/capture/states.ts",
+          "description": "EditingState (lines 24-32) and EditPastNoteStartInput (behavioral-spec lines 32-36) both lack previousFrontmatter, creating a data-flow gap for the BlurSave port."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-SPEC-013"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md",
+          "description": "PROP-EPNS-001 through PROP-EPNS-005 required obligations verified as correctly stated. PROP-EPNS-019 added for same-note Clock proof. Coverage matrix covers all 12 requirements. PROP-EPNS-013 Clock call count description is incorrect for the empty path due to upstream spec contradiction in REQ-EPNS-012."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 5,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": [],
+    "previousFindingsResolved": [
+      "FIND-SPEC-001",
+      "FIND-SPEC-002",
+      "FIND-SPEC-003",
+      "FIND-SPEC-004",
+      "FIND-SPEC-005",
+      "FIND-SPEC-006",
+      "FIND-SPEC-007",
+      "FIND-SPEC-008"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "structural_integrity",
+  "category": "purity_boundary",
+  "severity": "minor",
+  "description": "classify-current-session.ts:70-73 implements isEmpty via raw cast 'note.body as unknown as string' and then 'raw.trim().length === 0'. The domain type contract (docs/domain/code/ts/src/shared/value-objects.ts:60) defines BodyApi.isEmptyAfterTrim(body: Body): boolean as the canonical API for this check. The current implementation bypasses the DMMF smart-constructor contract and hard-codes trim logic. If BodyApi.isEmptyAfterTrim semantics ever diverge (e.g., Unicode-aware whitespace), this inline implementation will silently differ. The spec says 'per NoteOps.isEmpty' (behavioral-spec.md:77), not an ad-hoc inline check.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+    "lineRange": "70-73",
+    "snippet": "function isEmpty(note: Note): boolean {\n  const raw = note.body as unknown as string;\n  return raw.trim().length === 0;\n}"
+  },
+  "routeToPhase": "2b"
+}
