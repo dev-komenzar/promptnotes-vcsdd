@@ -1,0 +1,110 @@
+VCSDD red-phase evidence — copy-body sprint 2
+
+new-feature-tests: failing
+regression-baseline: passing
+
+Summary: pre-existing test suite remains green; only the 12 copy-body files fail because impl is absent (Cannot find module $lib/domain/copy-body/{pipeline,body-for-clipboard}).
+
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/copy-body/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/body-for-clipboard.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/body-for-clipboard' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/body-for-clipboard.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-009-pass-through.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-009-pass-through.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-003-frontmatter-exclusion.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/body-for-clipboard' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-003-frontmatter-exclusion.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-007-read-only-inputs.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-007-read-only-inputs.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-008-empty-body-copy.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-008-empty-body-copy.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-002-body-equals-note-body.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/body-for-clipboard' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-002-body-equals-note-body.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-010-fserror-pass-through.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-010-fserror-pass-through.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-005-failure-io-budget.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-005-failure-io-budget.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-004-success-io-budget.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-004-success-io-budget.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-001-body-for-clipboard-purity.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/body-for-clipboard' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-001-body-for-clipboard-purity.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/copy-body/__verify__/prop-006-save-error-exhaustive.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/copy-body/pipeline' from '/home/user/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-006-save-error-exhaustive.harness.test.ts'
+-------------------------------
+
+
+ 275 pass
+ 12 fail
+ 12 errors
+ 10611 expect() calls
+Ran 287 tests across 43 files. [728.00ms]

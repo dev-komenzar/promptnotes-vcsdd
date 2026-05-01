@@ -1,0 +1,194 @@
+{
+  "featureName": "copy-body",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "complete",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-01T08:34:52.377Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-01T08:34:52.380Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-01T08:37:37.060Z"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-01T08:37:58.097Z",
+      "reason": "sprint-1 red phase begin",
+      "sprint": 2
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-01T08:42:49.291Z",
+      "reason": "red phase complete; 12 new tests fail; 275 baseline tests pass",
+      "sprint": 2
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-01T08:44:11.878Z",
+      "reason": "green phase complete; 45 copy-body tests + 275 baseline tests all passing",
+      "sprint": 2
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-01T08:44:35.495Z",
+      "reason": "2c no-op refactor; impl is already minimal",
+      "sprint": 2
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-01T08:48:31.068Z",
+      "reason": "phase 3 PASS, advancing to formal hardening",
+      "sprint": 2
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-01T08:50:24.492Z",
+      "reason": "phase 5 hardening complete: 10/10 PROPs proved",
+      "sprint": 2
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-01T08:52:00.075Z",
+      "reason": "phase 6 PASS",
+      "sprint": 2
+    }
+  ],
+  "iterations": {
+    "3": 1,
+    "5": 1,
+    "6": 1,
+    "1a": 1,
+    "1b": 1,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1,
+    "2c": 1,
+    "complete": 1
+  },
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-001-body-for-clipboard-purity.harness.test.ts"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-002-body-equals-note-body.harness.test.ts"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-003-frontmatter-exclusion.harness.test.ts"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-004-success-io-budget.harness.test.ts"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-005-failure-io-budget.harness.test.ts"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-006-save-error-exhaustive.harness.test.ts"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-007-read-only-inputs.harness.test.ts"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-008-empty-body-copy.harness.test.ts"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-009-pass-through.harness.test.ts"
+    },
+    {
+      "id": "PROP-010",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-010-fserror-pass-through.harness.test.ts"
+    }
+  ],
+  "traceability": {
+    "epicId": "VCSDD-copy-body-1777624308740",
+    "beads": []
+  },
+  "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T08:48:31.066Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "reason": "Adversary review PASS; 4 minor findings (FIND-001..004) identified and resolved in-place: vacuous publish=0 assertion replaced with type-level guarantee (CopyBodyDeps narrows to clockNow+clipboardWrite), tautological reference test fixed, unsound CaptureDeps cast removed, deep-freeze added to PROP-007.",
+        "adversaryVerdict": "PASS"
+      }
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T08:51:39.773Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "reason": "4D convergence: findings 5→4→0 all resolved in-place; 10/10 PROPs proved.",
+        "adversaryVerdict": "PASS"
+      }
+    },
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T08:37:43.907Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "reason": "lean spec gate; 5 minor findings addressed in-place (PROP cross-ref fixes, REQ-003 wording, REQ-012 added for noteId precondition)",
+        "adversaryVerdict": "PASS"
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-01T08:37:43.907Z"
+    }
+  },
+  "sprintCount": 2,
+  "createdAt": "2026-05-01T08:31:48.740Z",
+  "updatedAt": "2026-05-01T08:52:00.075Z"
+}

@@ -24,7 +24,15 @@
       "language": "typescript",
       "currentPhase": "6",
       "updatedAt": "2026-04-30T21:45:13.327Z"
+    },
+    "copy-body": {
+      "status": "active",
+      "createdAt": "2026-05-01T08:31:48.740Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "complete",
+      "updatedAt": "2026-05-01T08:52:00.075Z"
     }
   },
-  "activeFeature": "edit-past-note-start"
+  "activeFeature": "copy-body"
 }
