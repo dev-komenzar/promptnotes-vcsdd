@@ -2,9 +2,19 @@
 
 **Feature**: `tag-chip-update`
 **Phase**: 1a
-**Revision**: 3
+**Revision**: 4
 **Source of truth**: `docs/domain/workflows.md` Workflow 4 (lines 394–465), `docs/domain/code/ts/src/curate/workflows.ts`, `docs/domain/code/ts/src/curate/stages.ts`, `docs/domain/code/ts/src/curate/ports.ts`, `docs/domain/code/ts/src/curate/internal-events.ts`, `docs/domain/code/ts/src/curate/aggregates.ts`, `docs/domain/code/ts/src/curate/read-models.ts`, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/value-objects.ts`, `docs/domain/code/ts/src/shared/events.ts`, `docs/domain/code/ts/src/shared/errors.ts`
 **Scope**: Lightweight tag add/remove on a feed note without opening the editor. Pipeline spans Curate context only, reusing the CaptureAutoSave back-end (serializeNote → writeMarkdown → updateProjections). Workflow terminates after `Promise<Result<IndexedNote, SaveError>>` is produced. UI reactions, debounce coordination, and tag autocomplete are out of scope.
+
+---
+
+## Revision 4 Changes
+
+This revision addresses FIND-IMPL-TCU-003 from the Phase 3 adversarial review iter-1 verdict.
+
+- **FIND-IMPL-TCU-003**: Added Delta 6 — `TagChipUpdate` accepts `feed` and `inventory` as outer-curry inputs. The implementation uses `(deps, feed, inventory) => (command) => Promise<...>` rather than the canonical `(deps) => (command) => Promise<...>` form. This 6th delta is now declared explicitly in the spec. See "Cross-context Dependencies / Canonical Contract Deltas / Delta 6" below.
+
+Delta count is now **6** (Deltas 1–6).
 
 ---
 
@@ -116,7 +126,16 @@ Additionally the caller provides via `TagChipUpdate` invocation:
 ```typescript
 // Canonical signature (workflows.ts:73-77):
 type TagChipUpdate = (
+  deps: CurateDeps,
+) => (
+  command: TagChipCommand,
+) => Promise<Result<IndexedNote, SaveError>>;
+
+// Implementation signature (Delta 6 applied — see Cross-context Dependencies):
+type TagChipUpdate = (
   deps: TagChipUpdateDeps,
+  feed: Feed,
+  inventory: TagInventory,
 ) => (
   command: TagChipCommand,
 ) => Promise<Result<IndexedNote, SaveError>>;
@@ -359,6 +378,32 @@ export type BuildTagChipSaveRequest = (
 **Migration**: when other workflows reuse this constructor, they must pass their own `now`. The change is additive at the call site (callers already need `now` for their own purposes).
 
 **Purity**: with the `deps` curry dropped and `now` threaded explicitly, `buildTagChipSaveRequest` is fully pure (no clock call, no ports).
+
+### Delta 6 — `TagChipUpdate` accepts `feed` and `inventory` as outer-curry inputs
+
+**Canonical** (`docs/domain/code/ts/src/curate/workflows.ts:73-77`):
+```typescript
+export type TagChipUpdate = (
+  deps: CurateDeps,
+) => (
+  command: TagChipCommand,
+) => Promise<Result<IndexedNote, SaveError>>;
+```
+
+**Delta**:
+```typescript
+export type TagChipUpdate = (
+  deps: TagChipUpdateDeps,
+  feed: Feed,
+  inventory: TagInventory,
+) => (
+  command: TagChipCommand,
+) => Promise<Result<IndexedNote, SaveError>>;
+```
+
+**Rationale**: `feed` and `inventory` are workflow-scoped UI state at command time, not long-lived ports. Threading them through the outer curry keeps the inner closure command-only and makes the dependency on current projection state explicit at the call site. Folding them into `TagChipUpdateDeps` would imply they are stable long-lived ports (they are not — they are snapshots of state at the moment the command is dispatched). Including them in `TagChipCommand` would conflate the command envelope (user intent) with the execution context.
+
+**Migration**: callers retrieve the current `feed` and `inventory` from the Curate context at command-dispatch time and pass them explicitly as second and third arguments to the outer curry.
 
 ---
 

@@ -2,9 +2,17 @@
 
 **Feature**: `tag-chip-update`
 **Phase**: 1b
-**Revision**: 3
+**Revision**: 4
 **Mode**: lean
 **Source**: `docs/domain/workflows.md` Workflow 4, `docs/domain/code/ts/src/curate/workflows.ts`, `docs/domain/code/ts/src/curate/stages.ts`, `docs/domain/code/ts/src/curate/ports.ts`, `docs/domain/code/ts/src/curate/internal-events.ts`, `docs/domain/code/ts/src/curate/read-models.ts`, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/value-objects.ts`, `docs/domain/code/ts/src/shared/events.ts`, `docs/domain/code/ts/src/shared/errors.ts`
+
+---
+
+## Revision 4 Changes
+
+This revision addresses FIND-IMPL-TCU-003 from the Phase 3 adversarial review iter-1 verdict.
+
+- **FIND-IMPL-TCU-003**: Cross-reference added to behavioral-spec.md Delta 6 (`TagChipUpdate` 3-argument outer curry). The `TagChipUpdate` Port Contract entry is updated to show the Delta 6 implementation signature. No proof obligations change.
 
 ---
 

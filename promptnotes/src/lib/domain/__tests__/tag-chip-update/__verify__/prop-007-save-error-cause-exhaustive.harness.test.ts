@@ -42,11 +42,15 @@ function assertSaveErrorDeltaExhaustive(error: SaveErrorDelta): "validation" | "
  * (b) SaveValidationErrorDelta.cause exhaustiveness when kind === 'invariant-violated':
  * exactly 3 causes — 'note-not-in-feed', 'hydration-failed', 'frontmatter-invariant'.
  * 'tag-vo-invalid' is intentionally excluded per behavioral-spec.md Delta 1.
+ *
+ * FIX (FIND-IMPL-TCU-001): Use Extract<> instead of distributive conditional.
+ * The old form `SaveValidationErrorDelta extends { kind: "invariant-violated" } ? ... : never`
+ * resolved to `never` because the full union does NOT extend the { kind: "invariant-violated" }
+ * constraint (the 'empty-body-on-idle' branch fails). Extract<> narrows the union BEFORE
+ * indexing into `cause`, producing the correct 3-variant union.
  */
 function assertSaveValidationCauseExhaustive(
-  cause: SaveValidationErrorDelta extends { kind: "invariant-violated" }
-    ? SaveValidationErrorDelta["cause"]
-    : never,
+  cause: Extract<SaveValidationErrorDelta, { kind: "invariant-violated" }>["cause"],
 ): "note-not-in-feed" | "hydration-failed" | "frontmatter-invariant" {
   switch (cause) {
     case "note-not-in-feed":
@@ -56,13 +60,21 @@ function assertSaveValidationCauseExhaustive(
     case "frontmatter-invariant":
       return "frontmatter-invariant";
     default: {
-      // TypeScript infers cause as never here.
-      // If 'tag-vo-invalid' were added back, this would fail to compile.
+      // TypeScript infers cause as never here if and only if all 3 variants are handled.
+      // Adding a 4th variant to SaveValidationErrorDelta['cause'] would break compilation here.
       const _never: never = cause;
       return _never;
     }
   }
 }
+
+// Negative compile-time guard: a not-allowed cause must be rejected at the type level.
+// We pass the string directly (no cast) so TypeScript raises an error.
+// If the parameter type were `never`, TypeScript would also raise an error but for a
+// different reason (nothing is assignable to never). Using the raw string literal
+// exercises the actual 3-variant discriminator.
+// @ts-expect-error — "totally-fake-cause" is not in the 3-variant cause union
+assertSaveValidationCauseExhaustive("totally-fake-cause");
 
 // ── PROP-TCU-007 ─────────────────────────────────────────────────────────
 

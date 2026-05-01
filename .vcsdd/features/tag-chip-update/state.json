@@ -2,7 +2,7 @@
   "featureName": "tag-chip-update",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -35,14 +35,30 @@
       "timestamp": "2026-05-01T09:20:18.701Z",
       "reason": "red phase complete; beginning green",
       "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-01T09:29:56.533Z",
+      "reason": "green phase complete; beginning refactor",
+      "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-01T09:31:55.120Z",
+      "reason": "tdd cycle complete; awaiting adversarial review",
+      "sprint": 1
     }
   ],
   "iterations": {
+    "3": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
     "2a": 1,
-    "2b": 1
+    "2b": 1,
+    "2c": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -50,6 +66,22 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "verdict": "FAIL",
+      "timestamp": "2026-05-01T09:42:19.295Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 1,
+        "findings": [
+          "FIND-IMPL-TCU-001",
+          "FIND-IMPL-TCU-002",
+          "FIND-IMPL-TCU-003",
+          "FIND-IMPL-TCU-004",
+          "FIND-IMPL-TCU-005",
+          "FIND-IMPL-TCU-006"
+        ]
+      }
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-05-01T09:06:27.532Z",
@@ -74,9 +106,26 @@
         "failCount": 11,
         "passCount": 19
       }
+    },
+    "2b": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T09:29:34.508Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "greenEvidence": "122/122 tests pass (30 target + 92 property harness tests)",
+        "testCount": 122
+      }
+    },
+    "2c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-01T09:31:55.118Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "refactorEvidence": "all 122 tests still green; structural improvements: tagDiff extracted, isNoOpCommand consolidated, mapNoteEditError simplified, unused import removed"
+      }
     }
   },
   "sprintCount": 1,
   "createdAt": "2026-05-01T08:26:29.095Z",
-  "updatedAt": "2026-05-01T09:20:18.701Z"
+  "updatedAt": "2026-05-01T09:42:19.295Z"
 }

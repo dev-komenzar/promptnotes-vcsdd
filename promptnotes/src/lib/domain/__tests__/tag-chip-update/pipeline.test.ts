@@ -305,6 +305,37 @@ describe("REQ-TCU-001: Happy path — tag add", () => {
     const req = deps._savedRequests[0] as { source: string } | undefined;
     expect(req?.source).toBe("curate-tag-chip");
   });
+
+  test("PROP-TCU-008: IndexedNote.tagInventory includes added tag with usageCount >= 1", async () => {
+    const noteId = makeNoteId("2026-04-30-120000-001");
+    const tag = makeTag("typescript");
+    const deps = makeHappyDeps({ noteId, noteTags: [] }); // tag absent
+    const feed = makeFeed([noteId]);
+    const inventory = makeTagInventory();
+    const command: TagChipCommand = { kind: "add", noteId, tag };
+
+    const result = await tagChipUpdate(deps, feed, inventory)(command);
+
+    if (!result.ok) throw new Error("expected Ok");
+    const entries = result.value.tagInventory.entries;
+    const found = entries.find((e) => String(e.name) === String(tag));
+    expect(found).toBeDefined();
+    expect(found!.usageCount).toBeGreaterThanOrEqual(1);
+  });
+
+  test("PROP-TCU-008: IndexedNote.feed is a new Feed instance from FeedOps.refreshSort", async () => {
+    const noteId = makeNoteId("2026-04-30-120000-001");
+    const tag = makeTag("typescript");
+    const deps = makeHappyDeps({ noteId, noteTags: [] });
+    const originalFeed = makeFeed([noteId]);
+    const inventory = makeTagInventory();
+    const command: TagChipCommand = { kind: "add", noteId, tag };
+
+    const result = await tagChipUpdate(deps, originalFeed, inventory)(command);
+
+    if (!result.ok) throw new Error("expected Ok");
+    expect(result.value.feed).not.toBe(originalFeed); // FeedOps.refreshSort returns new instance
+  });
 });
 
 // ── REQ-TCU-002: Happy path — tag remove ──────────────────────────────────
@@ -350,6 +381,36 @@ describe("REQ-TCU-002: Happy path — tag remove", () => {
     await tagChipUpdate(deps, feed, inventory)(command);
 
     expect(deps._clockCallCount).toBe(1);
+  });
+
+  test("PROP-TCU-009: IndexedNote.tagInventory does not contain removed tag", async () => {
+    const noteId = makeNoteId("2026-04-30-120000-001");
+    const tag = makeTag("typescript");
+    const deps = makeHappyDeps({ noteId, noteTags: [tag] }); // tag present
+    const feed = makeFeed([noteId]);
+    const inventory = makeTagInventory([makeTagEntry(tag, 1)]);
+    const command: TagChipCommand = { kind: "remove", noteId, tag };
+
+    const result = await tagChipUpdate(deps, feed, inventory)(command);
+
+    if (!result.ok) throw new Error("expected Ok");
+    const entries = result.value.tagInventory.entries;
+    const found = entries.find((e) => String(e.name) === String(tag));
+    expect(found).toBeUndefined(); // removed tag should be absent (usageCount was 1, now 0 → dropped)
+  });
+
+  test("PROP-TCU-009: IndexedNote.feed is a new Feed instance from FeedOps.refreshSort on remove", async () => {
+    const noteId = makeNoteId("2026-04-30-120000-001");
+    const tag = makeTag("typescript");
+    const deps = makeHappyDeps({ noteId, noteTags: [tag] });
+    const originalFeed = makeFeed([noteId]);
+    const inventory = makeTagInventory([makeTagEntry(tag, 1)]);
+    const command: TagChipCommand = { kind: "remove", noteId, tag };
+
+    const result = await tagChipUpdate(deps, originalFeed, inventory)(command);
+
+    if (!result.ok) throw new Error("expected Ok");
+    expect(result.value.feed).not.toBe(originalFeed); // FeedOps.refreshSort returns new instance
   });
 });
 

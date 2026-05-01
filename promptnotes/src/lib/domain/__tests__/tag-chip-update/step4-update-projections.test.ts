@@ -309,6 +309,32 @@ describe("PROP-TCU-016: updateProjectionsAfterSave is pure (same inputs → same
   });
 });
 
+// ── FIND-IMPL-TCU-006: previousFrontmatter null invariant assertion ───────
+
+describe("FIND-IMPL-TCU-006: updateProjectionsAfterSave throws when previousFrontmatter is null", () => {
+  test("throws with REQ-TCU-009 message when event.previousFrontmatter is null", () => {
+    const noteId = makeNoteId("2026-04-30-120000-001");
+    const now = makeTimestamp(5000);
+    const newFm = makeFrontmatter({ tags: [makeTag("ts")] });
+    const feed = makeFeed([noteId]);
+    const inventory = makeTagInventory();
+    // Synthesize a NoteFileSaved with null previousFrontmatter via 'as any'.
+    const event = {
+      kind: "note-file-saved",
+      noteId,
+      body: "saved body",
+      frontmatter: newFm,
+      previousFrontmatter: null,
+      occurredOn: now,
+    } as unknown as import("promptnotes-domain-types/shared/events").NoteFileSaved;
+    const deps = makeTagChipDeps();
+
+    expect(() => updateProjectionsAfterSave(deps)(feed, inventory, event)).toThrow(
+      /invariant violated: tag-chip-update NoteFileSaved.previousFrontmatter must be non-null per spec REQ-TCU-009/,
+    );
+  });
+});
+
 // ── PROP-TCU-006: save-failure projection isolation ───────────────────────
 
 describe("PROP-TCU-006: updateProjectionsAfterSave is NOT called on save-failure path", () => {
