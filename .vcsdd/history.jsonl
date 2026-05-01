@@ -146,3 +146,6 @@
 {"timestamp":"2026-05-01T16:03:15.251Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T16:11:05.500Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T16:11:05.502Z","event":"phase_transition","featureName":"handle-save-failure","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-05-01T16:15:36.447Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"5","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T16:16:17.934Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"5","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T16:16:17.937Z","event":"phase_transition","featureName":"handle-save-failure","from":"5","to":"6","iteration":1,"phase":"6"}

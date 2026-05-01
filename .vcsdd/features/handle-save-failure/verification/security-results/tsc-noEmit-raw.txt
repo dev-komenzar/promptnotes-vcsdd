@@ -1,0 +1,2 @@
+src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts(19,13): error TS2322: Type 'SwitchError' is not assignable to type 'never'.
+src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts(58,13): error TS2322: Type 'SwitchError' is not assignable to type 'never'.
