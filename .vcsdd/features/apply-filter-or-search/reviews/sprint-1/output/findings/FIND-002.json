@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "verification_readiness",
+  "category": "proof_gap",
+  "severity": "low",
+  "description": "PROP-002 (apply determinism) and PROP-007 (sort determinism) harnesses originally only exercised arbAppliedFilterNoOp(), leaving the non-trivial filter/search/sort branches uninvigorated. The harnesses now mix arbAppliedFilterMixed and arbAppliedFilterWithTags so the universal determinism claim is witnessed across non-trivial AppliedFilter cases.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-002-apply-determinism.harness.test.ts",
+    "lineRange": "87-129",
+    "snippet": "Pre-fix: only arbAppliedFilterNoOp(). Post-fix: 4 tests including arbAppliedFilterMixed (500 runs) and arbAppliedFilterWithTags (200 runs); prop-007 mirrors this structure."
+  },
+  "routeToPhase": "2a",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 1,
+    "fixedInPhase": "2a-revisited",
+    "notes": "Added arbAppliedFilterMixed in _arbitraries.ts (weighted oneof of no-op, with-tags, search+sort) and replumbed PROP-002 / PROP-007 harnesses to exercise non-trivial branches."
+  }
+}

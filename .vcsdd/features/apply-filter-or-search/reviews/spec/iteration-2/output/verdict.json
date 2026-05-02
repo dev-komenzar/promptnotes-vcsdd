@@ -1,0 +1,34 @@
+{
+  "phase": "1c",
+  "iteration": 2,
+  "feature": "apply-filter-or-search",
+  "mode": "lean",
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "verdict": "PASS",
+  "findingsCount": {
+    "critical": 0,
+    "major": 0,
+    "minor": 2
+  },
+  "rationale": "All 14 prior findings (F-1c-001..F-1c-014) are substantively resolved by revision 2: REQ-006 / REQ-011 critical gaps now have dedicated property coverage (PROP-013 / PROP-014); REQ-007 / REQ-014 candidate-set claims are now two-sided (PROP-008 / PROP-018); REQ-003 fail-fast is exercised (PROP-017); PROP-011 is split into Tier-0 reuse review (PROP-011a) and Tier-1 runtime assertion (PROP-011b); REQ-012 NoteId tiebreak and REQ-011 search scope are recorded as Design Decisions DD-1 and DD-2 with explicit rationale and pending-amendment notes; tag dedup is normatively specified and verified (PROP-016); REQ-005 search text is now an explicit verbatim passthrough; the harness is bun:test (confirmed in promptnotes/package.json @types/bun ^1.3.13 + fast-check ^4.7.0); the perf benchmark lives in a dedicated apply-filter-or-search.perf.test.ts with pinned methodology (1 warmup, median of 5). Two new minor findings remain: F-1c-100 (PROP-004's literal iff predicate vacuously excludes all snapshots when criteria.tags is empty, contradicting REQ-008 acceptance #5 — wording defect, intent recoverable) and F-1c-101 (PROP-011a cites a tryNewTag free function from value-objects.ts but that module exports only the TagSmartCtor interface; the concrete TS-side tryNewTag implementation strategy is correctly deferred to Phase 2a in Findings to Carry Forward §4, but the verification reference should be aligned with that deferral). 0 critical + 0 major + 2 minor is well within the lean tolerance of ≤2 majors / 0 criticals.",
+  "priorIterationFindingsResolved": [
+    "F-1c-001",
+    "F-1c-002",
+    "F-1c-003",
+    "F-1c-004",
+    "F-1c-005",
+    "F-1c-006",
+    "F-1c-007",
+    "F-1c-008",
+    "F-1c-009",
+    "F-1c-010",
+    "F-1c-011",
+    "F-1c-012",
+    "F-1c-013",
+    "F-1c-014"
+  ],
+  "priorIterationFindingsStillOpen": []
+}

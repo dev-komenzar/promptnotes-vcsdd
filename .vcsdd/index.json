@@ -33,6 +33,30 @@
       "currentPhase": "complete",
       "updatedAt": "2026-05-01T08:52:00.075Z"
     },
+    "tag-chip-update": {
+      "status": "active",
+      "createdAt": "2026-05-01T08:26:29.095Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "complete",
+      "updatedAt": "2026-05-01T10:33:39.304Z"
+    },
+    "apply-filter-or-search": {
+      "status": "active",
+      "createdAt": "2026-05-01T11:35:45.124Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "complete",
+      "updatedAt": "2026-05-01T13:02:41.688Z"
+    },
+    "handle-save-failure": {
+      "status": "active",
+      "createdAt": "2026-05-01T15:12:50.376Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "complete",
+      "updatedAt": "2026-05-01T16:20:05.433Z"
+    },
     "configure-vault": {
       "status": "active",
       "createdAt": "2026-05-02T02:20:16.178Z",

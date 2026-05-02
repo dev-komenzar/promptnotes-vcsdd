@@ -1,0 +1,15 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+total-tests: 480
+new-tests-added: 160
+─────────────────────────────────────
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+[perf] applyFilterOrSearch median: 1.005ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.004ms (advisory bound: 5ms)
+
+ 480 pass
+ 0 fail
+ 11284 expect() calls
+Ran 480 tests across 66 files. [10.97s]

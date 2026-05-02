@@ -1,0 +1,16 @@
+bun test v1.3.11 (af24e281)
+
+---
+target-feature-tests: PASS
+regression-baseline: PASS
+
+ 122 pass
+ 0 fail
+ 163 expect() calls
+Ran 122 tests across 14 files. [2.18s]
+
+Notes:
+- 30 primary tests across 5 step/pipeline files: all PASS
+- 92 property harness tests across 9 __verify__ files: all PASS
+- Pre-existing failures in other features (app-startup, capture-auto-save __tests__ using $lib/ alias):
+  19 fail — these are unrelated to tag-chip-update and predate this branch

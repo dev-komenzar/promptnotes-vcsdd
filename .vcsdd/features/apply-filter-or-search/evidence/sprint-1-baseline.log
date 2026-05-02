@@ -1,0 +1,11 @@
+baseline captured before adding apply-filter-or-search test files
+
+ 59 pass
+ 36 fail
+ 36 errors
+ 127 expect() calls
+Ran 95 tests across 43 files. [55.00ms]
+
+NOTE: The 36 pre-existing failures are from other features whose source implementations
+do not yet exist (capture-auto-save, copy-body, app-startup, edit-past-note-start).
+These were already failing before Phase 2a work on apply-filter-or-search began.

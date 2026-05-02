@@ -34,14 +34,14 @@
 {"timestamp":"2026-04-27T21:20:51.055Z","event":"bead_created","featureName":"app-startup","beadId":"BEAD-031","type":"verification-property","phase":"1b","externalId":"PROP-016"}
 {"timestamp":"2026-04-27T21:20:51.056Z","event":"bead_created","featureName":"app-startup","beadId":"BEAD-032","type":"verification-property","phase":"1b","externalId":"PROP-017"}
 {"timestamp":"2026-04-27T21:20:51.057Z","event":"bead_created","featureName":"app-startup","beadId":"BEAD-033","type":"verification-property","phase":"1b","externalId":"PROP-018"}
-{"timestamp":"2026-04-28T00:00:00.000Z","event":"spec_regenerated","featureName":"app-startup","phase":"1b","reason":"domain-doc-corrections","changes":["VaultDirectoryConfigured-ownership","ScanFileFailure-introduction"],"details":{"VaultDirectoryConfigured-ownership":"REQ-001 and PROP-016 now explicitly state VaultDirectoryConfigured is NOT emitted by AppStartup on the happy path; it is exclusively owned by ConfigureVault (Workflow 9)","ScanFileFailure-introduction":"REQ-002 updated to use ScanFileFailure discriminated union ({kind:read,fsError}|{kind:hydrate,reason}); CorruptedFile.failure field (not .reason); REQ-016 added for per-file readFile failure; PROP-009 updated; PROP-019 (ScanFileFailure exhaustiveness Tier-0) added; PROP-020 (permission-denied readFile example) added"},"beadsAdded":["BEAD-034 (REQ-016)","BEAD-035 (PROP-019)","BEAD-036 (PROP-020)"],"beadsModified":["BEAD-024 (PROP-009)","BEAD-031 (PROP-016)"],"reqDelta":"+1 (REQ-016)","propDelta":"+2 (PROP-019, PROP-020), 2 modified (PROP-009, PROP-016)"}
 {"timestamp":"2026-04-27T22:12:13.814Z","event":"gate_recorded","featureName":"app-startup","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
-{"timestamp":"2026-04-28T00:00:00.000Z","event":"spec_revised","featureName":"app-startup","phase":"1b","reason":"phase-1c-iteration-1-FAIL","findingsAddressed":["F-001","F-002","F-003","F-004","F-005"]}
 {"timestamp":"2026-04-27T22:26:05.207Z","event":"gate_recorded","featureName":"app-startup","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-04-27T22:53:10.494Z","event":"phase_transition","featureName":"app-startup","from":"1b","to":"1c","iteration":1,"phase":"1c"}
 {"timestamp":"2026-04-27T22:53:10.499Z","event":"phase_transition","featureName":"app-startup","from":"1c","to":"2a","iteration":1,"phase":"2a"}
 {"timestamp":"2026-04-27T22:53:10.499Z","event":"sprint_started","featureName":"app-startup","sprintNumber":1,"phase":"2a"}
 {"timestamp":"2026-04-27T23:05:03.869Z","event":"sprint_red_recorded","featureName":"app-startup","sprintN":1,"phase":"2a","evidencePath":".vcsdd/features/app-startup/evidence/sprint-1-red-phase.log","newFeatureTests":"FAIL","regressionBaseline":"PASS"}
+{"timestamp":"2026-04-28T00:00:00.000Z","event":"spec_regenerated","featureName":"app-startup","phase":"1b","reason":"domain-doc-corrections","changes":["VaultDirectoryConfigured-ownership","ScanFileFailure-introduction"],"details":{"VaultDirectoryConfigured-ownership":"REQ-001 and PROP-016 now explicitly state VaultDirectoryConfigured is NOT emitted by AppStartup on the happy path; it is exclusively owned by ConfigureVault (Workflow 9)","ScanFileFailure-introduction":"REQ-002 updated to use ScanFileFailure discriminated union ({kind:read,fsError}|{kind:hydrate,reason}); CorruptedFile.failure field (not .reason); REQ-016 added for per-file readFile failure; PROP-009 updated; PROP-019 (ScanFileFailure exhaustiveness Tier-0) added; PROP-020 (permission-denied readFile example) added"},"beadsAdded":["BEAD-034 (REQ-016)","BEAD-035 (PROP-019)","BEAD-036 (PROP-020)"],"beadsModified":["BEAD-024 (PROP-009)","BEAD-031 (PROP-016)"],"reqDelta":"+1 (REQ-016)","propDelta":"+2 (PROP-019, PROP-020), 2 modified (PROP-009, PROP-016)"}
+{"timestamp":"2026-04-28T00:00:00.000Z","event":"spec_revised","featureName":"app-startup","phase":"1b","reason":"phase-1c-iteration-1-FAIL","findingsAddressed":["F-001","F-002","F-003","F-004","F-005"]}
 {"timestamp": "2026-04-30T02:47:50.055490Z", "feature": "app-startup", "event": "phase-transition", "from": "2a", "to": "2b", "sprint": 1}
 {"timestamp": "2026-04-30T03:03:29.013571Z", "feature": "app-startup", "event": "green-phase-pass", "sprint": 1, "tsTests": 81, "rustTests": 7}
 {"timestamp": "2026-04-30T03:03:29.013571Z", "feature": "app-startup", "event": "phase-transition", "from": "2b", "to": "2c", "sprint": 1}
@@ -51,22 +51,47 @@
 {"timestamp": "2026-04-30T04:35:00Z", "feature": "app-startup", "event": "phase-transition", "from": "3", "to": "4", "sprint": 1, "reason": "adversary-fail-routing"}
 {"timestamp": "2026-04-30T04:35:00Z", "feature": "app-startup", "event": "feedback-routed", "fromPhase": "3", "targetPhase": "1a", "sprint": 1, "findingsCount": 10, "groupedFindings": {"1a":2,"2a":2,"2b":5,"2c":1}, "findingBeads": ["BEAD-055","BEAD-056","BEAD-057","BEAD-058","BEAD-059","BEAD-060","BEAD-061","BEAD-062","BEAD-063","BEAD-064"]}
 {"timestamp": "2026-04-30T04:35:00Z", "feature": "app-startup", "event": "phase-transition", "from": "4", "to": "1a", "sprint": 1, "reason": "earliest-affected-phase"}
-{"timestamp": "2026-04-30T04:50:00Z", "feature": "app-startup", "event": "spec-refined", "phase": "1a", "iteration": 2, "findingsResolved": ["FIND-003", "FIND-010"], "resolutionNotes": "REQ-015 Option A; REQ-004 collapse-to-path-not-found"}
-{"timestamp": "2026-04-30T04:50:00Z", "feature": "app-startup", "event": "verification-arch-refined", "phase": "1b", "iteration": 2, "addedProps": ["PROP-023", "PROP-024"]}
-{"timestamp": "2026-04-30T04:50:00Z", "feature": "app-startup", "event": "phase-transition", "from": "1a", "to": "1b", "sprint": 1}
-{"timestamp": "2026-04-30T13:00:00Z", "feature": "app-startup", "event": "phase-transition", "from": "1b", "to": "1c", "reason": "spec-review-gate iteration-3"}
-{"timestamp": "2026-04-30T13:00:00Z", "feature": "app-startup", "event": "gate-recorded", "phase": "1c", "iteration": 3, "verdict": "PASS", "findingsCount": 0, "reviewedBy": "adversary", "routedFindingsResolved": ["FIND-003", "FIND-010"], "regressionCheck": ["F-001", "F-002", "F-003", "F-004", "F-005"]}
-{"timestamp": "2026-04-30T13:00:01Z", "feature": "app-startup", "event": "phase-transition", "from": "1c", "to": "2a", "sprint": 2, "reason": "lean-mode adversary PASS — start sprint 2"}
-{"timestamp": "2026-04-30T13:30:00Z", "feature": "app-startup", "phase": "2a", "sprint": 2, "iteration": 2, "event": "red-phase-complete", "evidence": ".vcsdd/features/app-startup/evidence/sprint-2-red-phase.log", "metrics": {"totalTests": 113, "newTestsAdded": 32, "failingTests": 12, "passingTests": 101, "typeCheckErrors": 43}, "newFeatureTests": "FAIL", "regressionBaseline": "PASS", "redSignalFindings": ["FIND-001", "FIND-002", "FIND-004", "FIND-006", "FIND-009"], "coverageRetrofitProps": ["PROP-021", "PROP-023", "PROP-024"]}
 {"timestamp": "2026-04-30T04:37:05Z", "feature": "app-startup", "event": "phase-transition", "from": "2a", "to": "2b", "sprint": 2, "reason": "sprint-2 green phase begin"}
 {"timestamp": "2026-04-30T04:47:00Z", "feature": "app-startup", "phase": "2b", "sprint": 2, "iteration": 1, "event": "green-phase-complete", "evidence": ".vcsdd/features/app-startup/evidence/sprint-2-green-phase.log", "metrics": {"totalTests": 113, "passingTests": 113, "failingTests": 0, "typeCheckErrors": 0}, "targetFeatureTests": "PASS", "regressionBaseline": "PASS", "resolvedFindings": ["FIND-001", "FIND-002", "FIND-004", "FIND-006", "FIND-009"]}
 {"timestamp": "2026-04-30T04:47:47Z", "feature": "app-startup", "event": "phase-transition", "from": "2b", "to": "2c", "sprint": 2, "reason": "sprint-2 green complete; start refactor"}
+{"timestamp": "2026-04-30T04:50:00Z", "feature": "app-startup", "event": "spec-refined", "phase": "1a", "iteration": 2, "findingsResolved": ["FIND-003", "FIND-010"], "resolutionNotes": "REQ-015 Option A; REQ-004 collapse-to-path-not-found"}
+{"timestamp": "2026-04-30T04:50:00Z", "feature": "app-startup", "event": "verification-arch-refined", "phase": "1b", "iteration": 2, "addedProps": ["PROP-023", "PROP-024"]}
+{"timestamp": "2026-04-30T04:50:00Z", "feature": "app-startup", "event": "phase-transition", "from": "1a", "to": "1b", "sprint": 1}
 {"timestamp": "2026-04-30T04:50:30Z", "feature": "app-startup", "phase": "2c", "sprint": 2, "iteration": 2, "event": "refactor-complete", "evidence": ".vcsdd/features/app-startup/evidence/sprint-2-green-phase.log", "metrics": {"totalTests": 113, "passingTests": 113, "failingTests": 0, "typeCheckErrors": 0}, "targetFeatureTests": "PASS", "regressionBaseline": "PASS", "refactors": ["scan-vault helpers tidy", "initialize-capture extract makeEditingState/emitCaptureSessionStartEvents", "pipeline header doc refresh"], "find008Disposition": "kept open — referenced Rust path does not exist; Phase 5 to decide"}
+{"timestamp":"2026-04-30T12:29:51.431Z","event":"feature_created","featureName":"capture-auto-save","mode":"lean","language":"typescript"}
+{"timestamp":"2026-04-30T12:39:52.551Z","event":"phase_transition","featureName":"capture-auto-save","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-04-30T12:39:52.552Z","event":"phase_transition","featureName":"capture-auto-save","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-04-30T12:45:03.591Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T12:52:42.615Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T12:52:42.617Z","event":"phase_transition","featureName":"capture-auto-save","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-04-30T12:53:30.316Z","event":"phase_transition","featureName":"capture-auto-save","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-04-30T12:53:30.316Z","event":"sprint_started","featureName":"capture-auto-save","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-04-30T12:58:15.753Z","event":"phase_transition","featureName":"capture-auto-save","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp": "2026-04-30T13:00:00Z", "feature": "app-startup", "event": "phase-transition", "from": "1b", "to": "1c", "reason": "spec-review-gate iteration-3"}
+{"timestamp": "2026-04-30T13:00:00Z", "feature": "app-startup", "event": "gate-recorded", "phase": "1c", "iteration": 3, "verdict": "PASS", "findingsCount": 0, "reviewedBy": "adversary", "routedFindingsResolved": ["FIND-003", "FIND-010"], "regressionCheck": ["F-001", "F-002", "F-003", "F-004", "F-005"]}
+{"timestamp": "2026-04-30T13:00:01Z", "feature": "app-startup", "event": "phase-transition", "from": "1c", "to": "2a", "sprint": 2, "reason": "lean-mode adversary PASS — start sprint 2"}
+{"timestamp":"2026-04-30T13:01:09.875Z","event":"phase_transition","featureName":"capture-auto-save","from":"2b","to":"2c","iteration":1,"phase":"2c"}
+{"timestamp":"2026-04-30T13:05:09.691Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:12:25.686Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:18:30.746Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp": "2026-04-30T13:30:00Z", "feature": "app-startup", "phase": "2a", "sprint": 2, "iteration": 2, "event": "red-phase-complete", "evidence": ".vcsdd/features/app-startup/evidence/sprint-2-red-phase.log", "metrics": {"totalTests": 113, "newTestsAdded": 32, "failingTests": 12, "passingTests": 101, "typeCheckErrors": 43}, "newFeatureTests": "FAIL", "regressionBaseline": "PASS", "redSignalFindings": ["FIND-001", "FIND-002", "FIND-004", "FIND-006", "FIND-009"], "coverageRetrofitProps": ["PROP-021", "PROP-023", "PROP-024"]}
+{"timestamp":"2026-04-30T13:35:36.496Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:45:46.605Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"PASS","reviewedBy":"human"}
+{"timestamp":"2026-04-30T13:45:51.252Z","event":"phase_transition","featureName":"capture-auto-save","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-04-30T13:45:51.253Z","event":"phase_transition","featureName":"capture-auto-save","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-04-30T13:55:11.389Z","event":"phase_transition","featureName":"capture-auto-save","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-04-30T13:55:34.162Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T13:58:31.774Z","event":"phase_transition","featureName":"capture-auto-save","from":"6","to":"complete","iteration":1,"phase":"complete"}
+{"timestamp":"2026-04-30T14:11:31.606Z","event":"feature_created","featureName":"edit-past-note-start","mode":"lean","language":"typescript"}
+{"timestamp":"2026-04-30T14:20:41.813Z","event":"phase_transition","featureName":"edit-past-note-start","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-04-30T14:20:47.200Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1a","to":"1b","iteration":1,"phase":"1b"}
 {"timestamp": "2026-04-30T14:30:00Z", "feature": "app-startup", "event": "phase-transition", "from": "2c", "to": "3", "sprint": 2, "reason": "sprint-2 adversary review begin (lean mode, iteration 1)"}
 {"timestamp": "2026-04-30T14:30:00Z", "feature": "app-startup", "phase": "3", "sprint": 2, "iteration": 1, "event": "adversary-review-complete", "verdict": "FAIL", "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-2/output/verdict.json", "dimensionVerdicts": {"spec_fidelity": "PASS", "edge_case_coverage": "PASS", "implementation_correctness": "PASS", "structural_integrity": "FAIL", "verification_readiness": "FAIL"}, "findingsCount": 4, "findingsBySeverity": {"critical": 0, "major": 3, "minor": 1}, "findingsDir": ".vcsdd/features/app-startup/reviews/sprint-2/output/findings/", "priorSprintFindingsResolved": ["FIND-001", "FIND-002", "FIND-004", "FIND-006", "FIND-007", "FIND-009"], "priorSprintFindingsKeptOpen": ["FIND-008"], "priorSprintFindingsRoutedToSpec": ["FIND-003", "FIND-010"], "priorSprintFindingsPartiallyResolved": ["FIND-005"]}
 {"timestamp": "2026-04-30T14:35:00Z", "feature": "app-startup", "event": "phase-transition", "from": "3", "to": "4", "sprint": 2, "reason": "sprint-2 adversary FAIL: 4 findings (3 major, 1 minor). Routing required."}
 {"timestamp": "2026-04-30T14:35:00Z", "feature": "app-startup", "phase": "4", "sprint": 2, "iteration": 2, "event": "feedback-routing", "fromPhase": "3", "targetPhase": "1a", "groupedFindings": {"1a": ["FIND-014"], "2a": ["FIND-011", "FIND-012"], "2b": ["FIND-013"]}, "earliestPhase": "1a", "iterationLimitCheck": {"phase": "3", "mode": "lean", "current": 2, "max": 3, "withinLimit": true}, "createdBeads": ["BEAD-067", "BEAD-068", "BEAD-069", "BEAD-070"], "updatedBeadStatus": {"BEAD-055": "resolved-code", "BEAD-056": "resolved-code", "BEAD-058": "resolved-code", "BEAD-059": "partially-resolved", "BEAD-060": "resolved-code", "BEAD-061": "resolved-code", "BEAD-063": "resolved-code"}}
 {"timestamp": "2026-04-30T14:35:00Z", "feature": "app-startup", "event": "phase-transition", "from": "4", "to": "1a", "sprint": 2, "reason": "earliest-affected-phase: FIND-014 raises REQ-010 spec ambiguity"}
+{"timestamp":"2026-04-30T14:38:00.996Z","event":"gate_recorded","featureName":"edit-past-note-start","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-04-30T14:38:00.997Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1b","to":"1c","iteration":1,"phase":"1c"}
 {"timestamp": "2026-04-30T14:50:00Z", "feature": "app-startup", "phase": "1a", "sprint": 2, "iteration": 3, "event": "spec-refinement-complete", "addressedFinding": "FIND-014", "spec": ".vcsdd/features/app-startup/specs/behavioral-spec.md", "specRevision": 5, "decision": "Option A — Note aggregate constructed for invariant + event-emission semantics, not retention", "changedSection": "REQ-010 NOTE block + 3 refined ACs"}
 {"timestamp": "2026-04-30T14:50:00Z", "feature": "app-startup", "event": "phase-transition", "from": "1a", "to": "1b", "sprint": 2, "reason": "spec refinement complete (FIND-014 Option A)"}
 {"timestamp": "2026-04-30T14:50:00Z", "feature": "app-startup", "phase": "1b", "sprint": 2, "iteration": 3, "event": "verification-architecture-sync", "addressedFinding": "FIND-014", "verificationArchitecture": ".vcsdd/features/app-startup/specs/verification-architecture.md", "verificationArchitectureRevision": 5, "changes": ["PROP-013 description tightened (excludes Note aggregate field)", "PROP-013 Covers REQ extended: REQ-014 → REQ-010, REQ-014"]}
@@ -81,31 +106,6 @@
 {"timestamp": "2026-04-30T17:30:00Z", "feature": "app-startup", "phase": "2b", "sprint": 3, "iteration": 1, "event": "green-phase-complete", "targetFeatureTests": "PASS", "regressionBaseline": "PASS", "totalTests": 115, "passingTests": 115, "failingTests": 0, "typeCheckErrors": 0, "redSignalsResolved": ["FIND-013"], "implFiles": ["promptnotes/src/lib/domain/app-startup/stages.ts", "promptnotes/src/lib/domain/app-startup/scan-vault.ts"], "testStubFiles": ["promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts", "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts"], "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-3-green-phase.log", "implBeads": ["BEAD-076", "BEAD-077", "BEAD-078", "BEAD-079"]}
 {"timestamp": "2026-04-30T17:30:00Z", "feature": "app-startup", "event": "phase-transition", "from": "2b", "to": "2c", "sprint": 3, "iteration": 1, "reason": "sprint-3 green phase complete; FIND-013 resolved; transitioning to refactor"}
 {"timestamp": "2026-04-30T17:30:01Z", "feature": "app-startup", "phase": "2c", "sprint": 3, "iteration": 1, "event": "refactor-phase-complete", "verdict": "NO_REFACTOR_WARRANTED", "rationale": "Phase 2b changes are minimal and clean; makeBody helper duplication matches existing per-file convention", "targetFeatureTests": "PASS", "regressionBaseline": "PASS", "totalTests": 115, "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-3-green-phase.log", "openFollowups": ["FIND-008 (route 2c, minor) \u2014 Rust path absent; Phase 5 decides"]}
-{"timestamp":"2026-04-30T12:29:51.431Z","event":"feature_created","featureName":"capture-auto-save","mode":"lean","language":"typescript"}
-{"timestamp":"2026-04-30T12:39:52.551Z","event":"phase_transition","featureName":"capture-auto-save","from":"init","to":"1a","iteration":1,"phase":"1a"}
-{"timestamp":"2026-04-30T12:39:52.552Z","event":"phase_transition","featureName":"capture-auto-save","from":"1a","to":"1b","iteration":1,"phase":"1b"}
-{"timestamp":"2026-04-30T12:45:03.591Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T12:52:42.615Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T12:52:42.617Z","event":"phase_transition","featureName":"capture-auto-save","from":"1b","to":"1c","iteration":1,"phase":"1c"}
-{"timestamp":"2026-04-30T12:53:30.316Z","event":"phase_transition","featureName":"capture-auto-save","from":"1c","to":"2a","iteration":1,"phase":"2a"}
-{"timestamp":"2026-04-30T12:53:30.316Z","event":"sprint_started","featureName":"capture-auto-save","sprintNumber":1,"phase":"2a"}
-{"timestamp":"2026-04-30T12:58:15.753Z","event":"phase_transition","featureName":"capture-auto-save","from":"2a","to":"2b","iteration":1,"phase":"2b"}
-{"timestamp":"2026-04-30T13:01:09.875Z","event":"phase_transition","featureName":"capture-auto-save","from":"2b","to":"2c","iteration":1,"phase":"2c"}
-{"timestamp":"2026-04-30T13:05:09.691Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T13:12:25.686Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T13:18:30.746Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T13:35:36.496Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T13:45:46.605Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"3","verdict":"PASS","reviewedBy":"human"}
-{"timestamp":"2026-04-30T13:45:51.252Z","event":"phase_transition","featureName":"capture-auto-save","from":"2c","to":"3","iteration":1,"phase":"3"}
-{"timestamp":"2026-04-30T13:45:51.253Z","event":"phase_transition","featureName":"capture-auto-save","from":"3","to":"5","iteration":1,"phase":"5"}
-{"timestamp":"2026-04-30T13:55:11.389Z","event":"phase_transition","featureName":"capture-auto-save","from":"5","to":"6","iteration":1,"phase":"6"}
-{"timestamp":"2026-04-30T13:55:34.162Z","event":"gate_recorded","featureName":"capture-auto-save","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T13:58:31.774Z","event":"phase_transition","featureName":"capture-auto-save","from":"6","to":"complete","iteration":1,"phase":"complete"}
-{"timestamp":"2026-04-30T14:11:31.606Z","event":"feature_created","featureName":"edit-past-note-start","mode":"lean","language":"typescript"}
-{"timestamp":"2026-04-30T14:20:41.813Z","event":"phase_transition","featureName":"edit-past-note-start","from":"init","to":"1a","iteration":1,"phase":"1a"}
-{"timestamp":"2026-04-30T14:20:47.200Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1a","to":"1b","iteration":1,"phase":"1b"}
-{"timestamp":"2026-04-30T14:38:00.996Z","event":"gate_recorded","featureName":"edit-past-note-start","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
-{"timestamp":"2026-04-30T14:38:00.997Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1b","to":"1c","iteration":1,"phase":"1c"}
 {"timestamp":"2026-04-30T21:10:54.792Z","event":"phase_transition","featureName":"edit-past-note-start","from":"1c","to":"2a","iteration":1,"phase":"2a"}
 {"timestamp":"2026-04-30T21:10:54.793Z","event":"sprint_started","featureName":"edit-past-note-start","sprintNumber":1,"phase":"2a"}
 {"timestamp":"2026-04-30T21:15:23.568Z","event":"phase_transition","featureName":"edit-past-note-start","from":"2a","to":"2b","iteration":1,"phase":"2b"}
@@ -115,15 +115,19 @@
 {"timestamp":"2026-04-30T21:41:31.446Z","event":"phase_transition","featureName":"edit-past-note-start","from":"3","to":"5","iteration":1,"phase":"5"}
 {"timestamp":"2026-04-30T21:45:13.328Z","event":"phase_transition","featureName":"edit-past-note-start","from":"5","to":"6","iteration":1,"phase":"6"}
 {"timestamp":"2026-04-30T21:45:41.209Z","event":"gate_recorded","featureName":"edit-past-note-start","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T08:26:29.098Z","event":"feature_created","featureName":"tag-chip-update","mode":"lean","language":"typescript"}
 {"timestamp":"2026-05-01T08:31:48.744Z","event":"feature_created","featureName":"copy-body","mode":"lean","language":"typescript"}
 {"timestamp":"2026-05-01T08:34:52.380Z","event":"phase_transition","featureName":"copy-body","from":"init","to":"1a","iteration":1,"phase":"1a"}
 {"timestamp":"2026-05-01T08:34:52.381Z","event":"phase_transition","featureName":"copy-body","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-05-01T08:35:11.130Z","event":"phase_transition","featureName":"tag-chip-update","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-05-01T08:35:11.131Z","event":"phase_transition","featureName":"tag-chip-update","from":"1a","to":"1b","iteration":1,"phase":"1b"}
 {"timestamp":"2026-05-01T08:37:37.063Z","event":"phase_transition","featureName":"copy-body","from":"1b","to":"1c","iteration":1,"phase":"1c"}
 {"timestamp":"2026-05-01T08:37:43.908Z","event":"gate_recorded","featureName":"copy-body","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T08:37:47.703Z","event":"sprint_started","featureName":"copy-body","sprintNumber":1}
 {"timestamp":"2026-05-01T08:37:58.100Z","event":"phase_transition","featureName":"copy-body","from":"1c","to":"2a","iteration":1,"phase":"2a"}
 {"timestamp":"2026-05-01T08:37:58.100Z","event":"sprint_started","featureName":"copy-body","sprintNumber":2,"phase":"2a"}
 {"timestamp":"2026-05-01T08:42:49.293Z","event":"phase_transition","featureName":"copy-body","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-05-01T08:42:58.210Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T08:44:11.881Z","event":"phase_transition","featureName":"copy-body","from":"2b","to":"2c","iteration":1,"phase":"2c"}
 {"timestamp":"2026-05-01T08:44:35.497Z","event":"phase_transition","featureName":"copy-body","from":"2c","to":"3","iteration":1,"phase":"3"}
 {"timestamp":"2026-05-01T08:48:31.068Z","event":"gate_recorded","featureName":"copy-body","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
@@ -132,6 +136,67 @@
 {"timestamp":"2026-05-01T08:50:59.813Z","event":"gate_recorded","featureName":"copy-body","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T08:51:39.774Z","event":"gate_recorded","featureName":"copy-body","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-01T08:52:00.078Z","event":"phase_transition","featureName":"copy-body","from":"6","to":"complete","iteration":1,"phase":"complete"}
+{"timestamp":"2026-05-01T08:56:12.034Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T09:06:27.533Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T09:06:47.932Z","event":"phase_transition","featureName":"tag-chip-update","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-05-01T09:06:47.937Z","event":"phase_transition","featureName":"tag-chip-update","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-05-01T09:06:47.937Z","event":"sprint_started","featureName":"tag-chip-update","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-05-01T09:19:47.958Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"2a","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T09:20:18.703Z","event":"phase_transition","featureName":"tag-chip-update","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-05-01T09:29:34.509Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"2b","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T09:29:56.535Z","event":"phase_transition","featureName":"tag-chip-update","from":"2b","to":"2c","iteration":1,"phase":"2c"}
+{"timestamp":"2026-05-01T09:31:48.291Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"2c","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T09:31:55.119Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"2c","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T09:31:55.122Z","event":"phase_transition","featureName":"tag-chip-update","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-05-01T09:42:19.296Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T10:22:12.666Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T10:22:12.669Z","event":"phase_transition","featureName":"tag-chip-update","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-05-01T10:27:41.940Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"5","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T10:28:23.143Z","event":"phase_transition","featureName":"tag-chip-update","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-05-01T10:30:43.640Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"6","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T10:33:39.300Z","event":"gate_recorded","featureName":"tag-chip-update","phase":"6","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T10:33:39.305Z","event":"phase_transition","featureName":"tag-chip-update","from":"6","to":"complete","iteration":1,"phase":"complete"}
+{"timestamp":"2026-05-01T11:35:45.127Z","event":"feature_created","featureName":"apply-filter-or-search","mode":"lean","language":"typescript"}
+{"timestamp":"2026-05-01T11:41:30.758Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-05-01T11:41:30.758Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-05-01T11:49:10.645Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:04:31.178Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:04:43.918Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:04:43.920Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-05-01T12:18:52.164Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-05-01T12:18:52.164Z","event":"sprint_started","featureName":"apply-filter-or-search","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-05-01T12:22:51.901Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-05-01T12:29:16.165Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"2b","to":"2c","iteration":1,"phase":"2c"}
+{"timestamp":"2026-05-01T12:40:25.942Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:40:25.945Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-05-01T12:40:47.794Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-05-01T12:48:20.253Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-05-01T12:49:24.364Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"6","to":"3","iteration":2,"phase":"3"}
+{"timestamp":"2026-05-01T12:57:24.295Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T12:57:24.297Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"3","to":"5","iteration":2,"phase":"5"}
+{"timestamp":"2026-05-01T12:58:41.569Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"5","to":"6","iteration":2,"phase":"6"}
+{"timestamp":"2026-05-01T12:59:04.447Z","event":"gate_recorded","featureName":"apply-filter-or-search","phase":"6","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T13:02:41.690Z","event":"phase_transition","featureName":"apply-filter-or-search","from":"6","to":"complete","iteration":1,"phase":"complete"}
+{"timestamp":"2026-05-01T15:12:50.378Z","event":"feature_created","featureName":"handle-save-failure","mode":"lean","language":"typescript"}
+{"timestamp":"2026-05-01T15:17:37.463Z","event":"phase_transition","featureName":"handle-save-failure","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-05-01T15:17:53.692Z","event":"phase_transition","featureName":"handle-save-failure","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-05-01T15:25:53.334Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T15:35:26.210Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T15:35:26.212Z","event":"phase_transition","featureName":"handle-save-failure","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-05-01T15:35:51.021Z","event":"phase_transition","featureName":"handle-save-failure","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-05-01T15:35:51.022Z","event":"sprint_started","featureName":"handle-save-failure","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-05-01T15:44:53.124Z","event":"phase_transition","featureName":"handle-save-failure","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-05-01T15:50:24.204Z","event":"phase_transition","featureName":"handle-save-failure","from":"2b","to":"2c","iteration":1,"phase":"2c"}
+{"timestamp":"2026-05-01T15:51:19.896Z","event":"phase_transition","featureName":"handle-save-failure","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-05-01T16:03:15.251Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T16:11:05.500Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-01T16:11:05.502Z","event":"phase_transition","featureName":"handle-save-failure","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-05-01T16:15:36.447Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"5","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T16:16:17.934Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"5","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-01T16:16:17.937Z","event":"phase_transition","featureName":"handle-save-failure","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-05-01T16:19:06.394Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"6","verdict":"PASS","reviewedBy":"human"}
+{"timestamp":"2026-05-01T16:20:05.429Z","event":"gate_recorded","featureName":"handle-save-failure","phase":"6","verdict":"PASS","reviewedBy":"human"}
+{"timestamp":"2026-05-01T16:20:05.434Z","event":"phase_transition","featureName":"handle-save-failure","from":"6","to":"complete","iteration":1,"phase":"complete"}
 {"timestamp":"2026-05-02T02:20:16.180Z","event":"feature_created","featureName":"configure-vault","mode":"lean","language":"typescript"}
 {"timestamp":"2026-05-02T02:27:38.842Z","event":"phase_transition","featureName":"configure-vault","from":"init","to":"1a","iteration":1,"phase":"1a"}
 {"timestamp":"2026-05-02T02:27:38.843Z","event":"phase_transition","featureName":"configure-vault","from":"1a","to":"1b","iteration":1,"phase":"1b"}
