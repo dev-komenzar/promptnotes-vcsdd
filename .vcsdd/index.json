@@ -32,7 +32,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-05-01T08:52:00.075Z"
+    },
+    "configure-vault": {
+      "status": "active",
+      "createdAt": "2026-05-02T02:20:16.178Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-02T02:27:38.843Z"
     }
   },
-  "activeFeature": "copy-body"
+  "activeFeature": "configure-vault"
 }

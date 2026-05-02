@@ -1,0 +1,54 @@
+{
+  "featureName": "configure-vault",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-02T02:27:38.840Z",
+      "reason": "enter Phase 1a (behavioral spec)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-02T02:27:38.843Z",
+      "reason": "enter Phase 1b (verification architecture)"
+    }
+  ],
+  "iterations": {
+    "1a": 1,
+    "1b": 1
+  },
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-configure-vault-1777688416178",
+    "beads": [
+      {
+        "beadId": "BEAD-001",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/configure-vault/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T02:28:04.070Z",
+        "createdInPhase": "1a"
+      },
+      {
+        "beadId": "BEAD-002",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/configure-vault/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:28:04.070Z",
+        "createdInPhase": "1b"
+      }
+    ]
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-05-02T02:20:16.178Z",
+  "updatedAt": "2026-05-02T02:28:04.070Z"
+}
