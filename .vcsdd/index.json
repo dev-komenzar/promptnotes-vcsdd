@@ -56,7 +56,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-05-01T16:20:05.433Z"
+    },
+    "configure-vault": {
+      "status": "active",
+      "createdAt": "2026-05-02T02:20:16.178Z",
+      "mode": "lean",
+      "language": "typescript",
+      "currentPhase": "complete",
+      "updatedAt": "2026-05-02T03:22:25.918Z"
     }
   },
-  "activeFeature": "handle-save-failure"
+  "activeFeature": "configure-vault"
 }

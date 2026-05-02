@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "configureVault was implemented as curried (deps) => (input) => Result, but REQ-014 specifies the flat signature configureVault(deps, userSelectedPath): Result. Tests adapted to the curried form, so red-green stayed consistent, but the public spec signature did not match the public implementation. Resolved in-place by flattening to configureVault(deps, input) and updating all 50+ test call sites.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/configure-vault/pipeline.ts",
+    "lineRange": "44-46",
+    "snippet": "export function configureVault(deps: ConfigureVaultDeps, input: ConfigureVaultInput): Result<VaultDirectoryConfigured, VaultConfigError>"
+  },
+  "routeToPhase": "2b",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Flattened configureVault to (deps, input) per REQ-014; updated all test call sites; 513/513 tests pass."
+  }
+}

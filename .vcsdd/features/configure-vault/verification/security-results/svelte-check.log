@@ -1,0 +1,4 @@
+1777690961412 START "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-configure-vault/promptnotes"
+1777690961414 ERROR "src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts" 58:13 "Type 'SwitchError' is not assignable to type 'never'."
+1777690961415 ERROR "src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts" 19:13 "Type 'SwitchError' is not assignable to type 'never'."
+1777690961415 COMPLETED 374 FILES 2 ERRORS 0 WARNINGS 2 FILES_WITH_PROBLEMS

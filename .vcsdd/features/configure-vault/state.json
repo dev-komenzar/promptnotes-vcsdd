@@ -1,0 +1,475 @@
+{
+  "featureName": "configure-vault",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "complete",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-02T02:27:38.840Z",
+      "reason": "enter Phase 1a (behavioral spec)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-02T02:27:38.843Z",
+      "reason": "enter Phase 1b (verification architecture)"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-02T02:35:29.141Z",
+      "reason": "spec review gate PASS (adversary, lean mode)"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-02T02:39:24.457Z",
+      "reason": "enter Phase 2a (red phase, sprint 1)",
+      "sprint": 2
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-02T02:49:58.883Z",
+      "reason": "enter Phase 2b (green phase)",
+      "sprint": 2
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-02T02:51:26.076Z",
+      "reason": "enter Phase 2c (refactor)",
+      "sprint": 2
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-02T03:00:10.082Z",
+      "reason": "adversarial review gate PASS (5/5 dimensions)",
+      "sprint": 2
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-02T03:00:39.709Z",
+      "reason": "enter Phase 5 (formal hardening)",
+      "sprint": 2
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-02T03:07:49.637Z",
+      "reason": "enter Phase 6 (convergence check)",
+      "sprint": 2
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-02T03:22:25.918Z",
+      "reason": "convergence achieved (lean in-place resolution; 513/513 tests pass)",
+      "sprint": 2
+    }
+  ],
+  "iterations": {
+    "3": 1,
+    "5": 1,
+    "6": 1,
+    "1a": 1,
+    "1b": 1,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1,
+    "2c": 1,
+    "complete": 1
+  },
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "map-stat-dir-result.test.ts"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "map-stat-dir-result.test.ts"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "map-settings-save-error.test.ts"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "validate-and-transition.test.ts"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-001-port-call-budget.harness.test.ts"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-005-event-emission-discipline.harness.test.ts"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "tsc compile-time exhaustiveness"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-007b-no-unconfigured-from-pipeline.harness.test.ts"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-008-ordering.harness.test.ts"
+    },
+    {
+      "id": "PROP-010",
+      "tier": 1,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-011",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-012",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-013",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    }
+  ],
+  "traceability": {
+    "epicId": "VCSDD-configure-vault-1777688416178",
+    "beads": [
+      {
+        "beadId": "BEAD-001",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/configure-vault/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-005",
+          "BEAD-006",
+          "BEAD-007",
+          "BEAD-008",
+          "BEAD-009",
+          "BEAD-010"
+        ],
+        "createdAt": "2026-05-02T02:28:04.070Z",
+        "createdInPhase": "1a"
+      },
+      {
+        "beadId": "BEAD-002",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/configure-vault/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:28:04.070Z",
+        "createdInPhase": "1b"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/pipeline.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-011"
+        ],
+        "createdAt": "2026-05-02T02:46:00.298Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PIPELINE"
+      },
+      {
+        "beadId": "BEAD-004",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/validate-and-transition.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-012"
+        ],
+        "createdAt": "2026-05-02T02:46:00.300Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-VALIDATE-AND-TRANSITION"
+      },
+      {
+        "beadId": "BEAD-005",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/map-stat-dir-result.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-013"
+        ],
+        "createdAt": "2026-05-02T02:46:00.301Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-MAP-STAT-DIR-RESULT"
+      },
+      {
+        "beadId": "BEAD-006",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/map-settings-save-error.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-014"
+        ],
+        "createdAt": "2026-05-02T02:46:00.302Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-MAP-SETTINGS-SAVE-ERROR"
+      },
+      {
+        "beadId": "BEAD-007",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-001-port-call-budget.harness.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-011"
+        ],
+        "createdAt": "2026-05-02T02:46:00.303Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-001-PORT-CALL-BUDGET"
+      },
+      {
+        "beadId": "BEAD-008",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-005-event-emission-discipline.harness.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-011"
+        ],
+        "createdAt": "2026-05-02T02:46:00.304Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-005-EVENT-EMISSION"
+      },
+      {
+        "beadId": "BEAD-009",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-007b-no-unconfigured-from-pipeline.harness.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-011"
+        ],
+        "createdAt": "2026-05-02T02:46:00.305Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-007B-NO-UNCONFIGURED"
+      },
+      {
+        "beadId": "BEAD-010",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-008-ordering.harness.test.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-011"
+        ],
+        "createdAt": "2026-05-02T02:46:00.305Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-008-ORDERING"
+      },
+      {
+        "beadId": "BEAD-011",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/pipeline.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-007",
+          "BEAD-008",
+          "BEAD-009",
+          "BEAD-010"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-PIPELINE"
+      },
+      {
+        "beadId": "BEAD-012",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-004"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-VALIDATE-AND-TRANSITION"
+      },
+      {
+        "beadId": "BEAD-013",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-005"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-MAP-STAT-DIR-RESULT"
+      },
+      {
+        "beadId": "BEAD-014",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-006"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-MAP-SETTINGS-SAVE-ERROR"
+      },
+      {
+        "beadId": "BEAD-015",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-001.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.884Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-001"
+      },
+      {
+        "beadId": "BEAD-016",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-002.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.888Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-002"
+      },
+      {
+        "beadId": "BEAD-017",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-003.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.889Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-003"
+      },
+      {
+        "beadId": "BEAD-018",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-004.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.890Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-004"
+      },
+      {
+        "beadId": "BEAD-019",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-005.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.891Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-005"
+      },
+      {
+        "beadId": "BEAD-020",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-006.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.892Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-006"
+      }
+    ]
+  },
+  "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-02T03:00:10.079Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 2,
+        "findings": {
+          "blocker": 0,
+          "major": 3,
+          "minor": 3
+        }
+      }
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-02T03:22:07.100Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "convergence": "in-place resolution",
+        "findingsBefore": 6,
+        "findingsAfter": 0
+      }
+    },
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-02T02:35:29.139Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 1,
+        "findings": {
+          "blocker": 0,
+          "major": 3,
+          "minor": 6
+        }
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-02T02:35:29.139Z"
+    }
+  },
+  "sprintCount": 2,
+  "createdAt": "2026-05-02T02:20:16.178Z",
+  "updatedAt": "2026-05-02T03:22:25.918Z"
+}

@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "low",
+  "description": "validateAndTransitionVault accepts _now: Timestamp but does not consume it. The Rust source-of-truth aggregate.rs::configure(vault, path, now) reserves the parameter for future use, so naming the TS parameter _now matches Rust intent, but a careless future Date.now leak would still pass the existing tests. Resolved in-place by adding a JSDoc explaining _now is reserved for parity with Rust and by tightening one test to assert structural equality against a frozen expected vault for varying timestamps.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
+    "lineRange": "42-55",
+    "snippet": "/** _now is reserved for parity with Rust aggregate.rs::configure */ export function validateAndTransitionVault(vaultId, path, _now): Vault"
+  },
+  "routeToPhase": "2c",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Added JSDoc and structural-equality regression guard test. A future Date.now leak would now break the test."
+  }
+}

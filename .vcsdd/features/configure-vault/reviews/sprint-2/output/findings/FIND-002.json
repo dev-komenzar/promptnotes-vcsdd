@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "structural_integrity",
+  "category": "code_structure",
+  "severity": "medium",
+  "description": "validateAndTransitionVault(...) was called from pipeline.ts and its return value was discarded. Because the helper is pure, the call had zero observable effect; deleting it would not change a single test outcome. Contradicted the step comment that called it an internal invariant check. Resolved in-place by removing the dead call from pipeline.ts; the helper remains exported and tested standalone in validate-and-transition.test.ts.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/configure-vault/pipeline.ts",
+    "lineRange": "61-62",
+    "snippet": "validateAndTransitionVault(deps.vaultId, input.userSelectedPath, now); // (removed)"
+  },
+  "routeToPhase": "2b",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Deleted the dead call and its import. Updated the step header comment to reflect that the pipeline does not reconstitute a Vault aggregate; loadVaultConfig does that next. REQ-008 still applies to the standalone helper."
+  }
+}

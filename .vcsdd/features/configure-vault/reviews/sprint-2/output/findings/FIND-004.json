@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "structural_integrity",
+  "category": "naming",
+  "severity": "low",
+  "description": "verification-architecture.md prescribed the file layout vault-transition.ts and a single error-mapping.ts, but the implementation uses validate-and-transition.ts and splits error mapping into map-stat-dir-result.ts and map-settings-save-error.ts. REQ-014 line 266 also named vault-transition.ts. Resolved in-place by editing the spec docs to record the actual split; source files were not renamed (test imports match the impl).",
+  "evidence": {
+    "filePath": ".vcsdd/features/configure-vault/specs/verification-architecture.md",
+    "lineRange": "222-228",
+    "snippet": "Test Harness Layout updated to validate-and-transition.ts / map-stat-dir-result.ts / map-settings-save-error.ts"
+  },
+  "routeToPhase": "1b",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Updated specs/verification-architecture.md (Test Harness Layout + Type-Level Contracts) and specs/behavioral-spec.md REQ-014 acceptance to reference the actual file names. Spec is now in sync with the implementation."
+  }
+}

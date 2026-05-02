@@ -1,0 +1,37 @@
+VCSDD green-phase evidence — configure-vault sprint 2
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+All 193 configure-vault tests pass (pipeline, validate-and-transition, map-stat-dir-result, map-settings-save-error, plus 4 property-test harnesses); full suite 513 pass, 0 fail. Post-Phase-6 in-place finding resolution: FIND-001 (flat signature), FIND-002 (dead code removal), FIND-003 (wire fast-check arbitraries), FIND-004 (spec doc alignment), FIND-005 (JSDoc + structural-equality test), FIND-006 (error.path assertions in pipeline tests) — all resolved, all tests green.
+
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/configure-vault/validate-and-transition.test.ts:
+ 12 pass
+src/lib/domain/__tests__/configure-vault/map-stat-dir-result.test.ts:
+ 41 pass
+src/lib/domain/__tests__/configure-vault/map-settings-save-error.test.ts:
+ 26 pass
+src/lib/domain/__tests__/configure-vault/pipeline.test.ts:
+ 63 pass
+src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-001-port-call-budget.harness.test.ts:
+ 17 pass
+src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-005-event-emission-discipline.harness.test.ts:
+ 16 pass
+src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-007b-no-unconfigured-from-pipeline.harness.test.ts:
+ 10 pass
+src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-008-ordering.harness.test.ts:
+ 11 pass
+
+ 193 pass
+ 0 fail
+ 388 expect() calls
+Ran 193 tests across 8 files. [68ms]
+
+--- Full suite (post-finding-resolution) ---
+
+ 513 pass
+ 0 fail
+ 11502 expect() calls
+Ran 513 tests across 51 files. [765ms]

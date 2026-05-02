@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "edge_case_coverage",
+  "category": "missing_edge_case",
+  "severity": "low",
+  "description": "Pipeline-level error tests asserted only result.error.kind, never result.error.path. A regression where mapStatDirResult or mapSettingsSaveError were called with the wrong path argument would not be detected at the pipeline boundary. Unit-level helper tests did assert path correctness, mitigating the risk. Resolved in-place by adding error.path assertions to every path-not-found / permission-denied test in pipeline.test.ts.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/configure-vault/pipeline.test.ts",
+    "lineRange": "196-526",
+    "snippet": "if (result.error.kind === 'path-not-found' || result.error.kind === 'permission-denied') { expect(result.error.path).toBe('/home/user/notes'); }"
+  },
+  "routeToPhase": "2a",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Added error.path assertions to all pipeline-level error tests across REQ-002..REQ-007 describes."
+  }
+}

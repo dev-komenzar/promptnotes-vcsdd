@@ -1,1 +1,1 @@
-handle-save-failure
+configure-vault
