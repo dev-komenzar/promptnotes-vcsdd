@@ -2,7 +2,7 @@
   "featureName": "configure-vault",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -28,13 +28,29 @@
       "timestamp": "2026-05-02T02:39:24.457Z",
       "reason": "enter Phase 2a (red phase, sprint 1)",
       "sprint": 2
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-02T02:49:58.883Z",
+      "reason": "enter Phase 2b (green phase)",
+      "sprint": 2
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-02T02:51:26.076Z",
+      "reason": "enter Phase 2c (refactor)",
+      "sprint": 2
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
     "1c": 1,
-    "2a": 1
+    "2a": 1,
+    "2b": 1,
+    "2c": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -73,9 +89,10 @@
         "beadId": "BEAD-003",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/pipeline.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-011"
         ],
         "createdAt": "2026-05-02T02:46:00.298Z",
         "createdInPhase": "2a",
@@ -85,9 +102,10 @@
         "beadId": "BEAD-004",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/validate-and-transition.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-012"
         ],
         "createdAt": "2026-05-02T02:46:00.300Z",
         "createdInPhase": "2a",
@@ -97,9 +115,10 @@
         "beadId": "BEAD-005",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/map-stat-dir-result.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-013"
         ],
         "createdAt": "2026-05-02T02:46:00.301Z",
         "createdInPhase": "2a",
@@ -109,9 +128,10 @@
         "beadId": "BEAD-006",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/map-settings-save-error.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-014"
         ],
         "createdAt": "2026-05-02T02:46:00.302Z",
         "createdInPhase": "2a",
@@ -121,9 +141,10 @@
         "beadId": "BEAD-007",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-001-port-call-budget.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-011"
         ],
         "createdAt": "2026-05-02T02:46:00.303Z",
         "createdInPhase": "2a",
@@ -133,9 +154,10 @@
         "beadId": "BEAD-008",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-005-event-emission-discipline.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-011"
         ],
         "createdAt": "2026-05-02T02:46:00.304Z",
         "createdInPhase": "2a",
@@ -145,9 +167,10 @@
         "beadId": "BEAD-009",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-007b-no-unconfigured-from-pipeline.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-011"
         ],
         "createdAt": "2026-05-02T02:46:00.305Z",
         "createdInPhase": "2a",
@@ -157,13 +180,66 @@
         "beadId": "BEAD-010",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-008-ordering.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
-          "BEAD-001"
+          "BEAD-001",
+          "BEAD-011"
         ],
         "createdAt": "2026-05-02T02:46:00.305Z",
         "createdInPhase": "2a",
         "externalId": "TEST-PROP-CV-008-ORDERING"
+      },
+      {
+        "beadId": "BEAD-011",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/pipeline.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-007",
+          "BEAD-008",
+          "BEAD-009",
+          "BEAD-010"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-PIPELINE"
+      },
+      {
+        "beadId": "BEAD-012",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-004"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-VALIDATE-AND-TRANSITION"
+      },
+      {
+        "beadId": "BEAD-013",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-005"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-MAP-STAT-DIR-RESULT"
+      },
+      {
+        "beadId": "BEAD-014",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-006"
+        ],
+        "createdAt": "2026-05-02T02:52:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-MAP-SETTINGS-SAVE-ERROR"
       }
     ]
   },
@@ -186,5 +262,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-02T02:20:16.178Z",
-  "updatedAt": "2026-05-02T02:46:00.305Z"
+  "updatedAt": "2026-05-02T02:52:00.000Z"
 }
