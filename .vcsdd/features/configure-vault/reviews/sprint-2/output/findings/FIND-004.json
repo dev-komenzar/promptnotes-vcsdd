@@ -1,9 +1,19 @@
 {
-  "id": "FIND-004",
+  "findingId": "FIND-004",
   "dimension": "structural_integrity",
-  "severity": "MINOR",
-  "where": "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts:42-55; map-stat-dir-result.ts; map-settings-save-error.ts",
-  "issue": "verification-architecture.md lines 222-228 prescribes the file layout `vault-transition.ts` and `error-mapping.ts` (one error-mapping module). The implementation uses `validate-and-transition.ts` and splits error mapping into two files (`map-stat-dir-result.ts`, `map-settings-save-error.ts`). REQ-014 line 266 also names `vault-transition.ts` explicitly. Manifest reflects the new names, so red-green succeeds, but the structural-architecture document is now out of sync with the source tree.",
-  "evidence": "configure-vault/\n  pipeline.ts          # configureVault(ports, userSelectedPath): Result<VaultDirectoryConfigured, VaultConfigError>\n  vault-transition.ts  # validateAndTransitionVault(vaultId, path, now): Vault  (pure)\n  error-mapping.ts     # mapStatDirResult, mapSettingsSaveError  (pure)",
-  "remediation": "Either rename source files to match `verification-architecture.md` (vault-transition.ts, error-mapping.ts) or update `verification-architecture.md` Test Harness Layout / Type-Level Contracts sections and REQ-014 line 266 to record the split."
+  "category": "naming",
+  "severity": "low",
+  "description": "verification-architecture.md prescribed the file layout vault-transition.ts and a single error-mapping.ts, but the implementation uses validate-and-transition.ts and splits error mapping into map-stat-dir-result.ts and map-settings-save-error.ts. REQ-014 line 266 also named vault-transition.ts. Resolved in-place by editing the spec docs to record the actual split; source files were not renamed (test imports match the impl).",
+  "evidence": {
+    "filePath": ".vcsdd/features/configure-vault/specs/verification-architecture.md",
+    "lineRange": "222-228",
+    "snippet": "Test Harness Layout updated to validate-and-transition.ts / map-stat-dir-result.ts / map-settings-save-error.ts"
+  },
+  "routeToPhase": "1b",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Updated specs/verification-architecture.md (Test Harness Layout + Type-Level Contracts) and specs/behavioral-spec.md REQ-014 acceptance to reference the actual file names. Spec is now in sync with the implementation."
+  }
 }

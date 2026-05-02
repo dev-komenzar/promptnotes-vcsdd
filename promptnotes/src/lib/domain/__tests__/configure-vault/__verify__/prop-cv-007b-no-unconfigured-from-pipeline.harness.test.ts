@@ -83,7 +83,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
         arbStatDirResult,
         (statDirResult) => {
           const deps = makeNullDeps(statDirResult, { ok: true, value: undefined });
-          const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+          const result = configureVault(deps, { userSelectedPath: TEST_PATH });
           if (result.ok) return true;
           return result.error.kind !== "unconfigured";
         },
@@ -98,7 +98,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
         arbSettingsSaveResult,
         (settingsSaveResult) => {
           const deps = makeNullDeps({ ok: true, value: true }, settingsSaveResult);
-          const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+          const result = configureVault(deps, { userSelectedPath: TEST_PATH });
           if (result.ok) return true;
           return result.error.kind !== "unconfigured";
         },
@@ -114,7 +114,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
         arbSettingsSaveResult,
         (statDirResult, settingsSaveResult) => {
           const deps = makeNullDeps(statDirResult, settingsSaveResult);
-          const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+          const result = configureVault(deps, { userSelectedPath: TEST_PATH });
           if (result.ok) return true;
           return result.error.kind !== "unconfigured";
         },
@@ -125,7 +125,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
 
   test("explicit: statDir Ok(false) → never unconfigured", () => {
     const deps = makeNullDeps({ ok: true, value: false }, { ok: true, value: undefined });
-    const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+    const result = configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).not.toBe("unconfigured");
@@ -137,7 +137,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
       { ok: false, error: { kind: "not-found" } },
       { ok: true, value: undefined },
     );
-    const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+    const result = configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).not.toBe("unconfigured");
@@ -149,7 +149,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
       { ok: false, error: { kind: "permission" } },
       { ok: true, value: undefined },
     );
-    const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+    const result = configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).not.toBe("unconfigured");
@@ -161,7 +161,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
       { ok: false, error: { kind: "disk-full" } },
       { ok: true, value: undefined },
     );
-    const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+    const result = configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).not.toBe("unconfigured");
@@ -173,7 +173,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
       { ok: true, value: true },
       { ok: false, error: { kind: "permission" } },
     );
-    const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+    const result = configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).not.toBe("unconfigured");
@@ -185,7 +185,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
       { ok: true, value: true },
       { ok: false, error: { kind: "disk-full" } },
     );
-    const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+    const result = configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).not.toBe("unconfigured");
@@ -208,7 +208,7 @@ describe("PROP-CV-007b: configureVault never produces VaultConfigError { kind: '
 
     for (const [statDirResult, settingsSaveResult] of allFailurePairs) {
       const deps = makeNullDeps(statDirResult, settingsSaveResult);
-      const result = configureVault(deps)({ userSelectedPath: TEST_PATH });
+      const result = configureVault(deps, { userSelectedPath: TEST_PATH });
       expect(result.ok).toBe(false);
       if (!result.ok) {
         const validErrorKinds = ["path-not-found", "permission-denied"];

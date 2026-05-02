@@ -2,7 +2,7 @@
   "featureName": "configure-vault",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -56,17 +56,33 @@
       "timestamp": "2026-05-02T03:00:39.709Z",
       "reason": "enter Phase 5 (formal hardening)",
       "sprint": 2
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-02T03:07:49.637Z",
+      "reason": "enter Phase 6 (convergence check)",
+      "sprint": 2
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-02T03:22:25.918Z",
+      "reason": "convergence achieved (lean in-place resolution; 513/513 tests pass)",
+      "sprint": 2
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
+    "6": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
     "2a": 1,
     "2b": 1,
-    "2c": 1
+    "2c": 1,
+    "complete": 1
   },
   "proofObligations": [
     {
@@ -350,6 +366,66 @@
         "createdAt": "2026-05-02T02:52:00.000Z",
         "createdInPhase": "2b",
         "externalId": "IMPL-MAP-SETTINGS-SAVE-ERROR"
+      },
+      {
+        "beadId": "BEAD-015",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-001.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.884Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-001"
+      },
+      {
+        "beadId": "BEAD-016",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-002.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.888Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-002"
+      },
+      {
+        "beadId": "BEAD-017",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-003.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.889Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-003"
+      },
+      {
+        "beadId": "BEAD-018",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-004.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.890Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-004"
+      },
+      {
+        "beadId": "BEAD-019",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-005.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.891Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-005"
+      },
+      {
+        "beadId": "BEAD-020",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/configure-vault/reviews/sprint-2/output/findings/FIND-006.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-02T03:21:58.892Z",
+        "createdInPhase": "6",
+        "externalId": "FIND-006"
       }
     ]
   },
@@ -365,6 +441,16 @@
           "major": 3,
           "minor": 3
         }
+      }
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-02T03:22:07.100Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "convergence": "in-place resolution",
+        "findingsBefore": 6,
+        "findingsAfter": 0
       }
     },
     "1c": {
@@ -385,5 +471,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-02T02:20:16.178Z",
-  "updatedAt": "2026-05-02T03:06:14.343Z"
+  "updatedAt": "2026-05-02T03:22:25.918Z"
 }

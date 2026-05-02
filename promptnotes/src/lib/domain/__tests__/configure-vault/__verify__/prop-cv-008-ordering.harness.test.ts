@@ -117,7 +117,7 @@ describe("PROP-CV-008: settingsSave is NEVER called when statDir does not return
             statDirResult,
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return log.settingsSaveCalls === 0;
         },
       ),
@@ -128,13 +128,13 @@ describe("PROP-CV-008: settingsSave is NEVER called when statDir does not return
   test("fast-check: statDir appears before settingsSave in callOrder on success", () => {
     fc.assert(
       fc.property(
-        fc.nat(),
-        (_seed) => {
+        fc.string({ minLength: 1 }),
+        (pathStr) => {
           const { deps, log } = makeOrderingDeps(
             { ok: true, value: true },
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: vaultPath(pathStr) });
           const statDirIdx = log.callOrder.indexOf("statDir");
           const settingsSaveIdx = log.callOrder.indexOf("settingsSave");
           return statDirIdx !== -1 && settingsSaveIdx !== -1 && statDirIdx < settingsSaveIdx;
@@ -159,7 +159,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when st
             statDirResult,
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           // clockNow is gated to after validateAndTransitionVault on the success path.
           // Zero clockNow implies the pipeline never reached the transition step.
           return log.clockNowCalls === 0;
@@ -178,7 +178,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when st
             statDirResult,
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return log.emitCalls === 0;
         },
       ),
@@ -199,7 +199,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when se
             { ok: true, value: true },
             settingsSaveResult,
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return log.clockNowCalls === 0;
         },
       ),
@@ -216,7 +216,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when se
             { ok: true, value: true },
             settingsSaveResult,
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return log.emitCalls === 0;
         },
       ),
@@ -229,7 +229,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when se
       { ok: true, value: true },
       { ok: false, error: { kind: "permission" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(log.clockNowCalls).toBe(0);
     expect(log.emitCalls).toBe(0);
   });
@@ -239,7 +239,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when se
       { ok: true, value: true },
       { ok: false, error: { kind: "disk-full" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(log.clockNowCalls).toBe(0);
     expect(log.emitCalls).toBe(0);
   });
@@ -249,7 +249,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when se
       { ok: true, value: true },
       { ok: false, error: { kind: "lock" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(log.clockNowCalls).toBe(0);
     expect(log.emitCalls).toBe(0);
   });
@@ -259,7 +259,7 @@ describe("FIND-004 / REQ-012: validateAndTransitionVault is NEVER called when se
       { ok: true, value: true },
       { ok: false, error: { kind: "unknown", detail: "store failed" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(log.clockNowCalls).toBe(0);
     expect(log.emitCalls).toBe(0);
   });
@@ -273,7 +273,7 @@ describe("REQ-009: call order on success path is statDir → settingsSave → cl
       { ok: true, value: true },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(log.callOrder).toEqual(["statDir", "settingsSave", "clockNow", "emit"]);
   });
 
@@ -287,7 +287,7 @@ describe("REQ-009: call order on success path is statDir → settingsSave → cl
 
     for (const statDirResult of statDirFailures) {
       const { deps, log } = makeOrderingDeps(statDirResult, { ok: true, value: undefined });
-      configureVault(deps)({ userSelectedPath: TEST_PATH });
+      configureVault(deps, { userSelectedPath: TEST_PATH });
       expect(log.callOrder).toEqual(["statDir"]);
     }
   });
@@ -302,7 +302,7 @@ describe("REQ-009: call order on success path is statDir → settingsSave → cl
 
     for (const settingsSaveResult of settingsSaveFailures) {
       const { deps, log } = makeOrderingDeps({ ok: true, value: true }, settingsSaveResult);
-      configureVault(deps)({ userSelectedPath: TEST_PATH });
+      configureVault(deps, { userSelectedPath: TEST_PATH });
       expect(log.callOrder).toEqual(["statDir", "settingsSave"]);
     }
   });

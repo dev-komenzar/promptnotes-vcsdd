@@ -1,4 +1,4 @@
-# Purity Audit — configure-vault
+# Purity Boundary Audit — configure-vault
 
 **Feature**: configure-vault
 **Sprint**: 2

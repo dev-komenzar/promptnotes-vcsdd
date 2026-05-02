@@ -110,7 +110,8 @@ describe("REQ-001: configureVault happy path returns Ok(VaultDirectoryConfigured
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -124,7 +125,8 @@ describe("REQ-001: configureVault happy path returns Ok(VaultDirectoryConfigured
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -138,7 +140,8 @@ describe("REQ-001: configureVault happy path returns Ok(VaultDirectoryConfigured
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -154,7 +157,8 @@ describe("REQ-001: configureVault happy path returns Ok(VaultDirectoryConfigured
         settingsSaveResult: { ok: true, value: undefined },
         clockResult: sentinel,
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -169,7 +173,8 @@ describe("REQ-001: configureVault happy path returns Ok(VaultDirectoryConfigured
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.emittedEvents.length).toBe(1);
     expect(result.ok).toBe(true);
@@ -184,7 +189,8 @@ describe("REQ-001: configureVault happy path returns Ok(VaultDirectoryConfigured
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     // A Promise has a .then method; a plain Result should not.
     expect(typeof (result as unknown as { then?: unknown }).then).not.toBe("function");
@@ -201,11 +207,15 @@ describe("REQ-002: statDir Ok(false) → path-not-found error", () => {
         statDirResult: { ok: true, value: false },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.kind).toBe("path-not-found");
+    if (result.error.kind === "path-not-found" || result.error.kind === "permission-denied") {
+      expect(result.error.path).toBe("/home/user/notes");
+    }
   });
 
   test("Settings.save is not called when statDir returns Ok(false)", () => {
@@ -215,7 +225,8 @@ describe("REQ-002: statDir Ok(false) → path-not-found error", () => {
         statDirResult: { ok: true, value: false },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.settingsSaveCalls.length).toBe(0);
   });
@@ -227,7 +238,8 @@ describe("REQ-002: statDir Ok(false) → path-not-found error", () => {
         statDirResult: { ok: true, value: false },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.emittedEvents.length).toBe(0);
   });
@@ -239,7 +251,8 @@ describe("REQ-002: statDir Ok(false) → path-not-found error", () => {
         statDirResult: { ok: true, value: false },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -255,11 +268,15 @@ describe("REQ-003: statDir Err(not-found) → path-not-found error", () => {
         statDirResult: { ok: false, error: { kind: "not-found" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.kind).toBe("path-not-found");
+    if (result.error.kind === "path-not-found" || result.error.kind === "permission-denied") {
+      expect(result.error.path).toBe("/home/user/notes");
+    }
   });
 
   test("Settings.save is not called", () => {
@@ -269,7 +286,8 @@ describe("REQ-003: statDir Err(not-found) → path-not-found error", () => {
         statDirResult: { ok: false, error: { kind: "not-found" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.settingsSaveCalls.length).toBe(0);
   });
@@ -281,7 +299,8 @@ describe("REQ-003: statDir Err(not-found) → path-not-found error", () => {
         statDirResult: { ok: false, error: { kind: "not-found" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.emittedEvents.length).toBe(0);
   });
@@ -293,7 +312,8 @@ describe("REQ-003: statDir Err(not-found) → path-not-found error", () => {
         statDirResult: { ok: false, error: { kind: "not-found" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -309,11 +329,15 @@ describe("REQ-004: statDir Err(permission) → permission-denied error", () => {
         statDirResult: { ok: false, error: { kind: "permission" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.kind).toBe("permission-denied");
+    if (result.error.kind === "path-not-found" || result.error.kind === "permission-denied") {
+      expect(result.error.path).toBe("/home/user/notes");
+    }
   });
 
   test("Settings.save is not called", () => {
@@ -323,7 +347,8 @@ describe("REQ-004: statDir Err(permission) → permission-denied error", () => {
         statDirResult: { ok: false, error: { kind: "permission" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.settingsSaveCalls.length).toBe(0);
   });
@@ -335,7 +360,8 @@ describe("REQ-004: statDir Err(permission) → permission-denied error", () => {
         statDirResult: { ok: false, error: { kind: "permission" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.emittedEvents.length).toBe(0);
   });
@@ -347,7 +373,8 @@ describe("REQ-004: statDir Err(permission) → permission-denied error", () => {
         statDirResult: { ok: false, error: { kind: "permission" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -370,11 +397,15 @@ describe("REQ-005: statDir Err(disk-full|lock|unknown) → path-not-found (colla
           statDirResult: { ok: false, error: fsErr },
           settingsSaveResult: { ok: true, value: undefined },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.error.kind).toBe("path-not-found");
+      if (result.error.kind === "path-not-found" || result.error.kind === "permission-denied") {
+        expect(result.error.path).toBe("/home/user/notes");
+      }
     });
 
     test(`statDir Err(${fsErr.kind}): Settings.save not called`, () => {
@@ -384,7 +415,8 @@ describe("REQ-005: statDir Err(disk-full|lock|unknown) → path-not-found (colla
           statDirResult: { ok: false, error: fsErr },
           settingsSaveResult: { ok: true, value: undefined },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(log.settingsSaveCalls.length).toBe(0);
     });
@@ -396,7 +428,8 @@ describe("REQ-005: statDir Err(disk-full|lock|unknown) → path-not-found (colla
           statDirResult: { ok: false, error: fsErr },
           settingsSaveResult: { ok: true, value: undefined },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(log.emittedEvents.length).toBe(0);
     });
@@ -410,7 +443,8 @@ describe("REQ-005: statDir Err(disk-full|lock|unknown) → path-not-found (colla
           statDirResult: { ok: false, error: fsErr },
           settingsSaveResult: { ok: true, value: undefined },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(result.ok).toBe(false);
       if (result.ok) return;
@@ -429,11 +463,15 @@ describe("REQ-006: Settings.save Err(permission) → permission-denied error", (
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "permission" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.kind).toBe("permission-denied");
+    if (result.error.kind === "path-not-found" || result.error.kind === "permission-denied") {
+      expect(result.error.path).toBe("/home/user/notes");
+    }
   });
 
   test("emit is not called on Settings.save permission error", () => {
@@ -443,7 +481,8 @@ describe("REQ-006: Settings.save Err(permission) → permission-denied error", (
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "permission" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.emittedEvents.length).toBe(0);
   });
@@ -455,7 +494,8 @@ describe("REQ-006: Settings.save Err(permission) → permission-denied error", (
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "permission" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -467,7 +507,8 @@ describe("REQ-006: Settings.save Err(permission) → permission-denied error", (
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "permission" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     // statDir before settingsSave ordering (REQ-009)
     expect(log.settingsSaveCalls.length).toBe(1);
@@ -492,11 +533,15 @@ describe("REQ-007: Settings.save Err(disk-full|lock|unknown) → path-not-found 
           statDirResult: { ok: true, value: true },
           settingsSaveResult: { ok: false, error: fsErr },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.error.kind).toBe("path-not-found");
+      if (result.error.kind === "path-not-found" || result.error.kind === "permission-denied") {
+        expect(result.error.path).toBe("/home/user/notes");
+      }
     });
 
     test(`Settings.save Err(${fsErr.kind}): emit not called`, () => {
@@ -506,7 +551,8 @@ describe("REQ-007: Settings.save Err(disk-full|lock|unknown) → path-not-found 
           statDirResult: { ok: true, value: true },
           settingsSaveResult: { ok: false, error: fsErr },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(log.emittedEvents.length).toBe(0);
     });
@@ -518,7 +564,8 @@ describe("REQ-007: Settings.save Err(disk-full|lock|unknown) → path-not-found 
           statDirResult: { ok: true, value: true },
           settingsSaveResult: { ok: false, error: fsErr },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(log.clockNowCalls).toBe(0);
     });
@@ -535,7 +582,8 @@ describe("REQ-009: statDir is called before Settings.save on every path", () => 
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.callOrder.indexOf("statDir")).toBeLessThan(log.callOrder.indexOf("settingsSave"));
   });
@@ -547,7 +595,8 @@ describe("REQ-009: statDir is called before Settings.save on every path", () => 
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.statDirCalls.length).toBe(1);
   });
@@ -559,7 +608,8 @@ describe("REQ-009: statDir is called before Settings.save on every path", () => 
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.settingsSaveCalls.length).toBe(1);
   });
@@ -581,7 +631,8 @@ describe("REQ-009: statDir is called before Settings.save on every path", () => 
           statDirResult,
           settingsSaveResult: { ok: true, value: undefined },
         }),
-      )({ userSelectedPath: TEST_PATH });
+        { userSelectedPath: TEST_PATH },
+    );
 
       expect(log.settingsSaveCalls.length).toBe(0);
     }
@@ -598,7 +649,8 @@ describe("REQ-010: clockNow at-most-once; only on success path; acquired after s
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(1);
   });
@@ -610,7 +662,8 @@ describe("REQ-010: clockNow at-most-once; only on success path; acquired after s
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.callOrder.indexOf("settingsSave")).toBeLessThan(log.callOrder.indexOf("clockNow"));
   });
@@ -622,7 +675,8 @@ describe("REQ-010: clockNow at-most-once; only on success path; acquired after s
         statDirResult: { ok: true, value: false },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -634,7 +688,8 @@ describe("REQ-010: clockNow at-most-once; only on success path; acquired after s
         statDirResult: { ok: false, error: { kind: "permission" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -646,7 +701,8 @@ describe("REQ-010: clockNow at-most-once; only on success path; acquired after s
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "permission" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -658,7 +714,8 @@ describe("REQ-010: clockNow at-most-once; only on success path; acquired after s
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "disk-full" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.clockNowCalls).toBe(0);
   });
@@ -685,7 +742,8 @@ describe("REQ-011: VaultDirectoryConfigured is a member of PublicDomainEvent uni
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     // The emit port is the only channel: exactly one call
     expect(log.emittedEvents.length).toBe(1);
@@ -699,7 +757,8 @@ describe("REQ-011: VaultDirectoryConfigured is a member of PublicDomainEvent uni
         statDirResult: { ok: false, error: { kind: "not-found" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.emittedEvents.length).toBe(0);
   });
@@ -721,7 +780,8 @@ describe("REQ-012: validateAndTransitionVault is NOT called on Settings.save fai
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "disk-full" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(result.ok).toBe(false);
   });
@@ -733,7 +793,8 @@ describe("REQ-012: validateAndTransitionVault is NOT called on Settings.save fai
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "unknown", detail: "storage unavailable" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     // If validateAndTransitionVault were called, clockNow or emit would have been called too.
     // Zero counts prove the pipeline exited before reaching the transition step.
@@ -752,7 +813,8 @@ describe("REQ-013: I/O budget per path matches spec table", () => {
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.statDirCalls.length).toBe(1);
     expect(log.settingsSaveCalls.length).toBe(1);
@@ -767,7 +829,8 @@ describe("REQ-013: I/O budget per path matches spec table", () => {
         statDirResult: { ok: true, value: false },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.statDirCalls.length).toBe(1);
     expect(log.settingsSaveCalls.length).toBe(0);
@@ -782,7 +845,8 @@ describe("REQ-013: I/O budget per path matches spec table", () => {
         statDirResult: { ok: false, error: { kind: "permission" } },
         settingsSaveResult: { ok: true, value: undefined },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.statDirCalls.length).toBe(1);
     expect(log.settingsSaveCalls.length).toBe(0);
@@ -797,7 +861,8 @@ describe("REQ-013: I/O budget per path matches spec table", () => {
         statDirResult: { ok: true, value: true },
         settingsSaveResult: { ok: false, error: { kind: "lock" } },
       }),
-    )({ userSelectedPath: TEST_PATH });
+      { userSelectedPath: TEST_PATH },
+    );
 
     expect(log.statDirCalls.length).toBe(1);
     expect(log.settingsSaveCalls.length).toBe(1);
@@ -823,7 +888,7 @@ describe("PROP-CV-012: VaultDirectoryConfigured field fidelity on success", () =
       emit: (e) => log.emittedEvents.push(e),
     };
 
-    const result = configureVault(deps)({ userSelectedPath: customPath });
+    const result = configureVault(deps, { userSelectedPath: customPath });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -892,7 +957,7 @@ describe("PROP-CV-007 (Tier 0): VaultConfigError switch exhaustiveness with neve
         settingsSave: () => ({ ok: true, value: undefined }),
         clockNow: () => ts(1000),
         emit: () => {},
-      })({ userSelectedPath: TEST_PATH });
+      }, { userSelectedPath: TEST_PATH });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -907,7 +972,7 @@ describe("PROP-CV-007 (Tier 0): VaultConfigError switch exhaustiveness with neve
         settingsSave: () => settingsSaveResult,
         clockNow: () => ts(1000),
         emit: () => {},
-      })({ userSelectedPath: TEST_PATH });
+      }, { userSelectedPath: TEST_PATH });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {

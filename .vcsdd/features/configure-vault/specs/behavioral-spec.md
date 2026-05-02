@@ -263,7 +263,7 @@ export function configureVault(
 **Acceptance Criteria**:
 - The function is **synchronous** (returns `Result`, not `Promise<Result>`). The Tauri command boundary handles async; the domain pipeline itself is synchronous.
 - The function accepts an already-branded `VaultPath` (smart-constructor validation happened at the Tauri command boundary — the pipeline does not re-validate format).
-- `configureVault` is the sole exported function from `configure-vault/pipeline.ts`; `validateAndTransitionVault` is exported from `configure-vault/vault-transition.ts` for unit-testability.
+- `configureVault` is the sole exported function from `configure-vault/pipeline.ts`; `validateAndTransitionVault` is exported from `configure-vault/validate-and-transition.ts` for unit-testability. Error mapping is split across `configure-vault/map-stat-dir-result.ts` and `configure-vault/map-settings-save-error.ts` (two files, not a single `error-mapping.ts`).
 
 ---
 

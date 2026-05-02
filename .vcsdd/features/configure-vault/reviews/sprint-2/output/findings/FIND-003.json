@@ -1,9 +1,19 @@
 {
-  "id": "FIND-003",
+  "findingId": "FIND-003",
   "dimension": "verification_readiness",
-  "severity": "MAJOR",
-  "where": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-001-port-call-budget.harness.test.ts:86-106; prop-cv-005-event-emission-discipline.harness.test.ts:81-96; prop-cv-008-ordering.harness.test.ts:128-145",
-  "issue": "Three property-based harnesses use a fast-check generator whose value is never consumed by the test body. PROP-CV-005 success-path budget runs `fc.property(fc.string({minLength:1}), (_pathStr) => { ... configureVault(deps)({ userSelectedPath: TEST_PATH }) ... })` — the generated `_pathStr` is discarded and the pipeline always sees the constant `TEST_PATH` and constant deps. This makes 100 iterations functionally equivalent to one example test. PROP-CV-006 success-path emit count and PROP-CV-008 success-path ordering have the same shape with `fc.nat()` whose seed is unused. The harness names imply property coverage, but the property body has no varied inputs, so a regression that depends on path content or seed-driven scheduling would not be detected.",
-  "evidence": "fc.assert(\n  fc.property(\n    fc.string({ minLength: 1 }),\n    (_pathStr) => {\n      const { deps, counts } = makeDepsWithCounts(\n        { ok: true, value: true },\n        { ok: true, value: undefined },\n      );\n      configureVault(deps)({ userSelectedPath: TEST_PATH });\n      return (\n        counts.statDir === 1 &&\n        counts.settingsSave === 1 &&\n        counts.clockNow === 1 &&\n        counts.emit === 1\n      );\n    },\n  ),\n  { numRuns: 100 },\n);",
-  "remediation": "Wire the generator into the test body — e.g., use `_pathStr` as `userSelectedPath` (cast through the brand) so each run exercises a distinct path, or replace with explicit example tests and shrink the harness count. Failure-path harnesses (which do consume `arbStatDirFailure` / `arbSettingsSaveFailure`) are correctly written and can serve as a reference."
+  "category": "proof_gap",
+  "severity": "medium",
+  "description": "Three property-based harnesses (PROP-CV-001 success-path port budget, PROP-CV-005 success-path emit count, PROP-CV-008 success-path ordering) used a fast-check generator whose value was never consumed by the test body, making 100 iterations functionally equivalent to one example test. Resolved in-place by wiring each generator into the body — generated path strings are now cast to VaultPath and used as userSelectedPath, so each run exercises a distinct input.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-001-port-call-budget.harness.test.ts",
+    "lineRange": "86-106",
+    "snippet": "fc.assert(fc.property(fc.string({ minLength: 1 }), (pathStr) => { ... configureVault(deps, { userSelectedPath: vaultPath(pathStr) }) ... }))"
+  },
+  "routeToPhase": "2a",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Wired generators in across prop-cv-001, prop-cv-005, prop-cv-008. fc.nat replaced with fc.string({ minLength: 1 }) where needed. Generators now drive userSelectedPath."
+  }
 }

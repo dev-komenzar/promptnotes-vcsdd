@@ -1,4 +1,4 @@
-# Security Report — configure-vault
+# Security Hardening Report — configure-vault
 
 **Feature**: configure-vault
 **Sprint**: 2

@@ -81,13 +81,13 @@ describe("PROP-CV-006: emit called exactly once on success path", () => {
   test("fast-check: emit count === 1 on every successful invocation", () => {
     fc.assert(
       fc.property(
-        fc.nat(),
-        (_seed) => {
+        fc.string({ minLength: 1 }),
+        (pathStr) => {
           const { deps, emitCount } = makeEmitCountDeps(
             { ok: true, value: true },
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: vaultPath(pathStr) });
           return emitCount.value === 1;
         },
       ),
@@ -100,7 +100,7 @@ describe("PROP-CV-006: emit called exactly once on success path", () => {
       { ok: true, value: true },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(1);
     expect(emittedEvents[0].kind).toBe("vault-directory-configured");
   });
@@ -118,7 +118,7 @@ describe("PROP-CV-006: emit called zero times on every statDir failure variant",
             statDirResult,
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return emitCount.value === 0;
         },
       ),
@@ -131,7 +131,7 @@ describe("PROP-CV-006: emit called zero times on every statDir failure variant",
       { ok: true, value: false },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -140,7 +140,7 @@ describe("PROP-CV-006: emit called zero times on every statDir failure variant",
       { ok: false, error: { kind: "not-found" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -149,7 +149,7 @@ describe("PROP-CV-006: emit called zero times on every statDir failure variant",
       { ok: false, error: { kind: "permission" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -158,7 +158,7 @@ describe("PROP-CV-006: emit called zero times on every statDir failure variant",
       { ok: false, error: { kind: "disk-full" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -167,7 +167,7 @@ describe("PROP-CV-006: emit called zero times on every statDir failure variant",
       { ok: false, error: { kind: "lock" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -176,7 +176,7 @@ describe("PROP-CV-006: emit called zero times on every statDir failure variant",
       { ok: false, error: { kind: "unknown", detail: "x" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 });
@@ -193,7 +193,7 @@ describe("PROP-CV-006: emit called zero times on every settingsSave failure vari
             { ok: true, value: true },
             settingsSaveResult,
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return emitCount.value === 0;
         },
       ),
@@ -206,7 +206,7 @@ describe("PROP-CV-006: emit called zero times on every settingsSave failure vari
       { ok: true, value: true },
       { ok: false, error: { kind: "permission" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -215,7 +215,7 @@ describe("PROP-CV-006: emit called zero times on every settingsSave failure vari
       { ok: true, value: true },
       { ok: false, error: { kind: "disk-full" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -224,7 +224,7 @@ describe("PROP-CV-006: emit called zero times on every settingsSave failure vari
       { ok: true, value: true },
       { ok: false, error: { kind: "lock" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 
@@ -233,7 +233,7 @@ describe("PROP-CV-006: emit called zero times on every settingsSave failure vari
       { ok: true, value: true },
       { ok: false, error: { kind: "unknown", detail: "store failed" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(emitCount.value).toBe(0);
   });
 });

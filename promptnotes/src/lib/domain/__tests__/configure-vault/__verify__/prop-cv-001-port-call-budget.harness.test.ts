@@ -87,12 +87,12 @@ describe("PROP-CV-005: I/O budget — success path: statDir=1, settingsSave=1, c
     fc.assert(
       fc.property(
         fc.string({ minLength: 1 }),
-        (_pathStr) => {
+        (pathStr) => {
           const { deps, counts } = makeDepsWithCounts(
             { ok: true, value: true },
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: vaultPath(pathStr) });
           return (
             counts.statDir === 1 &&
             counts.settingsSave === 1 &&
@@ -118,7 +118,7 @@ describe("PROP-CV-005: I/O budget — statDir failure: statDir=1, settingsSave=0
             statDirResult,
             { ok: true, value: undefined },
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return (
             counts.statDir === 1 &&
             counts.settingsSave === 0 &&
@@ -136,7 +136,7 @@ describe("PROP-CV-005: I/O budget — statDir failure: statDir=1, settingsSave=0
       { ok: true, value: false },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(0);
     expect(counts.clockNow).toBe(0);
@@ -148,7 +148,7 @@ describe("PROP-CV-005: I/O budget — statDir failure: statDir=1, settingsSave=0
       { ok: false, error: { kind: "not-found" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(0);
     expect(counts.clockNow).toBe(0);
@@ -160,7 +160,7 @@ describe("PROP-CV-005: I/O budget — statDir failure: statDir=1, settingsSave=0
       { ok: false, error: { kind: "permission" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(0);
     expect(counts.clockNow).toBe(0);
@@ -172,7 +172,7 @@ describe("PROP-CV-005: I/O budget — statDir failure: statDir=1, settingsSave=0
       { ok: false, error: { kind: "disk-full" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(0);
     expect(counts.clockNow).toBe(0);
@@ -184,7 +184,7 @@ describe("PROP-CV-005: I/O budget — statDir failure: statDir=1, settingsSave=0
       { ok: false, error: { kind: "lock" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(0);
     expect(counts.clockNow).toBe(0);
@@ -196,7 +196,7 @@ describe("PROP-CV-005: I/O budget — statDir failure: statDir=1, settingsSave=0
       { ok: false, error: { kind: "unknown", detail: "indeterminate" } },
       { ok: true, value: undefined },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(0);
     expect(counts.clockNow).toBe(0);
@@ -216,7 +216,7 @@ describe("PROP-CV-005: I/O budget — settingsSave failure: statDir=1, settingsS
             { ok: true, value: true },
             settingsSaveResult,
           );
-          configureVault(deps)({ userSelectedPath: TEST_PATH });
+          configureVault(deps, { userSelectedPath: TEST_PATH });
           return (
             counts.statDir === 1 &&
             counts.settingsSave === 1 &&
@@ -234,7 +234,7 @@ describe("PROP-CV-005: I/O budget — settingsSave failure: statDir=1, settingsS
       { ok: true, value: true },
       { ok: false, error: { kind: "permission" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(1);
     expect(counts.clockNow).toBe(0);
@@ -246,7 +246,7 @@ describe("PROP-CV-005: I/O budget — settingsSave failure: statDir=1, settingsS
       { ok: true, value: true },
       { ok: false, error: { kind: "disk-full" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(1);
     expect(counts.clockNow).toBe(0);
@@ -258,7 +258,7 @@ describe("PROP-CV-005: I/O budget — settingsSave failure: statDir=1, settingsS
       { ok: true, value: true },
       { ok: false, error: { kind: "lock" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(1);
     expect(counts.clockNow).toBe(0);
@@ -270,7 +270,7 @@ describe("PROP-CV-005: I/O budget — settingsSave failure: statDir=1, settingsS
       { ok: true, value: true },
       { ok: false, error: { kind: "unknown", detail: "store locked" } },
     );
-    configureVault(deps)({ userSelectedPath: TEST_PATH });
+    configureVault(deps, { userSelectedPath: TEST_PATH });
     expect(counts.statDir).toBe(1);
     expect(counts.settingsSave).toBe(1);
     expect(counts.clockNow).toBe(0);

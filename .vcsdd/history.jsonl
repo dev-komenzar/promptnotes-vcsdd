@@ -153,3 +153,12 @@
 {"timestamp":"2026-05-02T03:00:10.080Z","event":"gate_recorded","featureName":"configure-vault","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-02T03:00:10.083Z","event":"phase_transition","featureName":"configure-vault","from":"2c","to":"3","iteration":1,"phase":"3"}
 {"timestamp":"2026-05-02T03:00:39.712Z","event":"phase_transition","featureName":"configure-vault","from":"3","to":"5","iteration":1,"phase":"5"}
+{"timestamp":"2026-05-02T03:07:49.640Z","event":"phase_transition","featureName":"configure-vault","from":"5","to":"6","iteration":1,"phase":"6"}
+{"timestamp":"2026-05-02T03:21:58.886Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-015","type":"adversary-finding","phase":"6","externalId":"FIND-001"}
+{"timestamp":"2026-05-02T03:21:58.888Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-016","type":"adversary-finding","phase":"6","externalId":"FIND-002"}
+{"timestamp":"2026-05-02T03:21:58.889Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-017","type":"adversary-finding","phase":"6","externalId":"FIND-003"}
+{"timestamp":"2026-05-02T03:21:58.890Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-018","type":"adversary-finding","phase":"6","externalId":"FIND-004"}
+{"timestamp":"2026-05-02T03:21:58.892Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-019","type":"adversary-finding","phase":"6","externalId":"FIND-005"}
+{"timestamp":"2026-05-02T03:21:58.893Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-020","type":"adversary-finding","phase":"6","externalId":"FIND-006"}
+{"timestamp":"2026-05-02T03:22:07.101Z","event":"gate_recorded","featureName":"configure-vault","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-02T03:22:25.920Z","event":"phase_transition","featureName":"configure-vault","from":"6","to":"complete","iteration":1,"phase":"complete"}

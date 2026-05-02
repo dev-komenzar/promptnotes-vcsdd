@@ -103,6 +103,28 @@ describe("REQ-008 / PROP-CV-004: validateAndTransitionVault is pure (determinist
     expect(v2.status.kind).toBe("Ready");
   });
 
+  test("_now is NOT written to output — varying timestamp produces structurally identical vaults (regression guard for Date.now() leak)", () => {
+    // This test locks down that `_now` is never populated into last_scanned_at.
+    // A regression that reads Date.now() from a closure instead of the `_now` parameter
+    // would still fail here because the frozen expected value has last_scanned_at: null.
+    const frozen: VaultAggregate = Object.freeze({
+      id: TEST_ID,
+      status: Object.freeze({
+        kind: "Ready" as const,
+        path: TEST_PATH,
+        last_scanned_at: null,
+      }),
+    });
+
+    const withTs1 = validateAndTransitionVault(TEST_ID, TEST_PATH, ts(1)) as unknown as VaultAggregate;
+    const withTs2 = validateAndTransitionVault(TEST_ID, TEST_PATH, ts(999_999_999)) as unknown as VaultAggregate;
+
+    expect(withTs1).toEqual(frozen);
+    expect(withTs2).toEqual(frozen);
+    // Both calls are structurally equal regardless of timestamp — _now has no observable effect.
+    expect(withTs1).toEqual(withTs2);
+  });
+
   test("function is total — does not throw for any valid (vaultId, path, now)", () => {
     expect(() => validateAndTransitionVault(
       vaultId("any-vault"),

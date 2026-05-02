@@ -38,6 +38,14 @@ export type Vault = {
  *
  * Does NOT accept a prior Vault parameter (FIND-001). Any (vaultId, path, now)
  * produces Ready — there is no previous-state guard.
+ *
+ * `_now` is reserved for parity with Rust `aggregate.rs::configure(vault, path, now)`,
+ * which will eventually populate `last_scanned_at` once the Rust side completes its
+ * `todo!()` implementation. Until then, `last_scanned_at` remains `null` at first
+ * configure and `_now` is intentionally unused in TypeScript. A future change that
+ * reads `now` from a closure or `Date.now()` instead of this parameter would be a
+ * regression — the structural-equality test in validate-and-transition.test.ts guards
+ * against this.
  */
 export function validateAndTransitionVault(
   vaultId: VaultId,

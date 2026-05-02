@@ -1,9 +1,19 @@
 {
-  "id": "FIND-001",
+  "findingId": "FIND-001",
   "dimension": "spec_fidelity",
-  "severity": "MAJOR",
-  "where": "promptnotes/src/lib/domain/configure-vault/pipeline.ts:39-42",
-  "issue": "REQ-014 (behavioral-spec.md lines 248-261) prescribes a flat signature `configureVault(ports, userSelectedPath): Result<VaultDirectoryConfigured, VaultConfigError>`. The implementation exposes a curried shape `configureVault(deps): (input: ConfigureVaultInput) => Result<...>` and wraps `userSelectedPath` in an object. Tests adapt to this curried shape, so red-green stays consistent, but the public spec signature now does not match the public implementation signature, and any future caller written to REQ-014 will fail to type-check. None of the carry-forward resolutions FIND-001..FIND-009 authorize this shape change.",
-  "evidence": "export function configureVault(\n  deps: ConfigureVaultDeps,\n): (input: ConfigureVaultInput) => Result<VaultDirectoryConfigured, VaultConfigError> {\n  return (input: ConfigureVaultInput): Result<VaultDirectoryConfigured, VaultConfigError> => {",
-  "remediation": "Either flatten the signature to match REQ-014 (`configureVault(deps, { userSelectedPath })` or `configureVault(deps, userSelectedPath)`) or, if curry is intentional, amend REQ-014 in a Phase-1c follow-up so the spec and the impl agree."
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "configureVault was implemented as curried (deps) => (input) => Result, but REQ-014 specifies the flat signature configureVault(deps, userSelectedPath): Result. Tests adapted to the curried form, so red-green stayed consistent, but the public spec signature did not match the public implementation. Resolved in-place by flattening to configureVault(deps, input) and updating all 50+ test call sites.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/configure-vault/pipeline.ts",
+    "lineRange": "44-46",
+    "snippet": "export function configureVault(deps: ConfigureVaultDeps, input: ConfigureVaultInput): Result<VaultDirectoryConfigured, VaultConfigError>"
+  },
+  "routeToPhase": "2b",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 2,
+    "fixedInPhase": "6",
+    "notes": "Flattened configureVault to (deps, input) per REQ-014; updated all test call sites; 513/513 tests pass."
+  }
 }

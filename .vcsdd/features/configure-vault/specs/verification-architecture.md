@@ -222,10 +222,13 @@ Implementation lives under `promptnotes/src/lib/domain/configure-vault/`:
 
 ```
 configure-vault/
-  pipeline.ts          # configureVault(ports, userSelectedPath): Result<VaultDirectoryConfigured, VaultConfigError>
-  vault-transition.ts  # validateAndTransitionVault(vaultId, path, now): Vault  (pure)
-  error-mapping.ts     # mapStatDirResult, mapSettingsSaveError  (pure)
+  pipeline.ts                  # configureVault(deps, input): Result<VaultDirectoryConfigured, VaultConfigError>
+  validate-and-transition.ts   # validateAndTransitionVault(vaultId, path, now): Vault  (pure)
+  map-stat-dir-result.ts       # mapStatDirResult(statResult, pathStr): Result<void, VaultConfigError>  (pure)
+  map-settings-save-error.ts   # mapSettingsSaveError(fsError, pathStr): VaultConfigError  (pure)
 ```
+
+Note: error mapping is split into two files (`map-stat-dir-result.ts`, `map-settings-save-error.ts`) rather than a single `error-mapping.ts`; the pure helper is `validate-and-transition.ts` (not `vault-transition.ts`).
 
 ---
 
@@ -248,14 +251,14 @@ export function configureVault(
   userSelectedPath: VaultPath,
 ): Result<VaultDirectoryConfigured, VaultConfigError>;
 
-// ── Pure state-machine transition (vault-transition.ts) ────────────────
+// ── Pure state-machine transition (validate-and-transition.ts) ────────
 export function validateAndTransitionVault(
   vaultId: VaultId,
   path: VaultPath,
   now: Timestamp,
 ): Vault;
 
-// ── Pure error mappers (error-mapping.ts) ───────────────────────────────
+// ── Pure error mappers (map-stat-dir-result.ts, map-settings-save-error.ts) ──
 export function mapStatDirResult(
   statResult: Result<boolean, FsError>,
   pathStr: string,
