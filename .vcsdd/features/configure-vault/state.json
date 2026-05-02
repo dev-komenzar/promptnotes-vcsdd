@@ -2,7 +2,7 @@
   "featureName": "configure-vault",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -21,12 +21,20 @@
       "to": "1c",
       "timestamp": "2026-05-02T02:35:29.141Z",
       "reason": "spec review gate PASS (adversary, lean mode)"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-02T02:39:24.457Z",
+      "reason": "enter Phase 2a (red phase, sprint 1)",
+      "sprint": 2
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
-    "1c": 1
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -37,7 +45,16 @@
         "type": "spec-requirement",
         "artifactPath": ".vcsdd/features/configure-vault/specs/behavioral-spec.md",
         "status": "active",
-        "linkedBeads": [],
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-005",
+          "BEAD-006",
+          "BEAD-007",
+          "BEAD-008",
+          "BEAD-009",
+          "BEAD-010"
+        ],
         "createdAt": "2026-05-02T02:28:04.070Z",
         "createdInPhase": "1a"
       },
@@ -51,6 +68,102 @@
         ],
         "createdAt": "2026-05-02T02:28:04.070Z",
         "createdInPhase": "1b"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/pipeline.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.298Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PIPELINE"
+      },
+      {
+        "beadId": "BEAD-004",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/validate-and-transition.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.300Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-VALIDATE-AND-TRANSITION"
+      },
+      {
+        "beadId": "BEAD-005",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/map-stat-dir-result.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.301Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-MAP-STAT-DIR-RESULT"
+      },
+      {
+        "beadId": "BEAD-006",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/map-settings-save-error.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.302Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-MAP-SETTINGS-SAVE-ERROR"
+      },
+      {
+        "beadId": "BEAD-007",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-001-port-call-budget.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.303Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-001-PORT-CALL-BUDGET"
+      },
+      {
+        "beadId": "BEAD-008",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-005-event-emission-discipline.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.304Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-005-EVENT-EMISSION"
+      },
+      {
+        "beadId": "BEAD-009",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-007b-no-unconfigured-from-pipeline.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.305Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-007B-NO-UNCONFIGURED"
+      },
+      {
+        "beadId": "BEAD-010",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-008-ordering.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001"
+        ],
+        "createdAt": "2026-05-02T02:46:00.305Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-CV-008-ORDERING"
       }
     ]
   },
@@ -71,7 +184,7 @@
       "adversaryReviewedAt": "2026-05-02T02:35:29.139Z"
     }
   },
-  "sprintCount": 0,
+  "sprintCount": 2,
   "createdAt": "2026-05-02T02:20:16.178Z",
-  "updatedAt": "2026-05-02T02:35:29.141Z"
+  "updatedAt": "2026-05-02T02:46:00.305Z"
 }

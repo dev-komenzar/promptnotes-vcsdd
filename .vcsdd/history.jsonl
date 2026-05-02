@@ -137,3 +137,14 @@
 {"timestamp":"2026-05-02T02:27:38.843Z","event":"phase_transition","featureName":"configure-vault","from":"1a","to":"1b","iteration":1,"phase":"1b"}
 {"timestamp":"2026-05-02T02:35:29.140Z","event":"gate_recorded","featureName":"configure-vault","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-02T02:35:29.141Z","event":"phase_transition","featureName":"configure-vault","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-05-02T02:39:24.453Z","event":"sprint_started","featureName":"configure-vault","sprintNumber":1}
+{"timestamp":"2026-05-02T02:39:24.458Z","event":"phase_transition","featureName":"configure-vault","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-05-02T02:39:24.458Z","event":"sprint_started","featureName":"configure-vault","sprintNumber":2,"phase":"2a"}
+{"timestamp":"2026-05-02T02:46:00.299Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-003","type":"test-case","phase":"2a","externalId":"TEST-PIPELINE"}
+{"timestamp":"2026-05-02T02:46:00.300Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-004","type":"test-case","phase":"2a","externalId":"TEST-VALIDATE-AND-TRANSITION"}
+{"timestamp":"2026-05-02T02:46:00.302Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-005","type":"test-case","phase":"2a","externalId":"TEST-MAP-STAT-DIR-RESULT"}
+{"timestamp":"2026-05-02T02:46:00.302Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-006","type":"test-case","phase":"2a","externalId":"TEST-MAP-SETTINGS-SAVE-ERROR"}
+{"timestamp":"2026-05-02T02:46:00.303Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-007","type":"test-case","phase":"2a","externalId":"TEST-PROP-CV-001-PORT-CALL-BUDGET"}
+{"timestamp":"2026-05-02T02:46:00.304Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-008","type":"test-case","phase":"2a","externalId":"TEST-PROP-CV-005-EVENT-EMISSION"}
+{"timestamp":"2026-05-02T02:46:00.305Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-009","type":"test-case","phase":"2a","externalId":"TEST-PROP-CV-007B-NO-UNCONFIGURED"}
+{"timestamp":"2026-05-02T02:46:00.306Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-010","type":"test-case","phase":"2a","externalId":"TEST-PROP-CV-008-ORDERING"}
