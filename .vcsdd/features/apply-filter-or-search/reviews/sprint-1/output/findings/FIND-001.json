@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "low",
+  "description": "tryNewTag returned a 3rd error variant {kind: 'invalid-tag'} not present in the canonical TagError contract from docs/domain/code/ts/src/shared/value-objects.ts. The character-set guard /^[a-z0-9-]+$/ silently rejected non-ASCII tags despite Open Question 4 deferring that policy. The local error variant set has been collapsed to the canonical two variants (empty | only-whitespace) and tryNewTag is no longer re-exported, keeping type drift module-private. Public ParseFilterInput contract was always intact via parseFilterInput's rewrap to {kind:'invalid-tag', raw}.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+    "lineRange": "1-52",
+    "snippet": "Pre-fix: local TagValidationError union with {kind:'invalid-tag'} + /^[a-z0-9-]+$/ regex guard. Post-fix: returns Result<Tag, TagError> with canonical 2-variant TagError; character-set guard removed."
+  },
+  "routeToPhase": "2b",
+  "resolution": {
+    "status": "fixed",
+    "fixedInSprint": 1,
+    "fixedInPhase": "2b",
+    "notes": "Local error type aligned to canonical TagError; tryNewTag removed from index.ts barrel re-export; parseFilterInput continues rewrapping any failure as {kind:'invalid-tag', raw} per REQ-003."
+  }
+}
