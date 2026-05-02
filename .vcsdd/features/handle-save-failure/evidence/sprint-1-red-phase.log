@@ -1,0 +1,96 @@
+=== handle-save-failure new feature tests ===
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/handle-save-failure/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../handle-save-failure/pipeline.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/handle-save-failure/retry-save.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../handle-save-failure/pipeline.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/retry-save.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/handle-save-failure/discard-current-session.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../handle-save-failure/pipeline.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/discard-current-session.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/handle-save-failure/cancel-switch.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../handle-save-failure/pipeline.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/cancel-switch.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-021-pure-transition-no-side-effect.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../../handle-save-failure/transitions.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-021-pure-transition-no-side-effect.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-020-clock-budget-invariant-violation.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../../handle-save-failure/pipeline.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-020-clock-budget-invariant-violation.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-019-invariant-on-non-save-failed.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../../handle-save-failure/pipeline.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-019-invariant-on-non-save-failed.harness.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-001-retry-determinism.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../../handle-save-failure/pipeline.js' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-001-retry-determinism.harness.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 8 fail
+ 8 errors
+Ran 8 tests across 8 files. [15.00ms]
+
+=== regression baseline (edit-past-note-start) ===
+bun test v1.3.11 (af24e281)
+
+ 52 pass
+ 0 fail
+ 10201 expect() calls
+Ran 52 tests across 9 files. [210.00ms]
+
+---
+new feature tests: failed
+regression baseline: pass
+---
+
+Phase 2a red-phase evidence summary:
+- Feature: handle-save-failure
+- Sprint: 1
+- Phase: 2a (Red)
+- New feature tests: 8 test files, 0 pass, 8 fail, 8 errors
+  - Cause: Cannot find module - implementation modules do not exist yet
+  - Files: pipeline.test.ts, retry-save.test.ts, discard-current-session.test.ts,
+    cancel-switch.test.ts, prop-HSF-001, prop-HSF-019, prop-HSF-020, prop-HSF-021
+- Regression baseline (edit-past-note-start): 52 pass, 0 fail - GREEN
+- Test totals: 8 new test files targeting REQ-HSF-001..012 and PROP-HSF-001..021
+- Timestamp: 2026-05-01

@@ -29,6 +29,7 @@ import type {
 import type {
   EditingSessionState,
   EditingState,
+  SaveFailedState,
   SavingState,
 } from "./states.js";
 import type { CaptureDeps } from "./ports.js";
@@ -112,9 +113,17 @@ export type CopyBody = (
 // Workflow 8: HandleSaveFailure
 // ──────────────────────────────────────────────────────────────────────
 
+// REQ-HSF-011: Widened signature — accepts (stage, state, decision).
+// `stage` carries the failure event context (for logging/error propagation).
+// `state` carries the transition targets (currentNoteId, pendingNextNoteId).
+// Callers that pass only (stage, decision) produce a TypeScript compilation error.
 export type HandleSaveFailure = (
   deps: CaptureDeps,
-) => (stage: SaveFailedStage, decision: UserDecision) => Promise<ResolvedState>;
+) => (
+  stage: SaveFailedStage,
+  state: SaveFailedState,
+  decision: UserDecision,
+) => Promise<ResolvedState>;
 
 // ──────────────────────────────────────────────────────────────────────
 // SaveNoteRequested 発行ヘルパー（型レベル）。

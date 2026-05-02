@@ -1,0 +1,129 @@
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-020-clock-budget-invariant-violation.harness.test.ts:
+2436 | 	return error;
+2437 | }
+2438 | /** @internal */
+2439 | function throwIfFailed(out) {
+2440 | 	if (!out.failed) return;
+2441 | 	throw buildError(defaultReportMessage(out), out);
+                                                       ^
+error: Property failed after 1 tests
+{ seed: 875339273, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"save-failed","currentNoteId":"0000-00-00-000000-000","pendingNextNoteId":null,"lastSaveError":{"kind":"fs","reason":{"kind":"lock"}}},{"kind":"SaveFailedStage","noteId":"0000-00-00-000000-000","error":{"kind":"fs","reason":{"kind":"lock"}}}]
+Shrunk 32 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2441:49)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2514:7)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-020-clock-budget-invariant-violation.harness.test.ts:123:10)
+(fail) PROP-HSF-020: Clock.now() called 0 times on cancel-switch-invalid branch > ∀ SaveFailedState with pendingNextNoteId=null, cancel-switch → clockNow called 0 times (200 runs) [8.00ms]
+2436 | 	return error;
+2437 | }
+2438 | /** @internal */
+2439 | function throwIfFailed(out) {
+2440 | 	if (!out.failed) return;
+2441 | 	throw buildError(defaultReportMessage(out), out);
+                                                       ^
+error: Property failed after 1 tests
+{ seed: 995705770, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"save-failed","currentNoteId":"0000-00-00-000000-000","pendingNextNoteId":"0000-00-00-000000-000","lastSaveError":{"kind":"fs","reason":{"kind":"unknown","detail":"test"}}},{"kind":"SaveFailedStage","noteId":"0000-00-00-000000-000","error":{"kind":"fs","reason":{"kind":"lock"}}}]
+Shrunk 43 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2441:49)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2514:7)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-020-clock-budget-invariant-violation.harness.test.ts:163:10)
+(fail) PROP-HSF-020: Clock.now() called 0 times on cancel-switch-invalid branch > ∀ SaveFailedState with pendingNextNoteId non-null, cancel-switch → clockNow called exactly 1 time (200 runs) [4.00ms]
+
+src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-019-invariant-on-non-save-failed.harness.test.ts:
+164 |       arbNoteId.map((id) => ({
+165 |         status: "saving" as const,
+166 |         currentNoteId: id,
+167 |         savingStartedAt: makeTimestamp(1000),
+168 |       })),
+169 |       arbNoteId.flatMap((id1) =>
+                      ^
+TypeError: arbNoteId.flatMap is not a function. (In 'arbNoteId.flatMap((id1) => arbNoteId.map((id2) => ({
+      status: "switching",
+      currentNoteId: id1,
+      pendingNextNoteId: id2,
+      savingStartedAt: makeTimestamp(1000)
+    })))', 'arbNoteId.flatMap' is undefined)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-019-invariant-on-non-save-failed.harness.test.ts:169:17)
+(fail) PROP-HSF-019: invariant-on-non-save-failed > ∀ non-save-failed status values → invariant-violated rejection (property, 50 runs)
+
+src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-001-retry-determinism.harness.test.ts:
+2436 | 	return error;
+2437 | }
+2438 | /** @internal */
+2439 | function throwIfFailed(out) {
+2440 | 	if (!out.failed) return;
+2441 | 	throw buildError(defaultReportMessage(out), out);
+                                                       ^
+error: Property failed after 1 tests
+{ seed: 138073403, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"save-failed","currentNoteId":"0000-00-00-000000-000","pendingNextNoteId":null,"lastSaveError":{"kind":"fs","reason":{"kind":"permission"}}},{"kind":"SaveFailedStage","noteId":"0000-00-00-000000-000","error":{"kind":"fs","reason":{"kind":"unknown","detail":"test-error"}}},{"epochMillis":1}]
+Shrunk 30 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2441:49)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2514:7)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-001-retry-determinism.harness.test.ts:90:10)
+(fail) PROP-HSF-001: retry transition determinism > ∀ SaveFailedState, running retry-save twice with identical fixed clock → identical SavingState outputs (1000 runs) [3.00ms]
+2436 | 	return error;
+2437 | }
+2438 | /** @internal */
+2439 | function throwIfFailed(out) {
+2440 | 	if (!out.failed) return;
+2441 | 	throw buildError(defaultReportMessage(out), out);
+                                                       ^
+error: Property failed after 1 tests
+{ seed: 727825832, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"save-failed","currentNoteId":"0000-00-00-000000-000","pendingNextNoteId":null,"lastSaveError":{"kind":"fs","reason":{"kind":"permission"}}},{"kind":"SaveFailedStage","noteId":"0000-00-00-000000-000","error":{"kind":"fs","reason":{"kind":"disk-full"}}},{"epochMillis":1}]
+Shrunk 31 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2441:49)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/node_modules/fast-check/lib/fast-check.js:2514:7)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-handle-save-failure/promptnotes/src/lib/domain/__tests__/handle-save-failure/__verify__/prop-HSF-001-retry-determinism.harness.test.ts:133:10)
+(fail) PROP-HSF-001: retry transition determinism > PROP-HSF-002: ∀ SaveFailedState, retry → SavingState.status='saving' ∧ currentNoteId preserved (500 runs) [2.00ms]
+
+ 125 pass
+ 5 fail
+ 16579 expect() calls
+Ran 130 tests across 17 files. [295.00ms]
+
+---
+Phase 2c refactor-phase evidence summary:
+- Feature: handle-save-failure
+- Sprint: 1
+- Phase: 2c (Refactor)
+- Refactors performed:
+    1. Unified makeInvariantViolatedError() and makeCancelSwitchInvariantError()
+       into a single makeInvariantViolatedError(detail: string) in pipeline.ts
+       — eliminates duplication, both call sites now pass a descriptive detail string
+- New feature tests: 125 pass, 5 fail (same 5 test-bug failures as green phase)
+- Regression baseline: 52 pass, 0 fail - GREEN
+- Timestamp: 2026-05-01
+
+target feature tests: pass (73/78 feature; 125/130 combined)
+regression baseline: pass
+bun test v1.3.11 (af24e281)
+
+ 398 pass
+ 0 fail
+ 20587 expect() calls
+Ran 398 tests across 51 files. [740.00ms]
+
+---
+## Phase 2c FINAL test output (post-FIND-001/002/003/004 fix)
+- FIND-001 (PROP-HSF-021): replaced vacuous sentinel spy with spyOn(Date, "now") + input mutation check
+- FIND-002 (PROP-HSF-001): replaced orchestrator import with direct retryTransition; tests are now synchronous
+- FIND-003 (evidence log): this section
+- FIND-004 (PROP-HSF-019): raised numRuns 50 → 200; fixed flatMap → fc.tuple (pre-existing TypeError)
+
+target feature tests: pass
+regression baseline: pass
+Total: 398 pass, 0 fail across 51 files
+Timestamp: 2026-05-01
