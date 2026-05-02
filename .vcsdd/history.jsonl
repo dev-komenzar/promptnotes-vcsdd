@@ -152,3 +152,4 @@
 {"timestamp":"2026-05-02T02:51:26.078Z","event":"phase_transition","featureName":"configure-vault","from":"2b","to":"2c","iteration":1,"phase":"2c"}
 {"timestamp":"2026-05-02T03:00:10.080Z","event":"gate_recorded","featureName":"configure-vault","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-02T03:00:10.083Z","event":"phase_transition","featureName":"configure-vault","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-05-02T03:00:39.712Z","event":"phase_transition","featureName":"configure-vault","from":"3","to":"5","iteration":1,"phase":"5"}

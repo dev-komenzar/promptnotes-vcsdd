@@ -1,0 +1,11 @@
+grep -rn "Date.now|Math.random|process.|new Date|globalThis" promptnotes/src/lib/domain/configure-vault/
+
+(no output — grep exit 1 means zero matches across all four source files)
+
+Files checked:
+  pipeline.ts
+  validate-and-transition.ts
+  map-stat-dir-result.ts
+  map-settings-save-error.ts
+
+Result: CLEAN — no ambient global access in configure-vault domain code

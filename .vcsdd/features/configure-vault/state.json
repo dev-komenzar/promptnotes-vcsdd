@@ -2,7 +2,7 @@
   "featureName": "configure-vault",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -49,10 +49,18 @@
       "timestamp": "2026-05-02T03:00:10.082Z",
       "reason": "adversarial review gate PASS (5/5 dimensions)",
       "sprint": 2
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-02T03:00:39.709Z",
+      "reason": "enter Phase 5 (formal hardening)",
+      "sprint": 2
     }
   ],
   "iterations": {
     "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -60,7 +68,101 @@
     "2b": 1,
     "2c": 1
   },
-  "proofObligations": [],
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "map-stat-dir-result.test.ts"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "map-stat-dir-result.test.ts"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "map-settings-save-error.test.ts"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "validate-and-transition.test.ts"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-001-port-call-budget.harness.test.ts"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-005-event-emission-discipline.harness.test.ts"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "tsc compile-time exhaustiveness"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-007b-no-unconfigured-from-pipeline.harness.test.ts"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "__verify__/prop-cv-008-ordering.harness.test.ts"
+    },
+    {
+      "id": "PROP-010",
+      "tier": 1,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-011",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-012",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-013",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 2,
+      "required": false,
+      "status": "skipped"
+    }
+  ],
   "traceability": {
     "epicId": "VCSDD-configure-vault-1777688416178",
     "beads": [
@@ -283,5 +385,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-02T02:20:16.178Z",
-  "updatedAt": "2026-05-02T03:00:10.082Z"
+  "updatedAt": "2026-05-02T03:06:14.343Z"
 }
