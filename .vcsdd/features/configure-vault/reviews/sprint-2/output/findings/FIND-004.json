@@ -1,0 +1,9 @@
+{
+  "id": "FIND-004",
+  "dimension": "structural_integrity",
+  "severity": "MINOR",
+  "where": "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts:42-55; map-stat-dir-result.ts; map-settings-save-error.ts",
+  "issue": "verification-architecture.md lines 222-228 prescribes the file layout `vault-transition.ts` and `error-mapping.ts` (one error-mapping module). The implementation uses `validate-and-transition.ts` and splits error mapping into two files (`map-stat-dir-result.ts`, `map-settings-save-error.ts`). REQ-014 line 266 also names `vault-transition.ts` explicitly. Manifest reflects the new names, so red-green succeeds, but the structural-architecture document is now out of sync with the source tree.",
+  "evidence": "configure-vault/\n  pipeline.ts          # configureVault(ports, userSelectedPath): Result<VaultDirectoryConfigured, VaultConfigError>\n  vault-transition.ts  # validateAndTransitionVault(vaultId, path, now): Vault  (pure)\n  error-mapping.ts     # mapStatDirResult, mapSettingsSaveError  (pure)",
+  "remediation": "Either rename source files to match `verification-architecture.md` (vault-transition.ts, error-mapping.ts) or update `verification-architecture.md` Test Harness Layout / Type-Level Contracts sections and REQ-014 line 266 to record the split."
+}

@@ -1,0 +1,9 @@
+{
+  "id": "FIND-001",
+  "dimension": "spec_fidelity",
+  "severity": "MAJOR",
+  "where": "promptnotes/src/lib/domain/configure-vault/pipeline.ts:39-42",
+  "issue": "REQ-014 (behavioral-spec.md lines 248-261) prescribes a flat signature `configureVault(ports, userSelectedPath): Result<VaultDirectoryConfigured, VaultConfigError>`. The implementation exposes a curried shape `configureVault(deps): (input: ConfigureVaultInput) => Result<...>` and wraps `userSelectedPath` in an object. Tests adapt to this curried shape, so red-green stays consistent, but the public spec signature now does not match the public implementation signature, and any future caller written to REQ-014 will fail to type-check. None of the carry-forward resolutions FIND-001..FIND-009 authorize this shape change.",
+  "evidence": "export function configureVault(\n  deps: ConfigureVaultDeps,\n): (input: ConfigureVaultInput) => Result<VaultDirectoryConfigured, VaultConfigError> {\n  return (input: ConfigureVaultInput): Result<VaultDirectoryConfigured, VaultConfigError> => {",
+  "remediation": "Either flatten the signature to match REQ-014 (`configureVault(deps, { userSelectedPath })` or `configureVault(deps, userSelectedPath)`) or, if curry is intentional, amend REQ-014 in a Phase-1c follow-up so the spec and the impl agree."
+}

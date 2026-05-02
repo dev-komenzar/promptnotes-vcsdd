@@ -1,0 +1,9 @@
+{
+  "id": "FIND-005",
+  "dimension": "implementation_correctness",
+  "severity": "MINOR",
+  "where": "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts:42-55",
+  "issue": "`validateAndTransitionVault` accepts `_now: Timestamp` but does not consume it — the returned vault always has `last_scanned_at: null` regardless of the timestamp. The Rust source-of-truth `aggregate.rs::configure(vault, path, now)` is currently `todo!()` and reserves the parameter for future use, so naming the TS parameter `_now` matches Rust intent. However, REQ-008 acceptance \"`validateAndTransitionVault(vaultId, path, now)` is pure\" pairs the function name with `now` as a meaningful input. The Phase-1c FIND resolutions did not authorize dropping `now` from the output. A careless future change that reads `now` from somewhere else (e.g., closure, Date.now) would still pass current tests because only `status.kind === \"Ready\"` is checked when `now` varies (validate-and-transition.test.ts:97-104).",
+  "evidence": "export function validateAndTransitionVault(\n  vaultId: VaultId,\n  path: VaultPath,\n  _now: Timestamp,\n): Vault {\n  return {\n    id: vaultId,\n    status: {\n      kind: \"Ready\",\n      path,\n      last_scanned_at: null,\n    },\n  };\n}",
+  "remediation": "Add a JSDoc note that `_now` is reserved for parity with Rust `aggregate.rs::configure` and tighten the timestamp test to assert structural equality with a frozen expected vault (so a future leak of `Date.now()` would be caught). Or, when a `Vault` is eventually returned from the pipeline, route `now` into `last_scanned_at` to give it observable meaning."
+}

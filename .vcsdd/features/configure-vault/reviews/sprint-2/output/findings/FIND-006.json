@@ -1,0 +1,9 @@
+{
+  "id": "FIND-006",
+  "dimension": "edge_case_coverage",
+  "severity": "MINOR",
+  "where": "promptnotes/src/lib/domain/__tests__/configure-vault/pipeline.test.ts:196-526",
+  "issue": "Pipeline-level error tests (REQ-002 through REQ-007) assert only `result.error.kind`. They never assert `result.error.path === <expected>`. A regression where `mapStatDirResult` or `mapSettingsSaveError` were called with the wrong path argument (e.g., a stale string, an empty string, or a different field) would not be detected at the pipeline boundary. The unit-level helper tests (`map-stat-dir-result.test.ts`, `map-settings-save-error.test.ts`) do assert `error.path` correctness, which mitigates the risk, but the integration boundary lets path threading drift uncaught.",
+  "evidence": "test(\"returns Err with kind 'path-not-found'\", () => {\n  ...\n  expect(result.ok).toBe(false);\n  if (result.ok) return;\n  expect(result.error.kind).toBe(\"path-not-found\");\n});",
+  "remediation": "Add one assertion per error-path test: `if (result.error.kind === 'path-not-found' || result.error.kind === 'permission-denied') { expect(result.error.path).toBe(TEST_PATH); }`. Alternatively, parameterize a helper to enforce the assertion across all error tests."
+}

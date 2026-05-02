@@ -1,0 +1,41 @@
+{
+  "reviewType": "implementation",
+  "featureName": "configure-vault",
+  "sprintNumber": 2,
+  "mode": "lean",
+  "language": "typescript",
+  "artifactsToReview": {
+    "spec": [
+      "specs/behavioral-spec.md",
+      "specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/domain/__tests__/configure-vault/pipeline.test.ts",
+      "promptnotes/src/lib/domain/__tests__/configure-vault/validate-and-transition.test.ts",
+      "promptnotes/src/lib/domain/__tests__/configure-vault/map-stat-dir-result.test.ts",
+      "promptnotes/src/lib/domain/__tests__/configure-vault/map-settings-save-error.test.ts",
+      "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-001-port-call-budget.harness.test.ts",
+      "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-005-event-emission-discipline.harness.test.ts",
+      "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-007b-no-unconfigured-from-pipeline.harness.test.ts",
+      "promptnotes/src/lib/domain/__tests__/configure-vault/__verify__/prop-cv-008-ordering.harness.test.ts"
+    ],
+    "source": [
+      "promptnotes/src/lib/domain/configure-vault/pipeline.ts",
+      "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
+      "promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts",
+      "promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts"
+    ],
+    "evidence": [
+      ".vcsdd/features/configure-vault/evidence/sprint-2-red-phase.log",
+      ".vcsdd/features/configure-vault/evidence/sprint-2-green-phase.log"
+    ]
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "carryForwardFromSpecReview": ".vcsdd/features/configure-vault/reviews/spec/iteration-1/output/findings.md"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "FIND-002",
+  "dimension": "structural_integrity",
+  "severity": "MAJOR",
+  "where": "promptnotes/src/lib/domain/configure-vault/pipeline.ts:61-62",
+  "issue": "`validateAndTransitionVault(deps.vaultId, input.userSelectedPath, now)` is called and its return value is discarded. Because the helper is pure (no I/O, no shared mutable state), the call has no observable effect on the pipeline output: the event built on lines 65-70 is constructed independently from `vaultId`, `userSelectedPath`, and `now`. The line is dead code in production. This contradicts the `Step 4` comment that calls it an `internal invariant check` — there is no check, the helper never throws and never refuses any input. Removing line 62 would not change a single test outcome.",
+  "evidence": "// Step 4: Pure aggregate transition (result not published — internal invariant check)\nvalidateAndTransitionVault(deps.vaultId, input.userSelectedPath, now);\n\n// Step 5: Build the public domain event\nconst event: VaultDirectoryConfigured = {\n  kind: \"vault-directory-configured\",\n  vaultId: deps.vaultId,\n  path: input.userSelectedPath,\n  occurredOn: now,\n};",
+  "remediation": "Either delete line 62 (and update the step comment) and rely on `validate-and-transition.test.ts` to cover the helper, or surface the produced `Vault` in the pipeline (e.g., return it alongside the event, or persist it via a new port) so the call carries weight. Document the choice in REQ-008/REQ-014."
+}
