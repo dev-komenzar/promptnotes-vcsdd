@@ -1,0 +1,13 @@
+{
+  "reviewType": "spec",
+  "feature": "configure-vault",
+  "phase": "1c",
+  "iteration": 1,
+  "artifactsToReview": [
+    ".vcsdd/features/configure-vault/specs/behavioral-spec.md",
+    ".vcsdd/features/configure-vault/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "mode": "lean",
+  "language": "typescript"
+}

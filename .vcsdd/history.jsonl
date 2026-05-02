@@ -135,3 +135,5 @@
 {"timestamp":"2026-05-02T02:20:16.180Z","event":"feature_created","featureName":"configure-vault","mode":"lean","language":"typescript"}
 {"timestamp":"2026-05-02T02:27:38.842Z","event":"phase_transition","featureName":"configure-vault","from":"init","to":"1a","iteration":1,"phase":"1a"}
 {"timestamp":"2026-05-02T02:27:38.843Z","event":"phase_transition","featureName":"configure-vault","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-05-02T02:35:29.140Z","event":"gate_recorded","featureName":"configure-vault","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-02T02:35:29.141Z","event":"phase_transition","featureName":"configure-vault","from":"1b","to":"1c","iteration":1,"phase":"1c"}

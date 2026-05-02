@@ -1,0 +1,15 @@
+{
+  "reviewType": "spec",
+  "feature": "configure-vault",
+  "phase": "1c",
+  "iteration": 1,
+  "verdicts": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "overallVerdict": "PASS",
+  "findingsCount": 9,
+  "blockers": 0,
+  "summary": "Lean-mode 1c gate passes for configure-vault. Spec faithfully reflects Workflow 9, the VaultDirectoryConfigured event contract (events.ts line 30-35), the modal UI error catalog, and the FsError/VaultConfigError unions. The verification architecture maps every REQ-NNN to at least one PROP-CV-NNN and clearly partitions pure helpers (mapStatDirResult, mapSettingsSaveError, validateAndTransitionVault) from the effectful shell with explicit per-path I/O budgets. No BLOCKER findings. Nine non-blocking findings (3 MAJOR, 6 MINOR) document coherence gaps to address in Phase 2a or carry into 1c discussion: REQ-008 / REQ-012 reference a Vault aggregate that the actual pipeline shape (REQ-014 ports) does not accept; the behavioral spec's Purity Boundary table contradicts verification-architecture.md on the mapStatDirError signature; PROP-CV-007 conflates exhaustiveness of the VaultConfigError union with a separate 'unconfigured is never produced' obligation; coverage matrix has a soft gap for REQ-012's no-mutation invariant; and minor naming/sync-vs-async drift from the load-vault-config.ts nearest neighbor.",
+  "reviewedAt": "2026-05-02T00:00:00Z"
+}
