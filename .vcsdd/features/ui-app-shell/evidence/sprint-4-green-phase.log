@@ -1,0 +1,55 @@
+Sprint 4 — Phase 2b Green Phase Evidence
+Feature: ui-app-shell
+Date: 2026-05-03T15:40:00.000Z
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+--- Implementation Changes (FIND-601 + FIND-602) ---
+
+File: promptnotes/src/lib/ui/app-shell/AppShell.svelte
+
+FIND-601 fix: Header now renders in both Loading and Configured states.
+  Before: {#if state === "Configured"}<header>...</header>{/if}
+  After:  {#if state === "Loading" || state === "Configured"}<header>...</header>{/if}
+  REQ-020: "WHILE AppShellState === 'Loading' THE SYSTEM SHALL render only the global
+  header shell (without full nav content) and a centered loading affordance."
+
+FIND-602 fix: Loading branch no longer contains <main> with skeleton cards.
+  Before: {#if state === "Loading"}<main>..skeleton-cards..</main>{/if}
+  After:  {#if state === "Loading"}<div class="loading-affordance" role=... aria-busy=...></div>{/if}
+  REQ-020: "The main feed area SHALL be empty" in Loading state.
+  The loading affordance is a flex-centered empty div with ARIA attributes from LOADING_ARIA_ATTRIBUTES.
+
+Additional import fix (FIND-603 prep): CORRUPTED_BANNER_STYLES import moved from ./designTokens.js
+  to ./corruptedBanner.js in AppShell.svelte. SKELETON_CARD_STYLE import removed (no longer used
+  in Loading branch). This is purely a preparation step; the full FIND-603 dedup happens in 2c.
+
+--- Test Results ---
+
+FIND-604 tests (7 static-scan tests in startup-error-routing.test.ts):
+  PASS  CRIT-003: <header> element appears in a conditional block that includes 'Loading' state
+  PASS  CRIT-003: <header> element also appears in a conditional block including 'Configured'
+  PASS  CRIT-003: <header> NOT rendered in Unconfigured-only condition
+  PASS  CRIT-003: <header> NOT rendered in StartupError-only condition
+  PASS  CRIT-018: Loading state {#if} block does NOT contain a <main> element
+  PASS  CRIT-018: AppShell.svelte does NOT use aria-hidden toggle on structural elements
+  PASS  CRIT-018: full Configured main content block is inside {#if state === 'Configured'}
+
+Full suite (bun test, all 118 files):
+  1238 pass
+  4 fail  (pre-existing domain harness timeouts, unrelated to ui-app-shell)
+  1242 tests total
+
+Pre-existing failures (unchanged):
+  FAIL  PROP-002: applyFilterOrSearch determinism (timeout 5000ms) x2
+  FAIL  PROP-009: hasZeroResults iff ids.length === 0 (timeout 5000ms) x2
+
+bun run check:
+  650 files checked
+  3 ERRORS — all in src/lib/domain/__tests__/ (pre-existing, unrelated to ui-app-shell)
+  0 ERRORS in src/lib/ui/app-shell/
+
+--- Phase Transition ---
+Transitioning from 2b → 2c.
+Next: Phase 2c — fix FIND-603 (remove duplicate CORRUPTED_BANNER_STYLES from designTokens.ts).

@@ -1,0 +1,49 @@
+Sprint 4 — Phase 2a Red Phase Evidence
+Feature: ui-app-shell
+Date: 2026-05-03T15:30:00.000Z
+
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+--- New Tests (FIND-604) ---
+File: src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts
+Added 7 static-source-scan tests targeting REQ-020 conditional-rendering invariants
+(CRIT-003: header in Loading/Configured, CRIT-018: no <main> in Loading).
+
+Failing tests (2 — expected RED signal):
+  FAIL  FIND-604 / CRIT-003: <header> rendered in Loading state (REQ-020)
+        > CRIT-003: <header> element appears in a conditional block that includes 'Loading' state
+        Expected: true  Received: false
+        — Current AppShell.svelte wraps <header> only in {#if state === "Configured"} (FIND-601)
+
+  FAIL  FIND-604 / CRIT-018: Loading branch must NOT contain <main> with skeleton content (REQ-020)
+        > CRIT-018: Loading state {#if} block does NOT contain a <main> element
+        Expected: not match /<main/  Received: matches (skeleton-card in <main>)
+        — Current AppShell.svelte Loading branch renders <main> with skeleton cards (FIND-602)
+
+Passing tests (5 — pass trivially on current impl or assert absence):
+  PASS  CRIT-003: <header> element also appears in a conditional block including 'Configured'
+  PASS  CRIT-003: <header> NOT rendered in Unconfigured-only condition
+  PASS  CRIT-003: <header> NOT rendered in StartupError-only condition
+  PASS  CRIT-018: AppShell.svelte does NOT use aria-hidden toggle on structural <header> or <main>
+  PASS  CRIT-018: full Configured main content block is inside {#if state === 'Configured'} guard
+
+--- Regression Baseline ---
+Suite output (bun test, all 118 files):
+  1236 pass
+  6 fail  (4 pre-existing domain harness timeouts + 2 new FIND-604 tests)
+  1242 tests total
+
+Pre-existing failures (unchanged from sprint-3 baseline, unrelated to ui-app-shell):
+  FAIL  src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-002-apply-determinism.harness.test.ts
+        PROP-002: applyFilterOrSearch determinism > no-op  [timeout 5000ms]
+        PROP-002: applyFilterOrSearch determinism > tags/search/sort  [timeout 5000ms]
+  FAIL  src/lib/domain/__tests__/apply-filter-or-search/__verify__/prop-009-has-zero-results-flag.harness.test.ts
+        PROP-009: empty ids  [timeout 5000ms]
+        PROP-009: non-empty ids  [timeout 5000ms]
+
+ui-app-shell tests (excluding FIND-604 new tests): 0 regressions.
+
+--- Phase Transition ---
+Transitioning from 2a → 2b.
+Next: Phase 2b — fix FIND-601 (header missing in Loading) and FIND-602 (main in Loading).

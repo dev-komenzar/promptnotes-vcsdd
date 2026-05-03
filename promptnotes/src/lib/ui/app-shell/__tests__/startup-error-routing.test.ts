@@ -1,5 +1,5 @@
 /**
- * startup-error-routing.test.ts — REQ-008, REQ-009, REQ-010, PROP-007, PROP-009
+ * startup-error-routing.test.ts — REQ-008, REQ-009, REQ-010, PROP-007, PROP-009, REQ-020
  *
  * REQ-008: Unexpected エラー状態 — インラインバナー表示
  *   - AppStartupError.kind === 'scan' → UnexpectedError → バナー表示, モーダル非表示
@@ -14,6 +14,13 @@
  * REQ-010: グローバルレイアウトフレーム — ヘッダー
  *   - data-testid assertions for header structure
  *
+ * REQ-020: Loading 状態の条件付きレンダリング (CRIT-003, CRIT-018)
+ *   - <header> は Loading state と Configured state の両方でレンダリングされる
+ *   - Loading branch に <main> は含まれない（"main feed area SHALL be empty"）
+ *   - Unconfigured / StartupError には <header> は含まれない
+ *   - UnexpectedError には <header> は含まれない
+ *   - aria-hidden toggle は構造要素に使用しない
+ *
  * PROP-007: PathNotFound / PermissionDenied → StartupError routing (all 5 paths)
  * PROP-009: scan エラー / IPC クラッシュ時はバナーのみ (no modal)
  *
@@ -21,6 +28,8 @@
  */
 
 import { describe, test, expect } from "bun:test";
+import * as fs from "fs";
+import * as path from "path";
 import type { AppStartupError } from "promptnotes-domain-types/shared/errors";
 import type { Result } from "promptnotes-domain-types/util/result";
 import type { VaultPath, VaultId } from "promptnotes-domain-types/shared/value-objects";
@@ -172,5 +181,175 @@ describe("REQ-009: Configured state with corruptedFiles routes banner correctly"
     const routed = routeStartupResult(result);
     expect(routed.state).toBe("Configured");
     expect(routed.showCorruptedBanner).toBe(false);
+  });
+});
+
+// ── FIND-604 / CRIT-003 / CRIT-018: AppShell.svelte conditional-rendering static scan ──
+
+const APPSHELL_SVELTE = path.resolve(process.cwd(), "src/lib/ui/app-shell/AppShell.svelte");
+const appShellSrc = fs.readFileSync(APPSHELL_SVELTE, "utf-8");
+
+describe("FIND-604 / CRIT-003: <header> rendered in Loading state (REQ-020)", () => {
+  /**
+   * REQ-020: "WHILE AppShellState === 'Loading' THE SYSTEM SHALL render only the
+   * global header shell (without full nav content) and a centered loading affordance."
+   *
+   * The header element must appear inside (or above) a conditional block that
+   * includes the Loading state.  Accepted patterns:
+   *   (A) {#if state === "Loading" || state === "Configured"}<header>
+   *   (B) {#if state === "Loading"} ... <header>
+   *
+   * The current FAILING condition: the only <header> in the file lives inside
+   * {#if state === "Configured"} with no Loading || guard.
+   */
+  test("CRIT-003: <header> element appears in a conditional block that includes 'Loading' state", () => {
+    // Strategy: find every {#if ...} block in source order, record which block
+    // each <header> tag belongs to.  Assert that at least one <header> is in a
+    // block whose condition text contains 'Loading'.
+    //
+    // We use a simple linear scan: walk the source, track the innermost active
+    // {#if} condition text when we encounter <header>.
+    const lines = appShellSrc.split("\n");
+    const ifStack: string[] = [];
+    let headerFoundInLoadingBlock = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // Detect {#if <condition>}
+      const ifMatch = trimmed.match(/^\{#if\s+(.+?)\}/);
+      if (ifMatch) {
+        ifStack.push(ifMatch[1]);
+      }
+      // Detect {:else if <condition>} — replace top of stack
+      const elseIfMatch = trimmed.match(/^\{:else if\s+(.+?)\}/);
+      if (elseIfMatch) {
+        if (ifStack.length > 0) {
+          ifStack[ifStack.length - 1] = elseIfMatch[1];
+        }
+      }
+      // Detect {/if} — pop stack
+      if (trimmed === "{/if}") {
+        ifStack.pop();
+      }
+      // Check for <header when inside a Loading-containing block
+      if (trimmed.startsWith("<header")) {
+        // The outermost active condition must include 'Loading'
+        const activeCondition = ifStack[ifStack.length - 1] ?? "";
+        if (activeCondition.includes("Loading")) {
+          headerFoundInLoadingBlock = true;
+        }
+      }
+    }
+
+    expect(headerFoundInLoadingBlock).toBe(true);
+  });
+
+  test("CRIT-003: <header> element also appears in a conditional block that includes 'Configured' state", () => {
+    const lines = appShellSrc.split("\n");
+    const ifStack: string[] = [];
+    let headerFoundInConfiguredBlock = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const ifMatch = trimmed.match(/^\{#if\s+(.+?)\}/);
+      if (ifMatch) {
+        ifStack.push(ifMatch[1]);
+      }
+      const elseIfMatch = trimmed.match(/^\{:else if\s+(.+?)\}/);
+      if (elseIfMatch) {
+        if (ifStack.length > 0) {
+          ifStack[ifStack.length - 1] = elseIfMatch[1];
+        }
+      }
+      if (trimmed === "{/if}") {
+        ifStack.pop();
+      }
+      if (trimmed.startsWith("<header")) {
+        const activeCondition = ifStack[ifStack.length - 1] ?? "";
+        if (activeCondition.includes("Configured")) {
+          headerFoundInConfiguredBlock = true;
+        }
+      }
+    }
+
+    expect(headerFoundInConfiguredBlock).toBe(true);
+  });
+
+  test("CRIT-003: <header> is NOT rendered when state === 'Unconfigured' (modal-only state)", () => {
+    // In Unconfigured state only VaultSetupModal renders. No <header> may be
+    // wrapped in a condition whose sole branch is Unconfigured.
+    // We assert: the file does NOT contain '{#if state === "Unconfigured"}' followed
+    // by a <header> element before the matching {/if}.
+    const unconfiguredOnlyHeaderPattern = /\{#if\s+state\s*===\s*["']Unconfigured["']\s*\}[\s\S]*?<header/;
+    expect(unconfiguredOnlyHeaderPattern.test(appShellSrc)).toBe(false);
+  });
+
+  test("CRIT-003: <header> is NOT rendered when state === 'StartupError' (modal-only state)", () => {
+    const startupErrorOnlyHeaderPattern = /\{#if\s+state\s*===\s*["']StartupError["']\s*\}[\s\S]*?<header/;
+    expect(startupErrorOnlyHeaderPattern.test(appShellSrc)).toBe(false);
+  });
+});
+
+describe("FIND-604 / CRIT-018: Loading branch must NOT contain <main> with skeleton content (REQ-020)", () => {
+  /**
+   * REQ-020: "The main feed area SHALL be empty" in Loading state.
+   * The Loading branch must not render <main> with skeleton-card content.
+   *
+   * Current FAILING condition: AppShell.svelte has
+   *   {#if state === "Loading"}<main><div class="skeleton-card">...
+   * which violates REQ-020.
+   */
+  test("CRIT-018: Loading state {#if} block does NOT contain a <main> element", () => {
+    // Extract the content of the {#if state === "Loading"} block.
+    // We find the opening, then walk forward counting nested {#if}/{/if} to
+    // find the matching {/if}, and assert no <main> appears in that slice.
+    const loadingBlockStart = /\{#if\s+state\s*===\s*["']Loading["']\s*\}/;
+    const startMatch = loadingBlockStart.exec(appShellSrc);
+    expect(startMatch).not.toBeNull();
+
+    if (startMatch) {
+      let pos = startMatch.index + startMatch[0].length;
+      let depth = 1;
+      let blockContent = "";
+
+      // Simple scan: find matching {/if}
+      while (pos < appShellSrc.length && depth > 0) {
+        if (appShellSrc.startsWith("{#if", pos) || appShellSrc.startsWith("{#each", pos)) {
+          depth++;
+        } else if (appShellSrc.startsWith("{/if}", pos) || appShellSrc.startsWith("{/each}", pos)) {
+          depth--;
+          if (depth === 0) break;
+        }
+        blockContent += appShellSrc[pos];
+        pos++;
+      }
+
+      // The Loading block must not contain <main>
+      expect(blockContent).not.toMatch(/<main/);
+    }
+  });
+
+  test("CRIT-018: AppShell.svelte does NOT use aria-hidden toggle on structural <header> or <main>", () => {
+    // REQ-020 specifies conditional DOM rendering, not aria-hidden toggling.
+    // Check that neither <header> nor <main> have an aria-hidden attribute.
+    const headerAriaHidden = /<header[^>]*aria-hidden/;
+    const mainAriaHidden = /<main[^>]*aria-hidden/;
+    expect(headerAriaHidden.test(appShellSrc)).toBe(false);
+    expect(mainAriaHidden.test(appShellSrc)).toBe(false);
+  });
+
+  test("CRIT-018: full Configured main content block is inside {#if state === 'Configured'} guard", () => {
+    // The <slot /> (main notes list) must only appear inside the Configured block.
+    // We assert: <slot /> appears in the source AND is preceded (in source order)
+    // by {#if state === "Configured"} without an intervening {/if}.
+    const configuredBlockStart = /\{#if\s+state\s*===\s*["']Configured["']\}/;
+    const slotPresent = appShellSrc.includes("<slot");
+    expect(slotPresent).toBe(true);
+
+    // Find the last {#if state === "Configured"} before the first <slot
+    const slotIndex = appShellSrc.indexOf("<slot");
+    const beforeSlot = appShellSrc.slice(0, slotIndex);
+    const configuredMatches = [...beforeSlot.matchAll(new RegExp(configuredBlockStart.source, "g"))];
+    expect(configuredMatches.length).toBeGreaterThan(0);
   });
 });

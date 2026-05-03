@@ -6,9 +6,10 @@
   import { invoke } from "@tauri-apps/api/core";
   import {
     HEADER_STYLE,
-    SKELETON_CARD_STYLE,
-    CORRUPTED_BANNER_STYLES,
   } from "./designTokens.js";
+  import {
+    CORRUPTED_BANNER_STYLES,
+  } from "./corruptedBanner.js";
   import {
     ERROR_BANNER_TESTID,
     ERROR_BANNER_ROLE,
@@ -48,11 +49,12 @@
 </script>
 
 <div class="app-shell">
-  <!-- REQ-010: Header — FIND-403: only rendered when state === 'Configured'.
-       This satisfies the literal EARS clause: "WHEN AppShellState === 'Configured',
-       the system SHALL render header". The modal has aria-modal=true and traps
-       focus, providing equivalent a11y isolation without aria-hidden/inert hacks. -->
-  {#if state === "Configured"}
+  <!-- REQ-010 / REQ-020 (FIND-601 fix): Header renders in both Loading and Configured states.
+       REQ-020 EARS: "WHILE AppShellState === 'Loading' THE SYSTEM SHALL render only the
+       global header shell (without full nav content) and a centered loading affordance."
+       REQ-010 EARS: "WHEN AppShellState === 'Configured', the system SHALL render header."
+       Modal states (Unconfigured, StartupError) and UnexpectedError do NOT render the header. -->
+  {#if state === "Loading" || state === "Configured"}
     <header
       style="background-color: {HEADER_STYLE.backgroundColor}; border-bottom: {HEADER_STYLE.borderBottom}; padding: 8px 16px;"
     >
@@ -64,47 +66,31 @@
     </header>
   {/if}
 
-  <!-- REQ-011: Main area — FIND-403: only rendered when state === 'Configured' or
-       for Loading/UnexpectedError transient states. The EARS spec reads:
-       "WHEN AppShellState === 'Configured', SHALL render main". For Loading and
-       UnexpectedError we still render <main> to host the loading skeleton and
-       error banner. Modal states (Unconfigured, StartupError) render no main. -->
+  <!-- REQ-020 (FIND-602 fix): Loading state renders ONLY a centered loading affordance,
+       NOT a <main> element with skeleton cards.
+       "The main feed area SHALL be empty" — no <main> in the Loading branch. -->
   {#if state === "Loading"}
-    <main>
-      <!-- REQ-012: Loading skeleton (aria-hidden skeleton cards) -->
-      <div
-        role={LOADING_ARIA_ATTRIBUTES.role}
-        aria-busy={LOADING_ARIA_ATTRIBUTES["aria-busy"]}
-        aria-label={LOADING_ARIA_ATTRIBUTES["aria-label"]}
-      >
-        <div
-          class="skeleton-card"
-          aria-hidden={SKELETON_CARD_STYLE.ariaHidden}
-          style="border-radius: {SKELETON_CARD_STYLE.borderRadius}; background-color: {SKELETON_CARD_STYLE.baseColor}; height: 32px; margin: 8px;"
-        ></div>
-        <div
-          class="skeleton-card"
-          aria-hidden={SKELETON_CARD_STYLE.ariaHidden}
-          style="border-radius: {SKELETON_CARD_STYLE.borderRadius}; background-color: {SKELETON_CARD_STYLE.baseColor}; height: 32px; margin: 8px;"
-        ></div>
-      </div>
-    </main>
+    <div
+      class="loading-affordance"
+      role={LOADING_ARIA_ATTRIBUTES.role}
+      aria-busy={LOADING_ARIA_ATTRIBUTES["aria-busy"]}
+      aria-label={LOADING_ARIA_ATTRIBUTES["aria-label"]}
+    ></div>
   {/if}
 
   {#if state === "UnexpectedError"}
-    <main>
-      <!-- REQ-008: Unexpected error banner (role=alert, no modal) -->
-      <div
-        data-testid={ERROR_BANNER_TESTID}
-        role={ERROR_BANNER_ROLE}
-      >
-        <span data-testid={STARTUP_ERROR_MESSAGE_TESTID}>
-          起動中にエラーが発生しました。アプリを再起動してください。
-        </span>
-      </div>
-    </main>
+    <!-- REQ-008: Unexpected error banner (role=alert, no modal, no header) -->
+    <div
+      data-testid={ERROR_BANNER_TESTID}
+      role={ERROR_BANNER_ROLE}
+    >
+      <span data-testid={STARTUP_ERROR_MESSAGE_TESTID}>
+        起動中にエラーが発生しました。アプリを再起動してください。
+      </span>
+    </div>
   {/if}
 
+  <!-- REQ-011 / REQ-012: Main content area — only renders when Configured. -->
   {#if state === "Configured"}
     <main>
       <!-- REQ-009 / FIND-202: Corrupted files banner shown iff showCorruptedBanner -->
@@ -139,5 +125,12 @@
   main {
     flex: 1;
     padding: 16px;
+  }
+
+  .loading-affordance {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

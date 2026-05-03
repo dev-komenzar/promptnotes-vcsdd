@@ -107,14 +107,6 @@ export const MODAL_STYLE = {
   scrim: DESIGN_TOKENS.modalScrim,
 } as const;
 
-/**
- * REQ-009: Corrupted files banner style constants.
- * Derived from DESIGN_TOKENS to ensure single-source-of-truth for warn color.
- */
-export const CORRUPTED_BANNER_STYLES = {
-  warnColor: DESIGN_TOKENS.warnColor,
-  border: `1px solid ${DESIGN_TOKENS.warnColor}`,
-  borderRadius: DESIGN_TOKENS.cardRadius,
-  fontSize: "14px",
-  fontWeight: 500,
-} as const;
+// NOTE (FIND-603 fix): CORRUPTED_BANNER_STYLES has been removed from this file.
+// The canonical definition lives in corruptedBanner.ts (REQ-014, 16px, whisperBorder).
+// Import CORRUPTED_BANNER_STYLES from "./corruptedBanner.js" — not from here.
