@@ -2,7 +2,7 @@
   "featureName": "ui-app-shell",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -13,11 +13,26 @@
       "from": "1a",
       "to": "1b",
       "timestamp": "2026-05-03T06:58:01.791Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-03T09:32:40.281Z",
+      "reason": "spec gate PASS (human-override after iter-3, FIND-024 inline-fixed)"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-03T09:33:32.166Z",
+      "reason": "sprint 1 begins (TDD red phase)",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 2,
-    "1b": 2
+    "1b": 2,
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [
     {
@@ -531,7 +546,9 @@
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
         "status": "active",
-        "linkedBeads": ["BEAD-041"],
+        "linkedBeads": [
+          "BEAD-041"
+        ],
         "createdAt": "2026-05-03T10:00:00.000Z",
         "createdInPhase": "1b",
         "externalId": "PROP-014"
@@ -541,7 +558,9 @@
         "type": "spec-requirement",
         "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
         "status": "active",
-        "linkedBeads": ["BEAD-040"],
+        "linkedBeads": [
+          "BEAD-040"
+        ],
         "createdAt": "2026-05-03T10:00:00.000Z",
         "createdInPhase": "1a",
         "externalId": "REQ-022"
@@ -550,55 +569,22 @@
   },
   "gates": {
     "1c": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-03T09:11:16.475Z",
-      "reviewedBy": "adversary",
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T09:33:32.158Z",
+      "reviewedBy": "human",
       "details": {
-        "iteration": 2,
-        "spec_fidelity": "FAIL",
-        "verification_readiness": "FAIL",
-        "findingsCount": 6,
-        "findingsBySeverity": {
-          "critical": 1,
-          "major": 3,
-          "minor": 2
-        },
-        "priorFindingsResolved": [
-          "FIND-001",
-          "FIND-002",
-          "FIND-003",
-          "FIND-004",
-          "FIND-005",
-          "FIND-006",
-          "FIND-008",
-          "FIND-009",
-          "FIND-010",
-          "FIND-011",
-          "FIND-014",
-          "FIND-015",
-          "FIND-016",
-          "FIND-017"
-        ],
-        "priorFindingsPartiallyResolved": [
-          "FIND-007",
-          "FIND-012",
-          "FIND-013"
-        ],
-        "newFindings": [
-          "FIND-018",
-          "FIND-019",
-          "FIND-020",
-          "FIND-021",
-          "FIND-022",
-          "FIND-023"
-        ],
-        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-2/output/verdict.json"
+        "approvedBasedOn": "adversary iter-3 PASS (post-FIND-024 fix)",
+        "iteration": "3-post-fix",
+        "override": "iteration-limit reached at iter-3 (FAIL with 1 minor finding). FIND-024 fixed by 1-char edit verification-architecture.md:8. Human attests no findings remain."
       },
-      "adversaryVerdict": "FAIL",
-      "adversaryReviewedAt": "2026-05-03T09:11:16.475Z"
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-03T09:33:32.155Z",
+      "humanVerdict": "PASS",
+      "humanApproved": true,
+      "humanApprovedAt": "2026-05-03T09:33:32.158Z"
     }
   },
-  "sprintCount": 0,
+  "sprintCount": 1,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T10:00:00.000Z"
+  "updatedAt": "2026-05-03T09:33:32.166Z"
 }

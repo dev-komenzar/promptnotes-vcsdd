@@ -1,0 +1,34 @@
+{
+  "feature": "ui-app-shell",
+  "phase": "1c",
+  "iteration": 3,
+  "mode": "strict",
+  "verdict": "FAIL",
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "FAIL"
+  },
+  "priorFindingsResolved": [
+    "FIND-007",
+    "FIND-012",
+    "FIND-013",
+    "FIND-018",
+    "FIND-019",
+    "FIND-020",
+    "FIND-021",
+    "FIND-022",
+    "FIND-023"
+  ],
+  "priorFindingsPartiallyResolved": [],
+  "priorFindingsNotResolved": [],
+  "newFindingsCount": 1,
+  "findingsCount": 1,
+  "findingsBySeverity": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1
+  },
+  "stateSchemaCompliance": "PASS",
+  "summary": "Iteration-3 substantively addresses every prior open finding. FIND-018 (CRITICAL — phantom VaultConfigError variants) is resolved by REQ-006/EC-19 collapsing disk-full/lock/unknown into the configure-vault-defined path-not-found surface. FIND-019 (MAJOR — undefined timeout policy) is resolved by REQ-022 + PROP-014 with PIPELINE_IPC_TIMEOUT_MS=30000, client-side Promise.race ownership, late-arrival discard, and REQ-008 EARS extension. FIND-020 (EC-12 contradiction) is resolved by an explicit tombstone with reasoning. FIND-021 (spacing list parity) is resolved with a 15-value list unified across REQ-011, NFR-07, PROP-006, and DESIGN.md §10. FIND-022 is resolved by adding the §4 Modal & Overlay subsection that DESIGN.md §10 cites. FIND-023 is resolved by renaming PROP-013 with a PROP-012 cross-reference. The three iter-1 partial carryovers (FIND-007/012/013) are also fully closed. State.json is schema-compliant. One iteration-3-introduced minor defect remains: verification-architecture.md line 8 'Source of truth' header still bounds the REQ range as REQ-001〜REQ-021, omitting iter-3's new REQ-022 (FIND-024). Strict mode requires zero open findings for PASS, so the verdict is FAIL with a single minor finding. The remediation is a one-character header edit; escalation should weigh whether a 4th iteration to fix the metadata header is justified or whether to grant human approval to extend the iteration limit.",
+  "reviewedAt": "2026-05-03T11:30:00Z"
+}

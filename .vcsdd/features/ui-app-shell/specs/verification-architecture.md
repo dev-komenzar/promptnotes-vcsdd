@@ -5,7 +5,7 @@
 **Revision**: 3 (iteration-3)
 **Mode**: strict
 **Source of truth**:
-- `specs/behavioral-spec.md` (REQ-001〜REQ-021, NEG-REQ-001〜NEG-REQ-005)
+- `specs/behavioral-spec.md` (REQ-001〜REQ-022, NEG-REQ-001〜NEG-REQ-005)
 - `docs/domain/code/ts/src/shared/value-objects.ts` (`VaultPathError`)
 - `docs/domain/code/rust/src/value_objects.rs` (`VaultPathError`)
 - `DESIGN.md` §2, §3, §5, §6, §10
