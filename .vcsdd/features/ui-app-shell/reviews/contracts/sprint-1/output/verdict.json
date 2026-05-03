@@ -1,0 +1,71 @@
+{
+  "sprintNumber": 1,
+  "feature": "ui-app-shell",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        { "type": "file", "location": "contracts/sprint-1.md:CRIT-001..CRIT-004", "description": "REQ-001..REQ-008 mapped to 4 CRITs without paraphrase" },
+        { "type": "file", "location": "specs/behavioral-spec.md:REQ-001..REQ-022", "description": "All 22 REQs traced from contract" }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        { "type": "file", "location": "contracts/sprint-1.md:CRIT-005..CRIT-007", "description": "EC-01..EC-20 enumerated across 3 CRITs" },
+        { "type": "file", "location": "specs/behavioral-spec.md:EC-01..EC-20", "description": "All 20 edge cases traceable to CRIT thresholds" }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        { "type": "file", "location": "promptnotes/src/lib/ui/app-shell/tauriAdapter.ts:23", "description": "PIPELINE_IPC_TIMEOUT_MS=30000 matches CRIT-012 threshold" },
+        { "type": "file", "location": "promptnotes/src/lib/ui/app-shell/designTokens.ts:40-57", "description": "Soft/Deep shadow stacks match CRIT-009 PROP-006 audit threshold" },
+        { "type": "file", "location": "promptnotes/src/lib/ui/app-shell/VaultSetupModal.svelte:61", "description": "tabindex=-1 a11y matches CRIT-013" }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        { "type": "file", "location": "contracts/sprint-1.md:CRIT-013..CRIT-014", "description": "REQ-020/021 + NEG-REQ-001..005 covered" },
+        { "type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/negative-scope.test.ts", "description": "7 forbidden brand-type cast patterns scanned per NEG-REQ-005 / PROP-002" }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        { "type": "file", "location": "contracts/sprint-1.md:CRIT-015", "description": "All 14 PROPs cited in passThreshold; Tier-0/1/2 distinguished linguistically" },
+        { "type": "file", "location": "specs/verification-architecture.md:PROP-001..PROP-014", "description": "All 14 PROPs traceable to CRIT thresholds" }
+      ]
+    }
+  ],
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-03T10:30:00Z",
+  "iteration": 1,
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": "contracts/sprint-1.md",
+    "contractDigest": "1dca535fa0e17c541d2addbd29ee85ac59915594d1fbb7581d80dbf9adbe5ec3"
+  },
+  "convergenceSignals": {
+    "findingCount": 0,
+    "previousFindingCount": 0,
+    "allCriteriaEvaluated": true,
+    "duplicateFindings": [],
+    "evaluatedCriteria": [
+      "CRIT-001", "CRIT-002", "CRIT-003", "CRIT-004", "CRIT-005",
+      "CRIT-006", "CRIT-007", "CRIT-008", "CRIT-009", "CRIT-010",
+      "CRIT-011", "CRIT-012", "CRIT-013", "CRIT-014", "CRIT-015"
+    ]
+  }
+}
