@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-206",
+  "dimension": "verification_readiness",
+  "category": "proof_gap",
+  "severity": "high",
+  "description": "PROP-010 is supposed to verify that the modal element appears in the DOM within 100ms of the AppShellState transitioning to `Unconfigured` / `StartupError`. The actual test merely awaits `bootOrchestrator(...)` and asserts the *return value* is the string `\"Unconfigured\"`. It:\n\n1. Does not mount any DOM.\n2. Does not use `vi.useFakeTimers()` (Vitest fake timers; bun:test has separate APIs anyway).\n3. Does not use `@testing-library/svelte` (the file admits the dependency is not installed).\n4. Does not assert any timing constraint at all.\n\nTherefore CRIT-012 passThreshold (\"PROP-010 proved (app-shell-state.test.ts vi.useFakeTimers modal-within-100ms assertion passes)\") is **not satisfied** by the existing tests. The 100ms NFR is unverified.\n\nThe same family of issues applies to:\n- REQ-003 modal \"renders, blocks interaction\" (only logic boolean, no DOM)\n- REQ-008 banner \"role=alert, no autofocus\" (testid constants verified, DOM not)\n- REQ-010 / REQ-011 / REQ-012 layout frame (only token constants verified, no DOM)\n- REQ-016 modal a11y attributes (no DOM mount; tests only check that strings are exported)",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts",
+    "lineRange": "240-257"
+  },
+  "routeToPhase": "2a"
+}

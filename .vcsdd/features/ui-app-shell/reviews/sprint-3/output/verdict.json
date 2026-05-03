@@ -1,0 +1,78 @@
+{
+  "sprintNumber": 3,
+  "feature": "ui-app-shell",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-05-03T13:00:00Z",
+  "iteration": 3,
+  "reviewContext": {
+    "reviewType": "implementation",
+    "contractPath": "contracts/sprint-3.md",
+    "contractDigest": "b2c3165704cf450e8f54c796faf0a44090ae9dd9b7a8f030b92f17fa773c2a36"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-601", "FIND-602"],
+      "evidence": []
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts", "description": "EC-18 (network FS hang / IPC timeout → UnexpectedError) verified at lines 107-122 with timeoutMs:10 fast mock; PROP-014 late-arrival protection verified at lines 124-189."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts", "description": "EC-20 (HMR boot flag reset) verified at lines 138-158 via static-source scan asserting bootAttempted is non-exported and __resetBootFlagForTesting__() returns flag to false."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/vault-modal.test.ts", "description": "EC-04, EC-05, EC-06, EC-07, EC-08, EC-14, EC-17, EC-19 covered with explicit test cases at lines 79-459."}
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/src/lib.rs", "description": "FIND-401 closure verified: invoke_app_startup, InitialUIState, and all DTO types removed (search of full source 1-287 finds no occurrence). FIND-405 closure verified at line 150: `Path::new(&raw_path).is_absolute()` replaces starts_with('/'). FIND-402 closure verified at lines 54-106 (settings_file_path uses XDG_CONFIG_HOME with HOME fallback) and line 182 (invoke_configure_vault calls settings_save_impl after stat validation). generate_handler! at lines 274-283 registers exactly: greet, try_vault_path, invoke_configure_vault, settings_load, settings_save, fs_stat_dir, fs_list_markdown, fs_read_file."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/tauriAdapter.ts", "description": "FIND-401 consequence verified: runTsAppStartupPipeline (lines 242-385) pre-resolves settings_load + fs_stat_dir + fs_list_markdown + fs_read_file IPC calls then runs the pure runAppStartupPipeline with synchronous port adapters. Errors at each I/O stage are caught and translated to AppStartupError variants. CRIT-013 verified at lines 161-165: defaultClockNow uses Math.round(performance.timeOrigin + performance.now()), no Date.now()."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts", "description": "FIND-409 closure verified at lines 226-287: synchronization-primitive gate Promise pattern correctly asserts store value is 'Loading' BEFORE releasing the IPC gate. FIND-410 closure verified at lines 403-428: typeof document === 'undefined' confirms no DOM env; @testing-library/svelte/pure import succeeds."}
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-603"],
+      "evidence": []
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-604"],
+      "evidence": []
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 4,
+    "previousFindingCount": 10,
+    "allCriteriaEvaluated": true,
+    "duplicateFindings": [],
+    "evaluatedCriteria": [
+      "CRIT-001",
+      "CRIT-002",
+      "CRIT-003",
+      "CRIT-004",
+      "CRIT-005",
+      "CRIT-006",
+      "CRIT-007",
+      "CRIT-008",
+      "CRIT-009",
+      "CRIT-010",
+      "CRIT-011",
+      "CRIT-012",
+      "CRIT-013",
+      "CRIT-014",
+      "CRIT-015",
+      "CRIT-016",
+      "CRIT-017",
+      "CRIT-018"
+    ]
+  }
+}

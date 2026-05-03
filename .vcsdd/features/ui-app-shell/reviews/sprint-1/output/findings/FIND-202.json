@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-202",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-009 mandates: \"WHEN `InitialUIState.corruptedFiles.length >= 1` THEN the system SHALL render a yellow warning banner within the main feed area\" and the AC explicitly requires \"バナーは `data-testid=\"corrupted-files-banner\"` を持つ\".\n\nThe implementation:\n1. Does not render any element when `state === 'Configured'` aside from `<slot />`.\n2. Has no constant `CORRUPTED_FILES_BANNER_TESTID = \"corrupted-files-banner\"` and no Svelte template that emits one.\n3. Computes `showCorruptedBanner` in `routeStartupResult` but the value is never consumed — `AppShell.svelte` reads only `state` from the store, not the route flags.\n4. Does not pass `corruptedFiles.length` to any rendered element; `buildCorruptedBannerMessage(count)` is exported but never called from any component.\n\nCRIT-004 passThreshold demands \"corrupted-banner.unit.test.ts REQ-009 AC assertions pass 100%\". The current test only verifies pure logic; the AC \"the banner is in the DOM with the right testid and a count message\" is unverified and unimplemented.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/AppShell.svelte",
+    "lineRange": "75-78"
+  },
+  "routeToPhase": "2b"
+}

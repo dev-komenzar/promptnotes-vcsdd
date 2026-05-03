@@ -1,0 +1,31 @@
+{
+  "reviewType": "implementation",
+  "feature": "ui-app-shell",
+  "sprint": 2,
+  "iteration": 2,
+  "mode": "strict",
+  "language": "typescript",
+  "spec": [
+    ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+    ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+  ],
+  "contract": ".vcsdd/features/ui-app-shell/contracts/sprint-2.md",
+  "contractDigest": "1350ed74687588507b6600bed04a24c9efbd23a03b8f51650fd87e5678f54cf7",
+  "tests": "promptnotes/src/lib/ui/app-shell/__tests__/",
+  "source": "promptnotes/src/lib/ui/app-shell/",
+  "evidence": [
+    ".vcsdd/features/ui-app-shell/evidence/sprint-2-red-phase.log",
+    ".vcsdd/features/ui-app-shell/evidence/sprint-2-green-phase.log",
+    ".vcsdd/features/ui-app-shell/evidence/sprint-2-refactor.log"
+  ],
+  "priorIteration": {
+    "iteration": 1,
+    "verdict": "FAIL",
+    "findingsCount": 14,
+    "findingsBySeverity": { "critical": 3, "major": 8, "minor": 3 },
+    "findings": ["FIND-201","FIND-202","FIND-203","FIND-204","FIND-205","FIND-206","FIND-207","FIND-208","FIND-209","FIND-210","FIND-211","FIND-212","FIND-213","FIND-214"],
+    "verdictPath": ".vcsdd/features/ui-app-shell/reviews/sprint-1/output/verdict.json"
+  },
+  "reviewDimensions": ["spec_fidelity", "edge_case_coverage", "implementation_correctness", "structural_integrity", "verification_readiness"],
+  "outputDir": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/"
+}

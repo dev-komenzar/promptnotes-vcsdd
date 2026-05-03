@@ -1,0 +1,39 @@
+{
+  "reviewType": "spec",
+  "feature": "ui-app-shell",
+  "iteration": 3,
+  "mode": "strict",
+  "language": "typescript",
+  "artifactsToReview": [
+    ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+    ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+  ],
+  "referenceDocuments": [
+    "docs/domain/ui-fields.md",
+    "docs/domain/workflows.md",
+    "DESIGN.md",
+    "docs/domain/code/rust/src/value_objects.rs",
+    ".vcsdd/features/configure-vault/specs/behavioral-spec.md",
+    ".vcsdd/features/app-startup/specs/behavioral-spec.md"
+  ],
+  "priorIterations": [
+    {
+      "iteration": 1,
+      "verdict": "FAIL",
+      "findingsCount": 17,
+      "verdictPath": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-1/output/verdict.json"
+    },
+    {
+      "iteration": 2,
+      "verdict": "FAIL",
+      "findingsCount": 6,
+      "verdictPath": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-2/output/verdict.json"
+    }
+  ],
+  "findingsToVerifyResolved": [
+    "FIND-018", "FIND-019", "FIND-020", "FIND-021", "FIND-022", "FIND-023"
+  ],
+  "stakes": "iteration-3 is the last permitted by 1c iteration limit (3). FAIL triggers /vcsdd-escalate.",
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "outputDir": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-3/output/"
+}

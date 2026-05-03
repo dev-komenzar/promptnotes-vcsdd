@@ -1,0 +1,43 @@
+sprint: 2
+phase: 2c
+timestamp: 2026-05-03T11:01:43.000Z
+
+## Refactors applied (FIND-205, FIND-208, FIND-211)
+
+### FIND-211: appShellStore start/stop reset callbacks removed
+File: promptnotes/src/lib/ui/app-shell/appShellStore.ts
+- writable("Loading", startFn) → writable("Loading") (no start/stop callbacks)
+- Removed unconditional set("Loading") on first subscribe and on last unsubscribe
+- These callbacks violated REQ-020 (Loading→Loading transitions suppressed by bootAttempted),
+  REQ-021 (writes from store module itself bypass authority boundary), and caused PROP-010
+  third test to fail (subscribe after boot reset store back to Loading)
+- Added __resetForTesting__() export for test isolation (replaces the production-time side-effect hack)
+- Added __resetBootFlagForTesting__() to bootOrchestrator.ts for boot flag reset
+
+### FIND-208: Double withIpcTimeout wrap eliminated
+File: promptnotes/src/lib/ui/app-shell/tauriAdapter.ts
+- createTauriAdapter.invokeAppStartup no longer wraps with withIpcTimeout
+  (bootOrchestrator owns the single wrap point for invokeAppStartup)
+- tryVaultPath and invokeConfigureVault still wrap per REQ-022
+  (they are called from vaultModalLogic without any other timeout guard)
+- withIpcTimeout now uses clearTimeout in .finally() to prevent leaked sentinel timers
+
+### FIND-205: PROP-011 audit tightened
+File: promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts
+- Audit pattern now scans for BOTH appShellStore.set( / .update( AND setAppShellState( calls
+- ALLOWED_WRITERS set expanded to include appShellStore.ts, bootOrchestrator.ts, vaultModalLogic.ts
+  (the authority module + the two indirection callers are explicitly allowed; any NEW caller fails)
+- This closes the bypass hole where modules used setAppShellState() to evade the literal pattern
+
+## Test isolation fixes (FIND-211 follow-through)
+- app-shell-state.test.ts: uses __resetStoreTesting__() before appShellStore initial value check;
+  uses __resetBootFlagForTesting__() before getBootAttempted() === false assertion
+- loading-state.test.ts: uses __resetStoreTesting__() before appShellStore initial value check;
+  imports __resetBootFlagForTesting__ (available for use in subsequent tests)
+- effectful-isolation.test.ts: uses __resetBootFlagForTesting__() before getBootAttempted() check
+
+## Test green after all refactors
+target-feature-tests: PASS
+regression-baseline: PASS
+
+ui-app-shell tests: 211 pass, 0 fail (14 files, 260 expect() calls)

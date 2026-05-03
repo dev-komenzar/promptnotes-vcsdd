@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-204",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "high",
+  "description": "REQ-016 AC: \"Tab キー: モーダル内の最後の focusable 要素から最初の focusable 要素へループする\"; \"Shift+Tab: 逆方向ループ\"; \"フォーカストラップは `FocusTrap` ユーティリティまたは同等の実装で管理される\".\n\nThe implementation:\n1. Has zero code that intercepts Tab. The browser's native tab order will simply walk past the modal's last focusable element to whatever is next in document order (which, because `AppShell.svelte` does not put the underlying app content in `inert`, is the body content behind the overlay).\n2. REQ-003 also requires the background DOM to be `aria-hidden=\"true\"` + `inert`. Neither attribute is applied to the `Configured` slot or the header.\n3. Contract CRIT-011 passThreshold says \"vault-modal.test.ts role/aria-modal/tabindex assertions pass 100%\". The role/aria/tabindex attributes are present, but the focus-trap *behavior* is the load-bearing requirement and is unverified and unimplemented.\n\nPROP-005 fast-check covers only the `isModalCloseable` boolean — that does not exercise focus management at all.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/VaultSetupModal.svelte",
+    "lineRange": "36-42"
+  },
+  "routeToPhase": "2b"
+}

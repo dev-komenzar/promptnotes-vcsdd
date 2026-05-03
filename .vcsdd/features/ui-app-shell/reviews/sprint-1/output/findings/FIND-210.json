@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-210",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "high",
+  "description": "REQ-005 AC: \"`VaultPathError.kind === 'empty'` が入力フィールド近傍に「フォルダを選択してください」と表示される\"; \"`VaultPathError.kind === 'not-absolute'` が入力フィールド近傍に「絶対パスを指定してください」と表示される\". Two different messages.\n\nThe current modal implementation, when `errorKind === \"vault-path-error\"`, always renders the literal string \"フォルダを選択してください\" — i.e., it shows the *empty* error message for both `empty` and `not-absolute` variants. A user who enters a relative path (`./vault`) gets told to select a folder, not that they need an absolute path. REQ-005's two-variant disambiguation is collapsed.\n\nSimilarly for `vault-config-error`: REQ-007 wants `path-not-found` and `permission-denied` to map to different messages. `mapVaultConfigError` exists for exactly this reason, but `vaultModalLogic.ts` never calls it; it just sets `errorKind` and leaves `errorMessage: undefined`. The Svelte fallback (`errorMessage ?? \"...path-not-found message...\"`) means `permission-denied` users always see the path-not-found message.\n\nPROP-003 unit tests pass because they call `mapVaultPathError` / `mapVaultConfigError` in isolation; the integration that ties those messages to the rendered modal is missing.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/VaultSetupModal.svelte",
+    "lineRange": "84-94"
+  },
+  "routeToPhase": "2b"
+}

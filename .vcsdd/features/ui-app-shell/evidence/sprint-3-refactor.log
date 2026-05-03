@@ -1,0 +1,46 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+## Phase 2c Summary — FIND-408 Store Write Surface Narrowing
+
+### Change Applied
+
+FIND-408: appShellStore write surface narrowed.
+
+Before (sprint-2):
+  export const appShellStore = {
+    subscribe: _store.subscribe,
+    set: _store.set,       // exposed — could be called from anywhere
+    update: _store.update, // exposed — could be called from anywhere
+  };
+
+After (sprint-3):
+  export const appShellStore: { subscribe: typeof _store.subscribe } = {
+    subscribe: _store.subscribe,
+    // set and update intentionally omitted (FIND-408 / REQ-021)
+  };
+
+All writes now MUST go through setAppShellState(). This is enforced at two
+levels:
+  1. Type level: appShellStore.set does not exist; TypeScript errors on use.
+  2. Static audit level: PROP-011 audit catches setAppShellState() calls from
+     files outside ALLOWED_WRITERS set.
+
+Test update: effectful-isolation.test.ts REQ-021 test updated to assert that
+"set" and "update" are NOT in the public appShellStore object, confirming the
+structural constraint.
+
+### Test Results
+
+```
+bun test v1.3.11 (af24e281)
+
+ 1235 pass
+ 0 fail
+ 22392 expect() calls
+Ran 1235 tests across 118 files. [13.55s]
+```
+
+Files changed in Phase 2c:
+- promptnotes/src/lib/ui/app-shell/appShellStore.ts
+- promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts

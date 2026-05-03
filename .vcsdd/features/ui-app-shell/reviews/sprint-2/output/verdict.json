@@ -1,0 +1,78 @@
+{
+  "sprintNumber": 2,
+  "feature": "ui-app-shell",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-05-03T12:30:00Z",
+  "iteration": 2,
+  "reviewContext": {
+    "reviewType": "implementation",
+    "contractPath": "contracts/sprint-2.md",
+    "contractDigest": "1350ed74687588507b6600bed04a24c9efbd23a03b8f51650fd87e5678f54cf7"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-401", "FIND-402", "FIND-403", "FIND-404"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/src/lib.rs", "description": "Lines 144-149: invoke_app_startup is a STUB that hardcodes Err(Unconfigured). FIND-203 review explicitly required: 'Wire them to the existing app-startup, configure-vault, and VaultPath::try_new implementations in promptnotes/src-tauri/src/domain/'. The wiring is absent."}
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-405"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/src/lib.rs:108", "description": "try_vault_path uses raw_path.starts_with('/') — Unix-only path validation. Spec EC catalog covers cross-platform considerations (EC-15 OS_PATH_MAX, EC-14 symlinks). Windows absolute paths (C:\\foo) would be incorrectly rejected as NotAbsolute."}
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-406", "FIND-407"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/src/lib.rs:118-138", "description": "invoke_configure_vault validates the path is a directory but does not persist settings. After successful configure, no Settings.save invocation occurs, so subsequent invoke_app_startup calls cannot read the saved vault path."}
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-408"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/appShellStore.ts:41-45", "description": "appShellStore object literal exposes _store.set and _store.update as public methods. The PROP-011 audit (effectful-isolation.test.ts) is a static text scan only; the type system does NOT prevent any module from calling appShellStore.set(...). The 'restriction' is detection-after-fact, not prevention."}
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-409", "FIND-410"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts:222-249", "description": "REQ-001 'Loading set BEFORE invoke' test subscribes to appShellStore but never asserts that 'Loading' was observed during the pending phase — only checks the final 'Configured' value. The Loading-precedes-IPC contract is not actually verified."}
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 10,
+    "previousFindingCount": 14,
+    "allCriteriaEvaluated": true,
+    "duplicateFindings": ["FIND-203", "FIND-205", "FIND-209"],
+    "evaluatedCriteria": [
+      "CRIT-001",
+      "CRIT-002",
+      "CRIT-003",
+      "CRIT-004",
+      "CRIT-005",
+      "CRIT-006",
+      "CRIT-007",
+      "CRIT-008",
+      "CRIT-009",
+      "CRIT-010",
+      "CRIT-011",
+      "CRIT-012",
+      "CRIT-013",
+      "CRIT-014",
+      "CRIT-015",
+      "CRIT-016"
+    ]
+  }
+}

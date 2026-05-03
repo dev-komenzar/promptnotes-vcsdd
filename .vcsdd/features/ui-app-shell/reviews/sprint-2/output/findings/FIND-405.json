@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-405",
+  "dimension": "edge_case_coverage",
+  "category": "missing_edge_case",
+  "severity": "medium",
+  "description": "try_vault_path uses raw_path.starts_with('/') as the absolute-path check. This is Unix-only. On Windows, absolute paths are 'C:\\Users\\foo' or '\\\\?\\C:\\foo' or '\\\\server\\share' — none start with '/'. Windows users would receive VaultPathError::NotAbsolute for every legitimate path, making the app unusable on Windows. The behavioral-spec edge-case catalog mentions OS-portability concerns (EC-15 OS_PATH_MAX, EC-14 symlinks) but does not include a Windows-path edge case, and there is no test exercising Windows-style paths. Tauri 2 + SvelteKit + Bun is a cross-platform desktop stack — Windows compatibility is implicit. The Rust validation should use std::path::Path::is_absolute() or delegate to the existing VaultPath::try_new in promptnotes/src-tauri/src/domain/value_objects.rs (which would handle this correctly via the canonical implementation).",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/lib.rs",
+    "lineRange": "104-112"
+  },
+  "routeToPhase": "2b"
+}

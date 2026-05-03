@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-506",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "Sprint-3 CRIT-003 contradicts REQ-020. CRIT-003 description (line 20) states: 'Header renders only when state === Configured.' and the passThreshold (line 22) requires 'AppShell.svelte source contains {#if state === \"Configured\"}<header>'. Spec REQ-020 (behavioral-spec.md line 485) reads: 'WHILE AppShellState === Loading THE SYSTEM SHALL render only the global header shell (without full nav content) and a centered loading affordance.' The phrase 'only the global header shell ... and a centered loading affordance' enumerates what IS rendered in Loading — the header shell IS rendered. CRIT-003 mandates the header is NOT rendered in Loading (only when Configured), which contradicts REQ-020's literal EARS clause. Cross-checked against the implementation at promptnotes/src/lib/ui/app-shell/AppShell.svelte:55 — only Configured renders the header, so the Loading state shows no header, violating REQ-020. The contract is permitting an implementation that diverges from spec EARS while claiming to satisfy 'EARS literally' (CRIT-003 description).",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+    "lineRange": "18-22"
+  },
+  "routeToPhase": "1c"
+}

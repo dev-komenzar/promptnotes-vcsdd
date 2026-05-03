@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-214",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "low",
+  "description": "The spec consistently names the parameter `path`. The TypeScript adapter packages it as `{ vaultPath }`. Tauri's invoke argument-naming is significant — when the Rust-side `#[tauri::command] fn invoke_configure_vault(path: VaultPath)` is implemented, it will look for a `path` key in the payload (Tauri lowercases args, but the conventional key is the parameter name).\n\nBecause no Rust command currently exists for this (see FIND-203), this mismatch is masked. Once the Rust side is implemented, the adapter will fail to bind to the parameter unless the Rust signature is changed to `vault_path: VaultPath` (which would in turn diverge from the spec).\n\nThe naming inconsistency rule is explicit in the adversary brief: \"Naming inconsistency between spec and implementation ... is a MAJOR finding\". In this case the parameter naming differs from the spec, but the impact is bounded by the absent Rust binding (the issue would only manifest after FIND-203 is fixed). Recording as MINOR because no test fails today; will become a binding bug once FIND-203 is addressed.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/tauriAdapter.ts",
+    "lineRange": "91-93"
+  },
+  "routeToPhase": "2b"
+}

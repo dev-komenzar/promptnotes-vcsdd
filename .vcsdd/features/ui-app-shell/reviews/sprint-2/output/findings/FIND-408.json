@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-408",
+  "dimension": "structural_integrity",
+  "category": "code_structure",
+  "severity": "medium",
+  "description": "appShellStore exports an object literal with set/update methods directly forwarded from _store. This means appShellStore.set(...) and appShellStore.update(...) are public API and callable from any module. The PROP-011 audit (effectful-isolation.test.ts) is a STATIC TEXT SCAN — it detects after-the-fact violations but does NOT prevent them at the type or runtime level. A new module can call appShellStore.set() and the only line of defense is the audit test. If a developer forgets to run the test, or if the audit is bypassed (e.g., dynamic dispatch, eval, indirect indexing like store['set'](v)), the violation slips through. The audit also does not detect calls in transitive dependencies. The textbook structural-integrity remediation (cited in FIND-205 line 28-29) was 'make the public store interface read-only by exporting subscribe only and exposing set through a token/capability passed at component init time' — this approach was not taken. The current approach achieves audit-passing but does not actually constrain the surface.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/appShellStore.ts",
+    "lineRange": "41-56"
+  },
+  "routeToPhase": "2c"
+}

@@ -1,0 +1,54 @@
+{
+  "reviewType": "contract",
+  "featureName": "ui-app-shell",
+  "sprintNumber": 1,
+  "negotiationRound": 0,
+  "iteration": 1,
+  "contractPath": ".vcsdd/features/ui-app-shell/contracts/sprint-1.md",
+  "contractDigest": "c457d3a244f2b7ebc0ed5fe18ceca67efc8070f4ae9806ebd8f0537614a110fa",
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+      ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/corrupted-banner.unit.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/design-tokens.audit.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/layout-frame.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/loading-state.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/map-vault-path-error.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/negative-scope.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/route-startup-result.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/vault-modal.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/prop/corrupted-banner.prop.test.ts",
+      "promptnotes/src/lib/ui/app-shell/__tests__/prop/modal-closeable.prop.test.ts"
+    ],
+    "source": [
+      "promptnotes/src/lib/ui/app-shell/AppShell.svelte",
+      "promptnotes/src/lib/ui/app-shell/VaultSetupModal.svelte",
+      "promptnotes/src/lib/ui/app-shell/appShellStore.ts",
+      "promptnotes/src/lib/ui/app-shell/bootOrchestrator.ts",
+      "promptnotes/src/lib/ui/app-shell/componentTestIds.ts",
+      "promptnotes/src/lib/ui/app-shell/corruptedBanner.ts",
+      "promptnotes/src/lib/ui/app-shell/designTokens.ts",
+      "promptnotes/src/lib/ui/app-shell/errorMessages.ts",
+      "promptnotes/src/lib/ui/app-shell/loadingState.ts",
+      "promptnotes/src/lib/ui/app-shell/modalClosePolicy.ts",
+      "promptnotes/src/lib/ui/app-shell/routeStartupResult.ts",
+      "promptnotes/src/lib/ui/app-shell/tauriAdapter.ts",
+      "promptnotes/src/lib/ui/app-shell/vaultModalLogic.ts"
+    ]
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "outputDir": ".vcsdd/features/ui-app-shell/reviews/contracts/sprint-1/output/"
+}

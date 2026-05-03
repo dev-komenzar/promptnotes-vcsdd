@@ -1,0 +1,25 @@
+=== Sprint 1 Green Phase Evidence ===
+Feature: ui-app-shell
+Date: 2026-05-03
+
+target-feature-tests: passing
+regression-baseline: passing
+
+=== bun test (ui-app-shell only) ===
+bun test v1.3.11 (af24e281)
+
+ 203 pass
+ 0 fail
+ 238 expect() calls
+Ran 203 tests across 14 files. [292.00ms]
+
+=== bun test (full suite) ===
+ 1217 pass
+ 8 fail (all pre-existing apply-filter-or-search failures — fc.stringOf not available in installed fast-check version)
+ 22362 expect() calls
+Ran 1225 tests across 118 files. [12.93s]
+
+=== bun run check ===
+COMPLETED 487 FILES 9 ERRORS 0 WARNINGS 5 FILES_WITH_PROBLEMS
+All 9 errors are pre-existing (apply-filter-or-search/__verify__ and edit-past-note-start/__verify__).
+0 errors in app-shell production code or test files.

@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-203",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-001 / REQ-004 / REQ-006 require three Tauri commands. The TypeScript adapter calls them via `@tauri-apps/api/core::invoke`. However the Rust side does not register any of them. At runtime, `invoke('invoke_app_startup')` will reject with a Tauri \"command not found\" error and `bootOrchestrator` will fall through to its `catch` branch and immediately set `AppShellState = UnexpectedError` — which means the UI will permanently display the inline banner regardless of vault state.\n\nThe unit tests pass because the adapter is replaced with mocks in every test (`vi.fn().mockResolvedValue(...)` or hand-rolled adapter literals). No test exercises the real `createTauriAdapter` against a real Tauri backend, and there is no Tauri command source file (`#[tauri::command] fn invoke_app_startup`, etc.) anywhere in `src-tauri/src/`.\n\nThis is the kind of integration gap that an adversarial reviewer must catch: the test suite says PASS, but the application is non-functional in the only environment that matters.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/lib.rs",
+    "lineRange": "11-17"
+  },
+  "routeToPhase": "2b"
+}

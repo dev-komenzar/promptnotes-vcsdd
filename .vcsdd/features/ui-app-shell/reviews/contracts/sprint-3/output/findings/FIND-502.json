@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-502",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "Sprint-3 CRIT-005 description states 'FIND-405: tauriAdapter.ts invokeAppStartup orchestrates TS-side pipeline...'. Sprint-2 FIND-405 is the cross-platform absolute-path issue (Unix-only starts_with('/') check), not TS-side orchestration. TS-side orchestration is the natural consequence of removing the Rust invoke_app_startup stub — that is sprint-2 FIND-401's remediation surface. The misattribution corrupts the contract's traceability map: FIND-405 (cross-platform path) is now claimed to be closed by CRIT-005 (TS-side orchestration), so the actual cross-platform fix has no clean closure citation in the contract beyond CRIT-002's mislabeling. Either CRIT-005 should reference FIND-401 (Rust stub removal forcing TS orchestration) or the description must be rewritten to acknowledge that FIND-401's fix produced the TS orchestration as a consequence.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+    "lineRange": "28-32"
+  },
+  "routeToPhase": "1c"
+}

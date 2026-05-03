@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-505",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "Sprint-3 contract does not explicitly inherit unaddressed CRIT coverage from prior sprints. The strict-mode acceptance criterion requires every REQ-001..REQ-022 covered in at least one passThreshold OR explicitly stated as inherited. The contract scope sentence only says 'No spec changes' (frontmatter line 4) — that does not constitute explicit inheritance of prior CRITs. Concrete coverage gaps in sprint-3: REQ-009 (corrupted files banner, no CRIT), REQ-010 (header style, no CRIT), REQ-011 (main area / spacing scale, no CRIT), REQ-012 (skeleton, no CRIT), REQ-013 (card shadow, no CRIT), REQ-014 (corrupted banner style, no CRIT), REQ-015 (4-weight typography, no CRIT), REQ-018 (modal display ≤100ms, no CRIT), REQ-019 (color tokens, no CRIT), REQ-020 (Loading state header rendering — partially covered only as initial value), and PROPs PROP-003/PROP-004/PROP-005/PROP-006/PROP-007/PROP-008/PROP-009/PROP-013 not in any passThreshold. Without an explicit 'sprint-1 CRIT-X and sprint-2 CRIT-Y carry forward unchanged' clause, a strict reviewer cannot determine whether these REQs are intentionally re-asserted or silently dropped.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+    "lineRange": "1-93"
+  },
+  "routeToPhase": "1c"
+}

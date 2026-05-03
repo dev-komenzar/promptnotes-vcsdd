@@ -1,0 +1,73 @@
+{
+  "sprintNumber": 4,
+  "feature": "ui-app-shell",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-03T16:00:00Z",
+  "iteration": 1,
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": "contracts/sprint-4.md",
+    "contractDigest": "28b42162139c9a65d5cd084b01aaf51851988a821c5bd23a3cdb345da0e2f7f4"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:8-102", "description": "All 19 CRITs (CRIT-001..CRIT-019, including zero-weight CRIT-018) have specific REQ/FIND/PROP citations. CRIT-001..CRIT-017 inherit unchanged from sprint-3; CRIT-019 is the new sprint-4 closure CRIT mapping FIND-601..FIND-604 to remediation locations."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:111-128", "description": "Prior-sprint inheritance section explicitly enumerates which REQs (REQ-001, REQ-002, REQ-003, REQ-004, REQ-006, REQ-009, REQ-010, REQ-014, REQ-016, REQ-020) and PROPs (PROP-001, PROP-002, PROP-006, PROP-010, PROP-011, PROP-014) carry forward. NEG-REQ-005 covered by CRIT-013."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:198-206", "description": "CRIT-019 explicitly maps each of FIND-601 (header in Loading), FIND-602 (no main in Loading), FIND-603 (duplicate CORRUPTED_BANNER_STYLES), FIND-604 (missing static-scan tests) to a concrete fix location with REQ traceback (REQ-014, REQ-020)."}
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:64-67", "description": "CRIT-011 binds EC-18 (network FS hang / IPC timeout) to ipc-timeout.test.ts with PROP-014 late-arrival semantics; passThreshold requires both EC-18 and PROP-014 late-arrival tests pass within 2s."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:68-72", "description": "CRIT-012 binds EC-20 (HMR boot flag reset) to effectful-isolation.test.ts with static-analysis assertions on bootOrchestrator.ts source: matches /let\\s+bootAttempted/ and does NOT match /export\\s+(let|const|var)\\s+bootAttempted/."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:18-22", "description": "CRIT-003 covers conditional-rendering edge cases for all 5 AppShellStates: header in Loading||Configured, no main in Loading, no header in Unconfigured/StartupError/UnexpectedError, modal only in Unconfigured/StartupError. Verified by 7 static-scan tests in startup-error-routing.test.ts."}
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:53-57", "description": "CRIT-009 specifies a synchronization-primitive gate pattern (not time-delay) for verifying PROP-001 Loading-while-pending. passThreshold requires gate Promise pattern, synchronous store read inside gate, setAppShellState(routeResult.state) after bootOrchestrator awaited."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:73-77", "description": "CRIT-013 forbids Date.now() in tauriAdapter.ts (NEG-REQ-005), requiring Math.round(performance.timeOrigin + performance.now()). passThreshold checks both source absence and negative-scope.test.ts audit."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:31-48", "description": "Spot-check confirmed CRIT-004 write-authority claim: AppShell.svelte calls setAppShellState(\"Loading\") at line 37 and setAppShellState(routeResult.state) at line 43. bootOrchestrator returns routeResult without calling setAppShellState."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:78-82", "description": "CRIT-014 covers settings file path correctness using XDG_CONFIG_HOME with HOME fallback, Option<String> return shape, atomic JSON write — all falsifiable against lib.rs source."}
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:48-52", "description": "CRIT-008 enforces appShellStore type-level write isolation: { subscribe: ... } only, no set/update fields. Falsifiable via TypeScript compiler + (\"set\" in store) === false runtime assertion. Spot-check at appShellStore.ts:46-48 confirms exact shape."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:93-97", "description": "CRIT-017 enforces ALLOWED_WRITERS = exactly {AppShell.svelte, VaultSetupModal.svelte, appShellStore.ts, vaultModalLogic.ts}. bootOrchestrator.ts excluded; passThreshold also forbids the literal pattern in comments."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:98-102", "description": "CRIT-019 enforces single-canonical-export structural invariant for CORRUPTED_BANNER_STYLES (corruptedBanner.ts is sole exporter). Spot-check at designTokens.ts:110-112 confirms removal note. Spot-check at AppShell.svelte:11-12 confirms import from ./corruptedBanner.js."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:154-174", "description": "Weight sum independently computed: 0.07+0.06+0.04+0.00+0.08+0.07+0.06+0.05+0.07+0.06+0.04+0.05+0.04+0.05+0.06+0.06+0.04+0.06+0.04 = 1.000 exactly. CRIT IDs all match ^CRIT-\\d{3,}$ pattern (no letter suffixes)."}
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:83-87", "description": "CRIT-015 requires all three sprint-4 evidence logs (red, green, refactor) with target-feature-tests:PASS markers and FIND-6XX coverage. Spot-check confirmed sprint-4-red-phase.log (FAIL marker present per RED phase semantics), sprint-4-green-phase.log (PASS), sprint-4-refactor.log (PASS) all exist with FIND-601..FIND-604 mentions."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:88-92", "description": "CRIT-016 binds binary verification gates: bun test 0 fail in ui-app-shell, bun run check 0 errors in app-shell files, cargo check 0 errors. Pre-existing domain layer errors carved out and explicitly enumerated as out-of-scope."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md:34-37", "description": "CRIT-005 enforces purity-boundary for IPC adapter: tauriAdapter.ts has @vcsdd-allow-brand-construction exemption for the IPC boundary, runs runAppStartupPipeline as pure core. PROP-002/NEG-REQ-005 audits gate this."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/bootOrchestrator.ts:43", "description": "Spot-check confirms CRIT-012 claim — bootOrchestrator.ts source contains 'let bootAttempted = false;' without export keyword. PROP-012 HMR reset semantics are testable via vi.resetModules() / dynamic import."}
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-001","CRIT-002","CRIT-003","CRIT-004","CRIT-005","CRIT-006","CRIT-007","CRIT-008","CRIT-009","CRIT-010","CRIT-011","CRIT-012","CRIT-013","CRIT-014","CRIT-015","CRIT-016","CRIT-017","CRIT-018","CRIT-019"],
+    "duplicateFindings": []
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-602",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "REQ-020 EARS clause states: 'The main feed area SHALL be empty' during Loading state (behavioral-spec.md line 485). CRIT-018 passThreshold reinforces this: 'In Loading state the main area shows only a centered loading affordance alongside the header shell. In UnexpectedError state no main content renders.' The implementation in AppShell.svelte:72-92 renders `<main>` containing two skeleton-cards inside a status region during Loading. The skeleton-cards are not 'empty main feed area' — they are skeleton-card elements with rendered DOM, height 32px, margin 8px. This contradicts both the spec EARS literal and the CRIT-018 wording. The 'centered loading affordance' belongs in the header-adjacent shell area per REQ-020 description (color: Pure White background, spinner with aria-hidden=true), not inside <main>. Note: this is distinct from FIND-601 — FIND-601 is the missing header; FIND-602 is the wrong content of <main>.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/AppShell.svelte",
+    "lineRange": "72-92",
+    "snippet": "{#if state === \"Loading\"}\n    <main>\n      <div role={LOADING_ARIA_ATTRIBUTES.role} aria-busy={LOADING_ARIA_ATTRIBUTES[\"aria-busy\"]} aria-label={LOADING_ARIA_ATTRIBUTES[\"aria-label\"]}>\n        <div class=\"skeleton-card\" aria-hidden={SKELETON_CARD_STYLE.ariaHidden} style=\"...height: 32px; margin: 8px;\"></div>\n        <div class=\"skeleton-card\" aria-hidden={SKELETON_CARD_STYLE.ariaHidden} style=\"...height: 32px; margin: 8px;\"></div>\n      </div>\n    </main>\n  {/if}"
+  },
+  "routeToPhase": "2b"
+}

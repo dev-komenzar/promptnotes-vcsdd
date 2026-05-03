@@ -1,0 +1,66 @@
+sprint-2-red-phase
+feature: ui-app-shell
+timestamp: 2026-05-03T11:10:00.000Z
+
+new-feature-tests: failing
+regression-baseline: passing
+
+# Phase 2a test rewrites summary
+
+## FIND-206 (PROP-010 stub → real timing test)
+app-shell-state.test.ts:
+  - Removed vacuous stub that only checked return value string
+  - Added 3 new PROP-010 tests measuring wall-clock elapsed from IPC resolve to store-set
+  - Third test (PROP-010: appShellStore value is Unconfigured immediately after bootOrchestrator resolves)
+    correctly FAILS because appShellStore resets to 'Loading' on new subscribe (FIND-211 bug exposed)
+
+## FIND-207 (EC-06/EC-17 incorrect error type)
+vault-modal.test.ts:
+  - Removed `as any` casts that constructed VaultConfigError shapes as VaultPathError
+  - EC-06: rewritten — NUL-byte path passes try_vault_path (absolute), invoke_configure_vault returns
+    Err(path-not-found) as VaultConfigError. configure was called (count=1). errorKind=vault-config-error.
+  - EC-04/EC-05: added explicit tests for VaultPathError.empty and VaultPathError.not-absolute
+    from tryVaultPath (the only real VaultPathError variants)
+  - EC-17: rewritten — picker-revoke: try_vault_path returns Ok(VaultPath), invoke_configure_vault
+    returns Err(permission-denied) as VaultConfigError. errorKind=vault-config-error.
+  - EC-08: added test for path-not-found from configure_vault
+  - All 26 vault-modal tests PASS
+
+## FIND-212 (late-arrival test only checked frozen local)
+ipc-timeout.test.ts:
+  - Added appShellStore import
+  - Rewrote late-arrival test to subscribe to appShellStore and capture all state transitions
+  - After timeout fires (UnexpectedError), late-resolves IPC with Configured payload
+  - Flushes 3 microtask ticks
+  - Asserts store value is still UnexpectedError after late arrival
+  - Asserts no "Configured" in captured states after "UnexpectedError" index
+  - All 8 ipc-timeout tests PASS
+
+## FIND-213 (spacing audit narrow regex)
+design-tokens.audit.test.ts:
+  - Broadened spacingPattern to cover: padding-* longhand, margin-* longhand,
+    border-radius, gap, column-gap, row-gap, inset, font-size, line-height,
+    min/max-width/height, and more
+  - Changed px extraction to scan ALL px values in a declaration, not just first
+  - Added PROP-006 self-test suite with 3 canary tests:
+    * padding-left: 17px → caught (positive test)
+    * padding-top: 13px → caught (positive test for longhand)
+    * padding: 8px 16px; margin: 4px 12px; border-radius: 12px → no violations (no false positive)
+  - All 27 design-tokens.audit tests PASS
+
+## Test run results
+
+new-feature-tests:
+  app-shell-state.test.ts: 13 pass, 1 FAIL (PROP-010 third test — exposes FIND-211 store reset bug)
+  vault-modal.test.ts: 26 pass, 0 fail
+  ipc-timeout.test.ts: 8 pass, 0 fail
+  design-tokens.audit.test.ts: 27 pass, 0 fail
+
+regression-baseline (domain tests):
+  1014 pass, 8 fail (8 pre-existing PROP-017 failures due to fc.stringOf unavailable — unchanged)
+
+## Files modified
+- promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts (FIND-206)
+- promptnotes/src/lib/ui/app-shell/__tests__/vault-modal.test.ts (FIND-207)
+- promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts (FIND-212)
+- promptnotes/src/lib/ui/app-shell/__tests__/design-tokens.audit.test.ts (FIND-213)

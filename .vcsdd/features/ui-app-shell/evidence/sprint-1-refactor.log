@@ -1,0 +1,40 @@
+=== Sprint 1 Refactor (Phase 2c) Evidence ===
+Feature: ui-app-shell
+Date: 2026-05-03
+
+target-feature-tests: passing
+regression-baseline: passing
+
+=== Refactor Changes ===
+
+1. designTokens.ts — Composite style objects now reference DESIGN_TOKENS
+   - HEADER_STYLE.{backgroundColor,borderBottom,titleColor} → DESIGN_TOKENS.{pureWhite,whisperBorder,nearBlack}
+   - SKELETON_CARD_STYLE.{borderRadius,baseColor,highlightColor} → DESIGN_TOKENS.{cardRadius,warmWhite,pureWhite}
+   - MODAL_STYLE.{borderRadius,scrim} → DESIGN_TOKENS.{largeRadius,modalScrim}
+   - Eliminates all duplicate color/token literals in style composites
+
+2. corruptedBanner.ts — Style constants now reference DESIGN_TOKENS
+   - CORRUPTED_BANNER_STYLES.warnColor → DESIGN_TOKENS.warnColor (eliminates hardcoded "#dd5b00")
+   - CORRUPTED_BANNER_STYLES.border → DESIGN_TOKENS.whisperBorder (eliminates duplicate literal)
+
+3. AppShell.svelte — Removed unused imports
+   - Removed: shouldShowCorruptedBanner, buildCorruptedBannerMessage, CORRUPTED_BANNER_STYLES, DESIGN_TOKENS
+   - Kept: HEADER_STYLE, SKELETON_CARD_STYLE (still used in template)
+
+4. VaultSetupModal.svelte — A11y and spacing compliance
+   - Added tabindex="-1" to role="dialog" div (required by WCAG)
+   - Removed max-width: 480px (480 not in SPACING_SCALE — PROP-006 violation)
+
+=== bun test (ui-app-shell only) ===
+bun test v1.3.11 (af24e281)
+
+ 203 pass
+ 0 fail
+ 238 expect() calls
+Ran 203 tests across 14 files. [307.00ms]
+
+=== bun test (full suite) ===
+ 1217 pass
+ 8 fail (all pre-existing apply-filter-or-search failures — fc.stringOf not available in installed fast-check version)
+ 22350 expect() calls
+Ran 1225 tests across 118 files. [12.24s]

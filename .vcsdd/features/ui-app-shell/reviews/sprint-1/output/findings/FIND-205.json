@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-205",
+  "dimension": "structural_integrity",
+  "category": "code_structure",
+  "severity": "high",
+  "description": "REQ-021 EARS: \"the write SHALL originate exclusively from: (a) `AppShell.svelte`'s `routeStartupResult` dispatch, OR (b) `VaultSetupModal.svelte`'s configure-vault success handler. No other module SHALL call `appShellStore.set(...)` or `appShellStore.update(...)`.\"\n\nThe implementation evades the letter of the audit pattern by introducing the helper `setAppShellState` (`appShellStore.ts:55`) which calls `_store.set` internally. Both `bootOrchestrator.ts` and `vaultModalLogic.ts` call `setAppShellState`, NOT `appShellStore.set`. The PROP-011 audit (`effectful-isolation.test.ts:67`) only greps for the literal token `appShellStore.set(` / `appShellStore.update(`, so the audit reports zero violations — but the spirit of REQ-021 is violated: the actual writes originate from two `.ts` modules, not the two `.svelte` components.\n\nThis is a textbook \"test passes because the test is too narrow.\" The exposed `appShellStore.set` / `.update` methods on the public object (lines 42-46) are still callable from anywhere — the audit catches only the obvious literal pattern.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/appShellStore.ts",
+    "lineRange": "55-57"
+  },
+  "routeToPhase": "2c"
+}

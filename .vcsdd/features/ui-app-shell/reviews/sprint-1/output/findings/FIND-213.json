@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-213",
+  "dimension": "verification_readiness",
+  "category": "proof_gap",
+  "severity": "low",
+  "description": "The PROP-006 spacing audit:\n1. Matches only `padding | margin | gap | top | left | right | bottom | width | height`. It does NOT match `padding-top`, `padding-bottom`, `margin-left`, `padding-inline`, `border-radius`, `font-size`, `line-height`, `inset`, etc. A non-token `padding-top: 13px` would slip through silently.\n2. For compound declarations like `padding: 8px 16px 24px 32px`, the regex's first capture only catches `8px`. The remaining values (16, 24, 32) are not validated.\n3. The regex tolerates floating-point values without bounding (e.g. `padding: 13.5px` would parse `13.5` and miss the allowlist, but no test verifies the audit catches that).\n\nCombined with the test coverage gap: nothing in the existing test set drops a non-token spacing value into a Svelte file to confirm the audit would actually fail. The audit is therefore unverified to be effective (\"does the audit catch a violation?\" has no positive test case).\n\nNFR-07 lists `[2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32]`. CRIT-015 demands \"no spacing value outside permitted scale detected by audit\". The audit's narrow regex makes that claim weaker than advertised.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/__tests__/design-tokens.audit.test.ts",
+    "lineRange": "247-247"
+  },
+  "routeToPhase": "2a"
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-604",
+  "dimension": "verification_readiness",
+  "category": "proof_gap",
+  "severity": "high",
+  "description": "CRIT-003 passThreshold reads: 'AppShell.svelte source renders <header> in Loading state (skeleton/empty nav) and Configured state; header is NOT rendered in Unconfigured or StartupError; main content blocks use three separate {#if state === \"Loading\"/<UnexpectedError>/<Configured>} guards; no aria-hidden toggle on structural elements; negative-scope.test.ts or startup-error-routing.test.ts verifies conditional rendering.' CRIT-018 passThreshold reads: 'AppShell.svelte source does not render the full main content outside state === \"Configured\"; Loading state has a separate skeleton/affordance block; startup-error-routing.test.ts or negative-scope.test.ts asserts main content absent in Loading/UnexpectedError states.' Inspecting the listed test files: (a) negative-scope.test.ts is a forbidden-symbol audit (editor / search / brand-cast patterns) — it does NOT verify <header>/<main> conditional rendering. (b) startup-error-routing.test.ts only exercises the pure routeStartupResult function, ERROR_BANNER_TESTID constants, and bootOrchestrator IPC paths — it does NOT inspect AppShell.svelte source nor assert any conditional-rendering shape. So the Phase 2b suite has zero tests that would have caught FIND-601 (header missing in Loading) or FIND-602 (main not empty in Loading). The 1235-test green count masks the absence of the contracted CRIT-003 / CRIT-018 verification.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts",
+    "lineRange": "1-177",
+    "snippet": "// File contents: 5 describe blocks — REQ-008/PROP-009 routing, ERROR_BANNER_TESTID constants, PROP-007 5-paths, REQ-008 IPC crash, REQ-009 corruptedFiles routing. NO test reads AppShell.svelte source. NO test renders DOM. NO test verifies header/main conditional shape."
+  },
+  "routeToPhase": "2a"
+}

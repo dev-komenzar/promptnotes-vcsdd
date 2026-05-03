@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-201",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-001 explicitly says: \"the system SHALL set `bootAttempted = true`, transition `AppShellState` to `'Loading'`, and invoke the AppStartup pipeline exactly once\". The implementation never assigns `bootAttempted = true` anywhere in the module. The flag begins life at `false` and remains `false` forever within a single module instance.\n\nConsequences:\n1. `getBootAttempted()` is a constant function that always returns `false`. The PROP-012 test \"getBootAttempted() returns false on initial module load\" passes vacuously — it would pass even if the flag never existed.\n2. `AppShell.svelte` calls `getBootAttempted()` and passes the result as `isBootAttempted`. Because the result is always `false`, the `if (isBootAttempted)` early-return branch in `bootOrchestrator` (lines 73-79) is **unreachable in production**.\n3. PROP-001 / PROP-013 (single-mount, in-process re-mount) are violated in production: an `onMount` re-run (HMR fast refresh, Svelte component re-instantiation, etc.) will re-invoke `invoke_app_startup` because nothing remembers that the boot already happened.\n4. The PROP-013 test only passes because the test manually fabricates `isBootAttempted: true`; no test asserts that an `AppShell.svelte` mount actually toggles the flag.\n\nThe accompanying comment block (`bootOrchestrator.ts:32-35`, `:62-66`) claims \"AppShell.svelte manages its own local bootAttempted tracking\" but `AppShell.svelte` does no such tracking — it just calls `getBootAttempted()` and forwards.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/bootOrchestrator.ts",
+    "lineRange": "35-35"
+  },
+  "routeToPhase": "2b"
+}

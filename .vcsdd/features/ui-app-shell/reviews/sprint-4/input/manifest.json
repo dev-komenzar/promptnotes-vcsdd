@@ -1,0 +1,25 @@
+{
+  "reviewType": "implementation",
+  "feature": "ui-app-shell",
+  "sprint": 4,
+  "iteration": 4,
+  "mode": "strict",
+  "language": "typescript",
+  "spec": [".vcsdd/features/ui-app-shell/specs/behavioral-spec.md", ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"],
+  "contract": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md",
+  "contractDigest": "28b42162139c9a65d5cd084b01aaf51851988a821c5bd23a3cdb345da0e2f7f4",
+  "tests": "promptnotes/src/lib/ui/app-shell/__tests__/",
+  "source": "promptnotes/src/lib/ui/app-shell/",
+  "evidence": [
+    ".vcsdd/features/ui-app-shell/evidence/sprint-4-red-phase.log",
+    ".vcsdd/features/ui-app-shell/evidence/sprint-4-green-phase.log",
+    ".vcsdd/features/ui-app-shell/evidence/sprint-4-refactor.log"
+  ],
+  "priorIterations": [
+    {"iteration": 1, "verdict": "FAIL", "findingsCount": 14},
+    {"iteration": 2, "verdict": "FAIL", "findingsCount": 10},
+    {"iteration": 3, "verdict": "FAIL", "findingsCount": 4}
+  ],
+  "reviewDimensions": ["spec_fidelity","edge_case_coverage","implementation_correctness","structural_integrity","verification_readiness"],
+  "outputDir": ".vcsdd/features/ui-app-shell/reviews/sprint-4/output/"
+}

@@ -1,0 +1,25 @@
+{
+  "reviewType": "contract",
+  "featureName": "ui-app-shell",
+  "sprintNumber": 2,
+  "negotiationRound": 0,
+  "iteration": 1,
+  "contractPath": ".vcsdd/features/ui-app-shell/contracts/sprint-2.md",
+  "contractDigest": "069122ae540a50eb03e88e09c795d5326d162703306b086fe05d6c9b15f26f79",
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+      ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    ],
+    "tests": ["promptnotes/src/lib/ui/app-shell/__tests__/"],
+    "source": ["promptnotes/src/lib/ui/app-shell/", "promptnotes/src-tauri/src/lib.rs"]
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "outputDir": ".vcsdd/features/ui-app-shell/reviews/contracts/sprint-2/output/"
+}

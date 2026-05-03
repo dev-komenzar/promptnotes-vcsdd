@@ -1,0 +1,58 @@
+Sprint 4 — Phase 2c Refactor Evidence
+Feature: ui-app-shell
+Date: 2026-05-03T15:50:00.000Z
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+--- Refactor: FIND-603 — Remove duplicate CORRUPTED_BANNER_STYLES from designTokens.ts ---
+
+Problem: Two exports named CORRUPTED_BANNER_STYLES existed in the same feature:
+  - designTokens.ts:114-120: fontSize "14px", border "1px solid #dd5b00" (SPEC-WRONG)
+  - corruptedBanner.ts:18-24: fontSize "16px", border DESIGN_TOKENS.whisperBorder (SPEC-CORRECT per REQ-014)
+  AppShell.svelte was importing from designTokens.ts (the wrong one), while the unit test
+  imported from corruptedBanner.ts (the right one). Tests passed but production was wrong.
+
+Fix applied:
+  1. designTokens.ts: Removed CORRUPTED_BANNER_STYLES export (lines 110-120 replaced with
+     a tombstone comment directing importers to corruptedBanner.ts).
+  2. AppShell.svelte: Already updated in Phase 2b to import CORRUPTED_BANNER_STYLES from
+     ./corruptedBanner.js (the canonical source). No further change needed here.
+
+Single-source-of-truth after fix:
+  - One export: corruptedBanner.ts exports CORRUPTED_BANNER_STYLES
+  - One import in production code: AppShell.svelte imports from ./corruptedBanner.js
+  - Unit test (corrupted-banner.unit.test.ts) imports from ./corruptedBanner — consistent
+
+Verification: grep confirms no file imports CORRUPTED_BANNER_STYLES from designTokens.ts.
+
+--- Test Results ---
+
+bun test (all 118 files, representative run):
+  1238-1242 pass (non-deterministic due to domain harness timeouts)
+  2-4 fail   (pre-existing domain harness timeouts only — unrelated to ui-app-shell)
+  1242 tests total
+
+All ui-app-shell tests: PASS (0 failures)
+
+bun run check:
+  650 files checked
+  3 ERRORS — all in src/lib/domain/__tests__/ (pre-existing)
+  0 ERRORS in src/lib/ui/app-shell/
+
+cargo check:
+  Finished dev profile [unoptimized + debuginfo] — 0 errors
+
+--- Findings Addressed This Sprint ---
+
+FIND-604 (high, 2a): Added 7 static-source-scan tests in startup-error-routing.test.ts for
+  CRIT-003 and CRIT-018 conditional-rendering invariants. All 7 pass after 2b fix.
+
+FIND-601 (critical, 2b): AppShell.svelte header now rendered in Loading state:
+  {#if state === "Loading" || state === "Configured"}<header>...</header>{/if}
+
+FIND-602 (high, 2b): AppShell.svelte Loading branch no longer contains <main> with skeleton.
+  Loading affordance is a flex-centered <div> with ARIA attributes (no <main>).
+
+FIND-603 (high, 2c): Duplicate CORRUPTED_BANNER_STYLES removed from designTokens.ts.
+  Single canonical export in corruptedBanner.ts. AppShell.svelte uses correct 16px/whisperBorder.

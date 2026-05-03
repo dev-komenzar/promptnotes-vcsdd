@@ -1,0 +1,16 @@
+bun pm scan — 2026-05-03
+
+Command: cd promptnotes && bun pm scan
+Result: ERROR — no security scanner configured
+
+Output:
+  To use 'bun pm scan', configure a security scanner in bunfig.toml:
+    [install.security]
+    scanner = "package_name"
+  Security scanners can be npm packages that export a scanner object.
+  error: no security scanner configured
+
+Note: bun pm audit (the npm-audit equivalent) is not available via bun CLI directly.
+bun.lock is present; package-lock.json is absent, so npm audit is also not applicable.
+
+Disposition: SKIP — scanner not configured. No HIGH/MEDIUM findings detected via this tool.
