@@ -306,75 +306,154 @@ describe("REQ-004: TypeScript does NOT construct VaultPath directly", () => {
 });
 
 // ── EC-06: NUL byte in path ──────────────────────────────────────────────────
+// NUL-byte paths are absolute strings, so VaultPath::try_new (try_vault_path) returns Ok.
+// The path-not-found failure comes from invoke_configure_vault (VaultConfigError).
 
-describe("EC-06: NUL byte in path → Rust processes → UI shows error", () => {
-  test("EC-06: path with NUL byte results in VaultConfigError from Rust (path-not-found or permission-denied)", async () => {
-    // Rust handles NUL byte → OS stat error → folds to path-not-found
-    const deps: VaultModalDeps = {
-      tryVaultPath: async (_rawPath: string) => ({
-        ok: false,
-        error: { kind: "path-not-found" } as any, // Rust returns VaultConfigError
-      }),
-      invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
-      invokeAppStartup: async () => ({ ok: true, value: {} as any }),
-      onStateChange: () => {},
-    };
-
-    // try_vault_path for NUL-byte path returns error → configure vault not called
+describe("EC-06: NUL byte in path → try_vault_path returns Ok, configure_vault returns VaultConfigError", () => {
+  test("EC-06: NUL-byte path passes try_vault_path (absolute), configure_vault returns path-not-found", async () => {
+    const stateChanges: VaultModalState[] = [];
     let configureCallCount = 0;
-    const testDeps: VaultModalDeps = {
-      ...deps,
+    const deps: VaultModalDeps = {
+      // NUL-byte path is absolute → VaultPath::try_new succeeds (only checks empty / not-absolute)
+      tryVaultPath: async (rawPath: string) => ({
+        ok: true,
+        value: rawPath as unknown as VaultPath,
+      }),
       invokeConfigureVault: async () => {
         configureCallCount++;
-        return { ok: true, value: {} as any };
+        // OS stat fails on NUL-byte path → VaultConfigError path-not-found
+        return {
+          ok: false as const,
+          error: { kind: "path-not-found" as const, path: "/foo\0bar" },
+        };
       },
+      invokeAppStartup: async () => ({ ok: true, value: {} as any }),
+      onStateChange: (s) => stateChanges.push(s),
     };
 
-    await vaultModalSubmitHandler(testDeps, { rawPath: "/foo\0bar", isSaving: false });
-    expect(configureCallCount).toBe(0);
+    await vaultModalSubmitHandler(deps, { rawPath: "/foo\0bar", isSaving: false });
+
+    // configure_vault was called (path passed try_vault_path)
+    expect(configureCallCount).toBe(1);
+    // Modal shows vault-config-error (not vault-path-error)
+    const lastState = stateChanges[stateChanges.length - 1];
+    expect(lastState?.hasError).toBe(true);
+    expect(lastState?.errorKind).toBe("vault-config-error");
   });
 });
 
-// ── EC-14, EC-15, EC-17: Symlink, OS_PATH_MAX, picker-revoke ─────────────────
+// ── EC-04 / EC-05: VaultPathError from tryVaultPath ─────────────────────────
 
-describe("EC-14/EC-15/EC-17: Symlink, OS_PATH_MAX, picker-revoke → handled as vault config errors", () => {
-  // EC-14: symlink → VaultPath::try_new passes (form check only) → statDir resolves
-  test("EC-14: symlink path passes format check (try_vault_path Ok), statDir follows symlink", async () => {
-    // VaultPath::try_new only checks empty / not-absolute
-    // A symlink path that is absolute passes try_new
-    // The UI just sends it to try_vault_path and handles the result
-    let tryCalled = false;
-    const deps: VaultModalDeps = {
-      tryVaultPath: async (rawPath: string) => {
-        tryCalled = true;
-        // Symlink path is absolute → passes VaultPath::try_new
-        return { ok: true, value: rawPath as unknown as VaultPath };
-      },
-      invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
-      invokeAppStartup: async () => ({ ok: true, value: {} as any }),
-      onStateChange: () => {},
-    };
-
-    await vaultModalSubmitHandler(deps, { rawPath: "/symlink/to/vault", isSaving: false });
-    expect(tryCalled).toBe(true);
-  });
-
-  // EC-17: picker-revoke → try_vault_path returns permission-denied
-  test("EC-17: picker-revoke → permission-denied error displayed in modal", async () => {
+describe("EC-04/EC-05: empty / whitespace-only path → tryVaultPath returns VaultPathError.empty", () => {
+  // EC-04: empty string
+  test("EC-04: empty string → tryVaultPath Err(empty) → vault-path-error in modal", async () => {
     const stateChanges: VaultModalState[] = [];
     const deps: VaultModalDeps = {
       tryVaultPath: async () => ({
-        ok: false,
-        error: { kind: "permission-denied" } as any,
+        ok: false as const,
+        error: { kind: "empty" as const },
       }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
       invokeAppStartup: async () => ({ ok: true, value: {} as any }),
       onStateChange: (s) => stateChanges.push(s),
     };
 
-    await vaultModalSubmitHandler(deps, { rawPath: "/revoked/vault", isSaving: false });
-    // Modal should show an error state, not close
+    await vaultModalSubmitHandler(deps, { rawPath: "", isSaving: false });
     const lastState = stateChanges[stateChanges.length - 1];
     expect(lastState?.hasError).toBe(true);
+    expect(lastState?.errorKind).toBe("vault-path-error");
+  });
+
+  // EC-05: not-absolute (relative path)
+  test("EC-05: relative path → tryVaultPath Err(not-absolute) → vault-path-error in modal", async () => {
+    const stateChanges: VaultModalState[] = [];
+    const deps: VaultModalDeps = {
+      tryVaultPath: async () => ({
+        ok: false as const,
+        error: { kind: "not-absolute" as const },
+      }),
+      invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
+      invokeAppStartup: async () => ({ ok: true, value: {} as any }),
+      onStateChange: (s) => stateChanges.push(s),
+    };
+
+    await vaultModalSubmitHandler(deps, { rawPath: "relative/path", isSaving: false });
+    const lastState = stateChanges[stateChanges.length - 1];
+    expect(lastState?.hasError).toBe(true);
+    expect(lastState?.errorKind).toBe("vault-path-error");
+  });
+});
+
+// ── EC-14, EC-15, EC-17: Symlink, OS_PATH_MAX, picker-revoke ─────────────────
+// These all involve paths that are absolute (pass try_vault_path), but fail at
+// invoke_configure_vault with a VaultConfigError.
+
+describe("EC-14/EC-15/EC-17: Symlink, OS_PATH_MAX, picker-revoke → VaultConfigError from invoke_configure_vault", () => {
+  // EC-14: symlink → VaultPath::try_new passes (absolute path format only) → statDir follows symlink
+  test("EC-14: symlink path passes try_vault_path (absolute), configure_vault called", async () => {
+    // VaultPath::try_new only checks empty / not-absolute
+    let configureCalled = false;
+    const deps: VaultModalDeps = {
+      tryVaultPath: async (rawPath: string) => ({
+        ok: true,
+        value: rawPath as unknown as VaultPath,
+      }),
+      invokeConfigureVault: async () => {
+        configureCalled = true;
+        return { ok: true, value: {} as any };
+      },
+      invokeAppStartup: async () => ({ ok: true, value: {} as any }),
+      onStateChange: () => {},
+    };
+
+    await vaultModalSubmitHandler(deps, { rawPath: "/symlink/to/vault", isSaving: false });
+    expect(configureCalled).toBe(true);
+  });
+
+  // EC-17: picker-revoke → absolute path passes try_vault_path, then configure_vault returns permission-denied
+  test("EC-17: picker-revoke → try_vault_path Ok, configure_vault Err(permission-denied) → vault-config-error", async () => {
+    const stateChanges: VaultModalState[] = [];
+    const deps: VaultModalDeps = {
+      // Path is absolute → VaultPath::try_new succeeds
+      tryVaultPath: async (rawPath: string) => ({
+        ok: true,
+        value: rawPath as unknown as VaultPath,
+      }),
+      // OS revokes permission before stat → VaultConfigError permission-denied
+      invokeConfigureVault: async () => ({
+        ok: false as const,
+        error: { kind: "permission-denied" as const, path: "/revoked/vault" },
+      }),
+      invokeAppStartup: async () => ({ ok: true, value: {} as any }),
+      onStateChange: (s) => stateChanges.push(s),
+    };
+
+    await vaultModalSubmitHandler(deps, { rawPath: "/revoked/vault", isSaving: false });
+    // Modal should show vault-config-error (not vault-path-error)
+    const lastState = stateChanges[stateChanges.length - 1];
+    expect(lastState?.hasError).toBe(true);
+    expect(lastState?.errorKind).toBe("vault-config-error");
+  });
+
+  // EC-08: path-not-found via configure_vault (e.g. path deleted between selection and save)
+  test("EC-08: configure_vault Err(path-not-found) → vault-config-error shown in modal", async () => {
+    const stateChanges: VaultModalState[] = [];
+    const deps: VaultModalDeps = {
+      tryVaultPath: async (rawPath: string) => ({
+        ok: true,
+        value: rawPath as unknown as VaultPath,
+      }),
+      invokeConfigureVault: async () => ({
+        ok: false as const,
+        error: { kind: "path-not-found" as const, path: "/deleted/vault" },
+      }),
+      invokeAppStartup: async () => ({ ok: true, value: {} as any }),
+      onStateChange: (s) => stateChanges.push(s),
+    };
+
+    await vaultModalSubmitHandler(deps, { rawPath: "/deleted/vault", isSaving: false });
+    const lastState = stateChanges[stateChanges.length - 1];
+    expect(lastState?.hasError).toBe(true);
+    expect(lastState?.errorKind).toBe("vault-config-error");
   });
 });

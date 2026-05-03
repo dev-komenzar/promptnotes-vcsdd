@@ -13,6 +13,8 @@ import type { VaultConfigError, AppStartupError } from "promptnotes-domain-types
 import type { Result } from "promptnotes-domain-types/util/result";
 import { setAppShellState } from "./appShellStore.js";
 import { routeStartupResult } from "./routeStartupResult.js";
+// FIND-210: Import error mappers — used to produce correct errorMessage in state
+import { mapVaultPathError, mapVaultConfigError } from "./errorMessages.js";
 
 // ── VaultModalState ────────────────────────────────────────────────────────
 
@@ -85,10 +87,12 @@ export async function vaultModalSubmitHandler(
   }
 
   if (!vaultPathResult.ok) {
+    // FIND-210: Use mapVaultPathError to produce the correct UI message
     deps.onStateChange({
       isSaving: false,
       hasError: true,
       errorKind: "vault-path-error",
+      errorMessage: mapVaultPathError(vaultPathResult.error),
     });
     return;
   }
@@ -105,10 +109,12 @@ export async function vaultModalSubmitHandler(
   }
 
   if (!configureResult.ok) {
+    // FIND-210: Use mapVaultConfigError to produce the correct UI message
     deps.onStateChange({
       isSaving: false,
       hasError: true,
       errorKind: "vault-config-error",
+      errorMessage: mapVaultConfigError(configureResult.error),
     });
     return;
   }

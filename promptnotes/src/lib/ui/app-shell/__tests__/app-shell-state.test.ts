@@ -47,7 +47,12 @@ import {
 import {
   bootOrchestrator,
   getBootAttempted,
+  __resetBootFlagForTesting__,
 } from "$lib/ui/app-shell/bootOrchestrator";
+
+import {
+  __resetForTesting__ as __resetStoreTesting__,
+} from "$lib/ui/app-shell/appShellStore";
 
 // ── Fixture helpers ──────────────────────────────────────────────────────────
 // @vcsdd-allow-brand-construction
@@ -67,6 +72,10 @@ const mockInitialUIState = {
 
 describe("REQ-020: appShellStore initial value is 'Loading'", () => {
   test("appShellStore initial value is 'Loading' (module-import time)", () => {
+    // FIND-211: Reset store to initial state before checking.
+    // In production, the module is freshly imported and the store starts as 'Loading'.
+    // In bun:test, modules are shared across files, so we reset via the test hook.
+    __resetStoreTesting__();
     let currentValue: AppShellState | undefined;
     const unsubscribe = appShellStore.subscribe((v) => { currentValue = v; });
     unsubscribe();
@@ -145,9 +154,12 @@ describe("PROP-013: in-process re-mount — bootFlag suppresses 2nd invoke (same
 // ── PROP-012: bootFlag resets on module re-import (HMR simulation) ──────────
 
 describe("PROP-012: bootFlag resets on module re-import (HMR simulation)", () => {
-  test("PROP-012: getBootAttempted() returns false on fresh module import", () => {
-    // getBootAttempted() is a @vcsdd-test-hook export that reads the internal bootFlag
-    // On module load, bootFlag === false (HMR reset to false)
+  test("PROP-012: getBootAttempted() returns false on fresh module import (or after HMR reset)", () => {
+    // getBootAttempted() is a @vcsdd-test-hook export that reads the internal bootFlag.
+    // On module load, bootFlag === false (HMR reset to false).
+    // In bun:test, the module is shared across tests in the same run, so we use the
+    // FIND-211 test hook __resetBootFlagForTesting__ to simulate an HMR module re-import.
+    __resetBootFlagForTesting__();
     expect(getBootAttempted()).toBe(false);
   });
 
@@ -172,8 +184,8 @@ describe("PROP-009: scan error / IPC crash → UnexpectedError state, no modal",
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
 
-    const resultState = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
-    expect(resultState).toBe("UnexpectedError");
+    const routeResult = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
+    expect(routeResult.state).toBe("UnexpectedError");
   });
 
   test("PROP-009: IPC crash (thrown exception) → UnexpectedError via bootOrchestrator", async () => {
@@ -185,8 +197,8 @@ describe("PROP-009: scan error / IPC crash → UnexpectedError state, no modal",
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
 
-    const resultState = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
-    expect(resultState).toBe("UnexpectedError");
+    const routeResult = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
+    expect(routeResult.state).toBe("UnexpectedError");
   });
 
   // EC-13: IPC crash → UnexpectedError
@@ -199,8 +211,8 @@ describe("PROP-009: scan error / IPC crash → UnexpectedError state, no modal",
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
 
-    const resultState = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
-    expect(resultState).toBe("UnexpectedError");
+    const routeResult = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
+    expect(routeResult.state).toBe("UnexpectedError");
   });
 });
 
@@ -236,22 +248,90 @@ describe("REQ-001: AppShellState transitions to Loading BEFORE invoke_app_startu
   });
 });
 
-// ── PROP-010 stub: modal within 100ms ────────────────────────────────────────
-// NOTE: Full test requires @testing-library/svelte for DOM assertion.
-// This stub verifies the store transitions synchronously after the Promise resolves.
+// ── PROP-010: modal state transition within 100ms of IPC resolution ──────────
+// REQ-018: The Unconfigured / StartupError state (and hence modal) must be set
+// within 100ms of the IPC promise resolving. We cannot mount DOM here (no
+// @testing-library/svelte), so we test the logic-layer timing contract: measure
+// wall-clock elapsed from IPC resolve to store-state-set.
 
-describe("PROP-010 (logic layer): Unconfigured state set synchronously on Promise resolution", () => {
-  test("PROP-010 stub: store transitions to Unconfigured synchronously after unconfigured result", async () => {
+describe("PROP-010: Unconfigured state SET within 100ms of IPC resolve (REQ-018 timing guard)", () => {
+  test("PROP-010: store transitions to Unconfigured and elapsed time is under 100ms", async () => {
+    // The IPC returns immediately (no artificial delay).
+    // We record the timestamp AFTER the IPC mock resolves, then measure how
+    // long until the store value is Unconfigured.
+    let ipcResolvedAt: number | undefined;
+
     const mockAdapter: TauriAdapter = {
-      invokeAppStartup: async () => ({
-        ok: false,
-        error: { kind: "config", reason: { kind: "unconfigured" } },
-      }),
-      tryVaultPath: async () => ({ ok: false, error: { kind: "empty" } }),
+      invokeAppStartup: async () => {
+        const result = {
+          ok: false as const,
+          error: { kind: "config" as const, reason: { kind: "unconfigured" as const } },
+        };
+        ipcResolvedAt = Date.now();
+        return result;
+      },
+      tryVaultPath: async () => ({ ok: false as const, error: { kind: "empty" as const } }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
 
-    const resultState = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
-    expect(resultState).toBe("Unconfigured");
+    const routeResult = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
+    const storeSetAt = Date.now();
+
+    expect(routeResult.state).toBe("Unconfigured");
+    expect(ipcResolvedAt).toBeDefined();
+    // The store must be set within 100ms of the IPC promise resolving.
+    // In synchronous JS this is essentially 0ms — the guard is 100ms.
+    const elapsed = storeSetAt - ipcResolvedAt!;
+    expect(elapsed).toBeLessThan(100);
+  });
+
+  test("PROP-010: StartupError state SET within 100ms of IPC resolve (path-not-found path)", async () => {
+    let ipcResolvedAt: number | undefined;
+
+    const mockAdapter: TauriAdapter = {
+      invokeAppStartup: async () => {
+        const result = {
+          ok: false as const,
+          error: {
+            kind: "config" as const,
+            reason: { kind: "path-not-found" as const, path: "/vault" },
+          },
+        };
+        ipcResolvedAt = Date.now();
+        return result;
+      },
+      tryVaultPath: async () => ({ ok: false as const, error: { kind: "empty" as const } }),
+      invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
+    };
+
+    const routeResult = await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
+    const storeSetAt = Date.now();
+
+    expect(routeResult.state).toBe("StartupError");
+    expect(ipcResolvedAt).toBeDefined();
+    const elapsed = storeSetAt - ipcResolvedAt!;
+    expect(elapsed).toBeLessThan(100);
+  });
+
+  test("PROP-010: appShellStore value is Unconfigured immediately after bootOrchestrator resolves", async () => {
+    // Verify the store (observable) is already Unconfigured when we subscribe
+    // right after bootOrchestrator completes — no asynchronous deferred write.
+    const mockAdapter: TauriAdapter = {
+      invokeAppStartup: async () => ({
+        ok: false as const,
+        error: { kind: "config" as const, reason: { kind: "unconfigured" as const } },
+      }),
+      tryVaultPath: async () => ({ ok: false as const, error: { kind: "empty" as const } }),
+      invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
+    };
+
+    await bootOrchestrator({ adapter: mockAdapter, isBootAttempted: false });
+
+    // Read current store value synchronously
+    let currentValue: AppShellState | undefined;
+    const unsub = appShellStore.subscribe((v) => { currentValue = v; });
+    unsub();
+
+    expect(currentValue).toBe("Unconfigured");
   });
 });

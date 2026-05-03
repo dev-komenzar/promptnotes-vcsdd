@@ -1,0 +1,33 @@
+sprint: 2
+phase: 2b → 2c
+timestamp: 2026-05-03T11:01:43.000Z
+
+## Findings addressed
+
+### Critical (3)
+- FIND-201: bootOrchestrator sets bootAttempted BEFORE async pipeline (race condition fixed)
+- FIND-202: AppShellRouteResult now carries corruptedFilesCount; corrupted-files banner rendered in AppShell.svelte
+- FIND-203: Tauri commands fully implemented in lib.rs (try_vault_path, invoke_configure_vault, invoke_app_startup, settings_save, fs_stat_dir, fs_list_markdown, fs_read_file); all private fn (no pub fn to avoid __cmd__ macro duplication)
+
+### Major (8)
+- FIND-204: Focus trap implemented in VaultSetupModal.svelte (getFocusableElements + Tab/Shift+Tab wrapping + Esc disabled)
+- FIND-209: header/main elements have aria-hidden="true" and inert when state is Unconfigured or StartupError
+- FIND-210: vaultModalLogic.ts uses mapVaultPathError/mapVaultConfigError for errorMessage population
+- FIND-214: invoke_configure_vault receives { path } not { vaultPath } (fixed in both tauriAdapter.ts and lib.rs)
+- FIND-205 (Phase 2c): PROP-011 audit tightened to also detect setAppShellState( calls outside allowed modules; effectful-isolation.test.ts updated
+- FIND-208 (Phase 2c): Double withIpcTimeout wrap eliminated; createTauriAdapter.invokeAppStartup no longer wraps (bootOrchestrator owns single timeout); clearTimeout cleanup added to withIpcTimeout sentinel
+- FIND-211 (Phase 2c): appShellStore start/stop reset callbacks removed; __resetForTesting__ export added; __resetBootFlagForTesting__ export added to bootOrchestrator; affected tests updated
+
+### Minor (3)
+- FIND-206: PROP-010 timing tests use real wall-clock measurement (ipcResolvedAt → storeSetAt)
+- FIND-207: VaultConfigError vs VaultPathError type confusion eliminated; EC-04/05/06/08/17 properly typed
+- FIND-212: Late-arrival store capture test added to ipc-timeout.test.ts; all IPC timeout tests updated to routeResult.state access pattern
+- FIND-213: PROP-006 audit regex broadened + canary self-tests added
+
+---
+target-feature-tests: PASS
+regression-baseline: PASS
+
+ui-app-shell tests: 211 pass, 0 fail (14 files, 260 expect() calls)
+non-ui-app-shell pre-existing failures: 8 fail (fc.stringOf API in fast-check harnesses — unrelated to this sprint)
+full suite: 1225 pass, 8 fail (pre-existing)

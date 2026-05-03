@@ -2,7 +2,7 @@
   "featureName": "ui-app-shell",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -61,6 +61,20 @@
       "timestamp": "2026-05-03T10:40:50.839Z",
       "reason": "sprint-1 iter-1 FAIL: 14 findings (3C/8M/3m). 4->2a (FIND-206/207/212/213 test gaps), 7->2b (FIND-201/202/203/204/209/210/214 impl bugs), 3->2c (FIND-205/208/211 structure). Earliest=2a.",
       "sprint": 2
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-03T10:47:06.231Z",
+      "reason": "sprint-2 red phase complete: 4 test gap findings addressed (FIND-206/207/212/213)",
+      "sprint": 2
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-03T11:01:43.000Z",
+      "reason": "sprint-2 green phase complete: all 14 findings addressed (FIND-201/202/203/204/205/206/207/208/209/210/211/212/213/214). 211 tests pass.",
+      "sprint": 2
     }
   ],
   "iterations": {
@@ -70,8 +84,8 @@
     "1b": 2,
     "1c": 1,
     "2a": 2,
-    "2b": 1,
-    "2c": 1
+    "2b": 2,
+    "2c": 2
   },
   "proofObligations": [
     {
@@ -1257,5 +1271,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T10:40:50.839Z"
+  "updatedAt": "2026-05-03T11:01:43.000Z"
 }

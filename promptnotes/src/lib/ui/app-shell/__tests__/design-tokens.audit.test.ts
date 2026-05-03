@@ -243,26 +243,129 @@ describe("PROP-006: Static analysis — no disallowed hex/rgba/px values in sour
 
   test("PROP-006 / REQ-011: no disallowed px spacing values in source files", () => {
     const sourceFiles = collectSourceFiles(UI_APP_SHELL_SRC);
-    // Only check explicit px values in style contexts (padding, margin, gap, etc.)
-    const spacingPattern = /(?:padding|margin|gap|top|left|right|bottom|width|height)\s*:\s*[\d.]+px/g;
-    const pxValuePattern = /([\d.]+)px/;
+    // Extended property list: shorthand + longhand padding/margin, border-radius,
+    // gap variants, inset, font-size, line-height, top/left/right/bottom, width, height.
+    // This catches padding-top, padding-left, border-radius, font-size, inset, etc.
+    const spacingPattern = /(?:padding(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|margin(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|border-radius|gap|column-gap|row-gap|inset|font-size|line-height|top|left|right|bottom|width|height|min-width|min-height|max-width|max-height)\s*:[^;{}]+/g;
+    const allPxValues = /([\d.]+)px/g;
     const violations: string[] = [];
 
     for (const filePath of sourceFiles) {
       const content = fs.readFileSync(filePath, "utf-8");
-      let match;
-      while ((match = spacingPattern.exec(content)) !== null) {
-        const pxMatch = pxValuePattern.exec(match[0]);
-        if (pxMatch) {
+      let propMatch;
+      while ((propMatch = spacingPattern.exec(content)) !== null) {
+        const declaration = propMatch[0];
+        let pxMatch;
+        const pxPattern = /([\d.]+)px/g;
+        while ((pxMatch = pxPattern.exec(declaration)) !== null) {
           const px = parseFloat(pxMatch[1]);
           if (!ALLOWED_SPACING_PX.has(px)) {
-            violations.push(`${filePath}: disallowed spacing ${px}px in "${match[0]}"`);
+            violations.push(`${filePath}: disallowed spacing ${px}px in "${declaration.trim()}"`);
           }
         }
       }
+      // Suppress unused variable warning
+      void allPxValues;
     }
 
     expect(violations).toEqual([]);
+  });
+});
+
+// ── PROP-006 self-test: canary test to verify the audit itself catches violations ──
+
+describe("PROP-006 self-test: spacing audit catches non-token px values (canary)", () => {
+  const os = require("os");
+
+  test("audit detects padding-left: 17px (non-token value) in a fixture file", () => {
+    // Plant a fixture file with a known bad value
+    const tmpDir = os.tmpdir();
+    const fixturePath = path.join(tmpDir, "__canary_spacing_test__.ts");
+    const fixtureContent = `/* canary fixture */\nconst style = "padding-left: 17px";\n`;
+    fs.writeFileSync(fixturePath, fixtureContent, "utf-8");
+
+    try {
+      // Run the same audit logic against the single fixture file
+      const spacingPattern = /(?:padding(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|margin(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|border-radius|gap|column-gap|row-gap|inset|font-size|line-height|top|left|right|bottom|width|height|min-width|min-height|max-width|max-height)\s*:[^;{}]+/g;
+      const violations: string[] = [];
+      const content = fs.readFileSync(fixturePath, "utf-8");
+      let propMatch;
+      while ((propMatch = spacingPattern.exec(content)) !== null) {
+        const declaration = propMatch[0];
+        const pxPattern = /([\d.]+)px/g;
+        let pxMatch;
+        while ((pxMatch = pxPattern.exec(declaration)) !== null) {
+          const px = parseFloat(pxMatch[1]);
+          if (!ALLOWED_SPACING_PX.has(px)) {
+            violations.push(`disallowed ${px}px in "${declaration.trim()}"`);
+          }
+        }
+      }
+      // The canary bad value must be caught
+      expect(violations.length).toBeGreaterThan(0);
+      expect(violations[0]).toContain("17");
+    } finally {
+      // Clean up fixture
+      fs.unlinkSync(fixturePath);
+    }
+  });
+
+  test("audit detects padding-top: 13px (non-token, longhand) in a fixture file", () => {
+    const tmpDir = os.tmpdir();
+    const fixturePath = path.join(tmpDir, "__canary_padding_top_test__.ts");
+    const fixtureContent = `/* canary fixture */\nconst style = "padding-top: 13px";\n`;
+    fs.writeFileSync(fixturePath, fixtureContent, "utf-8");
+
+    try {
+      const spacingPattern = /(?:padding(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|margin(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|border-radius|gap|column-gap|row-gap|inset|font-size|line-height|top|left|right|bottom|width|height|min-width|min-height|max-width|max-height)\s*:[^;{}]+/g;
+      const violations: string[] = [];
+      const content = fs.readFileSync(fixturePath, "utf-8");
+      let propMatch;
+      while ((propMatch = spacingPattern.exec(content)) !== null) {
+        const declaration = propMatch[0];
+        const pxPattern = /([\d.]+)px/g;
+        let pxMatch;
+        while ((pxMatch = pxPattern.exec(declaration)) !== null) {
+          const px = parseFloat(pxMatch[1]);
+          if (!ALLOWED_SPACING_PX.has(px)) {
+            violations.push(`disallowed ${px}px in "${declaration.trim()}"`);
+          }
+        }
+      }
+      expect(violations.length).toBeGreaterThan(0);
+      expect(violations[0]).toContain("13");
+    } finally {
+      fs.unlinkSync(fixturePath);
+    }
+  });
+
+  test("audit allows all token values (no false positives): padding: 8px 16px", () => {
+    const tmpDir = os.tmpdir();
+    const fixturePath = path.join(tmpDir, "__canary_valid_spacing_test__.ts");
+    // All values from the token scale — must produce 0 violations
+    const fixtureContent = `const style = "padding: 8px 16px; margin: 4px 12px; border-radius: 12px;";\n`;
+    fs.writeFileSync(fixturePath, fixtureContent, "utf-8");
+
+    try {
+      const spacingPattern = /(?:padding(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|margin(?:-(?:top|right|bottom|left|inline|block|inline-start|inline-end|block-start|block-end))?|border-radius|gap|column-gap|row-gap|inset|font-size|line-height|top|left|right|bottom|width|height|min-width|min-height|max-width|max-height)\s*:[^;{}]+/g;
+      const violations: string[] = [];
+      const content = fs.readFileSync(fixturePath, "utf-8");
+      let propMatch;
+      while ((propMatch = spacingPattern.exec(content)) !== null) {
+        const declaration = propMatch[0];
+        const pxPattern = /([\d.]+)px/g;
+        let pxMatch;
+        while ((pxMatch = pxPattern.exec(declaration)) !== null) {
+          const px = parseFloat(pxMatch[1]);
+          if (!ALLOWED_SPACING_PX.has(px)) {
+            violations.push(`disallowed ${px}px`);
+          }
+        }
+      }
+      expect(violations).toEqual([]);
+    } finally {
+      fs.unlinkSync(fixturePath);
+    }
   });
 });
 

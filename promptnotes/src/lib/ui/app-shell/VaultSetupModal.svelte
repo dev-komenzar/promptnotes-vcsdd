@@ -16,6 +16,22 @@
   let rawPath: string = "";
   let modalState: VaultModalState = { isSaving: false, hasError: false };
 
+  // REQ-016 / FIND-204: Focus trap — track first and last focusable elements.
+  let modalEl: HTMLDivElement | null = null;
+
+  /**
+   * REQ-016 / FIND-204: Returns the list of focusable elements inside the modal.
+   * Selects interactive elements that are not disabled and not inert.
+   */
+  function getFocusableElements(): HTMLElement[] {
+    if (!modalEl) return [];
+    return Array.from(
+      modalEl.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    );
+  }
+
   async function handleSubmit(event: Event) {
     event.preventDefault();
     await vaultModalSubmitHandler(
@@ -33,11 +49,40 @@
     event.stopPropagation();
   }
 
+  /**
+   * REQ-016 / FIND-204: Keyboard handler.
+   * - Esc: disabled (stopPropagation + preventDefault)
+   * - Tab: wraps focus within the modal (focus trap)
+   * - Shift+Tab: wraps focus backwards within the modal
+   */
   function handleKeydown(event: KeyboardEvent) {
-    // REQ-016: Esc disabled
     if (event.key === "Escape") {
+      // REQ-016: Esc must NOT close the modal
       event.preventDefault();
       event.stopPropagation();
+      return;
+    }
+
+    if (event.key === "Tab") {
+      const focusable = getFocusableElements();
+      if (focusable.length === 0) return;
+
+      const firstEl = focusable[0];
+      const lastEl = focusable[focusable.length - 1];
+
+      if (event.shiftKey) {
+        // Shift+Tab: if focus is on first element, wrap to last
+        if (document.activeElement === firstEl) {
+          event.preventDefault();
+          lastEl.focus();
+        }
+      } else {
+        // Tab: if focus is on last element, wrap to first
+        if (document.activeElement === lastEl) {
+          event.preventDefault();
+          firstEl.focus();
+        }
+      }
     }
   }
 </script>
@@ -50,8 +95,9 @@
   on:click={stopPropagation}
   style="background-color: {DESIGN_TOKENS.modalScrim};"
 >
-  <!-- REQ-016: Focus trap container, Esc disabled -->
+  <!-- REQ-016 / FIND-204: Focus trap container, Esc disabled, Tab wraps -->
   <div
+    bind:this={modalEl}
     class="modal"
     data-testid={VAULT_SETUP_MODAL_TESTID}
     on:keydown={handleKeydown}
@@ -83,13 +129,13 @@
 
       {#if modalState.hasError && modalState.errorKind === "vault-path-error"}
         <p style="color: {DESIGN_TOKENS.warnColor}; font-size: 14px; margin-top: 4px;">
-          フォルダを選択してください
+          {modalState.errorMessage ?? mapVaultPathError({ kind: "empty" })}
         </p>
       {/if}
 
       {#if modalState.hasError && modalState.errorKind === "vault-config-error"}
         <p style="color: {DESIGN_TOKENS.warnColor}; font-size: 14px; margin-top: 4px;">
-          {modalState.errorMessage ?? "設定したフォルダが見つかりません。再設定するか、フォルダを復元してください"}
+          {modalState.errorMessage ?? mapVaultConfigError({ kind: "path-not-found", path: "" })}
         </p>
       {/if}
 

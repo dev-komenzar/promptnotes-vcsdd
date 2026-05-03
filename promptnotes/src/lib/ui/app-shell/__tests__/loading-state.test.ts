@@ -19,6 +19,7 @@ import type { VaultPath, VaultId } from "promptnotes-domain-types/shared/value-o
 import {
   appShellStore,
   type AppShellState,
+  __resetForTesting__ as __resetStoreTesting__,
 } from "$lib/ui/app-shell/appShellStore";
 
 import {
@@ -27,6 +28,7 @@ import {
 
 import {
   bootOrchestrator,
+  __resetBootFlagForTesting__,
 } from "$lib/ui/app-shell/bootOrchestrator";
 
 // @vcsdd-allow-brand-construction
@@ -46,6 +48,10 @@ const mockInitialUIState = {
 
 describe("REQ-020: appShellStore initial value is 'Loading' at module import", () => {
   test("fresh store subscribe() immediately yields 'Loading'", () => {
+    // FIND-211: Reset store to initial state before checking.
+    // bun:test shares module instances across test files, so after other tests
+    // have set the store, we reset via the test hook to simulate fresh module import.
+    __resetStoreTesting__();
     let currentValue: AppShellState | undefined;
     const unsubscribe = appShellStore.subscribe((v) => { currentValue = v; });
     unsubscribe();
@@ -80,9 +86,9 @@ describe("REQ-020: Loading state allows exactly 4 target transitions", () => {
       tryVaultPath: async () => ({ ok: false, error: { kind: "empty" } }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
-    const result = await bootOrchestrator({ adapter, isBootAttempted: false });
-    expect(validTransitions).toContain(result);
-    expect(result).toBe("Configured");
+    const routeResult = await bootOrchestrator({ adapter, isBootAttempted: false });
+    expect(validTransitions).toContain(routeResult.state);
+    expect(routeResult.state).toBe("Configured");
   });
 
   test("bootOrchestrator transitions from Loading → Unconfigured on unconfigured error", async () => {
@@ -94,9 +100,9 @@ describe("REQ-020: Loading state allows exactly 4 target transitions", () => {
       tryVaultPath: async () => ({ ok: false, error: { kind: "empty" } }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
-    const result = await bootOrchestrator({ adapter, isBootAttempted: false });
-    expect(validTransitions).toContain(result);
-    expect(result).toBe("Unconfigured");
+    const routeResult = await bootOrchestrator({ adapter, isBootAttempted: false });
+    expect(validTransitions).toContain(routeResult.state);
+    expect(routeResult.state).toBe("Unconfigured");
   });
 
   test("bootOrchestrator transitions from Loading → StartupError on path-not-found error", async () => {
@@ -108,9 +114,9 @@ describe("REQ-020: Loading state allows exactly 4 target transitions", () => {
       tryVaultPath: async () => ({ ok: false, error: { kind: "empty" } }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
-    const result = await bootOrchestrator({ adapter, isBootAttempted: false });
-    expect(validTransitions).toContain(result);
-    expect(result).toBe("StartupError");
+    const routeResult = await bootOrchestrator({ adapter, isBootAttempted: false });
+    expect(validTransitions).toContain(routeResult.state);
+    expect(routeResult.state).toBe("StartupError");
   });
 
   test("bootOrchestrator transitions from Loading → UnexpectedError on scan error", async () => {
@@ -122,9 +128,9 @@ describe("REQ-020: Loading state allows exactly 4 target transitions", () => {
       tryVaultPath: async () => ({ ok: false, error: { kind: "empty" } }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
-    const result = await bootOrchestrator({ adapter, isBootAttempted: false });
-    expect(validTransitions).toContain(result);
-    expect(result).toBe("UnexpectedError");
+    const routeResult = await bootOrchestrator({ adapter, isBootAttempted: false });
+    expect(validTransitions).toContain(routeResult.state);
+    expect(routeResult.state).toBe("UnexpectedError");
   });
 
   test("bootOrchestrator NEVER transitions from Loading → Loading (double-boot suppressed)", async () => {
@@ -146,5 +152,6 @@ describe("REQ-020: Loading state allows exactly 4 target transitions", () => {
     expect(callCount).toBe(1); // Only invoked once
     // result2 should return current state (not attempt another invoke)
     // It should not be 'Loading' — Loading is only the initial/transient state
+    void result1; void result2;
   });
 });

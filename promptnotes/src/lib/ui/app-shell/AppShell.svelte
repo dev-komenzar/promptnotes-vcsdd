@@ -7,29 +7,42 @@
   import {
     HEADER_STYLE,
     SKELETON_CARD_STYLE,
+    CORRUPTED_BANNER_STYLES,
   } from "./designTokens.js";
   import {
     ERROR_BANNER_TESTID,
     ERROR_BANNER_ROLE,
     STARTUP_ERROR_MESSAGE_TESTID,
+    CORRUPTED_BANNER_TESTID,
   } from "./componentTestIds.js";
   import { LOADING_ARIA_ATTRIBUTES } from "./loadingState.js";
+  import { buildCorruptedBannerMessage } from "./corruptedBanner.js";
   import VaultSetupModal from "./VaultSetupModal.svelte";
 
   const tauriAdapter = createTauriAdapter({ invoke });
 
   $: state = $appShellStore;
 
+  // REQ-009 / FIND-202: Track corrupted files count from the boot route result.
+  let corruptedFilesCount = 0;
+  let showCorruptedBanner = false;
+
   onMount(async () => {
     const isBooted = getBootAttempted();
-    await bootOrchestrator({ adapter: tauriAdapter, isBootAttempted: isBooted });
+    const routeResult = await bootOrchestrator({ adapter: tauriAdapter, isBootAttempted: isBooted });
+    // REQ-009 / FIND-202: Update banner state from the full route result.
+    showCorruptedBanner = routeResult.showCorruptedBanner;
+    corruptedFilesCount = routeResult.corruptedFilesCount;
   });
 </script>
 
 <div class="app-shell">
-  <!-- REQ-010: Header -->
+  <!-- REQ-010: Header — FIND-209: inert + aria-hidden when modal is open -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <header
     style="background-color: {HEADER_STYLE.backgroundColor}; border-bottom: {HEADER_STYLE.borderBottom}; padding: 8px 16px;"
+    aria-hidden={state === "Unconfigured" || state === "StartupError" ? "true" : undefined}
+    inert={state === "Unconfigured" || state === "StartupError" ? true : undefined}
   >
     <span
       style="font-size: {HEADER_STYLE.titleFontSize}; font-weight: {HEADER_STYLE.titleFontWeight}; color: {HEADER_STYLE.titleColor};"
@@ -38,8 +51,11 @@
     </span>
   </header>
 
-  <!-- REQ-011: Main area -->
-  <main>
+  <!-- REQ-011: Main area — FIND-209: inert + aria-hidden when modal is open -->
+  <main
+    aria-hidden={state === "Unconfigured" || state === "StartupError" ? "true" : undefined}
+    inert={state === "Unconfigured" || state === "StartupError" ? true : undefined}
+  >
     {#if state === "Loading"}
       <!-- REQ-012: Loading skeleton (aria-hidden skeleton cards) -->
       <div
@@ -73,6 +89,17 @@
     {/if}
 
     {#if state === "Configured"}
+      <!-- REQ-009 / FIND-202: Corrupted files banner shown iff showCorruptedBanner -->
+      {#if showCorruptedBanner}
+        <div
+          data-testid={CORRUPTED_BANNER_TESTID}
+          role="alert"
+          style="color: {CORRUPTED_BANNER_STYLES.warnColor}; border: {CORRUPTED_BANNER_STYLES.border}; border-radius: {CORRUPTED_BANNER_STYLES.borderRadius}; font-size: {CORRUPTED_BANNER_STYLES.fontSize}; font-weight: {CORRUPTED_BANNER_STYLES.fontWeight}; padding: 8px 16px; margin: 8px;"
+        >
+          {buildCorruptedBannerMessage(corruptedFilesCount)}
+        </div>
+      {/if}
+
       <!-- REQ-012: Main content area placeholder -->
       <slot />
     {/if}

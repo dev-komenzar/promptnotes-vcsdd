@@ -32,7 +32,12 @@ import {
 
 import {
   getBootAttempted,
+  __resetBootFlagForTesting__,
 } from "$lib/ui/app-shell/bootOrchestrator";
+
+import {
+  __resetForTesting__ as __resetStoreTesting__,
+} from "$lib/ui/app-shell/appShellStore";
 
 // ── PROP-011: appShellStore write isolation (static analysis audit) ───────────
 
@@ -45,8 +50,23 @@ describe("PROP-011: appShellStore write isolation — source file audit", () => 
   const ALLOWED_WRITERS = new Set([
     path.join(UI_APP_SHELL_DIR, "AppShell.svelte"),
     path.join(UI_APP_SHELL_DIR, "VaultSetupModal.svelte"),
+    // appShellStore.ts itself owns the internal _store and setAppShellState;
+    // it is the authority module, not an unauthorized writer.
+    path.join(UI_APP_SHELL_DIR, "appShellStore.ts"),
+    // bootOrchestrator.ts and vaultModalLogic.ts are the only .ts modules
+    // permitted to call setAppShellState (the indirection setter).
+    // They are explicitly allowed here so the audit catches any NEW violator.
+    path.join(UI_APP_SHELL_DIR, "bootOrchestrator.ts"),
+    path.join(UI_APP_SHELL_DIR, "vaultModalLogic.ts"),
   ]);
 
+  /**
+   * FIND-205 fix: audit pattern now checks BOTH:
+   *   1. Direct `appShellStore.set(` / `appShellStore.update(` calls
+   *   2. Indirect `setAppShellState(` calls (the indirection helper)
+   * This prevents modules from bypassing the audit by going through the
+   * helper instead of calling the store directly.
+   */
   function findAppShellStoreWrites(dir: string): string[] {
     const violations: string[] = [];
     if (!fs.existsSync(dir)) {
@@ -64,7 +84,12 @@ describe("PROP-011: appShellStore write isolation — source file audit", () => 
       } else if (entry.isFile() && (entry.name.endsWith(".ts") || entry.name.endsWith(".svelte"))) {
         if (ALLOWED_WRITERS.has(fullPath)) continue;
         const content = fs.readFileSync(fullPath, "utf-8");
-        if (content.includes("appShellStore.set(") || content.includes("appShellStore.update(")) {
+        const hasDirectWrite =
+          content.includes("appShellStore.set(") ||
+          content.includes("appShellStore.update(");
+        // FIND-205: also catch the setAppShellState indirection bypass
+        const hasIndirectWrite = content.includes("setAppShellState(");
+        if (hasDirectWrite || hasIndirectWrite) {
           violations.push(fullPath);
         }
       }
@@ -72,7 +97,7 @@ describe("PROP-011: appShellStore write isolation — source file audit", () => 
     return violations;
   }
 
-  test("PROP-011: no file outside AppShell.svelte / VaultSetupModal.svelte writes to appShellStore", () => {
+  test("PROP-011: no file outside AppShell.svelte / VaultSetupModal.svelte / appShellStore.ts / bootOrchestrator.ts / vaultModalLogic.ts writes to appShellStore", () => {
     // This test will FAIL if source dir doesn't exist (RED phase — expected)
     // OR if violations are found (BUG — fix required)
     const violations = findAppShellStoreWrites(UI_APP_SHELL_DIR);
@@ -95,8 +120,10 @@ describe("PROP-012: bootFlag is not exported from bootOrchestrator", () => {
     expect(typeof mod.getBootAttempted).toBe("function");
   });
 
-  test("getBootAttempted() returns false on initial module load", () => {
-    // On fresh module load (simulating HMR), bootFlag is false
+  test("getBootAttempted() returns false on initial module load (or after HMR reset)", () => {
+    // FIND-211: Reset the flag to simulate HMR module re-load.
+    // In production this is a module re-import; in tests we use the test hook.
+    __resetBootFlagForTesting__();
     expect(getBootAttempted()).toBe(false);
   });
 });

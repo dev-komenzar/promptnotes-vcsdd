@@ -28,11 +28,16 @@ export type AppShellState =
 /**
  * Structured result of routeStartupResult, carrying the UI state plus
  * derived flags for component rendering.
+ *
+ * FIND-202: corruptedFilesCount carries the number of corrupted files
+ * so AppShell.svelte can display the banner message without needing to
+ * re-read raw IPC data.
  */
 export type AppShellRouteResult = {
   readonly state: AppShellState;
   readonly isModalOpen: boolean;
   readonly showCorruptedBanner: boolean;
+  readonly corruptedFilesCount: number;
   readonly errorReason?: AppStartupError;
 };
 
@@ -55,10 +60,12 @@ export function routeStartupResult(
 ): AppShellRouteResult {
   if (result.ok) {
     const corruptedFiles = result.value?.corruptedFiles ?? [];
+    const corruptedFilesCount = Array.isArray(corruptedFiles) ? corruptedFiles.length : 0;
     return {
       state: "Configured",
       isModalOpen: false,
       showCorruptedBanner: shouldShowCorruptedBanner(corruptedFiles as Array<{ filePath: string }>),
+      corruptedFilesCount,
     };
   }
 
@@ -71,6 +78,7 @@ export function routeStartupResult(
         state: "Unconfigured",
         isModalOpen: true,
         showCorruptedBanner: false,
+        corruptedFilesCount: 0,
         errorReason: error,
       };
     }
@@ -79,6 +87,7 @@ export function routeStartupResult(
       state: "StartupError",
       isModalOpen: true,
       showCorruptedBanner: false,
+      corruptedFilesCount: 0,
       errorReason: error,
     };
   }
@@ -88,6 +97,7 @@ export function routeStartupResult(
     state: "UnexpectedError",
     isModalOpen: false,
     showCorruptedBanner: false,
+    corruptedFilesCount: 0,
     errorReason: error,
   };
 }

@@ -31,6 +31,11 @@ import {
   bootOrchestrator,
 } from "$lib/ui/app-shell/bootOrchestrator";
 
+import {
+  appShellStore,
+  type AppShellState,
+} from "$lib/ui/app-shell/appShellStore";
+
 // @vcsdd-allow-brand-construction
 const vaultPath = (s: string): VaultPath => s as unknown as VaultPath;
 const vaultId = (s: string): VaultId => s as unknown as VaultId;
@@ -106,22 +111,26 @@ describe("PROP-014: bootOrchestrator transitions to UnexpectedError on IPC timeo
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
 
-    const resultState = await bootOrchestrator({
+    const routeResult = await bootOrchestrator({
       adapter: neverResolvingAdapter,
       isBootAttempted: false,
       timeoutMs: 10, // override timeout for fast test
     });
 
-    expect(resultState).toBe("UnexpectedError");
+    expect(routeResult.state).toBe("UnexpectedError");
   }, 2000); // jest-style timeout: 2s max
 
-  test("PROP-014: late-arrival after timeout does NOT overwrite UnexpectedError", async () => {
+  test("PROP-014: late-arrival after timeout does NOT overwrite appShellStore UnexpectedError", async () => {
     let resolveIpc!: (v: any) => void;
     const lateAdapter: TauriAdapter = {
       invokeAppStartup: () => new Promise((resolve) => { resolveIpc = resolve; }),
-      tryVaultPath: async () => ({ ok: false, error: { kind: "empty" } }),
+      tryVaultPath: async () => ({ ok: false as const, error: { kind: "empty" as const } }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
+
+    // Subscribe to the store to capture all values written during the test
+    const capturedStates: AppShellState[] = [];
+    const unsub = appShellStore.subscribe((v) => capturedStates.push(v));
 
     // Start orchestrator with short timeout
     const bootPromise = bootOrchestrator({
@@ -130,19 +139,38 @@ describe("PROP-014: bootOrchestrator transitions to UnexpectedError on IPC timeo
       timeoutMs: 10, // expires quickly
     });
 
-    // Wait for timeout to fire
-    const resultState = await bootPromise;
-    expect(resultState).toBe("UnexpectedError");
+    // Wait for timeout to fire and bootOrchestrator to complete
+    const routeResult = await bootPromise;
+    expect(routeResult.state).toBe("UnexpectedError");
 
-    // Now late-arrive a successful resolution
+    // Verify the store is also UnexpectedError right after boot completes
+    let storeValueAfterTimeout: AppShellState | undefined;
+    const readUnsub = appShellStore.subscribe((v) => { storeValueAfterTimeout = v; });
+    readUnsub();
+    expect(storeValueAfterTimeout).toBe("UnexpectedError");
+
+    // Now late-arrive a successful Configured resolution
     resolveIpc({ ok: true, value: mockInitialUIState });
 
-    // Give a tick for any potential override to propagate
+    // Flush microtask queue to allow any potential override to propagate
+    await Promise.resolve();
+    await Promise.resolve();
     await Promise.resolve();
 
-    // State must remain UnexpectedError (late-arrival discarded)
-    // We check the returned state from bootOrchestrator which is frozen at timeout
-    expect(resultState).toBe("UnexpectedError");
+    // The store must STILL be UnexpectedError — late-arrival must be discarded
+    let storeValueAfterLateArrival: AppShellState | undefined;
+    const readUnsub2 = appShellStore.subscribe((v) => { storeValueAfterLateArrival = v; });
+    readUnsub2();
+    expect(storeValueAfterLateArrival).toBe("UnexpectedError");
+
+    // The store captured sequence must NOT contain "Configured" after "UnexpectedError"
+    const unexpectedErrorIndex = capturedStates.lastIndexOf("UnexpectedError");
+    const configuredAfterTimeout = capturedStates
+      .slice(unexpectedErrorIndex + 1)
+      .includes("Configured");
+    expect(configuredAfterTimeout).toBe(false);
+
+    unsub();
   }, 2000);
 });
 

@@ -16,3 +16,6 @@ export const STARTUP_ERROR_MESSAGE_TESTID = "startup-error-message" as const;
 
 /** REQ-003: Vault setup modal data-testid. */
 export const VAULT_SETUP_MODAL_TESTID = "vault-setup-modal" as const;
+
+/** REQ-009: Corrupted files banner data-testid. */
+export const CORRUPTED_BANNER_TESTID = "corrupted-files-banner" as const;

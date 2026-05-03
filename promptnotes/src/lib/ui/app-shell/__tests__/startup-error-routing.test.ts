@@ -142,8 +142,8 @@ describe("REQ-008: IPC crash transitions to UnexpectedError", () => {
       tryVaultPath: async () => ({ ok: false, error: { kind: "empty" } }),
       invokeConfigureVault: async () => ({ ok: true, value: {} as any }),
     };
-    const result = await bootOrchestrator({ adapter, isBootAttempted: false });
-    expect(result).toBe("UnexpectedError");
+    const routeResult = await bootOrchestrator({ adapter, isBootAttempted: false });
+    expect(routeResult.state).toBe("UnexpectedError");
   });
 });
 

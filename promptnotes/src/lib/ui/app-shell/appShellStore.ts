@@ -11,6 +11,14 @@
  * other module. Enforced by static analysis (PROP-011).
  *
  * Initial value: 'Loading' (REQ-020).
+ *
+ * FIND-211 fix: Removed start/stop callbacks that were unconditionally
+ * resetting the store to 'Loading' on subscribe/unsubscribe. Those callbacks
+ * violated REQ-020 (Loading→Loading suppressed by bootAttempted), REQ-021
+ * (writes from inside appShellStore.ts bypassing the authority boundary), and
+ * caused test isolation bugs where subscribing AFTER bootOrchestrator resolved
+ * would clobber the settled state back to 'Loading'.
+ * Test isolation is now achieved via __resetForTesting__ (test-only hook).
  */
 
 import { writable } from "svelte/store";
@@ -22,17 +30,8 @@ export type { AppShellState };
 // the exported appShellStore object but MUST NOT be invoked outside
 // AppShell.svelte and VaultSetupModal.svelte (PROP-011 audit).
 //
-// The start/stop functions enforce that every new subscription chain sees
-// 'Loading' as the current value (REQ-020). This provides test isolation
-// when multiple test files share the same module instance (bun module cache).
-const _store = writable<AppShellState>("Loading", (set) => {
-  // Reset to Loading when the first subscriber attaches (new subscription chain).
-  set("Loading");
-  return () => {
-    // Reset when the last subscriber detaches so the next chain also starts Loading.
-    set("Loading");
-  };
-});
+// FIND-211: No start/stop callbacks — subscribe/unsubscribe does NOT reset state.
+const _store = writable<AppShellState>("Loading");
 
 /**
  * REQ-020: Single Svelte writable store for the app shell state.
@@ -54,4 +53,15 @@ export const appShellStore = {
  */
 export function setAppShellState(state: AppShellState): void {
   _store.set(state);
+}
+
+/**
+ * @vcsdd-test-hook
+ * FIND-211: Resets the store to 'Loading' for test isolation.
+ * MUST NOT be called in production code.
+ * Used in tests to restore initial state between test cases that share
+ * the same module instance (bun module cache without resetModules()).
+ */
+export function __resetForTesting__(): void {
+  _store.set("Loading");
 }
