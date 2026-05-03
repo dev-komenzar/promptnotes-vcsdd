@@ -80,7 +80,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-05-03T15:51:03.312Z"
+    },
+    "ui-editor": {
+      "status": "active",
+      "createdAt": "2026-05-03T22:48:00.742Z",
+      "mode": "strict",
+      "language": "typescript",
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-03T23:10:24.258Z"
     }
   },
-  "activeFeature": "ui-app-shell"
+  "activeFeature": "ui-editor"
 }
