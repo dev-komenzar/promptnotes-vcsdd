@@ -2,7 +2,7 @@
   "featureName": "delete-note",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -54,11 +54,19 @@
       "timestamp": "2026-05-03T06:04:09.970Z",
       "reason": "phase 3 PASS at sprint-1 iter-1; advancing to formal hardening",
       "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-03T06:13:22.550Z",
+      "reason": "formal hardening complete",
+      "sprint": 1
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
+    "6": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -66,7 +74,134 @@
     "2b": 1,
     "2c": 1
   },
-  "proofObligations": [],
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/__verify__/prop-dln-007-error-exhaustiveness.harness.test.ts"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/__verify__/prop-dln-015-non-coupling.harness.test.ts"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-010",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-011",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-012",
+      "tier": 1,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step4-update-projections.test.ts"
+    },
+    {
+      "id": "PROP-013",
+      "tier": 0,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/__verify__/prop-dln-014-event-channels.harness.test.ts"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-015",
+      "tier": 3,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-016",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-017",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-018",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    }
+  ],
   "traceability": {
     "epicId": "VCSDD-delete-note-1777783100087",
     "beads": []
@@ -99,5 +234,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-03T04:38:20.086Z",
-  "updatedAt": "2026-05-03T06:04:09.970Z"
+  "updatedAt": "2026-05-03T06:13:22.550Z"
 }
