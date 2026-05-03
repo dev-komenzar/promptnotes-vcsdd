@@ -215,15 +215,24 @@ export function createTauriAdapter(deps: TauriAdapterDeps): TauriAdapter {
     invokeAppStartup: () =>
       runTsAppStartupPipeline(deps.invoke),
 
+    // Tauri は Rust の Result<T, E> を自動展開し、Ok(value) は value、
+    // Err(e) は Promise reject に変換する。adapter 層で明示的に Result<> へラップして
+    // ドメイン契約に合わせる。
     tryVaultPath: (rawPath: string) =>
       withIpcTimeout(
-        deps.invoke("try_vault_path", { rawPath }) as Promise<Result<VaultPath, VaultPathError>>
+        deps
+          .invoke("try_vault_path", { rawPath })
+          .then((value: unknown) => ({ ok: true as const, value: value as VaultPath }))
+          .catch((error: unknown) => ({ ok: false as const, error: error as VaultPathError }))
       ),
 
     // FIND-214: parameter renamed from { vaultPath } to { path } per spec
     invokeConfigureVault: (vaultPath: VaultPath) =>
       withIpcTimeout(
-        deps.invoke("invoke_configure_vault", { path: vaultPath }) as Promise<Result<unknown, VaultConfigError>>
+        deps
+          .invoke("invoke_configure_vault", { path: vaultPath })
+          .then((value: unknown) => ({ ok: true as const, value }))
+          .catch((error: unknown) => ({ ok: false as const, error: error as VaultConfigError }))
       ),
   };
 }
