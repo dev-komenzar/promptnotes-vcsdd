@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-410",
+  "dimension": "verification_readiness",
+  "category": "proof_gap",
+  "severity": "medium",
+  "description": "PROP-010 (modal within 100ms) and REQ-018 are still unverified at the DOM level. The Sprint-2 FIND-206 fix replaced the vacuous stub with three wall-clock timing tests, BUT all three measure (storeSetAt - ipcResolvedAt) on the LOGIC layer (appShellStore value), not on the DOM (modal element presence). REQ-018 NFR-01 explicitly requires 'モーダル表示遅延' (modal RENDERING delay) ≤ 100ms — i.e., when the VaultSetupModal element appears in the DOM. The new tests prove the store transitions in <100ms but say nothing about whether the modal element actually appears in the DOM within 100ms after that. Svelte's reactivity could in theory introduce a delay (microtask scheduling, transitions, etc.). The verification-architecture.md PROP-010 detail (lines 426-441) explicitly mandates a DOM mount with screen.getByTestId('vault-setup-modal') — that DOM assertion is still missing. CRIT-008 passThreshold accepted the logic-layer surrogate but the underlying NFR is unverified.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts",
+    "lineRange": "257-336"
+  },
+  "routeToPhase": "2a"
+}

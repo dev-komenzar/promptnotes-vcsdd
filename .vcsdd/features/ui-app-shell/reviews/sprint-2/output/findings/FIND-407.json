@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-407",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "low",
+  "description": "VaultSetupModal.svelte error rendering uses fallback ?? expressions for errorMessage that hardcode default messages: line 132 falls back to mapVaultPathError({ kind: 'empty' }), line 138 falls back to mapVaultConfigError({ kind: 'path-not-found', path: '' }). These fallbacks should be unreachable because vaultModalLogic.ts always populates errorMessage in error branches (FIND-210 fix), but if vaultModalLogic ever fails to set errorMessage (e.g., due to a future regression), the modal will display a misleading default message instead of failing visibly. Defensive fallback design is fine, but the chosen defaults are misleading: a not-absolute error would show 'フォルダを選択してください' (the empty message) if errorMessage were ever undefined for vault-path-error. The fallback should either be a generic '不明なエラー' string OR a literal undefined check that fails loudly.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/VaultSetupModal.svelte",
+    "lineRange": "130-140"
+  },
+  "routeToPhase": "2b"
+}

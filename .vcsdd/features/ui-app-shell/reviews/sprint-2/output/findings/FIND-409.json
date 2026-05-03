@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-409",
+  "dimension": "verification_readiness",
+  "category": "proof_gap",
+  "severity": "medium",
+  "description": "The test 'bootOrchestrator sets store to Loading during pending invoke' (app-shell-state.test.ts:222-249) claims to verify REQ-001's 'Loading state set BEFORE invoke' contract but does NOT actually assert that 'Loading' was observed in statesObserved during the pending phase. It subscribes to the store AFTER bootOrchestrator has already started, captures values, then asserts that the LAST observed value is 'Loading' before the resolve and 'Configured' after. The Loading-precedes-IPC requirement is that the store transitions to Loading BEFORE the IPC's first await — but Svelte's writable.subscribe() fires immediately with the current value, so the first emission is whatever the store was at subscribe time. The test only proves that the store IS 'Loading' at some point during pending, not that the transition happened before invoke. A test that would actually verify the contract: subscribe BEFORE calling bootOrchestrator, then assert the captured sequence is exactly ['Loading' (initial), 'Loading' (re-set), 'Configured' (final)]. The current test cannot distinguish 'Loading was set before invoke' from 'Loading was set after invoke but before resolve'.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts",
+    "lineRange": "222-249"
+  },
+  "routeToPhase": "2a"
+}

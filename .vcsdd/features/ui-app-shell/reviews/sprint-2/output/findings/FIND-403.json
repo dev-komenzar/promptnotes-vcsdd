@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-403",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "AppShell.svelte unconditionally renders <header> and <main> elements regardless of AppShellState, which literally diverges from REQ-010, REQ-011, REQ-012 EARS clauses that begin 'WHEN AppShellState === Configured THEN the system SHALL render...'. The Sprint-1 FIND-209 review explicitly flagged this and offered two remediation paths: (a) add {#if state === 'Configured'} guards around header/main, or (b) revise the spec to permit always-on chrome. The Sprint-2 fix took neither path: the FIND-209 inert/aria-hidden remedy was applied, but the underlying literal-EARS divergence remains. The behavioral-spec was not updated to permit always-on chrome, and no {#if state === 'Configured'} guard was added.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/AppShell.svelte",
+    "lineRange": "42-58"
+  },
+  "routeToPhase": "2b"
+}

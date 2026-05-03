@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-406",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "medium",
+  "description": "VaultSetupModal.svelte does not set initial focus when the modal opens. Focus management is incomplete: when AppShellState transitions to Unconfigured/StartupError and the modal mounts, no element inside the modal is programmatically focused. Tab/Shift+Tab wrap logic only triggers when activeElement equals the first/last focusable inside the modal — but if focus is on body (or wherever it was before the modal opened), pressing Tab will move focus into the modal naturally on the first press, but on subsequent presses focus can escape because document.activeElement is comparing against modal's last/first while focus may be elsewhere. This is a partial focus trap. REQ-016 AC mentions 'モーダルが閉じた後: フォーカスをトリガー要素（または <body>）に戻す' which implies prior-focus restoration, which also requires capturing the trigger focus on open — neither operation is implemented. Combined with the unconditionally-rendered (now-inert) <header>/<main>, focus management is brittle.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/VaultSetupModal.svelte",
+    "lineRange": "26-87"
+  },
+  "routeToPhase": "2b"
+}

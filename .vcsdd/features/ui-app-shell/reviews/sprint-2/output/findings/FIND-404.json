@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-404",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "Sprint-1 FIND-205 required either tightening the audit OR removing the indirection. The contract chose to broaden ALLOWED_WRITERS to include appShellStore.ts, bootOrchestrator.ts, vaultModalLogic.ts. However, REQ-021 EARS literally says: 'the write SHALL originate exclusively from: (a) AppShell.svelte の routeStartupResult 呼び出し後のディスパッチ、または (b) VaultSetupModal.svelte の configure-vault 成功ハンドラ. No other module SHALL call appShellStore.set(...) or appShellStore.update(...)'. The actual writers (bootOrchestrator.ts and vaultModalLogic.ts) are .ts modules — not .svelte components. The spec was not updated to permit these .ts writers. Inspecting AppShell.svelte and VaultSetupModal.svelte confirms NEITHER file calls appShellStore.set() or setAppShellState() directly. The two .svelte files in the spec's allowed list are not actually performing any writes; the writes are entirely inside .ts modules. This is a spec-vs-implementation divergence that the contract permits but the spec forbids.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts",
+    "lineRange": "50-61"
+  },
+  "routeToPhase": "2b"
+}

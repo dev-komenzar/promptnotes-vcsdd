@@ -2,7 +2,7 @@
   "featureName": "ui-app-shell",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -75,15 +75,36 @@
       "timestamp": "2026-05-03T11:01:43.000Z",
       "reason": "sprint-2 green phase complete: all 14 findings addressed (FIND-201/202/203/204/205/206/207/208/209/210/211/212/213/214). 211 tests pass.",
       "sprint": 2
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-03T11:11:36.797Z",
+      "reason": "sprint-2 contract approved at iter-2; enter adversarial review iter-2",
+      "sprint": 2
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-05-03T11:24:19.116Z",
+      "reason": "sprint-2 iter-2 FAIL: 10 findings (2C/7M/1m). 2->2a, 7->2b (incl FIND-401/402 Tauri stubs), 1->2c. iter-3/5.",
+      "sprint": 2
+    },
+    {
+      "from": "4",
+      "to": "2a",
+      "timestamp": "2026-05-03T11:24:19.128Z",
+      "reason": "sprint-2 iter-2 FAIL: 10 findings (2C/7M/1m). 2->2a, 7->2b (incl FIND-401/402 Tauri stubs), 1->2c. iter-3/5.",
+      "sprint": 3
     }
   ],
   "iterations": {
-    "3": 1,
-    "4": 1,
+    "3": 2,
+    "4": 2,
     "1a": 2,
     "1b": 2,
     "1c": 1,
-    "2a": 2,
+    "2a": 3,
     "2b": 2,
     "2c": 2
   },
@@ -1199,45 +1220,143 @@
         "createdAt": "2026-05-03T10:39:00.636Z",
         "createdInPhase": "3",
         "externalId": "FIND-214"
+      },
+      {
+        "beadId": "BEAD-087",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-401.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.544Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-401"
+      },
+      {
+        "beadId": "BEAD-088",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-402.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.549Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-402"
+      },
+      {
+        "beadId": "BEAD-089",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-403.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.553Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-403"
+      },
+      {
+        "beadId": "BEAD-090",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-404.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.558Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-404"
+      },
+      {
+        "beadId": "BEAD-091",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-405.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.563Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-405"
+      },
+      {
+        "beadId": "BEAD-092",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-406.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.567Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-406"
+      },
+      {
+        "beadId": "BEAD-093",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-407.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.571Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-407"
+      },
+      {
+        "beadId": "BEAD-094",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-408.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.574Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-408"
+      },
+      {
+        "beadId": "BEAD-095",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-409.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.575Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-409"
+      },
+      {
+        "beadId": "BEAD-096",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-410.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T11:23:05.576Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-410"
       }
     ]
   },
   "gates": {
     "3": {
       "verdict": "FAIL",
-      "timestamp": "2026-05-03T10:38:04.686Z",
+      "timestamp": "2026-05-03T11:22:57.204Z",
       "reviewedBy": "adversary",
       "details": {
-        "sprint": 1,
-        "iteration": 1,
+        "sprint": 2,
+        "iteration": 2,
         "spec_fidelity": "FAIL",
         "edge_case_coverage": "FAIL",
         "implementation_correctness": "FAIL",
         "structural_integrity": "FAIL",
         "verification_readiness": "FAIL",
-        "findingsCount": 14,
+        "findingsCount": 10,
         "findingsBySeverity": {
-          "critical": 3,
-          "major": 8,
-          "minor": 3
+          "critical": 2,
+          "major": 7,
+          "minor": 1
         },
+        "priorResolved": 12,
+        "priorPartial": 2,
         "findings": [
-          "FIND-201",
-          "FIND-202",
-          "FIND-203",
-          "FIND-204",
-          "FIND-205",
-          "FIND-206",
-          "FIND-207",
-          "FIND-208",
-          "FIND-209",
-          "FIND-210",
-          "FIND-211",
-          "FIND-212",
-          "FIND-213",
-          "FIND-214"
+          "FIND-401",
+          "FIND-402",
+          "FIND-403",
+          "FIND-404",
+          "FIND-405",
+          "FIND-406",
+          "FIND-407",
+          "FIND-408",
+          "FIND-409",
+          "FIND-410"
         ],
-        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/sprint-1/output/verdict.json"
+        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/verdict.json"
       }
     },
     "1c": {
@@ -1257,19 +1376,21 @@
     },
     "contract-review": {
       "verdict": "PASS",
-      "timestamp": "2026-05-03T10:19:44.284Z",
+      "timestamp": "2026-05-03T11:11:36.790Z",
       "reviewedBy": "adversary",
       "details": {
-        "sprint": 1,
-        "iteration": 1,
+        "sprint": 2,
+        "iteration": 2,
+        "negotiationRound": 1,
         "weightSum": 1,
         "findingsCount": 0,
-        "contractDigest": "c457d3a244f2b7ebc0ed5fe18ceca67efc8070f4ae9806ebd8f0537614a110fa",
-        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/contracts/sprint-1/output/verdict.json"
+        "contractDigest": "1350ed74687588507b6600bed04a24c9efbd23a03b8f51650fd87e5678f54cf7",
+        "prevIterationFinding": "FIND-301 (weight sum 1.02 -> fixed by CRIT-002 weight 0.08 -> 0.06)",
+        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/contracts/sprint-2/output/verdict.json"
       }
     }
   },
-  "sprintCount": 2,
+  "sprintCount": 3,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T11:01:43.000Z"
+  "updatedAt": "2026-05-03T11:24:19.128Z"
 }

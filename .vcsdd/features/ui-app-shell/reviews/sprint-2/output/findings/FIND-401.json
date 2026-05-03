@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-401",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "invoke_app_startup Tauri command is a hardcoded stub that always returns Err(VaultConfigError::Unconfigured). It does not delegate to the app-startup pipeline in promptnotes/src-tauri/src/domain/ as FIND-203 required. Sprint-1 FIND-203 explicitly mandated: 'Wire them to the existing app-startup, configure-vault, and VaultPath::try_new implementations in promptnotes/src-tauri/src/domain/'. The Sprint-2 fix only registered the command name and made it compile — the actual delegation to the AppStartup pipeline (Settings.load → resolve VaultPath → scan vault → produce InitialUIState) is absent. In production this means: even after the user successfully configures a vault, the next launch will return Unconfigured and re-display the modal. REQ-001/REQ-002 are not satisfied at the IPC boundary.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/lib.rs",
+    "lineRange": "144-149"
+  },
+  "routeToPhase": "2b"
+}

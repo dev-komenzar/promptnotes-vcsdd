@@ -2,7 +2,7 @@
 sprintNumber: 2
 feature: ui-app-shell
 scope: "Sprint-2 rework: addresses all 14 findings from sprint-1 adversarial review (3 critical / 8 major / 3 minor). Covers boot-flag race condition fix, AppShellRouteResult corruptedFilesCount extension, Tauri command registration, focus trap, aria inert/hidden, error message population, IPC parameter rename, PROP-011 audit tightening, withIpcTimeout double-wrap elimination, store start/stop callback removal. No spec changes."
-negotiationRound: 0
+negotiationRound: 1
 status: approved
 criteria:
   - id: CRIT-001
@@ -13,7 +13,7 @@ criteria:
   - id: CRIT-002
     dimension: spec_fidelity
     description: REQ-002 + REQ-009 — AppShellRouteResult carries corruptedFilesCount:number (FIND-202 fix). AppShell.svelte renders the corrupted-files banner with data-testid="corrupted-files-banner" when showCorruptedBanner===true.
-    weight: 0.08
+    weight: 0.06
     passThreshold: startup-error-routing.test.ts showCorruptedBanner===true for length>=1, false for length===0 assertions pass 100%; CORRUPTED_BANNER_TESTID exported from componentTestIds.ts; AppShell.svelte renders banner in Configured state with corruptedFiles.length>0.
   - id: CRIT-003
     dimension: spec_fidelity

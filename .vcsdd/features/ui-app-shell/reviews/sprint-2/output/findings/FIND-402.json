@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-402",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "invoke_configure_vault validates that the supplied path resolves to a directory but does NOT persist the vault path to settings. Per the spec pipeline diagram (behavioral-spec.md lines 96-105) and REQ-006, configure-vault must persist settings so that the subsequent invoke_app_startup() can read them back. The current Rust implementation returns Ok(json!({})) without calling settings_save or any persistence layer. Combined with FIND-401 (invoke_app_startup is a stub), the entire production startup→configure→re-startup loop is non-functional. REQ-006 AC explicitly requires '設定の永続化 (Settings.save) は Tauri command 内部で行われ、TypeScript 側で直接呼ばない' — i.e., the Rust command MUST persist. It does not.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/lib.rs",
+    "lineRange": "118-138"
+  },
+  "routeToPhase": "2b"
+}
