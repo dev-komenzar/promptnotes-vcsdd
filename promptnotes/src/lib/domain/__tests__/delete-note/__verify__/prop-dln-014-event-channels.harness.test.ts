@@ -122,7 +122,7 @@ describe("PROP-DLN-013: Public event channel membership", () => {
     const event: PublicDomainEvent = {
       kind: "note-file-deleted",
       noteId: "id-001" as never,
-      frontmatter: { tags: [], createdAt: { epochMillis: 1000 } as never, updatedAt: { epochMillis: 2000 } as never },
+      frontmatter: { tags: [], createdAt: { epochMillis: 1000 } as never, updatedAt: { epochMillis: 2000 } as never } as never,
       occurredOn: { epochMillis: 5000 } as never,
     };
     expect(event.kind).toBe("note-file-deleted");

@@ -1,14 +1,10 @@
 /**
- * _deltas.ts — Contract delta type aliases for delete-note tests.
+ * _deltas.ts — Contract delta type aliases for delete-note implementation.
  *
  * The canonical `docs/domain/code/ts/src/**` files do not yet implement the
  * deltas declared in behavioral-spec.md Revision 2. This file mirrors those
- * delta declarations so that test files can reference them before Phase 2b
- * modifies the canonical sources.
- *
- * DO NOT import from `../../delete-note/...` here — that would be an impl file.
- * This file only re-exports or re-declares types that are delta-extended versions
- * of existing canonical types.
+ * delta declarations so that implementation files can reference them without
+ * importing from the test helper.
  *
  * Delta 1: TrashFile port — NEW export in curate/ports.ts
  * Delta 2: DeleteNoteDeps — NEW export in curate/ports.ts
@@ -38,7 +34,7 @@ import type {
   UpdatedProjection,
 } from "promptnotes-domain-types/curate/stages";
 import type { Feed } from "promptnotes-domain-types/curate/aggregates";
-import type { TagInventory, TagEntry } from "promptnotes-domain-types/curate/read-models";
+import type { TagInventory } from "promptnotes-domain-types/curate/read-models";
 import type { Result } from "promptnotes-domain-types/util/result";
 
 // ── Delta 1: TrashFile port ──────────────────────────────────────────────────
@@ -132,7 +128,7 @@ export type AuthorizeDeletionPure = (
   snapshot: NoteFileSnapshot | null,
 ) => Result<AuthorizedDeletion, DeletionErrorDelta>;
 
-// Re-export canonical types for convenience in tests
+// Re-export canonical types for convenience
 export type {
   NoteId,
   Tag,
@@ -153,7 +149,6 @@ export type {
   UpdatedProjection,
   Feed,
   TagInventory,
-  TagEntry,
   NoteFileSnapshot,
   Result,
 };

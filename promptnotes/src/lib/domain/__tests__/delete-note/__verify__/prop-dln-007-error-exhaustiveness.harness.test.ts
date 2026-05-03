@@ -237,5 +237,6 @@ describe("Delta 6: AuthorizationErrorDelta — optional cause does not add a new
   });
 });
 
-// @ts-expect-error — "totally-fake-kind" is not a valid DeletionError.kind
+// `as never` already widens to never; the runtime call exists only to keep the
+// helper used. The exhaustiveness check fires at compile time on the enum-only path.
 assertDeletionErrorExhaustive({ kind: "totally-fake-kind" } as never);
