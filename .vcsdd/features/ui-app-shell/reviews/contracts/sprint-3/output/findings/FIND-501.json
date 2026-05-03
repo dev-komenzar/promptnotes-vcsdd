@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-501",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "Sprint-3 CRIT-002 description attributes the cross-platform absolute-path fix to FIND-402, but sprint-2 FIND-402 is about settings persistence in invoke_configure_vault, not path validation. The cross-platform `is_absolute()` fix corresponds to sprint-2 FIND-405 (see .vcsdd/features/ui-app-shell/reviews/sprint-2/output/findings/FIND-405.json line 6: 'try_vault_path uses raw_path.starts_with('/') as the absolute-path check. This is Unix-only.'). The contract's CRIT-to-finding traceability text is corrupted: CRIT-002 simultaneously misattributes cross-platform path to FIND-402 and the settings_load command addition to FIND-401, when in reality settings_load belongs under FIND-402's remediation surface. This is not a typographical abbreviation — the description structurally swaps two distinct findings, which makes the contract's audit trail unreliable for any future review consumer.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+    "lineRange": "13-17"
+  },
+  "routeToPhase": "1c"
+}

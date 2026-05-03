@@ -1,8 +1,8 @@
 ---
 sprintNumber: 3
 feature: ui-app-shell
-scope: "Sprint-3 rework: addresses all 10 findings from sprint-2 iter-2 adversarial review (2 critical / 7 major / 1 minor). Covers Rust stub removal (FIND-401/402), conditional DOM rendering (FIND-403), write authority moved to AppShell.svelte (FIND-404), TS-side pipeline orchestration (FIND-405), focus trap init/restore (FIND-406), error banner guard (FIND-407), store write surface narrowed (FIND-408), synchronization-primitive ordering test (FIND-409), DOM-mount constraint documented (FIND-410). No spec changes."
-negotiationRound: 0
+scope: "Sprint-3 rework: addresses all 10 findings from sprint-2 iter-2 adversarial review (2 critical / 7 major / 1 minor). Covers Rust stub removal (FIND-401), settings persistence (FIND-402), conditional DOM rendering (FIND-403), write authority moved to AppShell.svelte (FIND-404), TS-side pipeline orchestration derived from FIND-401 fix (FIND-401 consequence), cross-platform path validation (FIND-405), focus trap init/restore (FIND-406), error banner guard (FIND-407), store write surface narrowed (FIND-408), synchronization-primitive ordering test (FIND-409), DOM-mount constraint documented (FIND-410). No spec changes."
+negotiationRound: 1
 status: approved
 criteria:
   - id: CRIT-001
@@ -12,14 +12,19 @@ criteria:
     passThreshold: "cargo check passes with 0 errors; lib.rs source does not contain invoke_app_startup, InitialUIState, FeedDto, TagInventoryDto, CorruptedFileDto, EditingSessionStateDto, AppStartupErrorDto, ScanReasonDto identifiers."
   - id: CRIT-002
     dimension: spec_fidelity
-    description: "FIND-402: try_vault_path uses Path::new(&raw_path).is_absolute() instead of raw_path.starts_with('/') for cross-platform absolute path validation. Also FIND-401 adds settings_load command (returns Option<String>) and settings_save_impl helper to lib.rs. Registered in generate_handler!."
+    description: "FIND-405: try_vault_path uses Path::new(&raw_path).is_absolute() instead of raw_path.starts_with('/') for cross-platform absolute path validation. Also FIND-402 adds settings_load command (returns Option<String>) and settings_save_impl helper to lib.rs. Registered in generate_handler!."
     weight: 0.06
     passThreshold: "lib.rs source contains .is_absolute() call in try_vault_path; contains settings_load fn and settings_save_impl fn; tauri::generate_handler! includes settings_load; cargo check passes."
   - id: CRIT-003
     dimension: spec_fidelity
-    description: "FIND-403: AppShell.svelte uses conditional rendering (Svelte {#if}) per state, NOT aria-hidden/inert toggles. Header renders only when state === Configured. Three separate main blocks: one for Loading (skeleton), one for UnexpectedError (banner), one for Configured (main content). Modal renders only for Unconfigured/StartupError."
+    description: "FIND-403: AppShell.svelte uses conditional rendering (Svelte {#if}) per state, NOT aria-hidden/inert toggles. Per REQ-020, the global header shell renders in both Loading state (without full nav content) and Configured state. Three separate main blocks: one for Loading (skeleton), one for UnexpectedError (banner), one for Configured (main content). Modal renders only for Unconfigured/StartupError."
     weight: 0.06
-    passThreshold: "AppShell.svelte source contains {#if state === \"Configured\"}<header> and three separate {#if state === \"Loading\"/<UnexpectedError>/<Configured>}<main> blocks; no aria-hidden toggle on structural elements; negative-scope.test.ts or startup-error-routing.test.ts verifies conditional rendering."
+    passThreshold: "AppShell.svelte source renders <header> in Loading state (skeleton/empty nav) and Configured state; header is NOT rendered in Unconfigured or StartupError; main content blocks use three separate {#if state === \"Loading\"/<UnexpectedError>/<Configured>} guards; no aria-hidden toggle on structural elements; negative-scope.test.ts or startup-error-routing.test.ts verifies conditional rendering."
+  - id: CRIT-018
+    dimension: spec_fidelity
+    description: "REQ-020 guard: The full main content area (with nav, notes list, etc.) renders ONLY when state === Configured. In Loading state the main area shows only a centered loading affordance alongside the header shell. In UnexpectedError state no main content renders. This enforces the visibility boundary between the shell-level header and the content-level main."
+    weight: 0.00
+    passThreshold: "AppShell.svelte source does not render the full main content outside state === \"Configured\"; Loading state has a separate skeleton/affordance block; startup-error-routing.test.ts or negative-scope.test.ts asserts main content absent in Loading/UnexpectedError states."
   - id: CRIT-004
     dimension: spec_fidelity
     description: "FIND-404: Write authority — AppShell.svelte is the sole writer in the boot path. bootOrchestrator.ts does NOT call setAppShellState or appShellStore.set/update. AppShell.svelte calls setAppShellState(\"Loading\") before bootOrchestrator, then setAppShellState(routeResult.state) after. PROP-011 ALLOWED_WRITERS no longer includes bootOrchestrator.ts."
@@ -27,7 +32,7 @@ criteria:
     passThreshold: "bootOrchestrator.ts source does not contain setAppShellState( literal (excluding comment references); effectful-isolation.test.ts ALLOWED_WRITERS set contains exactly AppShell.svelte, VaultSetupModal.svelte, appShellStore.ts, vaultModalLogic.ts; PROP-011 audit test passes 100%."
   - id: CRIT-005
     dimension: spec_fidelity
-    description: "FIND-405: tauriAdapter.ts invokeAppStartup orchestrates TS-side pipeline: calls settings_load, fs_stat_dir, fs_list_markdown, fs_read_file IPC commands, pre-resolves async data, then runs runAppStartupPipeline with synchronous port adapters. File has @vcsdd-allow-brand-construction exemption for IPC boundary brand construction."
+    description: "FIND-401 consequence: tauriAdapter.ts invokeAppStartup orchestrates TS-side pipeline as the derived consequence of removing the Rust invoke_app_startup stub. Calls settings_load, fs_stat_dir, fs_list_markdown, fs_read_file IPC commands, pre-resolves async data, then runs runAppStartupPipeline with synchronous port adapters. File has @vcsdd-allow-brand-construction exemption for IPC boundary brand construction."
     weight: 0.07
     passThreshold: "tauriAdapter.ts imports runAppStartupPipeline; contains runTsAppStartupPipeline function; @vcsdd-allow-brand-construction comment present; negative-scope.test.ts PROP-002/NEG-REQ-005 audit passes 100%."
   - id: CRIT-006
@@ -67,19 +72,19 @@ criteria:
     passThreshold: "effectful-isolation.test.ts EC-20 static-analysis test passes 100%; bootOrchestrator.ts matches /let\\s+bootAttempted/ and does NOT match /export\\s+(let|const|var)\\s+bootAttempted/; getBootAttempted() === false after __resetBootFlagForTesting__() call."
   - id: CRIT-013
     dimension: implementation_correctness
-    description: "FIND-405 defaultClockNow: tauriAdapter.ts defaultClockNow uses Math.round(performance.timeOrigin + performance.now()) — NOT Date.now(). This avoids NEG-REQ-005 (direct Date.now() usage in IPC adapter). negative-scope.test.ts NEG-REQ-005 audit must pass."
+    description: "NEG-REQ-005 / FIND-401 consequence: tauriAdapter.ts defaultClockNow uses Math.round(performance.timeOrigin + performance.now()) — NOT Date.now(). This avoids NEG-REQ-005 (direct Date.now() usage in IPC adapter). negative-scope.test.ts NEG-REQ-005 audit must pass."
     weight: 0.05
     passThreshold: "tauriAdapter.ts source does not contain Date.now() as a top-level call (only performance.timeOrigin + performance.now()); negative-scope.test.ts NEG-REQ-005 audit passes 100%."
   - id: CRIT-014
     dimension: implementation_correctness
-    description: "FIND-401: settings file path uses XDG_CONFIG_HOME (or fallback $HOME/.config)/promptnotes/settings.json. settings_load returns Option<String> (None if file absent). settings_save writes JSON {\"vaultPath\": path} atomically. invoke_configure_vault calls settings_save_impl(&path) after validation to persist vault path."
+    description: "FIND-402: settings file path uses XDG_CONFIG_HOME (or fallback $HOME/.config)/promptnotes/settings.json. settings_load returns Option<String> (None if file absent). settings_save writes JSON {\"vaultPath\": path} atomically. invoke_configure_vault calls settings_save_impl(&path) after validation to persist vault path."
     weight: 0.06
     passThreshold: "lib.rs settings_file_path() function uses std::env::var(\"XDG_CONFIG_HOME\") with HOME fallback; settings_load fn returns Result<Option<String>, _>; settings_save_impl writes {\"vaultPath\": path} JSON; invoke_configure_vault calls settings_save_impl; cargo check passes."
   - id: CRIT-015
     dimension: verification_readiness
     description: "All 10 sprint-3 findings (FIND-401..FIND-410) are addressed with implementation or test changes. Evidence logs sprint-3-red-phase.log, sprint-3-green-phase.log, sprint-3-refactor.log all present with target-feature-tests:PASS markers."
     weight: 0.06
-    passThreshold: "Evidence files exist at .vcsdd/features/ui-app-shell/evidence/sprint-3-{red,green,refactor}-phase.log; each contains target-feature-tests: PASS marker; all 10 FIND-4XX IDs appear across the three logs."
+    passThreshold: "Evidence files exist at .vcsdd/features/ui-app-shell/evidence/sprint-3-red-phase.log, sprint-3-green-phase.log, sprint-3-refactor.log; each contains target-feature-tests: PASS marker; all 10 FIND-4XX IDs appear across the three logs."
   - id: CRIT-016
     dimension: verification_readiness
     description: "1235 tests pass (all ui-app-shell tests plus regression baseline). 0 failures. bun run check: 0 errors in app-shell source files. Pre-existing domain layer errors (3 errors in src/lib/domain/__tests__/) are unrelated to ui-app-shell and pre-date this sprint."
@@ -94,11 +99,40 @@ criteria:
 
 # Sprint 3 Contract — ui-app-shell
 
-This contract captures 17 acceptance criteria (CRIT-001..CRIT-017) for the sprint-3 rework addressing all 10 findings from the sprint-2 iter-2 adversarial review (2 critical / 7 major / 1 minor).
+## Prior-Sprint Inheritance
+
+This contract is a REWORK contract that inherits coverage of REQ-001..REQ-022 (except those explicitly re-cited below) and PROP-001..PROP-014 from sprint-1.md and sprint-2.md. Findings closure (FIND-401..FIND-410) is the primary delta of this sprint.
+
+Specifically, the following REQs and PROPs are covered by prior-sprint CRITs that carry forward unchanged:
+
+- **REQ-009** (corrupted files banner) — covered by sprint-1 CRIT-004, sprint-2 CRIT-002; no regression in this sprint.
+- **REQ-010** (header style), **REQ-011** (main area / spacing scale), **REQ-012** (skeleton), **REQ-013** (card shadow), **REQ-014** (corrupted banner style), **REQ-015** (4-weight typography), **REQ-019** (color tokens) — covered by sprint-1 structural/visual CRITs; no regression in this sprint.
+- **REQ-018** (modal display ≤ 100ms) — covered by sprint-1 CRIT-003 performance criterion; no regression in this sprint.
+- **PROP-003** (VaultPathError exhaustiveness), **PROP-004** (corruptedFiles banner predicate), **PROP-005** (modal closeable), **PROP-006** (token audit), **PROP-007** (5 routing paths), **PROP-008** (configure-vault after success), **PROP-009** (scan error → banner only), **PROP-013** (in-process re-mount) — all proved in sprint-1 and sprint-2; unchanged by the 10 rework findings.
+
+REQs explicitly re-cited in this sprint's CRITs:
+- **REQ-001** (single-boot onMount) — CRIT-009 (FIND-409 gate pattern)
+- **REQ-002** (startup routing) — CRIT-004, CRIT-005
+- **REQ-003** (modal state machine) — CRIT-003, CRIT-006, CRIT-007
+- **REQ-004** (vault path validation) — CRIT-002 (FIND-405 cross-platform fix)
+- **REQ-006** (configure-vault persistence) — CRIT-014 (FIND-402 settings persistence)
+- **REQ-016** (focus management) — CRIT-006 (FIND-406)
+- **REQ-020** (Loading state header rendering) — CRIT-003 (header in Loading+Configured)
+
+PROPs explicitly re-cited:
+- **PROP-001** (Loading-while-pending) — CRIT-009
+- **PROP-002** (IPC boundary brand construction exemption) — CRIT-005
+- **PROP-010** (state transition timing) — CRIT-009
+- **PROP-011** (ALLOWED_WRITERS) — CRIT-004, CRIT-017
+- **PROP-014** (IPC timeout late-arrival) — CRIT-011
+
+---
+
+This contract captures 18 acceptance criteria (CRIT-001..CRIT-018, with CRIT-018 as a zero-weight clarification sub-criterion to CRIT-003) for the sprint-3 rework addressing all 10 findings from the sprint-2 iter-2 adversarial review (2 critical / 7 major / 1 minor).
 
 Sprint-2 adversarial review (iter-2) returned FAIL with 10 findings. This sprint addresses them in the order 2a → 2b → 2c without modifying specs (behavioral-spec.md and verification-architecture.md are unchanged).
 
-Weight sum verification: 0.07+0.06+0.06+0.08+0.07+0.06+0.05+0.07+0.06+0.04+0.05+0.04+0.05+0.06+0.06+0.06+0.06 = 1.000
+Weight sum verification: 0.07+0.06+0.06+0.00+0.08+0.07+0.06+0.05+0.07+0.06+0.04+0.05+0.04+0.05+0.06+0.06+0.06+0.06 = 1.000
 
 Green phase completed: 1235 tests pass across all files. Phase 2c refactor (FIND-408) maintained 1235 green tests.
 
@@ -116,9 +150,9 @@ Green phase completed: 1235 tests pass across all files. Phase 2c refactor (FIND
 
 ## CRIT-002
 
-**Underlying REQ**: FIND-402 — cross-platform path validation.
+**Underlying REQ**: FIND-405 — cross-platform path validation. FIND-402 — settings_load/settings_save_impl addition.
 
-**Fix**: `try_vault_path` uses `Path::new(&raw_path).is_absolute()` instead of `raw_path.starts_with('/')`. `settings_save_impl` and `settings_file_path` helpers added.
+**Fix**: `try_vault_path` uses `Path::new(&raw_path).is_absolute()` instead of `raw_path.starts_with('/')` (FIND-405). `settings_save_impl` and `settings_file_path` helpers added as part of FIND-402 resolution.
 
 **Source files**: `promptnotes/src-tauri/src/lib.rs`.
 
@@ -126,9 +160,9 @@ Green phase completed: 1235 tests pass across all files. Phase 2c refactor (FIND
 
 ## CRIT-003
 
-**Underlying REQ**: FIND-403 — conditional DOM rendering.
+**Underlying REQ**: FIND-403 — conditional DOM rendering. REQ-020 — Loading state header rendering.
 
-**Fix**: `AppShell.svelte` restructured with `{#if state === "Configured"}` for header, and three separate `{#if}` blocks for Loading/UnexpectedError/Configured main content. No `aria-hidden`/`inert` toggling.
+**Fix**: `AppShell.svelte` restructured so the global header shell renders in both Loading (without full nav) and Configured states, per REQ-020 EARS ("WHILE AppShellState === 'Loading' THE SYSTEM SHALL render only the global header shell ... and a centered loading affordance"). Three separate `{#if}` blocks for Loading/UnexpectedError/Configured main content. No `aria-hidden`/`inert` toggling.
 
 **Source files**: `promptnotes/src/lib/ui/app-shell/AppShell.svelte`.
 
@@ -146,9 +180,9 @@ Green phase completed: 1235 tests pass across all files. Phase 2c refactor (FIND
 
 ## CRIT-005
 
-**Underlying REQ**: FIND-405 — TS-side pipeline orchestration.
+**Underlying REQ**: FIND-401 consequence — TS-side pipeline orchestration (derived from Rust stub removal).
 
-**Fix**: `tauriAdapter.ts` `invokeAppStartup` calls `runTsAppStartupPipeline()` which orchestrates `settings_load`, `fs_stat_dir`, `fs_list_markdown`, `fs_read_file` IPC calls and runs `runAppStartupPipeline` with synchronous port adapters. `@vcsdd-allow-brand-construction` exemption added.
+**Fix**: `tauriAdapter.ts` `invokeAppStartup` calls `runTsAppStartupPipeline()` which orchestrates `settings_load`, `fs_stat_dir`, `fs_list_markdown`, `fs_read_file` IPC calls and runs `runAppStartupPipeline` with synchronous port adapters. `@vcsdd-allow-brand-construction` exemption added. This is the TS-side consequence of removing the Rust `invoke_app_startup` stub (FIND-401) — the pipeline logic moved from Rust to TypeScript.
 
 **Source files**: `promptnotes/src/lib/ui/app-shell/tauriAdapter.ts`.
 
@@ -222,7 +256,7 @@ Green phase completed: 1235 tests pass across all files. Phase 2c refactor (FIND
 
 ## CRIT-013
 
-**Underlying REQ**: NEG-REQ-005, FIND-405.
+**Underlying REQ**: NEG-REQ-005, FIND-401 consequence.
 
 **Fix**: `tauriAdapter.ts` `defaultClockNow` uses `Math.round(performance.timeOrigin + performance.now())` instead of `Date.now()`.
 
@@ -232,7 +266,7 @@ Green phase completed: 1235 tests pass across all files. Phase 2c refactor (FIND
 
 ## CRIT-014
 
-**Underlying REQ**: FIND-401 — settings persistence.
+**Underlying REQ**: FIND-402 — settings persistence.
 
 **Fix**: Settings file at `XDG_CONFIG_HOME`/promptnotes/settings.json with `HOME` fallback. `settings_load` returns `Option<String>`. `invoke_configure_vault` persists path via `settings_save_impl`.
 
@@ -244,7 +278,7 @@ Green phase completed: 1235 tests pass across all files. Phase 2c refactor (FIND
 
 **Dimension**: verification_readiness. All 10 findings documented in evidence logs.
 
-**Evidence files**: `.vcsdd/features/ui-app-shell/evidence/sprint-3-{red,green,refactor}-phase.log`.
+**Evidence files**: `.vcsdd/features/ui-app-shell/evidence/sprint-3-red-phase.log`, `.vcsdd/features/ui-app-shell/evidence/sprint-3-green-phase.log`, `.vcsdd/features/ui-app-shell/evidence/sprint-3-refactor.log`.
 
 ---
 

@@ -299,3 +299,14 @@
 {"timestamp":"2026-05-03T11:24:19.120Z","event":"phase_transition","featureName":"ui-app-shell","from":"3","to":"4","iteration":2,"phase":"4"}
 {"timestamp":"2026-05-03T11:24:19.131Z","event":"phase_transition","featureName":"ui-app-shell","from":"4","to":"2a","iteration":3,"phase":"2a"}
 {"timestamp":"2026-05-03T11:24:19.131Z","event":"sprint_started","featureName":"ui-app-shell","sprintNumber":3,"phase":"2a"}
+{"timestamp":"2026-05-03T14:59:24.688Z","event":"gate_recorded","featureName":"ui-app-shell","phase":"contract-review","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-03T15:00:31.990Z","event":"gate_recorded","featureName":"ui-app-shell","phase":"contract-review","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-03T15:00:56.228Z","event":"phase_transition","featureName":"ui-app-shell","from":"2c","to":"3","iteration":3,"phase":"3"}
+{"timestamp":"2026-05-03T15:11:06.938Z","event":"gate_recorded","featureName":"ui-app-shell","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-03T15:11:06.981Z","event":"bead_created","featureName":"ui-app-shell","beadId":"BEAD-097","type":"adversary-finding","phase":"3","externalId":"FIND-601"}
+{"timestamp":"2026-05-03T15:11:07.004Z","event":"bead_created","featureName":"ui-app-shell","beadId":"BEAD-098","type":"adversary-finding","phase":"3","externalId":"FIND-602"}
+{"timestamp":"2026-05-03T15:11:07.022Z","event":"bead_created","featureName":"ui-app-shell","beadId":"BEAD-099","type":"adversary-finding","phase":"3","externalId":"FIND-603"}
+{"timestamp":"2026-05-03T15:11:07.036Z","event":"bead_created","featureName":"ui-app-shell","beadId":"BEAD-100","type":"adversary-finding","phase":"3","externalId":"FIND-604"}
+{"timestamp":"2026-05-03T15:11:50.510Z","event":"phase_transition","featureName":"ui-app-shell","from":"3","to":"4","iteration":3,"phase":"4"}
+{"timestamp":"2026-05-03T15:11:50.555Z","event":"phase_transition","featureName":"ui-app-shell","from":"4","to":"2a","iteration":4,"phase":"2a"}
+{"timestamp":"2026-05-03T15:11:50.555Z","event":"sprint_started","featureName":"ui-app-shell","sprintNumber":4,"phase":"2a"}

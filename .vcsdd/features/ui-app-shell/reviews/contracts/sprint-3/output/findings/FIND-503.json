@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-503",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "Sprint-3 CRIT-014 description attributes settings file path / XDG_CONFIG_HOME / settings_save_impl to FIND-401: 'FIND-401: settings file path uses XDG_CONFIG_HOME (or fallback $HOME/.config)/promptnotes/settings.json. settings_load returns Option<String> ... invoke_configure_vault calls settings_save_impl(&path) after validation to persist vault path.' Sprint-2 FIND-401 is the Rust stub removal (invoke_app_startup is hardcoded Err(Unconfigured)), not settings persistence. Sprint-2 FIND-402 explicitly diagnoses 'invoke_configure_vault validates that the supplied path resolves to a directory but does NOT persist the vault path to settings.' That is the actual finding being closed by the XDG_CONFIG_HOME / settings_save_impl work. The contract should attribute this CRIT to FIND-402, not FIND-401.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+    "lineRange": "73-77"
+  },
+  "routeToPhase": "1c"
+}

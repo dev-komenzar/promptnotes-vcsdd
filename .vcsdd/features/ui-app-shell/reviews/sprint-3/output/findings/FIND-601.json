@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-601",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-020 EARS clause and CRIT-003 passThreshold are violated. The spec REQ-020 line 485 reads: 'WHILE AppShellState === \\'Loading\\' THE SYSTEM SHALL render only the global header shell (without full nav content) and a centered loading affordance.' CRIT-003 passThreshold reads: 'AppShell.svelte source renders <header> in Loading state (skeleton/empty nav) and Configured state'. The implementation in AppShell.svelte:55-65 wraps <header> in `{#if state === \"Configured\"}` only — Loading state has NO header. The Loading branch at AppShell.svelte:72-92 renders a <main> with a skeleton inside, but no <header>. Concretely, when bootOrchestrator is pending, the user sees a skeleton inside <main> with no header chrome, which is the inverse of what REQ-020 mandates. This is a direct contradiction between behavior and approved CRIT — the rework that this sprint exists to deliver was not executed. Routes to Phase 2b for re-implementation.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/AppShell.svelte",
+    "lineRange": "55-92",
+    "snippet": "{#if state === \"Configured\"}\n    <header style=\"...\">\n      <span style=\"...\">PromptNotes</span>\n    </header>\n  {/if}\n\n  {#if state === \"Loading\"}\n    <main>\n      <div role={LOADING_ARIA_ATTRIBUTES.role} aria-busy={LOADING_ARIA_ATTRIBUTES[\"aria-busy\"]} ...>\n        <div class=\"skeleton-card\" .../>\n        <div class=\"skeleton-card\" .../>\n      </div>\n    </main>\n  {/if}"
+  },
+  "routeToPhase": "2b"
+}

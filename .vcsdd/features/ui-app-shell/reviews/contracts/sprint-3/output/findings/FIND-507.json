@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-507",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "medium",
+  "description": "CRIT-015 has an internal inconsistency between description and passThreshold for evidence file naming. Description (line 80) says: 'Evidence logs sprint-3-red-phase.log, sprint-3-green-phase.log, sprint-3-refactor.log all present' (the third file has no -phase suffix). PassThreshold (line 82) says: 'Evidence files exist at .vcsdd/features/ui-app-shell/evidence/sprint-3-{red,green,refactor}-phase.log' (brace expansion yields sprint-3-refactor-phase.log with -phase suffix). The actual filesystem has sprint-3-red-phase.log, sprint-3-green-phase.log, and sprint-3-refactor.log (NO sprint-3-refactor-phase.log). A strict literal reading of the brace expansion produces an unsatisfiable threshold. A lenient reading recovers the description's intent. Either way, the contract has a falsifiability ambiguity that should be repaired so future automated gates do not flake.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+    "lineRange": "78-82"
+  },
+  "routeToPhase": "1c"
+}

@@ -2,7 +2,7 @@
   "featureName": "ui-app-shell",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -110,15 +110,36 @@
       "timestamp": "2026-05-03T11:55:00.000Z",
       "reason": "sprint-3 green phase complete: FIND-401/402/403/404/405/406/407 addressed, designTokens.ts CORRUPTED_BANNER_STYLES export added. 1235 tests pass (was 213; domain tests now included). bun run check: 0 app-shell errors. [refactor (2c) work continued: FIND-408 appShellStore write surface narrowed to subscribe-only. set/update removed from public interface. audit-note: builder agent attempted invalid phase 'contract-review' transition which was rejected; currentPhase remains 2c per strict transition map]",
       "sprint": 3
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-03T15:00:56.208Z",
+      "reason": "sprint-3 contract approved at iter-2 negotiationRound 1; enter adversarial review iter-3",
+      "sprint": 3
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-05-03T15:11:50.487Z",
+      "reason": "sprint-3 iter-3 FAIL: 4 findings (2C/2H). 1->2a, 2->2b (FIND-601/602 REQ-020 reapplication), 1->2c. iter-4/5.",
+      "sprint": 3
+    },
+    {
+      "from": "4",
+      "to": "2a",
+      "timestamp": "2026-05-03T15:11:50.537Z",
+      "reason": "sprint-3 iter-3 FAIL: 4 findings (2C/2H). 1->2a, 2->2b (FIND-601/602 REQ-020 reapplication), 1->2c. iter-4/5.",
+      "sprint": 4
     }
   ],
   "iterations": {
-    "3": 2,
-    "4": 2,
+    "3": 3,
+    "4": 3,
     "1a": 2,
     "1b": 2,
     "1c": 1,
-    "2a": 3,
+    "2a": 4,
     "2b": 2,
     "2c": 2
   },
@@ -1334,43 +1355,77 @@
         "createdAt": "2026-05-03T11:23:05.576Z",
         "createdInPhase": "3",
         "externalId": "FIND-410"
+      },
+      {
+        "beadId": "BEAD-097",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-3/output/findings/FIND-601.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T15:11:06.959Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-601"
+      },
+      {
+        "beadId": "BEAD-098",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-3/output/findings/FIND-602.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T15:11:06.993Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-602"
+      },
+      {
+        "beadId": "BEAD-099",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-3/output/findings/FIND-603.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T15:11:07.006Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-603"
+      },
+      {
+        "beadId": "BEAD-100",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-app-shell/reviews/sprint-3/output/findings/FIND-604.md",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T15:11:07.024Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-604"
       }
     ]
   },
   "gates": {
     "3": {
       "verdict": "FAIL",
-      "timestamp": "2026-05-03T11:22:57.204Z",
+      "timestamp": "2026-05-03T15:11:06.918Z",
       "reviewedBy": "adversary",
       "details": {
-        "sprint": 2,
-        "iteration": 2,
+        "sprint": 3,
+        "iteration": 3,
         "spec_fidelity": "FAIL",
-        "edge_case_coverage": "FAIL",
-        "implementation_correctness": "FAIL",
+        "edge_case_coverage": "PASS",
+        "implementation_correctness": "PASS",
         "structural_integrity": "FAIL",
         "verification_readiness": "FAIL",
-        "findingsCount": 10,
+        "findingsCount": 4,
         "findingsBySeverity": {
           "critical": 2,
-          "major": 7,
-          "minor": 1
+          "major": 2,
+          "minor": 0
         },
-        "priorResolved": 12,
-        "priorPartial": 2,
+        "priorIter2Resolved": 9,
+        "priorIter2Partial": 1,
         "findings": [
-          "FIND-401",
-          "FIND-402",
-          "FIND-403",
-          "FIND-404",
-          "FIND-405",
-          "FIND-406",
-          "FIND-407",
-          "FIND-408",
-          "FIND-409",
-          "FIND-410"
+          "FIND-601",
+          "FIND-602",
+          "FIND-603",
+          "FIND-604"
         ],
-        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/sprint-2/output/verdict.json"
+        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/sprint-3/output/verdict.json"
       }
     },
     "1c": {
@@ -1390,21 +1445,21 @@
     },
     "contract-review": {
       "verdict": "PASS",
-      "timestamp": "2026-05-03T11:11:36.790Z",
+      "timestamp": "2026-05-03T15:00:31.976Z",
       "reviewedBy": "adversary",
       "details": {
-        "sprint": 2,
+        "sprint": 3,
         "iteration": 2,
         "negotiationRound": 1,
         "weightSum": 1,
         "findingsCount": 0,
-        "contractDigest": "1350ed74687588507b6600bed04a24c9efbd23a03b8f51650fd87e5678f54cf7",
-        "prevIterationFinding": "FIND-301 (weight sum 1.02 -> fixed by CRIT-002 weight 0.08 -> 0.06)",
-        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/contracts/sprint-2/output/verdict.json"
+        "contractDigest": "b2c3165704cf450e8f54c796faf0a44090ae9dd9b7a8f030b92f17fa773c2a36",
+        "prevIter": "iter-1 FAIL with 7 findings (mislabeling, inheritance clause, CRIT-003 contradiction, CRIT-015 filename) — all resolved at iter-2; CRIT-003b renamed to CRIT-018 to satisfy ^CRIT-\\d{3,}$ schema",
+        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/contracts/sprint-3/output/verdict.json"
       }
     }
   },
-  "sprintCount": 3,
+  "sprintCount": 4,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T12:05:00.000Z"
+  "updatedAt": "2026-05-03T15:11:50.537Z"
 }

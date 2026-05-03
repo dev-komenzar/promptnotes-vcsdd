@@ -1,0 +1,144 @@
+{
+  "sprintNumber": 3,
+  "feature": "ui-app-shell",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-03T12:00:00Z",
+  "iteration": 2,
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": "contracts/sprint-3.md",
+    "contractDigest": "b2c3165704cf450e8f54c796faf0a44090ae9dd9b7a8f030b92f17fa773c2a36"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "FIND-501 closure verified: CRIT-002 description (lines 14-17) now reads 'FIND-405: try_vault_path uses Path::new(&raw_path).is_absolute() instead of raw_path.starts_with(\\'/\\') for cross-platform absolute path validation. Also FIND-402 adds settings_load command...'. The cross-platform path attribution is correctly mapped to FIND-405 (matches sprint-2 FIND-405.json line 6). FIND-503 closure verified: CRIT-014 description (lines 80-82) now reads 'FIND-402: settings file path uses XDG_CONFIG_HOME...' — the settings persistence work is correctly attributed to FIND-402 (matches sprint-2 FIND-402.json line 6). FIND-502 closure verified: CRIT-005 description (lines 34-37) now reads 'FIND-401 consequence: tauriAdapter.ts invokeAppStartup orchestrates TS-side pipeline as the derived consequence of removing the Rust invoke_app_startup stub' — the TS orchestration is correctly framed as a downstream consequence of FIND-401 rather than misattributed to FIND-405."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "FIND-504 closure verified: frontmatter scope sentence (line 4) was rewritten with correct attributions — 'Rust stub removal (FIND-401), settings persistence (FIND-402), conditional DOM rendering (FIND-403), write authority moved to AppShell.svelte (FIND-404), TS-side pipeline orchestration derived from FIND-401 fix (FIND-401 consequence), cross-platform path validation (FIND-405)...'. Each finding has its own clean cite — no more bundling of FIND-401/402 under a single 'Rust stub removal' label, and no more mislabeling of TS orchestration as FIND-405."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "FIND-505 closure verified: explicit 'Prior-Sprint Inheritance' section added at lines 102-127. Section enumerates inherited REQs (REQ-009 → sprint-1 CRIT-004 + sprint-2 CRIT-002; REQ-010..REQ-015, REQ-019 → sprint-1 structural/visual CRITs; REQ-018 → sprint-1 CRIT-003) and inherited PROPs (PROP-003, 004, 005, 006, 007, 008, 009, 013). Re-cited REQs and PROPs are explicitly mapped to the sprint-3 CRITs that re-assert them (REQ-001→CRIT-009, REQ-002→CRIT-004/005, REQ-003→CRIT-003/006/007, REQ-004→CRIT-002, REQ-006→CRIT-014, REQ-016→CRIT-006, REQ-020→CRIT-003; PROP-001→CRIT-009, PROP-002→CRIT-005, PROP-010→CRIT-009, PROP-011→CRIT-004/017, PROP-014→CRIT-011)."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "FIND-506 closure verified: CRIT-003 description (lines 18-22) now reads 'Per REQ-020, the global header shell renders in both Loading state (without full nav content) and Configured state' and the passThreshold demands 'AppShell.svelte source renders <header> in Loading state (skeleton/empty nav) and Configured state'. This aligns with REQ-020 EARS at behavioral-spec.md line 485 ('WHILE AppShellState === Loading THE SYSTEM SHALL render only the global header shell ... and a centered loading affordance'). CRIT-003b zero-weight clarification (lines 23-27) enforces the visibility boundary: full main content renders ONLY when state === Configured, while Loading shows the skeleton affordance alongside the header shell."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "All 10 sprint-2 findings (FIND-401..FIND-410) are mapped with correct attributions across the contract: FIND-401→CRIT-001 (Rust stub removal), FIND-402→CRIT-002+CRIT-014 (settings persistence + load), FIND-403→CRIT-003 (conditional DOM rendering), FIND-404→CRIT-004+CRIT-017 (write authority + ALLOWED_WRITERS), FIND-405→CRIT-002 (cross-platform path), FIND-406→CRIT-006 (focus management), FIND-407→CRIT-007 (error banner guard), FIND-408→CRIT-008 (store write surface), FIND-409→CRIT-009 (sync gate test), FIND-410→CRIT-010 (DOM-mount constraint documentation). FIND-401 consequence (TS-side pipeline orchestration) is captured by CRIT-005 and CRIT-013 with explicit 'consequence' framing."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "CRIT-011 (EC-18 IPC timeout) and CRIT-012 (EC-20 HMR boot flag reset) provide falsifiable passThresholds. CRIT-011 demands ipc-timeout.test.ts EC-18 and PROP-014 late-arrival tests pass within 2s with routeResult.state === UnexpectedError; CRIT-012 demands the static-analysis regex /let\\s+bootAttempted/ matches and /export\\s+(let|const|var)\\s+bootAttempted/ does NOT match, plus getBootAttempted() === false after __resetBootFlagForTesting__()."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts",
+          "description": "Lines 56-65 implement the FIND-404 ALLOWED_WRITERS narrowing exactly as CRIT-017 demands: 4 entries (AppShell.svelte, VaultSetupModal.svelte, appShellStore.ts, vaultModalLogic.ts), bootOrchestrator.ts removed."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "CRIT-009 (FIND-409 sync-gate ordering test), CRIT-010 (FIND-410 DOM-mount documentation), CRIT-013 (defaultClockNow Date.now avoidance), CRIT-014 (FIND-402 settings persistence end-to-end) provide concrete and falsifiable passThresholds that exercise actual implementation behavior rather than tautologies."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/lib.rs",
+          "description": "CRIT-002 / CRIT-014 implementation evidence: line 150 'if !Path::new(&raw_path).is_absolute()' satisfies the FIND-405 cross-platform constraint; lines 54-82 settings_file_path() correctly chains XDG_CONFIG_HOME → HOME/.config (Unix) and APPDATA (Windows); lines 86-106 settings_save_impl writes JSON {\"vaultPath\": path}; lines 108-135 settings_load_impl returns Ok(None) when the file is absent; line 182 invoke_configure_vault calls settings_save_impl(&path) after directory validation; lines 273-283 generate_handler! includes settings_load and the FIND-401 invoke_app_startup is absent. cargo check passes."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "Weight sum verification (line 135): 0.07+0.06+0.06+0.00+0.08+0.07+0.06+0.05+0.07+0.06+0.04+0.05+0.04+0.05+0.06+0.06+0.06+0.06 = 1.000 exactly (computed: CRIT-001 0.07, CRIT-002 0.06, CRIT-003 0.06, CRIT-003b 0.00, CRIT-004 0.08, CRIT-005 0.07, CRIT-006 0.06, CRIT-007 0.05, CRIT-008 0.07, CRIT-009 0.06, CRIT-010 0.04, CRIT-011 0.05, CRIT-012 0.04, CRIT-013 0.05, CRIT-014 0.06, CRIT-015 0.06, CRIT-016 0.06, CRIT-017 0.06). CRIT-003b is the explicit zero-weight clarification sub-criterion called out in the frontmatter scope (line 4) and contract preamble (line 131). All CRIT.dimension fields match the canonical set (spec_fidelity, edge_case_coverage, implementation_correctness, structural_integrity, verification_readiness)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/ui/app-shell/appShellStore.ts",
+          "description": "Lines 46-48 export appShellStore with explicit type annotation { subscribe: typeof _store.subscribe } only — no set/update fields, satisfying CRIT-008 passThreshold (FIND-408 store narrowing)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/ui/app-shell/bootOrchestrator.ts",
+          "description": "No setAppShellState( literal in source (only structural mention in line 8 comment header attributing FIND-404; no actual call). bootOrchestrator now returns AppShellRouteResult and AppShell.svelte applies the write — satisfying CRIT-004 / CRIT-017 PROP-011 audit, with bootOrchestrator.ts removed from ALLOWED_WRITERS."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/contracts/sprint-3.md",
+          "description": "FIND-507 closure verified: CRIT-015 description (lines 84-86) and passThreshold (lines 86-88) both reference the canonical filename 'sprint-3-refactor.log' (no -phase suffix). The brace-expansion ambiguity from iter-1 is removed — both fields enumerate the three log files explicitly: sprint-3-red-phase.log, sprint-3-green-phase.log, sprint-3-refactor.log. The threshold is now strictly satisfiable."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-app-shell/evidence/sprint-3-refactor.log",
+          "description": "Evidence file exists at the canonical path declared in CRIT-015 passThreshold; line 1 contains 'target-feature-tests: PASS' marker. sprint-3-red-phase.log and sprint-3-green-phase.log similarly contain target-feature-tests markers (lines 1-2 of each). All three logs satisfy CRIT-015's passThreshold."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-001",
+      "CRIT-002",
+      "CRIT-003",
+      "CRIT-018",
+      "CRIT-004",
+      "CRIT-005",
+      "CRIT-006",
+      "CRIT-007",
+      "CRIT-008",
+      "CRIT-009",
+      "CRIT-010",
+      "CRIT-011",
+      "CRIT-012",
+      "CRIT-013",
+      "CRIT-014",
+      "CRIT-015",
+      "CRIT-016",
+      "CRIT-017"
+    ],
+    "duplicateFindings": []
+  }
+}

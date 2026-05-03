@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-603",
+  "dimension": "structural_integrity",
+  "category": "duplication",
+  "severity": "high",
+  "description": "Two distinct `CORRUPTED_BANNER_STYLES` exports exist in the same feature folder with different — and inconsistent — values. Tests pass against the spec-correct one while the runtime renders with the spec-wrong one. (a) `promptnotes/src/lib/ui/app-shell/designTokens.ts:114-120` exports CORRUPTED_BANNER_STYLES with fontSize: '14px' and border: `1px solid {warnColor}` (i.e., `1px solid #dd5b00`). (b) `promptnotes/src/lib/ui/app-shell/corruptedBanner.ts:18-24` exports CORRUPTED_BANNER_STYLES with fontSize: '16px' and border: DESIGN_TOKENS.whisperBorder (i.e., `1px solid rgba(0,0,0,0.1)`). REQ-014 acceptance criteria mandate fontSize 16px and Whisper Border (`1px solid rgba(0,0,0,0.1)`). The unit test `corrupted-banner.unit.test.ts:124-132` imports from `corruptedBanner.ts` and asserts the SPEC-CORRECT values (16px, whisperBorder), so it passes. But `AppShell.svelte:10` imports `CORRUPTED_BANNER_STYLES` from `./designTokens.js` — i.e., the WRONG one — so the actually-rendered banner uses 14px and a #dd5b00 border. This is a regression of REQ-014 caused by the duplicate export collision, undetected by the green suite because the test imports the other (correct) symbol. Test coverage gap + structural duplication + REQ-014 violation in production rendering.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/AppShell.svelte",
+    "lineRange": "10-19",
+    "snippet": "import {\n    HEADER_STYLE,\n    SKELETON_CARD_STYLE,\n    CORRUPTED_BANNER_STYLES,\n  } from \"./designTokens.js\";"
+  },
+  "routeToPhase": "2c"
+}
