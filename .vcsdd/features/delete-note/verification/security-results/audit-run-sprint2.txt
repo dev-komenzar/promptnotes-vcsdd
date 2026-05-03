@@ -1,0 +1,53 @@
+Sprint-2 Security Hardening — Raw Execution Evidence
+Feature: delete-note
+Date: 2026-05-03
+Phase 5 re-entry (sprint-2): 2026-05-03T06:23:19.517Z
+
+========== bun test (delete-note) ==========
+
+Command: cd promptnotes && bunx --bun bun test src/lib/domain/__tests__/delete-note/
+Output:
+  bun test v1.3.11 (af24e281)
+
+   144 pass
+   0 fail
+   795 expect() calls
+  Ran 144 tests across 8 files. [84.00ms]
+
+Result: 144 pass, 0 fail
+
+========== tsc --noEmit (delete-note files) ==========
+
+Command: cd promptnotes && bunx --bun tsc --noEmit -p . 2>&1 | grep "delete-note"
+Output: (empty — zero errors in delete-note files)
+
+Pre-existing errors in OTHER feature test files (unrelated to delete-note):
+  - apply-filter-or-search: 6 errors (fc.stringOf API version mismatch)
+  - edit-past-note-start: 3 errors (SwitchError type)
+These are pre-existing and not introduced by sprint-2.
+
+========== semgrep ==========
+
+Status: NOT INSTALLED
+Fallback: manual static review performed (see security-report.md)
+
+========== Wycheproof ==========
+
+Status: NOT APPLICABLE
+Reason: delete-note contains no cryptographic primitives.
+
+========== Sprint-2 changes verified ==========
+
+FIND-IMPL-DLN-001 (TOCTOU — MITIGATED):
+  - _deltas.ts: AuthorizedDeletionDelta now extends AuthorizedDeletion with filePath: string
+  - authorize-deletion-pure.ts: branch (d) captures snapshot.filePath into AuthorizedDeletionDelta
+  - pipeline.ts: uses authorized.filePath directly; second getNoteSnapshot call removed;
+    empty-string fallback (?? "") removed entirely
+  - No new port calls introduced in any pure function
+  - Test count: 144 (up from 143 in sprint-1; FIND-003 fix added 1 test)
+
+========== Summary ==========
+
+Open findings: 0 (FIND-IMPL-DLN-001 mitigated in sprint-2)
+Required proof obligations: 9/9 proved
+Total proof obligations: 18/18 proved

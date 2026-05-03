@@ -1,0 +1,278 @@
+{
+  "featureName": "delete-note",
+  "mode": "lean",
+  "language": "typescript",
+  "currentPhase": "complete",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-03T04:49:22.334Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-03T04:49:22.336Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-03T05:15:33.840Z",
+      "reason": "spec review iter-2 PASS (lean mode); 6/6 iter-1 findings resolved"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-03T05:17:31.602Z",
+      "reason": "spec review PASS; beginning TDD red phase",
+      "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-03T05:34:11.104Z",
+      "reason": "red phase complete; beginning green phase",
+      "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-03T05:47:06.168Z",
+      "reason": "green phase complete; beginning refactor",
+      "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-03T05:52:26.220Z",
+      "reason": "TDD cycle complete; awaiting adversarial review",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-03T06:04:09.970Z",
+      "reason": "phase 3 PASS at sprint-1 iter-1; advancing to formal hardening",
+      "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-03T06:13:22.550Z",
+      "reason": "formal hardening complete",
+      "sprint": 1
+    },
+    {
+      "from": "6",
+      "to": "3",
+      "timestamp": "2026-05-03T06:14:13.106Z",
+      "reason": "sprint-1 convergence requires 0 findings; addressing 5 MINOR findings then re-reviewing as sprint-2",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-03T06:23:19.517Z",
+      "reason": "sprint-2 PASS with 0 findings; re-running formal hardening before converge",
+      "sprint": 2
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-03T06:27:47.238Z",
+      "reason": "sprint-2 hardening complete; all proofs PASS, FIND-001 mitigated",
+      "sprint": 2
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-03T06:31:04.230Z",
+      "reason": "convergence achieved at sprint-2: 0 findings, all 4 dimensions converged",
+      "sprint": 2
+    }
+  ],
+  "iterations": {
+    "3": 2,
+    "5": 2,
+    "6": 2,
+    "1a": 1,
+    "1b": 1,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1,
+    "2c": 1,
+    "complete": 1
+  },
+  "proofObligations": [
+    {
+      "id": "PROP-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts"
+    },
+    {
+      "id": "PROP-002",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/__verify__/prop-dln-007-error-exhaustiveness.harness.test.ts"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/__verify__/prop-dln-015-non-coupling.harness.test.ts"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-010",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-011",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-012",
+      "tier": 1,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/step4-update-projections.test.ts"
+    },
+    {
+      "id": "PROP-013",
+      "tier": 0,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/__verify__/prop-dln-014-event-channels.harness.test.ts"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-015",
+      "tier": 3,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-016",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-017",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    },
+    {
+      "id": "PROP-018",
+      "tier": 2,
+      "required": false,
+      "status": "proved",
+      "artifact": "src/lib/domain/__tests__/delete-note/pipeline.test.ts"
+    }
+  ],
+  "traceability": {
+    "epicId": "VCSDD-delete-note-1777783100087",
+    "beads": []
+  },
+  "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T06:23:19.515Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 2,
+        "iteration": 1,
+        "findingCount": 0,
+        "resolvedFromSprint1": "5/5"
+      }
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T06:31:21.503Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "sprint": 2,
+        "findingCount": 0,
+        "previousFindingCount": 5,
+        "dimensionsConverged": 4
+      }
+    },
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T05:15:33.842Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2,
+        "findingCount": 1,
+        "severity": "MINOR (non-blocking)",
+        "resolvedFromIter1": "6/6"
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-03T05:15:33.842Z"
+    }
+  },
+  "sprintCount": 2,
+  "createdAt": "2026-05-03T04:38:20.086Z",
+  "updatedAt": "2026-05-03T06:31:21.503Z"
+}

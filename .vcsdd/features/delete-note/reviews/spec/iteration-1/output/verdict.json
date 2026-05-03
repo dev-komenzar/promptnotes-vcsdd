@@ -1,0 +1,12 @@
+{
+  "feature": "delete-note",
+  "phase": "1c",
+  "iteration": 1,
+  "verdict": "FAIL",
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "FAIL"
+  },
+  "findingCount": 6,
+  "summary": "Spec faithfully encodes Workflow 5 with verifiable line citations, but the verification architecture contradicts itself on whether updateProjectionsAfterDelete is pure or emits via publishInternal, and leaves the disk-full FsError variant unhandled despite requiring exhaustive switches in PROP-DLN-006."
+}

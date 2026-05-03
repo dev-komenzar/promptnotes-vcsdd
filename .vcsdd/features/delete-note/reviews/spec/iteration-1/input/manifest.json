@@ -1,0 +1,14 @@
+{
+  "reviewType": "spec",
+  "feature": "delete-note",
+  "phase": "1c",
+  "iteration": 1,
+  "mode": "lean",
+  "language": "typescript",
+  "artifactsToReview": [
+    ".vcsdd/features/delete-note/specs/behavioral-spec.md",
+    ".vcsdd/features/delete-note/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "outputDirectory": ".vcsdd/features/delete-note/reviews/spec/iteration-1/output"
+}

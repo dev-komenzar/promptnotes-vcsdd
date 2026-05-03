@@ -1,0 +1,55 @@
+{
+  "feature": "delete-note",
+  "phase": "1c",
+  "iteration": 2,
+  "verdict": "PASS",
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "findingCount": 1,
+  "resolvedFromIter1": "6/6",
+  "summary": "All 6 iter-1 findings genuinely resolved. updateProjectionsAfterDelete is now strictly pure with PROP-DLN-016 enforcing zero-port-call invariant; disk-full normalization is explicit via REQ-DLN-013 + PROP-DLN-017; PROP-DLN-002 enumerates all four authorization branches; removedTags semantics clarified as decremented-not-only-pruned; Delta 6 adds optional cause to AuthorizationError; FsError.unknown.detail propagation captured by PROP-DLN-018. One MINOR remnant: the UpdateProjectionsAfterDelete signature change (dropping the (deps: CurateDeps) => outer curry from workflows.ts:131-137) is a canonical contract delta but is not enumerated in the behavioral-spec.md Cross-context Dependencies / Canonical Contract Deltas section (Deltas 1-6) — only mentioned parenthetically in verification-architecture.md. Lean mode tolerates this documentation gap; routed for Phase 2b awareness.",
+  "previousIteration": {
+    "iteration": 1,
+    "verdict": "FAIL",
+    "findingCount": 6,
+    "blockers": ["FIND-SPEC-DLN-001", "FIND-SPEC-DLN-002"],
+    "majors": ["FIND-SPEC-DLN-003", "FIND-SPEC-DLN-004"],
+    "minors": ["FIND-SPEC-DLN-005", "FIND-SPEC-DLN-006"]
+  },
+  "iter1ResolutionAudit": {
+    "FIND-SPEC-DLN-001": {
+      "status": "RESOLVED",
+      "evidence": "verification-architecture.md:37 (Step 4 row explicitly says no port calls); verification-architecture.md:204-223 (UpdateProjectionsAfterDelete type signature drops deps curry); behavioral-spec.md:354 (REQ-DLN-001 acceptance: 'updateProjectionsAfterDelete does NOT call deps.publishInternal'); PROP-DLN-016 Tier 2 required:true asserts spy.callCount === 0 for all ports"
+    },
+    "FIND-SPEC-DLN-002": {
+      "status": "RESOLVED",
+      "evidence": "behavioral-spec.md:590-603 (REQ-DLN-013 disk-full normalization to 'unknown'); behavioral-spec.md:411 (FsError → NoteDeletionFailureReason mapping table includes disk-full); PROP-DLN-006(c) requires explicit disk-full arm; PROP-DLN-017 Tier 2 required:true asserts normalization is total"
+    },
+    "FIND-SPEC-DLN-003": {
+      "status": "RESOLVED",
+      "evidence": "verification-architecture.md:233 (PROP-DLN-002 enumerates four branches: a/b/c/d); verification-architecture.md:160-178 (authorizeDeletionPure docstring lists all three preconditions explicitly); PROP-DLN-002 wording 'all three preconditions hold' replaces 'when both pass'"
+    },
+    "FIND-SPEC-DLN-004": {
+      "status": "RESOLVED",
+      "evidence": "behavioral-spec.md:542 (REQ-DLN-010 semantic clarification: removedTags enumerates all decremented tags, not only pruned-to-zero); behavioral-spec.md:546-547 (edge case examples for usageCount:1 pruned vs usageCount:5 decremented); aggregates.md §3 invariant 1 cited correctly; PROP-DLN-010(b) mirrors"
+    },
+    "FIND-SPEC-DLN-005": {
+      "status": "RESOLVED",
+      "evidence": "behavioral-spec.md:311-329 (Delta 6 adds optional cause?: 'snapshot-missing' to AuthorizationError); behavioral-spec.md:387 (REQ-DLN-003 edge case for snapshot-missing); PROP-DLN-002(c) asserts the cause field; discriminator remains 'not-in-feed' so existing exhaustiveness switches do not break"
+    },
+    "FIND-SPEC-DLN-006": {
+      "status": "RESOLVED",
+      "evidence": "behavioral-spec.md:430 (REQ-DLN-004 acceptance criterion: 'When FsError.kind === unknown, NoteDeletionFailed.detail === FsError.detail'); PROP-DLN-018 Tier 2 required:false (lean mode acceptable for MINOR-resolution proof); EventBusPublish Port Contract docstring updated"
+    }
+  },
+  "freshScanFindings": ["FIND-SPEC-DLN-007"],
+  "convergenceSignals": {
+    "blockerCount": 0,
+    "majorCount": 0,
+    "minorCount": 1,
+    "iter1ResolvedCount": 6,
+    "newFindingCount": 1
+  }
+}

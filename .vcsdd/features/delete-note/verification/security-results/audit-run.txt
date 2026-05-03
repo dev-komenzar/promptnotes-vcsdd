@@ -1,0 +1,112 @@
+Security Audit Run — delete-note
+Date: 2026-05-03
+Auditor: VCSDD Verifier (Phase 5)
+
+=== Tool Availability ===
+
+semgrep: NOT INSTALLED (install: pip install semgrep)
+Wycheproof: NOT APPLICABLE (no cryptographic primitives in delete-note)
+tsc --noEmit: AVAILABLE — 0 errors in delete-note source and test files
+bun test: AVAILABLE — 143 pass, 0 fail
+
+=== Manual Static Audit ===
+
+Files audited:
+  promptnotes/src/lib/domain/delete-note/pipeline.ts
+  promptnotes/src/lib/domain/delete-note/authorize-deletion-pure.ts
+  promptnotes/src/lib/domain/delete-note/authorize-deletion.ts
+  promptnotes/src/lib/domain/delete-note/build-delete-request.ts
+  promptnotes/src/lib/domain/delete-note/update-projections.ts
+  promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts
+  promptnotes/src/lib/domain/delete-note/_deltas.ts
+
+=== Check [1]: Path traversal in filePath ===
+
+Surface: pipeline.ts line 77 — `deps.getNoteSnapshot(authorized.noteId)?.filePath ?? ""`
+Finding: filePath is sourced from NoteFileSnapshot.filePath (typed string from the Curate
+  in-memory snapshot store, not from user text input). NoteId is a branded value object
+  sourced from DeletionConfirmed.noteId (typed, opaque). No path concatenation or
+  string manipulation is performed on filePath in delete-note source files. Path is
+  passed directly to deps.trashFile(filePath) which is a Vault-layer port boundary
+  outside this workflow.
+Threat model note: FIND-IMPL-DLN-001 (TOCTOU race between getNoteSnapshot and trashFile)
+  is acknowledged and documented — see Check [2].
+Result: CLEAN (path sourced from typed snapshot, no user-controlled traversal)
+
+=== Check [2]: TOCTOU race between getNoteSnapshot and trashFile ===
+
+Surface: pipeline.ts lines 77-78 — getNoteSnapshot called at line 77 (after authorization
+  at line 49 already called getNoteSnapshot internally via authorize-deletion.ts),
+  then trashFile called at line 78.
+Finding: There is a second getNoteSnapshot call at pipeline.ts:77 to retrieve filePath,
+  which is not strictly the same call made during authorization. A concurrent mutation
+  between the authorization call and this second call could theoretically produce a
+  stale/null snapshot. If null, filePath falls back to "" (empty string fallback), which
+  would cause trashFile to return Err(not-found), handled gracefully per REQ-DLN-005.
+  This is FIND-IMPL-DLN-001 — acknowledged in verification-architecture.md Port Contracts
+  ("A concurrent removal would produce a not-found FsError from trashFile, which the
+  graceful path below handles correctly").
+  Severity: LOW — the workflow is single-threaded in the Tauri/SvelteKit MVP. Concurrent
+  mutation of the snapshot store is not possible without external coordination. The
+  graceful not-found path ensures no state corruption even in the theoretical race case.
+  Mitigation: Carry filePath inside AuthorizedDeletion (option (a) from behavioral-spec.md
+  Delta 5) to eliminate the second getNoteSnapshot call. Deferred to future sprint.
+Result: ACCEPTED (low severity, graceful recovery path in place, single-threaded context)
+
+=== Check [3]: Event eavesdropping ===
+
+Surface: deps.publish (PublicDomainEvent bus) and deps.publishInternal (CurateInternalEvent bus)
+Finding: Both buses are single-process in-memory channels in the Tauri desktop MVP.
+  No network serialization. No process boundary crossing at the domain layer.
+  Event payloads carry only typed domain values (NoteId, Frontmatter, Timestamp) — no
+  secrets, credentials, or user-authored body text.
+Result: CLEAN (single-process; low severity by design)
+
+=== Check [4]: Error-detail leakage ===
+
+Surface: NoteDeletionFailed.detail (optional string) emitted by pipeline.ts lines 122-128.
+  Sourced from normalizeFsError(fsError) which returns:
+    disk-full → detail: "disk-full" (static string, no user content)
+    unknown   → detail: FsError.detail (the Vault adapter's error description string)
+Finding: FsError.unknown.detail is provided by the Vault-layer trashFile implementation
+  (outside this workflow). The domain layer propagates it as-is. If the Vault adapter
+  includes OS-level error messages (e.g., "Permission denied: /home/user/notes/secret.md"),
+  the file path could appear in the event payload. This is a Vault adapter concern, not a
+  delete-note domain concern. The domain spec (REQ-DLN-013) declares detail propagation
+  as required behavior.
+  Severity: LOW — NoteDeletionFailed is a public domain event consumed by the UI for
+  display purposes. The detail string is shown to the note owner (the local desktop user),
+  not transmitted externally. No cross-user leakage risk in the single-user desktop context.
+  Mitigation: Vault adapter should sanitize error detail before constructing FsError.unknown.
+  This is an accepted cross-layer concern, deferred to Vault adapter implementation review.
+Result: ACCEPTED (UI-facing detail for local user; Vault adapter responsibility for sanitization)
+
+=== Check [5]: Prototype pollution via Frontmatter/Tag inputs ===
+
+Surface: update-projections.ts — tagInventoryApplyNoteDeleted iterates frontmatter.tags,
+  uses String(e.name) === String(tag) for comparison.
+Finding: Tag is a branded primitive string type. Frontmatter.tags is readonly Tag[].
+  No dynamic object key construction. String() coercion is safe for branded VOs.
+  feedRemoveNoteRef uses filter + String comparison — no prototype chain hazard.
+  No JSON.parse of user input occurs within delete-note source.
+Result: CLEAN (typed branded VOs; no dynamic key construction)
+
+=== Raw tsc output (filtered for delete-note) ===
+
+Command: cd promptnotes && bunx --bun tsc --noEmit -p . 2>&1 | grep "delete-note"
+Output: (no output — zero errors in delete-note files)
+
+Pre-existing errors in OTHER features (not delete-note):
+  src/lib/domain/__tests__/apply-filter-or-search/__verify__/ — 6 errors (fc.stringOf API)
+  src/lib/domain/__tests__/edit-past-note-start/ — 3 errors (SwitchError type)
+Total pre-existing errors: 9 (unrelated to delete-note; not fixed per Phase 5 constraint)
+
+=== Raw test output ===
+
+Command: cd promptnotes && bunx --bun bun test src/lib/domain/__tests__/delete-note/
+Output:
+  bun test v1.3.11 (af24e281)
+  143 pass
+  0 fail
+  689 expect() calls
+  Ran 143 tests across 8 files. [82ms]

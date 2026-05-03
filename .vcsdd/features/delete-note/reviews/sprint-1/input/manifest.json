@@ -1,0 +1,36 @@
+{
+  "reviewType": "implementation",
+  "feature": "delete-note",
+  "phase": "3",
+  "sprint": 1,
+  "iteration": 1,
+  "mode": "lean",
+  "language": "typescript",
+  "artifactsToReview": [
+    "promptnotes/src/lib/domain/delete-note/_deltas.ts",
+    "promptnotes/src/lib/domain/delete-note/authorize-deletion-pure.ts",
+    "promptnotes/src/lib/domain/delete-note/authorize-deletion.ts",
+    "promptnotes/src/lib/domain/delete-note/build-delete-request.ts",
+    "promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts",
+    "promptnotes/src/lib/domain/delete-note/update-projections.ts",
+    "promptnotes/src/lib/domain/delete-note/pipeline.ts",
+    "promptnotes/src/lib/domain/delete-note/index.ts",
+    "promptnotes/src/lib/domain/__tests__/delete-note/"
+  ],
+  "specs": [
+    ".vcsdd/features/delete-note/specs/behavioral-spec.md",
+    ".vcsdd/features/delete-note/specs/verification-architecture.md"
+  ],
+  "evidence": [
+    ".vcsdd/features/delete-note/evidence/sprint-1-green-phase.log",
+    ".vcsdd/features/delete-note/evidence/sprint-1-refactor.log"
+  ],
+  "reviewDimensions": [
+    "spec_fidelity",
+    "test_coverage",
+    "implementation_correctness",
+    "purity_boundary",
+    "edge_case_handling"
+  ],
+  "outputDirectory": ".vcsdd/features/delete-note/reviews/sprint-1/output"
+}

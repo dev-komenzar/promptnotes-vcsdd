@@ -1,0 +1,22 @@
+VCSDD Phase 2b Green phase evidence — sprint 1, delete-note feature
+target-feature-tests: passing
+regression-baseline: passing (tag-chip-update + capture-auto-save unchanged; pre-existing apply-filter-or-search fc.stringOf failures unrelated)
+
+=== delete-note test suite (target feature) ===
+bun test v1.3.11 (af24e281)
+
+ 143 pass
+ 0 fail
+ 689 expect() calls
+Ran 143 tests across 8 files. [80.00ms]
+
+=== regression: tag-chip-update + capture-auto-save ===
+bun test v1.3.11 (af24e281)
+
+ 213 pass
+ 0 fail
+ 278 expect() calls
+Ran 213 tests across 25 files. [2.39s]
+
+=== TS strict check (delete-note files) ===
+No errors in delete-note files.
