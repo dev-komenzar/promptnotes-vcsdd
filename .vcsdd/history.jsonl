@@ -227,3 +227,6 @@
 {"timestamp":"2026-05-02T03:21:58.893Z","event":"bead_created","featureName":"configure-vault","beadId":"BEAD-020","type":"adversary-finding","phase":"6","externalId":"FIND-006"}
 {"timestamp":"2026-05-02T03:22:07.101Z","event":"gate_recorded","featureName":"configure-vault","phase":"6","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-02T03:22:25.920Z","event":"phase_transition","featureName":"configure-vault","from":"6","to":"complete","iteration":1,"phase":"complete"}
+{"timestamp":"2026-05-03T04:38:20.089Z","event":"feature_created","featureName":"delete-note","mode":"lean","language":"typescript"}
+{"timestamp":"2026-05-03T04:49:22.336Z","event":"phase_transition","featureName":"delete-note","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-05-03T04:49:22.337Z","event":"phase_transition","featureName":"delete-note","from":"1a","to":"1b","iteration":1,"phase":"1b"}
