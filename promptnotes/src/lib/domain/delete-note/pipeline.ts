@@ -5,8 +5,8 @@
 // PROP-DLN-005: Clock.now() called at most once per invocation (0 on auth-error paths).
 // PROP-DLN-011: Clock budget — 0 on authorization-error paths, 1 on all write paths.
 //
-// Outer curry takes (deps, feed, inventory, editingCurrentNoteId) per Delta 4.
-// Inner argument is DeletionConfirmed (the user has already confirmed deletion).
+// Outer curry: (deps, feed, inventory, editingCurrentNoteId).
+// Inner argument: DeletionConfirmed (the user has already confirmed deletion).
 // All errors reified as Err(DeletionError) — workflow never throws.
 //
 // Pipeline:
@@ -35,10 +35,6 @@ import { buildDeleteNoteRequested } from "./build-delete-request.js";
 import { updateProjectionsAfterDelete, removedTagsFromDeletion } from "./update-projections.js";
 import { normalizeFsError } from "./normalize-fs-error.js";
 
-// ── deleteNote ────────────────────────────────────────────────────────────────
-// Outer curry: (deps, feed, inventory, editingCurrentNoteId) => inner
-// Inner: (confirmed: DeletionConfirmed) => Promise<Result<UpdatedProjection, DeletionError>>
-
 export const deleteNote: DeleteNote = (
   deps: DeleteNoteDeps,
   feed: Feed,
@@ -53,9 +49,8 @@ export const deleteNote: DeleteNote = (
     const authResult = authorizeDeletion(deps, feed, editingCurrentNoteId)(confirmed);
 
     if (!authResult.ok) {
-      // Return authorization error as DeletionError.
-      // The DeletionErrorDelta returned by authorizeDeletion is structurally
-      // compatible with DeletionError via the Delta 6 optional cause field.
+      // DeletionErrorDelta is structurally compatible with DeletionError
+      // (optional cause field per AuthorizationErrorDelta).
       return { ok: false, error: authResult.error as DeletionError };
     }
 
@@ -74,19 +69,16 @@ export const deleteNote: DeleteNote = (
     deps.publish(deleteRequested as PublicDomainEvent);
 
     // ── Step 3: trashFile (async I/O — the only await point) ─────────────
-    const trashResult = await deps.trashFile(
-      // Delta 5: path resolved from NoteFileSnapshot.filePath obtained during authorization.
-      // authorizeDeletionPure sources snapshot from deps.getNoteSnapshot; filePath is
-      // threaded as a local variable (Option b from Delta 5 spec note).
-      deps.getNoteSnapshot(authorized.noteId)?.filePath ??
-        // Defensive: getNoteSnapshot was already called in authorizeDeletion and returned
-        // non-null (authorization succeeded). If by some race it now returns null,
-        // we have no path — use empty string which trashFile will return not-found for.
-        "",
-    );
+    // filePath sourced here rather than inside authorizeDeletion so that
+    // AuthorizedDeletion stays a canonical type (no widening).
+    // getNoteSnapshot returned non-null at authorization time; a concurrent
+    // removal would produce a not-found FsError from trashFile, which the
+    // graceful path below handles correctly.
+    const filePath = deps.getNoteSnapshot(authorized.noteId)?.filePath ?? "";
+    const trashResult = await deps.trashFile(filePath);
 
     // ── Step 3 result dispatch ────────────────────────────────────────────
-    if (trashResult.ok || (!trashResult.ok && trashResult.error.kind === "not-found")) {
+    if (trashResult.ok || trashResult.error.kind === "not-found") {
       // Happy path (trashResult.ok) OR fs.not-found graceful path (REQ-DLN-005):
       // Treat as "file is deleted" — proceed with projection update.
 

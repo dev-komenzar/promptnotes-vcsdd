@@ -11,10 +11,8 @@
 import type { FsError, NoteDeletionFailureReason } from "promptnotes-domain-types/shared/errors";
 
 // ── NormalizedFsError ─────────────────────────────────────────────────────────
-// The result of normalizing an FsError for use in NoteDeletionFailed.
-// reason: the mapped NoteDeletionFailureReason
-// detail: optional diagnostic string (propagated from FsError.unknown.detail,
-//         or set to 'disk-full' as a diagnostic string for the disk-full normalization case)
+// Carries the mapped reason and, for disk-full and unknown variants,
+// a diagnostic detail string for NoteDeletionFailed.
 
 export type NormalizedFsError = {
   readonly reason: NoteDeletionFailureReason;

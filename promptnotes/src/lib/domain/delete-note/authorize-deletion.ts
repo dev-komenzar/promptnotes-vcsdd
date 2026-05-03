@@ -19,9 +19,6 @@ import { authorizeDeletionPure } from "./authorize-deletion-pure.js";
 // ── authorizeDeletion ─────────────────────────────────────────────────────────
 // Effectful shell: reads deps.getNoteSnapshot (in-memory read port), then
 // delegates to the pure core. Synchronous.
-//
-// Canonical shape from verification-architecture.md:
-//   (deps, feed, editingCurrentNoteId) => (confirmed) => Result<AuthorizedDeletion, DeletionError>
 
 export function authorizeDeletion(
   deps: CurateDeps,

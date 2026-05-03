@@ -21,7 +21,6 @@ import type { Result } from "promptnotes-domain-types/util/result";
 import type { AuthorizeDeletionPure, DeletionErrorDelta } from "./_deltas.js";
 
 // ── Feed.hasNote inline implementation ───────────────────────────────────────
-// The canonical FeedOps interface has no implementation in this phase.
 
 function feedHasNote(feed: Feed, noteId: NoteId): boolean {
   return feed.noteRefs.some((ref) => String(ref) === String(noteId));
