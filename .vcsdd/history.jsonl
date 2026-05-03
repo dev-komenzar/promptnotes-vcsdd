@@ -238,3 +238,6 @@
 {"timestamp":"2026-05-03T05:31:31.872Z","event":"sprint_started","featureName":"delete-note","sprintNumber":2}
 {"timestamp":"2026-05-03T05:34:11.106Z","event":"phase_transition","featureName":"delete-note","from":"2a","to":"2b","iteration":1,"phase":"2b"}
 {"timestamp":"2026-05-03T05:47:06.170Z","event":"phase_transition","featureName":"delete-note","from":"2b","to":"2c","iteration":1,"phase":"2c"}
+{"timestamp":"2026-05-03T05:52:26.221Z","event":"phase_transition","featureName":"delete-note","from":"2c","to":"3","iteration":1,"phase":"3"}
+{"timestamp":"2026-05-03T06:04:09.970Z","event":"gate_recorded","featureName":"delete-note","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-03T06:04:09.972Z","event":"phase_transition","featureName":"delete-note","from":"3","to":"5","iteration":1,"phase":"5"}

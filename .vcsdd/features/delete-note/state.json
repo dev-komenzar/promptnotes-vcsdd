@@ -2,7 +2,7 @@
   "featureName": "delete-note",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -40,9 +40,25 @@
       "timestamp": "2026-05-03T05:47:06.168Z",
       "reason": "green phase complete; beginning refactor",
       "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-03T05:52:26.220Z",
+      "reason": "TDD cycle complete; awaiting adversarial review",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-03T06:04:09.970Z",
+      "reason": "phase 3 PASS at sprint-1 iter-1; advancing to formal hardening",
+      "sprint": 1
     }
   ],
   "iterations": {
+    "3": 1,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -56,6 +72,17 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T06:04:09.969Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 1,
+        "iteration": 1,
+        "findingCount": 5,
+        "severity": "all MINOR (non-blocking)"
+      }
+    },
     "1c": {
       "verdict": "PASS",
       "timestamp": "2026-05-03T05:15:33.842Z",
@@ -72,5 +99,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-03T04:38:20.086Z",
-  "updatedAt": "2026-05-03T05:47:06.168Z"
+  "updatedAt": "2026-05-03T06:04:09.970Z"
 }
