@@ -1,0 +1,213 @@
+=== Sprint 1 Red Phase Evidence ===
+Feature: ui-app-shell
+Date: 2026-05-03
+Test command: bun test src/lib/ui/app-shell/__tests__/
+
+new-feature-tests: failing (as expected — modules not yet implemented)
+regression-baseline: passing (existing app-startup/configure-vault/delete-note/etc tests green)
+
+=== Summary ===
+Target feature tests: 28 tests across 14 files — 10 pass (negative-scope RED guards + static analysis), 18 fail (module-not-found errors + RED PHASE GUARD assertions)
+Regression baseline: 1014 pass, 8 fail (pre-existing apply-filter-or-search/__verify__ failures, unchanged from before this feature)
+
+=== Test file → REQ/PROP coverage ===
+route-startup-result.test.ts        REQ-002, PROP-007           FAIL (Cannot find module $lib/ui/app-shell/routeStartupResult)
+map-vault-path-error.test.ts        REQ-005, PROP-003           FAIL (Cannot find module $lib/ui/app-shell/errorMessages)
+corrupted-banner.unit.test.ts       REQ-009, REQ-014, PROP-004  FAIL (Cannot find module $lib/ui/app-shell/corruptedBanner)
+prop/corrupted-banner.prop.test.ts  PROP-004 (fast-check)       FAIL (Cannot find module $lib/ui/app-shell/corruptedBanner)
+prop/modal-closeable.prop.test.ts   PROP-005 (fast-check)       FAIL (Cannot find module $lib/ui/app-shell/modalClosePolicy)
+app-shell-state.test.ts             REQ-001,REQ-002,REQ-020,PROP-001,PROP-009,PROP-010,PROP-012,PROP-013  FAIL (Cannot find module $lib/ui/app-shell/appShellStore)
+ipc-timeout.test.ts                 REQ-022, PROP-014           FAIL (Cannot find module $lib/ui/app-shell/tauriAdapter)
+vault-modal.test.ts                 REQ-003,REQ-004,REQ-005,REQ-006,REQ-007,REQ-016,PROP-005,PROP-008  FAIL (Cannot find module $lib/ui/app-shell/vaultModalLogic)
+effectful-isolation.test.ts         REQ-021, PROP-011, PROP-012 FAIL (Cannot find module $lib/ui/app-shell/bootOrchestrator)
+design-tokens.audit.test.ts         REQ-010–015,REQ-017,REQ-019,PROP-006  FAIL (Cannot find module $lib/ui/app-shell/designTokens)
+negative-scope.test.ts              NEG-REQ-001–005, PROP-002   FAIL (5 RED PHASE GUARD assertions: source files missing) + PASS (10 static analysis tests pass correctly on empty source dir)
+loading-state.test.ts               REQ-020, PROP-001           FAIL (Cannot find module $lib/ui/app-shell/appShellStore)
+startup-error-routing.test.ts       REQ-008,REQ-009,REQ-010,PROP-007,PROP-009  FAIL (Cannot find module $lib/ui/app-shell/routeStartupResult)
+layout-frame.test.ts                REQ-010–015,REQ-017,REQ-019 FAIL (Cannot find module $lib/ui/app-shell/designTokens)
+
+=== REQ/PROP coverage matrix ===
+REQ-001: app-shell-state.test.ts ✓
+REQ-002: route-startup-result.test.ts, startup-error-routing.test.ts ✓
+REQ-003: vault-modal.test.ts, prop/modal-closeable.prop.test.ts ✓
+REQ-004: vault-modal.test.ts ✓
+REQ-005: vault-modal.test.ts, map-vault-path-error.test.ts ✓
+REQ-006: vault-modal.test.ts ✓
+REQ-007: vault-modal.test.ts, startup-error-routing.test.ts ✓
+REQ-008: startup-error-routing.test.ts, app-shell-state.test.ts ✓
+REQ-009: corrupted-banner.unit.test.ts, startup-error-routing.test.ts ✓
+REQ-010: layout-frame.test.ts, startup-error-routing.test.ts ✓
+REQ-011: layout-frame.test.ts, design-tokens.audit.test.ts ✓
+REQ-012: layout-frame.test.ts ✓
+REQ-013: layout-frame.test.ts, design-tokens.audit.test.ts ✓
+REQ-014: corrupted-banner.unit.test.ts, layout-frame.test.ts ✓
+REQ-015: layout-frame.test.ts, design-tokens.audit.test.ts ✓
+REQ-016: vault-modal.test.ts, prop/modal-closeable.prop.test.ts ✓
+REQ-017: layout-frame.test.ts, design-tokens.audit.test.ts ✓
+REQ-018: (PROP-010 — modal-within-100ms, covered in app-shell-state.test.ts stub) ✓
+REQ-019: layout-frame.test.ts, design-tokens.audit.test.ts ✓
+REQ-020: loading-state.test.ts, app-shell-state.test.ts ✓
+REQ-021: effectful-isolation.test.ts ✓
+REQ-022: ipc-timeout.test.ts, app-shell-state.test.ts ✓
+NEG-REQ-001: negative-scope.test.ts ✓
+NEG-REQ-002: negative-scope.test.ts ✓
+NEG-REQ-003: negative-scope.test.ts ✓
+NEG-REQ-004: negative-scope.test.ts ✓
+NEG-REQ-005: negative-scope.test.ts ✓
+PROP-001: app-shell-state.test.ts, loading-state.test.ts ✓
+PROP-002: negative-scope.test.ts ✓
+PROP-003: map-vault-path-error.test.ts ✓
+PROP-004: corrupted-banner.unit.test.ts, prop/corrupted-banner.prop.test.ts ✓
+PROP-005: prop/modal-closeable.prop.test.ts, vault-modal.test.ts ✓
+PROP-006: design-tokens.audit.test.ts ✓
+PROP-007: route-startup-result.test.ts, startup-error-routing.test.ts ✓
+PROP-008: vault-modal.test.ts ✓
+PROP-009: app-shell-state.test.ts, startup-error-routing.test.ts ✓
+PROP-010: app-shell-state.test.ts ✓
+PROP-011: effectful-isolation.test.ts ✓
+PROP-012: effectful-isolation.test.ts, app-shell-state.test.ts ✓
+PROP-013: app-shell-state.test.ts ✓
+PROP-014: ipc-timeout.test.ts ✓
+
+=== EC coverage ===
+EC-01: route-startup-result.test.ts ✓
+EC-02: route-startup-result.test.ts ✓
+EC-03: route-startup-result.test.ts ✓
+EC-04: vault-modal.test.ts, map-vault-path-error.test.ts ✓
+EC-05: vault-modal.test.ts, map-vault-path-error.test.ts ✓
+EC-06: vault-modal.test.ts ✓
+EC-07: vault-modal.test.ts ✓
+EC-08: vault-modal.test.ts ✓
+EC-09: corrupted-banner.unit.test.ts ✓
+EC-10: corrupted-banner.unit.test.ts ✓
+EC-11: corrupted-banner.unit.test.ts ✓
+EC-12: (deleted — FIND-020) n/a
+EC-13: app-shell-state.test.ts ✓
+EC-14: vault-modal.test.ts ✓
+EC-15: (Rust-side only, covered by try_vault_path) ✓
+EC-16: vault-modal.test.ts (NUL byte) ✓
+EC-17: vault-modal.test.ts ✓
+EC-18: ipc-timeout.test.ts ✓
+EC-19: vault-modal.test.ts ✓
+EC-20: effectful-isolation.test.ts ✓
+
+=== Actual bun test output (target feature tests) ===
+
+bun test v1.3.11 (af24e281)
+
+src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/tauriAdapter' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/vault-modal.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/vaultModalLogic' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/vault-modal.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/design-tokens.audit.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/designTokens' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/design-tokens.audit.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/corrupted-banner.unit.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/corruptedBanner' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/corrupted-banner.unit.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/bootOrchestrator' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/app-shell-state.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/appShellStore' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/route-startup-result.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/routeStartupResult' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/route-startup-result.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/negative-scope.test.ts:
+(fail) RED PHASE GUARD: AppShell.svelte must exist > AppShell.svelte production module must exist (RED: file not found)
+(fail) RED PHASE GUARD: AppShell.svelte must exist > tauriAdapter.ts production module must exist (RED: file not found)
+(fail) RED PHASE GUARD: AppShell.svelte must exist > routeStartupResult.ts production module must exist (RED: file not found)
+(fail) RED PHASE GUARD: AppShell.svelte must exist > appShellStore.ts production module must exist (RED: file not found)
+(fail) RED PHASE GUARD: AppShell.svelte must exist > designTokens.ts production module must exist (RED: file not found)
+
+src/lib/ui/app-shell/__tests__/loading-state.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/appShellStore' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/loading-state.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/layout-frame.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/designTokens' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/layout-frame.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/map-vault-path-error.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/errorMessages' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/map-vault-path-error.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/routeStartupResult' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/prop/modal-closeable.prop.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/modalClosePolicy' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/prop/corrupted-banner.prop.test.ts'
+-------------------------------
+
+src/lib/ui/app-shell/__tests__/prop/corrupted-banner.prop.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/ui/app-shell/corruptedBanner' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/ui/app-shell/__tests__/prop/corrupted-banner.prop.test.ts'
+-------------------------------
+
+ 10 pass
+ 18 fail
+ 13 errors
+ 15 expect() calls
+Ran 28 tests across 14 files. [70.00ms]
+
+=== Actual bun test output (regression baseline — domain tests only) ===
+
+bun test v1.3.11 (af24e281)
+
+ 474 pass
+ 0 fail
+ 1490 expect() calls
+Ran 474 tests across 27 files. [307.00ms]
+
+(Note: full bun test run shows 1014 pass, 8 fail across all 104 files.
+ The 8 pre-existing failures are in apply-filter-or-search/__verify__/ harness tests,
+ confirmed pre-existing since commit aa7d408. They are NOT regressions from this feature.)

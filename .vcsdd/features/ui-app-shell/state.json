@@ -564,6 +564,146 @@
         "createdAt": "2026-05-03T10:00:00.000Z",
         "createdInPhase": "1a",
         "externalId": "REQ-022"
+      },
+      {
+        "beadId": "BEAD-042",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/route-startup-result.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-002", "BEAD-031"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ002-PROP007"
+      },
+      {
+        "beadId": "BEAD-043",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/map-vault-path-error.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-005", "BEAD-027"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ005-PROP003"
+      },
+      {
+        "beadId": "BEAD-044",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/corrupted-banner.unit.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-009", "BEAD-014", "BEAD-028"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ009-REQ014-PROP004"
+      },
+      {
+        "beadId": "BEAD-045",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/prop/corrupted-banner.prop.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-028"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-PROP004-fastcheck"
+      },
+      {
+        "beadId": "BEAD-046",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/prop/modal-closeable.prop.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-003", "BEAD-016", "BEAD-029"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ003-REQ016-PROP005-fastcheck"
+      },
+      {
+        "beadId": "BEAD-047",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-001", "BEAD-002", "BEAD-020", "BEAD-025", "BEAD-035", "BEAD-036", "BEAD-037", "BEAD-039"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ001-REQ002-REQ020-PROP001-PROP009-PROP010-PROP012-PROP013"
+      },
+      {
+        "beadId": "BEAD-048",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-041", "BEAD-040"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ022-PROP014"
+      },
+      {
+        "beadId": "BEAD-049",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/vault-modal.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-003", "BEAD-004", "BEAD-005", "BEAD-006", "BEAD-007", "BEAD-016", "BEAD-029", "BEAD-032"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ003-REQ004-REQ005-REQ006-REQ007-REQ016-PROP005-PROP008"
+      },
+      {
+        "beadId": "BEAD-050",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-034", "BEAD-038", "BEAD-039"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ021-PROP011-PROP012"
+      },
+      {
+        "beadId": "BEAD-051",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/design-tokens.audit.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-010", "BEAD-011", "BEAD-012", "BEAD-013", "BEAD-014", "BEAD-015", "BEAD-017", "BEAD-019", "BEAD-030"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ010to015-REQ017-REQ019-PROP006"
+      },
+      {
+        "beadId": "BEAD-052",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/negative-scope.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-020", "BEAD-021", "BEAD-022", "BEAD-023", "BEAD-024", "BEAD-026", "BEAD-038"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-NEGREC001to005-PROP002-PROP011"
+      },
+      {
+        "beadId": "BEAD-053",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/loading-state.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-033", "BEAD-025"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ020-PROP001-loading"
+      },
+      {
+        "beadId": "BEAD-054",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-008", "BEAD-009", "BEAD-010", "BEAD-031", "BEAD-036"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ008-REQ009-REQ010-PROP007-PROP009"
+      },
+      {
+        "beadId": "BEAD-055",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/ui/app-shell/__tests__/layout-frame.test.ts",
+        "status": "red",
+        "linkedBeads": ["BEAD-010", "BEAD-011", "BEAD-012", "BEAD-013", "BEAD-015", "BEAD-017", "BEAD-019", "BEAD-030"],
+        "createdAt": "2026-05-03T11:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TC-REQ010to015-REQ017-REQ019-layout"
       }
     ]
   },
@@ -586,5 +726,12 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T09:33:32.166Z"
+  "updatedAt": "2026-05-03T11:00:00.000Z",
+  "sprint1RedPhase": {
+    "testFiles": 14,
+    "tests": 28,
+    "targetFeatureTests": "failing",
+    "regressionBaseline": "passing",
+    "evidenceLog": ".vcsdd/features/ui-app-shell/evidence/sprint-1-red-phase.log"
+  }
 }
