@@ -328,10 +328,11 @@ describe("PROP-DLN-001: authorizeDeletionPure is pure (referentially transparent
           const snapshot = makeSnapshot(noteId, fm);
           const feed = makeFeed([noteId]);
           const result = authorizeDeletionPure(noteId, null, feed, snapshot);
-          if (result.ok) {
-            const auth = result.value as AuthorizedDeletion;
-            expect(auth.frontmatter).toEqual(fm);
-          }
+          // Fail fast on unexpected Err — property must not be vacuous (FIND-IMPL-DLN-005).
+          expect(result.ok).toBe(true);
+          if (!result.ok) return;
+          const auth = result.value as AuthorizedDeletion;
+          expect(auth.frontmatter).toEqual(fm);
         },
       ),
     );

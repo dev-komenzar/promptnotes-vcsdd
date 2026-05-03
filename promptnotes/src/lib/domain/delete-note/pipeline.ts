@@ -69,13 +69,11 @@ export const deleteNote: DeleteNote = (
     deps.publish(deleteRequested as PublicDomainEvent);
 
     // ── Step 3: trashFile (async I/O — the only await point) ─────────────
-    // filePath sourced here rather than inside authorizeDeletion so that
-    // AuthorizedDeletion stays a canonical type (no widening).
-    // getNoteSnapshot returned non-null at authorization time; a concurrent
-    // removal would produce a not-found FsError from trashFile, which the
-    // graceful path below handles correctly.
-    const filePath = deps.getNoteSnapshot(authorized.noteId)?.filePath ?? "";
-    const trashResult = await deps.trashFile(filePath);
+    // filePath is sourced from authorized.filePath — captured once during
+    // authorizeDeletion (FIND-IMPL-DLN-001 fix). No second getNoteSnapshot call.
+    // A concurrent removal would produce a not-found FsError from trashFile,
+    // which the graceful path below handles correctly.
+    const trashResult = await deps.trashFile(authorized.filePath);
 
     // ── Step 3 result dispatch ────────────────────────────────────────────
     if (trashResult.ok || trashResult.error.kind === "not-found") {

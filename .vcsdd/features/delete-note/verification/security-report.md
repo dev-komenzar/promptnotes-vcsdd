@@ -9,7 +9,7 @@
 | semgrep | NOT INSTALLED | `pip install semgrep` to enable automated pattern scanning. Manual static review performed as substitute. |
 | Wycheproof | NOT APPLICABLE | delete-note contains no cryptographic primitives. No key handling, hash functions, or symmetric/asymmetric encryption. |
 | tsc --noEmit | AVAILABLE | Zero errors in all delete-note source and test files. |
-| bun test | AVAILABLE | 143 pass, 0 fail across 8 test files. |
+| bun test | AVAILABLE | 144 pass, 0 fail across 8 test files. |
 
 Raw execution evidence: `.vcsdd/features/delete-note/verification/security-results/audit-run.txt`
 
@@ -35,14 +35,14 @@ Files audited:
 | Field | Value |
 |-------|-------|
 | Severity | LOW |
-| Surface | `pipeline.ts:77` — second `getNoteSnapshot` call for `filePath` after authorization |
-| Status | Accepted |
+| Surface | `pipeline.ts` — second `getNoteSnapshot` call for `filePath` after authorization (sprint-1) |
+| Status | MITIGATED (sprint-2) |
 
-The `filePath` is retrieved via a second `deps.getNoteSnapshot(authorized.noteId)?.filePath ?? ""` call at pipeline.ts:77, which is distinct from the call made internally during `authorizeDeletion` at line 49. In theory, the snapshot could be mutated between these two calls, yielding a stale or null filePath (falling back to `""`). If filePath is `""`, `trashFile("")` returns `Err({ kind: 'not-found' })`, which the graceful-continue path handles correctly per REQ-DLN-005: `NoteFileDeleted` is emitted, projections are updated, and `Ok(UpdatedProjection)` is returned.
+Sprint-1 description: The `filePath` was retrieved via a second `deps.getNoteSnapshot(authorized.noteId)?.filePath ?? ""` call after authorization, introducing a theoretical TOCTOU window and an empty-string fallback path.
 
-Mitigation in place: the graceful `not-found` path ensures no state corruption even in the theoretical race. The workflow is single-threaded in the Tauri/SvelteKit MVP — concurrent snapshot mutation without external coordination is not possible in the current deployment model.
+Sprint-2 mitigation: `AuthorizedDeletionDelta` (in `_deltas.ts`) now extends `AuthorizedDeletion` with a `filePath: string` field. `authorizeDeletionPure` captures `snapshot.filePath` in the `Ok` branch at authorization time and returns it as part of the `AuthorizedDeletionDelta` value. `pipeline.ts` uses `authorized.filePath` directly at Step 3 — the second `getNoteSnapshot` call and the empty-string fallback have been removed entirely. The TOCTOU window is closed. No new surface introduced.
 
-Recommended future mitigation: carry `filePath` inside `AuthorizedDeletion` (behavioral-spec.md Delta 5, option (a)) to eliminate the second `getNoteSnapshot` call entirely. Deferred to a future sprint.
+Residual note: a concurrent file removal between `authorizeDeletion` and `trashFile` would now yield a `not-found` FsError from the OS (not an empty-path lookup), which the existing graceful-continue path handles correctly per REQ-DLN-005. This is the expected and least-surprise behavior for a single-user desktop application.
 
 ### Check [1]: Path traversal in filePath
 
@@ -72,8 +72,10 @@ Security audit complete. Tools attempted:
 - tsc --noEmit: AVAILABLE; 0 errors in delete-note files
 - bun test: AVAILABLE; 143 pass, 0 fail
 
-Findings: 1 finding (FIND-IMPL-DLN-001 — TOCTOU race, severity LOW, status ACCEPTED).
+Findings: 1 finding (FIND-IMPL-DLN-001 — TOCTOU race, severity LOW, status MITIGATED in sprint-2).
 
-The feature's security posture is sound for its threat model. The workflow is a pure in-process domain pipeline operating on branded typed VOs with I/O confined to the Vault adapter port boundary. The single accepted finding has a graceful recovery path in place and is low-severity in the single-threaded single-user Tauri MVP context.
+Sprint-2 update: FIND-IMPL-DLN-001 is now MITIGATED. The second `getNoteSnapshot` call and the `?? ""` empty-string fallback were removed. `filePath` is captured once in `authorizeDeletionPure` and threaded forward through `AuthorizedDeletionDelta`. No open findings remain.
+
+The feature's security posture is sound for its threat model. The workflow is a pure in-process domain pipeline operating on branded typed VOs with I/O confined to the Vault adapter port boundary. All findings resolved.
 
 Raw execution evidence captured in `.vcsdd/features/delete-note/verification/security-results/audit-run.txt`.

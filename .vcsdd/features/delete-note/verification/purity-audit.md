@@ -1,6 +1,6 @@
 # Purity Boundary Audit
 
-## Feature: delete-note | Date: 2026-05-03
+## Feature: delete-note | Sprint: 2 | Date: 2026-05-03
 
 ## Declared Boundaries
 
@@ -30,10 +30,12 @@ Reviewing the actual implementation in `promptnotes/src/lib/domain/delete-note/`
 - Three-precondition guard: `editingCurrentNoteId === noteId` (a), `!feedHasNote` (b), `snapshot === null` (c), all-pass (d).
 - `feedHasNote` is a local pure helper function (no port access).
 - No `deps` parameter. No `clockNow()` call. No I/O.
-- Returns `Result<AuthorizedDeletion, DeletionErrorDelta>` deterministically.
-- PROP-DLN-001 property tests (100 runs) confirm referential transparency.
-- PROP-DLN-002 example tests verify all four branches.
-- Classification: Pure core. **MATCHES declared.**
+- Sprint-2 change: branch (d) now returns `AuthorizedDeletionDelta { frontmatter, filePath }` — `filePath` is sourced from `snapshot.filePath` at authorization time, captured as a data field. This is a pure data extraction from the already-passed `snapshot` argument; it introduces no new effects, no new dependencies, and no port access. The function signature and return type (`Result<AuthorizedDeletionDelta, DeletionErrorDelta>`) are unchanged in structural character — `AuthorizedDeletionDelta` extends `AuthorizedDeletion` with one additional readonly field.
+- Returns `Result<AuthorizedDeletionDelta, DeletionErrorDelta>` deterministically.
+- PROP-DLN-001 property tests (100 runs) confirm referential transparency still holds after the sprint-2 change.
+- PROP-DLN-002 example tests verify all four branches; branch (d) assertions updated to confirm `auth.filePath === snapshot.filePath`.
+- PROP-DLN-004 property test: `auth.frontmatter` still deep-equals `snapshot.frontmatter` across 100 generated inputs.
+- Classification: Pure core. **MATCHES declared. No purity creep introduced by sprint-2.**
 
 ### `authorizeDeletion` (`authorize-deletion.ts`)
 
@@ -83,21 +85,21 @@ Reviewing the actual implementation in `promptnotes/src/lib/domain/delete-note/`
 
 ### `pipeline.ts` — orchestrator (`deleteNote`)
 
-- Single `deps.clockNow()` call at line 63, after `authorizeDeletion` returns `Ok`. Zero calls on authorization-error paths (lines 51-55 return early before line 63).
-- `deps.publish(deleteRequested)` called at line 69 — before `trashFile`.
-- Second `deps.getNoteSnapshot(authorized.noteId)?.filePath` call at line 77 to retrieve `filePath`. This is a noted implementation detail: `filePath` is not carried in `AuthorizedDeletion` (behavioral-spec.md Delta 5, option (b) chosen — thread as local variable). This second call introduces FIND-IMPL-DLN-001 (TOCTOU, low severity — documented in security-report.md).
-- `deps.trashFile(filePath)` at line 78 — the only `await` point.
-- `updateProjectionsAfterDelete(feed, inventory, noteFileDeleted)` at line 95 — called on success path (trashResult.ok) and not-found graceful path. NOT called on permission/lock/disk-full/unknown paths.
-- `deps.publish(noteFileDeleted)` at line 98 — after Step 4.
-- `removedTagsFromDeletion(inventory, authorized.frontmatter)` at line 102 — pure helper call to check tag count.
-- `deps.publishInternal(tagInventoryUpdated)` at line 110 — conditional, only when `removedTags.length > 0`.
-- `deps.publish(noteDeletionFailed)` at line 131 — on fs-error paths.
+- Single `deps.clockNow()` call after `authorizeDeletion` returns `Ok`. Zero calls on authorization-error paths (early return before the Clock call).
+- `deps.publish(deleteRequested)` — before `trashFile`.
+- Sprint-2 change: `deps.trashFile(authorized.filePath)` — uses `filePath` from `AuthorizedDeletionDelta` directly. The second `deps.getNoteSnapshot` call and `?? ""` fallback have been removed. FIND-IMPL-DLN-001 mitigated.
+- `deps.trashFile(authorized.filePath)` — the only `await` point.
+- `updateProjectionsAfterDelete(feed, inventory, noteFileDeleted)` — called on success path and not-found graceful path. NOT called on permission/lock/disk-full/unknown paths.
+- `deps.publish(noteFileDeleted)` — after Step 4.
+- `removedTagsFromDeletion(inventory, authorized.frontmatter)` — pure helper call to check tag count.
+- `deps.publishInternal(tagInventoryUpdated)` — conditional, only when `removedTags.length > 0`.
+- `deps.publish(noteDeletionFailed)` — on fs-error paths.
 - Clock budget: 1 on all write paths, 0 on authorization-error paths. Verified by PROP-DLN-011 (9 paths, all pass).
 - Classification: Effectful shell (orchestrator). **MATCHES declared.**
 
 ## Summary
 
-No unexpected drift detected. All declared purity boundaries are observed in the implementation.
+No unexpected drift detected. All declared purity boundaries are observed in the sprint-2 implementation.
 
 Specific resolutions verified:
 
@@ -105,8 +107,24 @@ Specific resolutions verified:
 
 - **FIND-SPEC-DLN-002 (BLOCKER — Revision 2)**: `normalizeFsError` contains an explicit `'disk-full'` arm in the exhaustive switch. The `never` default guard would catch any future unhandled variant at compile time. PROP-DLN-006(c) Tier-0 exhaustiveness check and PROP-DLN-017 example test both confirm the explicit arm. **RESOLVED.**
 
-One implementation-level note: `authorizeDeletionPure` is called indirectly via `authorizeDeletion` in `authorize-deletion.ts`, which wraps it by passing `deps.getNoteSnapshot(confirmed.noteId)` as the `snapshot` argument. The pure core itself has no port access — the snapshot lookup is performed in the effectful shell and passed as a data argument. This is the exact `AuthorizeDeletion := (deps, feed, editingCurrentNoteId) => (confirmed) => authorizeDeletionPure(confirmed.noteId, editingCurrentNoteId, feed, deps.getNoteSnapshot(confirmed.noteId))` relationship declared in the spec. No drift.
+- **FIND-IMPL-DLN-001 (TOCTOU — sprint-2 mitigation)**: The second `deps.getNoteSnapshot` call in `pipeline.ts` is now eliminated. `filePath` is captured in `authorizeDeletionPure` (pure core — from the already-provided `snapshot` argument) and carried through `AuthorizedDeletionDelta` to the orchestrator. The orchestrator uses `authorized.filePath` directly at Step 3. No port call, no effectful access, no fallback string introduced in any pure function. **MITIGATED.**
 
-One implementation detail to note for future sprints: `pipeline.ts` makes a second `deps.getNoteSnapshot` call at line 77 to retrieve `filePath` after authorization. The spec (Delta 5) identifies this as option (b) — threading `filePath` as a local variable in the orchestrator rather than adding it to `AuthorizedDeletion`. This is structurally consistent with the declared boundary (the second call is in the effectful orchestrator, not in any pure function) but introduces FIND-IMPL-DLN-001. Migrating to option (a) (carrying `filePath` in `AuthorizedDeletion`) would eliminate this second effectful call. No purity boundary violation — the note is documented here for Phase 6 context.
+Sprint-2 purity re-confirmation:
 
-Required follow-up before Phase 6: None. All declared purity boundaries are observed. All 9 required proof obligations are proved. No unexpected purity drift detected.
+All 7 functions audited for purity creep introduced by the sprint-2 changes:
+
+| Function | Sprint-2 Change | Purity Status |
+|----------|----------------|---------------|
+| `authorizeDeletionPure` | Returns extended `AuthorizedDeletionDelta { frontmatter, filePath }` | Still pure — `filePath` sourced from `snapshot` argument, no new dependencies |
+| `authorizeDeletion` | Pass-through; delegates to updated pure core | Still effectful shell only (read) |
+| `buildDeleteNoteRequested` | No change | Still pure core |
+| `updateProjectionsAfterDelete` | No change | Still pure core; 0 port calls confirmed by PROP-DLN-016 |
+| `normalizeFsError` | No change | Still pure mapping |
+| `removedTagsFromDeletion` | No change | Still pure helper |
+| `deleteNote` (orchestrator) | Removed second `getNoteSnapshot` call; uses `authorized.filePath` | Still effectful shell; no effectful access moved into any pure function |
+
+No purity creep introduced by sprint-2. All 7 functions remain in their declared classification.
+
+One implementation-level note confirmed in sprint-2: `authorizeDeletionPure` is called indirectly via `authorizeDeletion` in `authorize-deletion.ts`, which wraps it by passing `deps.getNoteSnapshot(confirmed.noteId)` as the `snapshot` argument. The pure core itself has no port access — the snapshot lookup is performed in the effectful shell and passed as a data argument. No drift.
+
+Required follow-up before Phase 6: None. All declared purity boundaries are observed. All 9 required proof obligations are proved. No unexpected purity drift detected. FIND-IMPL-DLN-001 mitigated in sprint-2.

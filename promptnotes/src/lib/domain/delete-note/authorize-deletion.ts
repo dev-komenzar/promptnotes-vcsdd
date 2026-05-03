@@ -9,11 +9,11 @@
 // REQ-DLN-006: frontmatter sourcing invariant — Curate snapshot at authorization time
 
 import type { NoteId } from "promptnotes-domain-types/shared/value-objects";
-import type { AuthorizedDeletion, DeletionConfirmed } from "promptnotes-domain-types/curate/stages";
+import type { DeletionConfirmed } from "promptnotes-domain-types/curate/stages";
 import type { Feed } from "promptnotes-domain-types/curate/aggregates";
 import type { CurateDeps } from "promptnotes-domain-types/curate/ports";
 import type { Result } from "promptnotes-domain-types/util/result";
-import type { DeletionErrorDelta } from "./_deltas.js";
+import type { AuthorizedDeletionDelta, DeletionErrorDelta } from "./_deltas.js";
 import { authorizeDeletionPure } from "./authorize-deletion-pure.js";
 
 // ── authorizeDeletion ─────────────────────────────────────────────────────────
@@ -24,8 +24,8 @@ export function authorizeDeletion(
   deps: CurateDeps,
   feed: Feed,
   editingCurrentNoteId: NoteId | null,
-): (confirmed: DeletionConfirmed) => Result<AuthorizedDeletion, DeletionErrorDelta> {
-  return (confirmed: DeletionConfirmed): Result<AuthorizedDeletion, DeletionErrorDelta> => {
+): (confirmed: DeletionConfirmed) => Result<AuthorizedDeletionDelta, DeletionErrorDelta> {
+  return (confirmed: DeletionConfirmed): Result<AuthorizedDeletionDelta, DeletionErrorDelta> => {
     const snapshot = deps.getNoteSnapshot(confirmed.noteId);
     return authorizeDeletionPure(confirmed.noteId, editingCurrentNoteId, feed, snapshot);
   };

@@ -231,6 +231,35 @@ describe("REQ-DLN-001: Happy path — authorization succeeds, trash succeeds, pr
     expect(deleted).toBeDefined();
   });
 
+  test("REQ-DLN-006: NoteFileDeleted.frontmatter deep-equals snapshot frontmatter at authorization time", async () => {
+    const noteId = makeNoteId("2026-04-30-120000-001");
+    const snapshotFrontmatter = makeFrontmatter({
+      tags: [makeTag("typescript"), makeTag("svelte")],
+      createdAt: makeTimestamp(1111),
+      updatedAt: makeTimestamp(2222),
+    });
+    const deps = makeHappyDeps({
+      noteId,
+      noteTags: [makeTag("typescript"), makeTag("svelte")],
+      snapshotOverride: makeSnapshot(noteId, snapshotFrontmatter),
+    });
+    const feed = makeFeed([noteId]);
+    const inventory = makeTagInventory([
+      makeTagEntry(makeTag("typescript"), 1),
+      makeTagEntry(makeTag("svelte"), 1),
+    ]);
+    const confirmed = makeDeletionConfirmed(noteId);
+
+    await deleteNote(deps, feed, inventory, null)(confirmed);
+
+    const event = deps._publishedEvents.find(
+      (e) => (e as { kind: string }).kind === "note-file-deleted",
+    ) as NoteFileDeleted | undefined;
+
+    expect(event).toBeDefined();
+    expect(event?.frontmatter).toEqual(snapshotFrontmatter);
+  });
+
   test("trashFile called exactly once on happy path", async () => {
     const noteId = makeNoteId("2026-04-30-120000-001");
     const deps = makeHappyDeps({ noteId, noteTags: [] });
@@ -859,10 +888,13 @@ describe("REQ-DLN-010 / PROP-DLN-010: TagInventoryUpdated emission rule", () => 
 
     await deleteNote(deps, feed, inventory, null)(confirmed);
 
-    const tagUpdated = deps._publishInternalEvents.filter(
+    const tagUpdatedList = deps._publishInternalEvents.filter(
       (e) => (e as { kind: string }).kind === "tag-inventory-updated",
     );
-    expect(tagUpdated.length).toBe(1);
+    expect(tagUpdatedList.length).toBe(1);
+    const tagUpdated = tagUpdatedList[0] as { addedTags: unknown[]; removedTags: unknown[] };
+    expect(tagUpdated.addedTags.length).toBe(0);
+    expect(tagUpdated.removedTags.map(String)).toEqual([String(tag)]);
   });
 
   test("TagInventoryUpdated emitted when note has tags with usageCount: 5 (decrement without prune)", async () => {
@@ -875,10 +907,13 @@ describe("REQ-DLN-010 / PROP-DLN-010: TagInventoryUpdated emission rule", () => 
 
     await deleteNote(deps, feed, inventory, null)(confirmed);
 
-    const tagUpdated = deps._publishInternalEvents.filter(
+    const tagUpdatedList = deps._publishInternalEvents.filter(
       (e) => (e as { kind: string }).kind === "tag-inventory-updated",
     );
-    expect(tagUpdated.length).toBe(1);
+    expect(tagUpdatedList.length).toBe(1);
+    const tagUpdated = tagUpdatedList[0] as { addedTags: unknown[]; removedTags: unknown[] };
+    expect(tagUpdated.addedTags.length).toBe(0);
+    expect(tagUpdated.removedTags.map(String)).toEqual([String(tag)]);
   });
 
   test("TagInventoryUpdated NOT emitted when note has no tags", async () => {

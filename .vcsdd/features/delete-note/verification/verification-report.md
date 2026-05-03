@@ -1,6 +1,6 @@
 # Verification Report
 
-## Feature: delete-note | Sprint: 1 | Date: 2026-05-03
+## Feature: delete-note | Sprint: 2 | Date: 2026-05-03
 
 ## Proof Obligations
 
@@ -48,6 +48,26 @@ Command: `cd promptnotes && bunx --bun tsc --noEmit -p . 2>&1 | grep "delete-not
 Errors in delete-note impl and tests: **0**
 Pre-existing errors in OTHER feature test files: 9
 (apply-filter-or-search: 6 errors around `fc.stringOf` API version; edit-past-note-start: 3 errors around `SwitchError` type. These are unrelated to delete-note; documented but not fixed per Phase 5 read-only constraint.)
+
+## Sprint-2 Re-verification
+
+Re-run date: 2026-05-03
+
+Sprint-2 changes verified:
+
+- `_deltas.ts`: `AuthorizedDeletionDelta` now extends `AuthorizedDeletion` with `filePath: string`.
+- `authorize-deletion-pure.ts`: branch (d) captures `snapshot.filePath` into the returned `AuthorizedDeletionDelta`. The function remains structurally pure — no port calls, no side effects.
+- `authorize-deletion.ts`: pass-through; delegates to the updated pure core.
+- `pipeline.ts`: removed the second `deps.getNoteSnapshot` call. `authorized.filePath` is used directly at Step 3. No empty-string fallback. FIND-IMPL-DLN-001 mitigated.
+- Tests: FIND-IMPL-DLN-003/004/005 fixes applied; 1 new test added (144 total vs. 143 in sprint-1).
+
+All 18 proof obligations re-verified against sprint-2 code:
+
+- PROP-DLN-001 through PROP-DLN-018: all still **proved**. No regression.
+- PROP-DLN-004 updated coverage: `authorizeDeletionPure` now returns `{ frontmatter, filePath }` in the `Ok` branch. Property test still passes because `auth.frontmatter` still deep-equals `snapshot.frontmatter`.
+- PROP-DLN-002 branch (d) assertion updated in tests to confirm `auth.filePath === snapshot.filePath` alongside `auth.frontmatter === snapshot.frontmatter`.
+
+Test count: **144 pass, 0 fail** (795 expect() calls, 89 ms, 8 files). Up from 143 in sprint-1.
 
 ## Results
 
@@ -176,5 +196,5 @@ Pre-existing errors in OTHER feature test files: 9
 - Non-required obligations: 9
 - Non-required proved: 9
 - Total obligations: 18 / 18 proved
-- Total test count: **143 pass, 0 fail**
+- Total test count: **144 pass, 0 fail** (sprint-2; up from 143 in sprint-1)
 - TypeScript check (delete-note files): **0 errors**

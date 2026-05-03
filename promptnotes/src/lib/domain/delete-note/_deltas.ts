@@ -96,19 +96,30 @@ export type UpdateProjectionsAfterDelete = (
   event: NoteFileDeleted,
 ) => UpdatedProjection;
 
+// ── AuthorizedDeletionDelta ───────────────────────────────────────────────────
+/** Local augmentation of the canonical AuthorizedDeletion stage type.
+ *  Adds filePath so the orchestrator can pass it directly to trashFile
+ *  without a second getNoteSnapshot call (FIND-IMPL-DLN-001 fix — Delta 5 refinement).
+ *  The filePath is captured once during authorizeDeletion and threaded forward.
+ *  Canonical docs/domain/code/ts/src/curate/stages.ts is NOT modified per
+ *  project convention (see behavioral-spec.md Cross-context Dependencies §Convention note). */
+export type AuthorizedDeletionDelta = AuthorizedDeletion & {
+  readonly filePath: string;
+};
+
 // ── AuthorizeDeletionPure ─────────────────────────────────────────────────────
 /** Pure authorization core (proof target PROP-DLN-001 / PROP-DLN-002).
  *  Three-precondition guard (FIND-SPEC-DLN-003):
  *    (a) editingCurrentNoteId === noteId → Err({ kind: 'editing-in-progress' })
  *    (b) !Feed.hasNote(feed, noteId)     → Err({ kind: 'not-in-feed' })
  *    (c) snapshot === null               → Err({ kind: 'not-in-feed', cause: 'snapshot-missing' })
- *    (d) all pass                        → Ok(AuthorizedDeletion { frontmatter: snapshot.frontmatter }) */
+ *    (d) all pass                        → Ok(AuthorizedDeletionDelta { frontmatter, filePath }) */
 export type AuthorizeDeletionPure = (
   noteId: NoteId,
   editingCurrentNoteId: NoteId | null,
   feed: Feed,
   snapshot: NoteFileSnapshot | null,
-) => Result<AuthorizedDeletion, DeletionErrorDelta>;
+) => Result<AuthorizedDeletionDelta, DeletionErrorDelta>;
 
 // Re-export canonical types for convenience
 export type {

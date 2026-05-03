@@ -222,6 +222,8 @@ This diverges from the other `FsError` variants (`permission`, `lock`, `disk-ful
 
 This section documents all cross-context function reuse and contract modifications required by this workflow. Phase 2 implementation will apply these deltas. The spec declares them here; modification of the canonical files occurs in Phase 2b.
 
+**Convention note (FIND-IMPL-DLN-002)**: Per project convention (mirroring tag-chip-update), all contract deltas are realized as local mirror types in `promptnotes/src/lib/domain/<feature>/_deltas.ts`. Canonical files under `docs/domain/code/ts/src/**` are not modified during feature implementation. The `as DeletionError` cast at the orchestrator boundary in `pipeline.ts` is the structural marker of this convention — it bridges `DeletionErrorDelta` (local, with `cause?: 'snapshot-missing'`) to the canonical `DeletionError` type. The cast is intentional: `DeletionErrorDelta` is a structural superset of `DeletionError` (the optional `cause` field is compatible with the canonical `not-in-feed` variant per TypeScript structural subtyping).
+
 ### Delta 1: `TrashFile` port — NEW export in `docs/domain/code/ts/src/curate/ports.ts`
 
 ```typescript

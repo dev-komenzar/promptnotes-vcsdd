@@ -1,0 +1,22 @@
+VCSDD Phase 2c (sprint-2 adjustment) evidence — delete-note feature
+target-feature-tests: passing
+regression-baseline: passing
+
+=== delete-note ===
+bun test v1.3.11 (af24e281)
+
+ 144 pass
+ 0 fail
+ 795 expect() calls
+Ran 144 tests across 8 files. [89.00ms]
+
+=== regression: tag-chip-update + capture-auto-save ===
+bun test v1.3.11 (af24e281)
+
+ 213 pass
+ 0 fail
+ 278 expect() calls
+Ran 213 tests across 25 files. [2.45s]
+
+=== TS strict (delete-note files) ===
+No errors in delete-note files.

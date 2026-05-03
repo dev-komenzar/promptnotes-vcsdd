@@ -1,0 +1,98 @@
+{
+  "sprintNumber": 2,
+  "feature": "delete-note",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "proof-result",
+          "location": "promptnotes/src/lib/domain/delete-note/pipeline.ts",
+          "description": "REQ-DLN-001..012 happy and error paths emit canonical events DeleteNoteRequested / NoteFileDeleted / NoteDeletionFailed (Public) and TagInventoryUpdated (Internal). Outer-curry signature (deps, feed, inventory, editingCurrentNoteId) matches behavioral-spec.md Delta 4."
+        },
+        {
+          "type": "proof-result",
+          "location": ".vcsdd/features/delete-note/specs/behavioral-spec.md",
+          "description": "Revision 2 + sprint-2 convention note. All 6 contract deltas (TrashFile, DeleteNoteDeps, BuildDeleteNoteRequested, outer curry, AuthorizationError cause, AuthorizedDeletion filePath) realized in promptnotes/src/lib/domain/delete-note/_deltas.ts per documented convention."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "proof-result",
+          "location": "promptnotes/src/lib/domain/__tests__/delete-note/pipeline.test.ts",
+          "description": "REQ-DLN-005 fs.not-found graceful continue, REQ-DLN-013 disk-full normalization to 'unknown', snapshot-missing path, AuthorizationError optional cause propagation, FsError.unknown.detail propagation to NoteDeletionFailed.detail all covered by named tests"
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/delete-note/evidence/sprint-2-refactor.log",
+          "description": "144/144 delete-note tests pass; 213/213 regression baseline (tag-chip-update + capture-auto-save) pass; tsc --noEmit clean for delete-note files"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "proof-result",
+          "location": "promptnotes/src/lib/domain/__tests__/delete-note/__verify__/prop-dln-015-non-coupling.harness.test.ts",
+          "description": "PROP-DLN-015: keyof DeleteNoteDeps does not include any editor-buffer key (no getEditorBuffer, no editingState). Structural non-coupling enforced at type level."
+        },
+        {
+          "type": "proof-result",
+          "location": "promptnotes/src/lib/domain/__tests__/delete-note/__verify__/prop-dln-014-event-channels.harness.test.ts",
+          "description": "PROP-DLN-014: DeleteNoteRequested/NoteFileDeleted/NoteDeletionFailed are PublicDomainEvent; TagInventoryUpdated/NoteDeletion*Internal are CurateInternalEvent — verified at type level"
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "proof-result",
+          "location": ".vcsdd/features/delete-note/verification/verification-report.md",
+          "description": "All 18 proof obligations (PROP-DLN-001..018) PASS at sprint-2; 9 marked required; verifier audit confirms purity invariants hold after sprint-2 changes"
+        },
+        {
+          "type": "proof-result",
+          "location": ".vcsdd/features/delete-note/verification/security-report.md",
+          "description": "Sprint-2 mitigates FIND-IMPL-DLN-001 (TOCTOU on filePath) by threading filePath through AuthorizedDeletion; status changed from ACCEPTED to MITIGATED"
+        },
+        {
+          "type": "proof-result",
+          "location": ".vcsdd/features/delete-note/verification/purity-audit.md",
+          "description": "7/7 functions audited; pure cores remain pure after sprint-2 changes (authorizeDeletionPure now returns extended AuthorizedDeletion with filePath but stays structurally pure)"
+        }
+      ]
+    }
+  ],
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-03T07:30:00.000Z",
+  "iteration": 1,
+  "reviewContext": {
+    "reviewType": "implementation"
+  },
+  "convergenceSignals": {
+    "findingCount": 0,
+    "previousFindingCount": 5,
+    "allCriteriaEvaluated": true,
+    "duplicateFindings": []
+  }
+}

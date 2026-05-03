@@ -15,10 +15,9 @@
 
 import type { NoteId } from "promptnotes-domain-types/shared/value-objects";
 import type { NoteFileSnapshot } from "promptnotes-domain-types/shared/snapshots";
-import type { AuthorizedDeletion } from "promptnotes-domain-types/curate/stages";
 import type { Feed } from "promptnotes-domain-types/curate/aggregates";
 import type { Result } from "promptnotes-domain-types/util/result";
-import type { AuthorizeDeletionPure, DeletionErrorDelta } from "./_deltas.js";
+import type { AuthorizeDeletionPure, AuthorizedDeletionDelta, DeletionErrorDelta } from "./_deltas.js";
 
 // ── Feed.hasNote inline implementation ───────────────────────────────────────
 
@@ -39,7 +38,7 @@ export const authorizeDeletionPure: AuthorizeDeletionPure = (
   editingCurrentNoteId: NoteId | null,
   feed: Feed,
   snapshot: NoteFileSnapshot | null,
-): Result<AuthorizedDeletion, DeletionErrorDelta> => {
+): Result<AuthorizedDeletionDelta, DeletionErrorDelta> => {
   // Branch (a): editing-in-progress — fires before Feed/snapshot checks
   if (editingCurrentNoteId !== null && String(editingCurrentNoteId) === String(noteId)) {
     const error: DeletionErrorDelta = {
@@ -69,10 +68,13 @@ export const authorizeDeletionPure: AuthorizeDeletionPure = (
 
   // Branch (d): all three preconditions hold — authorization succeeds
   // PROP-DLN-004: frontmatter sourced from snapshot (Curate snapshot, not editor buffer)
-  const authorized: AuthorizedDeletion = {
+  // FIND-IMPL-DLN-001: filePath captured here once so the orchestrator can thread it
+  // directly to trashFile without a second getNoteSnapshot call.
+  const authorized: AuthorizedDeletionDelta = {
     kind: "AuthorizedDeletion",
     noteId,
     frontmatter: snapshot.frontmatter,
+    filePath: snapshot.filePath,
   };
   return { ok: true, value: authorized };
 };
