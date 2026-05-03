@@ -2,7 +2,7 @@
   "featureName": "delete-note",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "1c",
   "phaseHistory": [
     {
       "from": "init",
@@ -13,19 +13,40 @@
       "from": "1a",
       "to": "1b",
       "timestamp": "2026-05-03T04:49:22.336Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-03T05:15:33.840Z",
+      "reason": "spec review iter-2 PASS (lean mode); 6/6 iter-1 findings resolved"
     }
   ],
   "iterations": {
     "1a": 1,
-    "1b": 1
+    "1b": 1,
+    "1c": 1
   },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-delete-note-1777783100087",
     "beads": []
   },
-  "gates": {},
+  "gates": {
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-03T05:15:33.842Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2,
+        "findingCount": 1,
+        "severity": "MINOR (non-blocking)",
+        "resolvedFromIter1": "6/6"
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-03T05:15:33.842Z"
+    }
+  },
   "sprintCount": 0,
   "createdAt": "2026-05-03T04:38:20.086Z",
-  "updatedAt": "2026-05-03T04:49:22.336Z"
+  "updatedAt": "2026-05-03T05:15:33.842Z"
 }

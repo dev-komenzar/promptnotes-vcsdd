@@ -1,0 +1,20 @@
+{
+  "reviewType": "spec",
+  "feature": "delete-note",
+  "phase": "1c",
+  "iteration": 2,
+  "mode": "lean",
+  "language": "typescript",
+  "artifactsToReview": [
+    ".vcsdd/features/delete-note/specs/behavioral-spec.md",
+    ".vcsdd/features/delete-note/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "outputDirectory": ".vcsdd/features/delete-note/reviews/spec/iteration-2/output",
+  "previousIteration": {
+    "iteration": 1,
+    "verdict": "FAIL",
+    "findingCount": 6,
+    "summary": "2 BLOCKER, 2 MAJOR, 2 MINOR — addressed in Revision 2"
+  }
+}
