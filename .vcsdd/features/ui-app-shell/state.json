@@ -2,7 +2,7 @@
   "featureName": "ui-app-shell",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -95,6 +95,20 @@
       "to": "2a",
       "timestamp": "2026-05-03T11:24:19.128Z",
       "reason": "sprint-2 iter-2 FAIL: 10 findings (2C/7M/1m). 2->2a, 7->2b (incl FIND-401/402 Tauri stubs), 1->2c. iter-3/5.",
+      "sprint": 3
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-03T11:30:27.170Z",
+      "reason": "sprint-3 red phase complete: FIND-409 deterministic ordering test + FIND-410 DOM-mount constraint documented. 213 tests pass (was 211).",
+      "sprint": 3
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-03T11:55:00.000Z",
+      "reason": "sprint-3 green phase complete: FIND-401/402/403/404/405/406/407 addressed, designTokens.ts CORRUPTED_BANNER_STYLES export added. 1235 tests pass (was 213; domain tests now included). bun run check: 0 app-shell errors. [refactor (2c) work continued: FIND-408 appShellStore write surface narrowed to subscribe-only. set/update removed from public interface. audit-note: builder agent attempted invalid phase 'contract-review' transition which was rejected; currentPhase remains 2c per strict transition map]",
       "sprint": 3
     }
   ],
@@ -1392,5 +1406,5 @@
   },
   "sprintCount": 3,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T11:24:19.128Z"
+  "updatedAt": "2026-05-03T12:05:00.000Z"
 }

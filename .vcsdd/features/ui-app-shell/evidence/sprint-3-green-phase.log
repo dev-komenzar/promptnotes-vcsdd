@@ -1,0 +1,66 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+## Phase 2b Summary
+
+All sprint-3 findings implemented and tests green.
+
+### Findings Addressed in Phase 2b
+
+FIND-401: Rust lib.rs — removed invoke_app_startup command and all DTOs; added
+  settings_load/settings_save_impl helper functions; settings file at
+  XDG_CONFIG_HOME (or ~/.config)/promptnotes/settings.json.
+
+FIND-402: try_vault_path — replaced starts_with('/') with Path::new().is_absolute()
+  for cross-platform absolute path validation.
+
+FIND-403: AppShell.svelte — changed from aria-hidden/inert pattern to conditional
+  rendering ({#if state === "Configured"} etc.) satisfying EARS spec literally.
+
+FIND-404: Write authority — bootOrchestrator no longer calls setAppShellState.
+  AppShell.svelte writes Loading before calling bootOrchestrator, applies
+  routeResult.state after. effectful-isolation.test.ts ALLOWED_WRITERS updated.
+
+FIND-405: tauriAdapter.ts — createTauriAdapter.invokeAppStartup() now calls
+  runTsAppStartupPipeline() which orchestrates settings_load + fs_stat_dir +
+  fs_list_markdown + fs_read_file IPC calls, pre-resolves async data, then runs
+  pure runAppStartupPipeline with synchronous port adapters. PROP-002 exemption
+  via @vcsdd-allow-brand-construction JSDoc comment.
+
+FIND-406: VaultSetupModal.svelte — focus trap implemented with onMount capturing
+  triggerElement (document.activeElement), initial focus set on first focusable
+  element via Promise.resolve().then(), onDestroy restores focus.
+
+FIND-407: VaultSetupModal.svelte — error banners only render when
+  modalState.errorMessage !== undefined (removed ?? fallback defaults).
+
+designTokens.ts — added CORRUPTED_BANNER_STYLES export (warnColor, border,
+  borderRadius, fontSize, fontWeight) satisfying REQ-009 AppShell.svelte import.
+
+### Test Results
+
+```
+bun test v1.3.11 (af24e281)
+
+ 1235 pass
+ 0 fail
+ 22371 expect() calls
+Ran 1235 tests across 118 files. [13.69s]
+```
+
+### bun run check
+
+3 pre-existing errors in src/lib/domain/__tests__/ (Tag brand type, SwitchError
+never type). These exist in the domain layer and are unrelated to ui-app-shell.
+All ui-app-shell TypeScript errors resolved.
+
+Files changed in Phase 2b:
+- promptnotes/src-tauri/src/lib.rs
+- promptnotes/src/lib/ui/app-shell/AppShell.svelte
+- promptnotes/src/lib/ui/app-shell/VaultSetupModal.svelte
+- promptnotes/src/lib/ui/app-shell/bootOrchestrator.ts
+- promptnotes/src/lib/ui/app-shell/tauriAdapter.ts
+- promptnotes/src/lib/ui/app-shell/designTokens.ts
+- promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts
+- promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts
+- promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts

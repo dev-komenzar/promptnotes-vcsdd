@@ -47,16 +47,20 @@ describe("PROP-011: appShellStore write isolation — source file audit", () => 
     "src/lib/ui/app-shell"
   );
 
+  // FIND-404: ALLOWED_WRITERS is now the strict set per REQ-021.
+  // bootOrchestrator.ts is removed — it no longer writes to appShellStore.
+  // Write authority belongs exclusively to AppShell.svelte, VaultSetupModal.svelte,
+  // and appShellStore.ts (which owns the internal _store and setAppShellState).
+  // vaultModalLogic.ts calls setAppShellState after invokeAppStartup — it remains
+  // allowed because it is the designated logic layer for VaultSetupModal.svelte.
   const ALLOWED_WRITERS = new Set([
     path.join(UI_APP_SHELL_DIR, "AppShell.svelte"),
     path.join(UI_APP_SHELL_DIR, "VaultSetupModal.svelte"),
     // appShellStore.ts itself owns the internal _store and setAppShellState;
     // it is the authority module, not an unauthorized writer.
     path.join(UI_APP_SHELL_DIR, "appShellStore.ts"),
-    // bootOrchestrator.ts and vaultModalLogic.ts are the only .ts modules
-    // permitted to call setAppShellState (the indirection setter).
-    // They are explicitly allowed here so the audit catches any NEW violator.
-    path.join(UI_APP_SHELL_DIR, "bootOrchestrator.ts"),
+    // vaultModalLogic.ts is the logic layer for VaultSetupModal.svelte.
+    // It is explicitly allowed here so the audit catches any NEW violator.
     path.join(UI_APP_SHELL_DIR, "vaultModalLogic.ts"),
   ]);
 
@@ -97,7 +101,8 @@ describe("PROP-011: appShellStore write isolation — source file audit", () => 
     return violations;
   }
 
-  test("PROP-011: no file outside AppShell.svelte / VaultSetupModal.svelte / appShellStore.ts / bootOrchestrator.ts / vaultModalLogic.ts writes to appShellStore", () => {
+  // FIND-404: bootOrchestrator.ts removed from allowed set — it no longer writes.
+  test("PROP-011: no file outside AppShell.svelte / VaultSetupModal.svelte / appShellStore.ts / vaultModalLogic.ts writes to appShellStore", () => {
     // This test will FAIL if source dir doesn't exist (RED phase — expected)
     // OR if violations are found (BUG — fix required)
     const violations = findAppShellStoreWrites(UI_APP_SHELL_DIR);
@@ -152,13 +157,15 @@ describe("REQ-021: bootFlag semantics — write isolation and HMR reset", () => 
     expect(content).not.toMatch(/export\s+(let|const|var)\s+bootAttempted/);
   });
 
-  test("REQ-021: appShellStore module is a Svelte writable store", async () => {
-    // RED PHASE: import fails — module doesn't exist yet
+  test("REQ-021 / FIND-408: appShellStore exposes only subscribe — set/update removed from public interface", async () => {
+    // FIND-408: appShellStore is narrowed to { subscribe } only.
+    // set/update are NOT exposed — writes must go through setAppShellState().
     const mod = await import("$lib/ui/app-shell/appShellStore");
     const store = mod.appShellStore;
-    // Svelte writable store has subscribe, set, update
+    // subscribe is the only public method
     expect(typeof store.subscribe).toBe("function");
-    expect(typeof store.set).toBe("function");
-    expect(typeof store.update).toBe("function");
+    // set and update must NOT be accessible on the public object
+    expect("set" in store).toBe(false);
+    expect("update" in store).toBe(false);
   });
 });

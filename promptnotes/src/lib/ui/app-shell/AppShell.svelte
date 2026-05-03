@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { appShellStore } from "./appShellStore.js";
+  import { appShellStore, setAppShellState } from "./appShellStore.js";
   import { bootOrchestrator, getBootAttempted } from "./bootOrchestrator.js";
   import { createTauriAdapter } from "./tauriAdapter.js";
   import { invoke } from "@tauri-apps/api/core";
@@ -29,7 +29,18 @@
 
   onMount(async () => {
     const isBooted = getBootAttempted();
+
+    // FIND-404: AppShell.svelte is the designated write authority for appShellStore.
+    // REQ-001: Set Loading state BEFORE awaiting the pipeline.
+    if (!isBooted) {
+      setAppShellState("Loading");
+    }
+
     const routeResult = await bootOrchestrator({ adapter: tauriAdapter, isBootAttempted: isBooted });
+
+    // FIND-404: Apply the routed state — this is the only write in the boot path.
+    setAppShellState(routeResult.state);
+
     // REQ-009 / FIND-202: Update banner state from the full route result.
     showCorruptedBanner = routeResult.showCorruptedBanner;
     corruptedFilesCount = routeResult.corruptedFilesCount;
@@ -37,26 +48,29 @@
 </script>
 
 <div class="app-shell">
-  <!-- REQ-010: Header — FIND-209: inert + aria-hidden when modal is open -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <header
-    style="background-color: {HEADER_STYLE.backgroundColor}; border-bottom: {HEADER_STYLE.borderBottom}; padding: 8px 16px;"
-    aria-hidden={state === "Unconfigured" || state === "StartupError" ? "true" : undefined}
-    inert={state === "Unconfigured" || state === "StartupError" ? true : undefined}
-  >
-    <span
-      style="font-size: {HEADER_STYLE.titleFontSize}; font-weight: {HEADER_STYLE.titleFontWeight}; color: {HEADER_STYLE.titleColor};"
+  <!-- REQ-010: Header — FIND-403: only rendered when state === 'Configured'.
+       This satisfies the literal EARS clause: "WHEN AppShellState === 'Configured',
+       the system SHALL render header". The modal has aria-modal=true and traps
+       focus, providing equivalent a11y isolation without aria-hidden/inert hacks. -->
+  {#if state === "Configured"}
+    <header
+      style="background-color: {HEADER_STYLE.backgroundColor}; border-bottom: {HEADER_STYLE.borderBottom}; padding: 8px 16px;"
     >
-      PromptNotes
-    </span>
-  </header>
+      <span
+        style="font-size: {HEADER_STYLE.titleFontSize}; font-weight: {HEADER_STYLE.titleFontWeight}; color: {HEADER_STYLE.titleColor};"
+      >
+        PromptNotes
+      </span>
+    </header>
+  {/if}
 
-  <!-- REQ-011: Main area — FIND-209: inert + aria-hidden when modal is open -->
-  <main
-    aria-hidden={state === "Unconfigured" || state === "StartupError" ? "true" : undefined}
-    inert={state === "Unconfigured" || state === "StartupError" ? true : undefined}
-  >
-    {#if state === "Loading"}
+  <!-- REQ-011: Main area — FIND-403: only rendered when state === 'Configured' or
+       for Loading/UnexpectedError transient states. The EARS spec reads:
+       "WHEN AppShellState === 'Configured', SHALL render main". For Loading and
+       UnexpectedError we still render <main> to host the loading skeleton and
+       error banner. Modal states (Unconfigured, StartupError) render no main. -->
+  {#if state === "Loading"}
+    <main>
       <!-- REQ-012: Loading skeleton (aria-hidden skeleton cards) -->
       <div
         role={LOADING_ARIA_ATTRIBUTES.role}
@@ -74,9 +88,11 @@
           style="border-radius: {SKELETON_CARD_STYLE.borderRadius}; background-color: {SKELETON_CARD_STYLE.baseColor}; height: 32px; margin: 8px;"
         ></div>
       </div>
-    {/if}
+    </main>
+  {/if}
 
-    {#if state === "UnexpectedError"}
+  {#if state === "UnexpectedError"}
+    <main>
       <!-- REQ-008: Unexpected error banner (role=alert, no modal) -->
       <div
         data-testid={ERROR_BANNER_TESTID}
@@ -86,9 +102,11 @@
           起動中にエラーが発生しました。アプリを再起動してください。
         </span>
       </div>
-    {/if}
+    </main>
+  {/if}
 
-    {#if state === "Configured"}
+  {#if state === "Configured"}
+    <main>
       <!-- REQ-009 / FIND-202: Corrupted files banner shown iff showCorruptedBanner -->
       {#if showCorruptedBanner}
         <div
@@ -102,8 +120,8 @@
 
       <!-- REQ-012: Main content area placeholder -->
       <slot />
-    {/if}
-  </main>
+    </main>
+  {/if}
 
   <!-- REQ-003: Modal for Unconfigured / StartupError -->
   {#if state === "Unconfigured" || state === "StartupError"}

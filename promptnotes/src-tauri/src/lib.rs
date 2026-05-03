@@ -2,13 +2,23 @@
 //
 // FIND-203: Register all IPC commands invoked by tauriAdapter.ts.
 // Commands registered:
-//   - try_vault_path      (try_vault_path in tauriAdapter)
-//   - invoke_app_startup  (invokeAppStartup in tauriAdapter)
-//   - invoke_configure_vault (invokeConfigureVault in tauriAdapter)
-//   - settings_save       (settings persistence — called by configure-vault pipeline)
-//   - fs_stat_dir         (vault directory existence check)
-//   - fs_list_markdown    (markdown file listing in vault)
-//   - fs_read_file        (file content reading)
+//   - try_vault_path        (path validation)
+//   - invoke_configure_vault (validate dir + persist settings)
+//   - settings_load         (read persisted vault path — FIND-401/402)
+//   - settings_save         (persist vault path to OS config dir)
+//   - fs_stat_dir           (vault directory existence check)
+//   - fs_list_markdown      (markdown file listing in vault)
+//   - fs_read_file          (file content reading)
+//
+// FIND-401: invoke_app_startup removed from Tauri side. Orchestration moves
+//   to the TS side (Option A): createTauriAdapter.invokeAppStartup() calls
+//   settings_load + fs_stat_dir + fs_list_markdown + fs_read_file primitives
+//   and runs the pure TS pipeline (runAppStartupPipeline).
+//
+// FIND-402: invoke_configure_vault now calls settings_save_impl to persist
+//   the settings JSON to the OS-appropriate config directory.
+//
+// FIND-405: try_vault_path uses Path::new(&path).is_absolute() (cross-platform).
 //
 // FIND-214: invoke_configure_vault receives { path } not { vaultPath }.
 
@@ -36,57 +46,92 @@ pub enum VaultConfigErrorDto {
     PermissionDenied { path: String },
 }
 
-// ── AppStartupError shape ─────────────────────────────────────────────
+// ── Settings file helpers ─────────────────────────────────────────────
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(tag = "kind", rename_all = "kebab-case")]
-pub enum AppStartupErrorDto {
-    Config { reason: VaultConfigErrorDto },
-    Scan { reason: ScanReasonDto },
+/// FIND-402: Returns the path to the settings JSON file using the OS-appropriate
+/// config directory. On Linux: ~/.config/promptnotes/settings.json.
+/// Falls back to ~/.promptnotes/settings.json if dirs unavailable.
+fn settings_file_path() -> std::path::PathBuf {
+    let config_dir = std::env::var("XDG_CONFIG_HOME")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|_| {
+            #[cfg(target_os = "windows")]
+            {
+                std::env::var("APPDATA")
+                    .map(std::path::PathBuf::from)
+                    .unwrap_or_else(|_| {
+                        let mut p = std::env::temp_dir();
+                        p.push("promptnotes-config");
+                        p
+                    })
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                let mut home = std::env::var("HOME")
+                    .map(std::path::PathBuf::from)
+                    .unwrap_or_else(|_| std::path::PathBuf::from("/tmp"));
+                home.push(".config");
+                home
+            }
+        });
+
+    let mut p = config_dir;
+    p.push("promptnotes");
+    p.push("settings.json");
+    p
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(tag = "kind", rename_all = "kebab-case")]
-pub enum ScanReasonDto {
-    ListFailed { detail: String },
+/// FIND-402: Write vault path to settings.json.
+/// Creates the parent directory if it does not exist.
+fn settings_save_impl(vault_path: &str) -> Result<(), VaultConfigErrorDto> {
+    let settings_path = settings_file_path();
+
+    if let Some(parent) = settings_path.parent() {
+        std::fs::create_dir_all(parent).map_err(|_| VaultConfigErrorDto::PermissionDenied {
+            path: parent.to_string_lossy().to_string(),
+        })?;
+    }
+
+    let contents = serde_json::json!({ "vaultPath": vault_path });
+    std::fs::write(&settings_path, contents.to_string()).map_err(|e| match e.kind() {
+        std::io::ErrorKind::PermissionDenied => VaultConfigErrorDto::PermissionDenied {
+            path: settings_path.to_string_lossy().to_string(),
+        },
+        _ => VaultConfigErrorDto::PathNotFound {
+            path: settings_path.to_string_lossy().to_string(),
+        },
+    })?;
+
+    Ok(())
 }
 
-// ── InitialUIState shape ──────────────────────────────────────────────
+/// FIND-401: Read vault path from settings.json.
+/// Returns Ok(Some(path)) if configured, Ok(None) if unconfigured.
+fn settings_load_impl() -> Result<Option<String>, VaultConfigErrorDto> {
+    let settings_path = settings_file_path();
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct InitialUIState {
-    pub vault_path: String,
-    pub vault_id: String,
-    pub feed: FeedDto,
-    pub tag_inventory: TagInventoryDto,
-    pub corrupted_files: Vec<CorruptedFileDto>,
-    pub editing_session_state: EditingSessionStateDto,
-}
+    if !settings_path.exists() {
+        return Ok(None);
+    }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct FeedDto {
-    pub notes: Vec<serde_json::Value>,
-    pub filtered_notes: Vec<serde_json::Value>,
-}
+    let contents = std::fs::read_to_string(&settings_path).map_err(|e| match e.kind() {
+        std::io::ErrorKind::PermissionDenied => VaultConfigErrorDto::PermissionDenied {
+            path: settings_path.to_string_lossy().to_string(),
+        },
+        _ => VaultConfigErrorDto::PathNotFound {
+            path: settings_path.to_string_lossy().to_string(),
+        },
+    })?;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct TagInventoryDto {
-    pub tags: Vec<String>,
-}
+    let parsed: serde_json::Value =
+        serde_json::from_str(&contents).unwrap_or(serde_json::Value::Null);
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct CorruptedFileDto {
-    pub file_path: String,
-}
+    let vault_path = parsed
+        .get("vaultPath")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct EditingSessionStateDto {
-    pub kind: String,
+    Ok(vault_path)
 }
 
 // ── try_vault_path ────────────────────────────────────────────────────
@@ -94,18 +139,15 @@ pub struct EditingSessionStateDto {
 /// FIND-203: Validates the raw path string using VaultPath smart constructor rules.
 /// Returns Ok(String) with the validated path, or Err(VaultPathError).
 ///
-/// Implements VaultPath::try_new logic:
-///   - Empty string (or whitespace-only) → VaultPathError::Empty
-///   - Not starting with '/' → VaultPathError::NotAbsolute
-///   - Otherwise → Ok(path)
-///
-/// Note: Existence check happens in invoke_configure_vault.
+/// FIND-405: Use std::path::Path::new(&path).is_absolute() instead of
+/// starts_with('/') — this handles C:\foo on Windows, /foo on Unix, and
+/// \\?\C:\foo UNC paths.
 #[tauri::command]
 fn try_vault_path(raw_path: String) -> Result<String, VaultPathErrorDto> {
     if raw_path.trim().is_empty() {
         return Err(VaultPathErrorDto::Empty);
     }
-    if !raw_path.starts_with('/') {
+    if !Path::new(&raw_path).is_absolute() {
         return Err(VaultPathErrorDto::NotAbsolute);
     }
     Ok(raw_path)
@@ -113,8 +155,9 @@ fn try_vault_path(raw_path: String) -> Result<String, VaultPathErrorDto> {
 
 // ── invoke_configure_vault ────────────────────────────────────────────
 
-/// FIND-203 / FIND-214: Receives { path } (not { vaultPath }).
-/// Validates the vault path exists as a directory, then returns Ok.
+/// FIND-203 / FIND-214 / FIND-402:
+/// Receives { path } (not { vaultPath }).
+/// Validates the vault path exists as a directory, then persists settings.
 #[tauri::command]
 fn invoke_configure_vault(path: String) -> Result<serde_json::Value, VaultConfigErrorDto> {
     let dir = Path::new(&path);
@@ -134,29 +177,29 @@ fn invoke_configure_vault(path: String) -> Result<serde_json::Value, VaultConfig
             };
         }
     }
+
+    // FIND-402: Persist settings after successful validation.
+    settings_save_impl(&path)?;
+
     Ok(serde_json::json!({}))
 }
 
-// ── invoke_app_startup ────────────────────────────────────────────────
+// ── settings_load ─────────────────────────────────────────────────────
 
-/// FIND-203: Runs the AppStartup pipeline.
-/// Stub: returns Unconfigured until settings persistence is implemented.
+/// FIND-401: Read persisted vault path from settings.json.
+/// Returns the vault path string if configured, or null if not yet configured.
+/// Called by the TS-side pipeline orchestrator (Option A: TS owns the pipeline).
 #[tauri::command]
-fn invoke_app_startup() -> Result<InitialUIState, AppStartupErrorDto> {
-    Err(AppStartupErrorDto::Config {
-        reason: VaultConfigErrorDto::Unconfigured,
-    })
+fn settings_load() -> Result<Option<String>, VaultConfigErrorDto> {
+    settings_load_impl()
 }
 
 // ── settings_save ─────────────────────────────────────────────────────
 
-/// FIND-203: Persist vault path to settings file.
+/// FIND-402: Persist vault path to settings.json in the OS config directory.
 #[tauri::command]
 fn settings_save(vault_path: String) -> Result<serde_json::Value, VaultConfigErrorDto> {
-    let dir = Path::new(&vault_path);
-    if !dir.exists() {
-        return Err(VaultConfigErrorDto::PathNotFound { path: vault_path });
-    }
+    settings_save_impl(&vault_path)?;
     Ok(serde_json::json!({}))
 }
 
@@ -231,8 +274,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             try_vault_path,
-            invoke_app_startup,
             invoke_configure_vault,
+            settings_load,
             settings_save,
             fs_stat_dir,
             fs_list_markdown,

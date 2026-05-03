@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { appShellStore } from "./appShellStore.js";
+  import { onMount, onDestroy } from "svelte";
   import { vaultModalSubmitHandler } from "./vaultModalLogic.js";
   import { createTauriAdapter } from "./tauriAdapter.js";
   import { invoke } from "@tauri-apps/api/core";
-  import { mapVaultPathError, mapVaultConfigError } from "./errorMessages.js";
+  // mapVaultPathError and mapVaultConfigError are used in vaultModalLogic.ts.
+  // FIND-407: These are no longer used as fallback ?? in the template (removed to
+  // avoid fabricating error messages when errorMessage is undefined).
   import { DESIGN_TOKENS, MODAL_STYLE } from "./designTokens.js";
   import { VAULT_SETUP_MODAL_TESTID } from "./componentTestIds.js";
   import type { AppShellState } from "./appShellStore.js";
@@ -19,6 +21,10 @@
   // REQ-016 / FIND-204: Focus trap — track first and last focusable elements.
   let modalEl: HTMLDivElement | null = null;
 
+  // FIND-406: Track the element that was focused before the modal opened,
+  // so we can restore focus when the modal closes.
+  let triggerElement: Element | null = null;
+
   /**
    * REQ-016 / FIND-204: Returns the list of focusable elements inside the modal.
    * Selects interactive elements that are not disabled and not inert.
@@ -31,6 +37,32 @@
       )
     );
   }
+
+  // FIND-406: On mount, capture the trigger element and set initial focus
+  // on the first focusable element inside the modal.
+  onMount(() => {
+    // Capture the currently focused element before modal takes focus.
+    triggerElement = document.activeElement;
+
+    // Set initial focus on the first focusable element (input).
+    // Use a microtask to ensure the DOM has fully rendered.
+    Promise.resolve().then(() => {
+      const focusable = getFocusableElements();
+      if (focusable.length > 0) {
+        focusable[0].focus();
+      } else if (modalEl) {
+        // Fall back to focusing the modal container itself.
+        modalEl.focus();
+      }
+    });
+  });
+
+  // FIND-406: On destroy, restore focus to the trigger element.
+  onDestroy(() => {
+    if (triggerElement instanceof HTMLElement) {
+      triggerElement.focus();
+    }
+  });
 
   async function handleSubmit(event: Event) {
     event.preventDefault();
@@ -50,9 +82,10 @@
   }
 
   /**
-   * REQ-016 / FIND-204: Keyboard handler.
+   * REQ-016 / FIND-204 / FIND-406: Keyboard handler.
    * - Esc: disabled (stopPropagation + preventDefault)
    * - Tab: wraps focus within the modal (focus trap)
+   *   Edge case: when no element is focused, Tab focuses first; Shift+Tab focuses last.
    * - Shift+Tab: wraps focus backwards within the modal
    */
   function handleKeydown(event: KeyboardEvent) {
@@ -69,16 +102,17 @@
 
       const firstEl = focusable[0];
       const lastEl = focusable[focusable.length - 1];
+      const active = document.activeElement;
 
       if (event.shiftKey) {
-        // Shift+Tab: if focus is on first element, wrap to last
-        if (document.activeElement === firstEl) {
+        // Shift+Tab: if focus is on first element OR outside modal, wrap to last
+        if (active === firstEl || (active !== null && !modalEl?.contains(active))) {
           event.preventDefault();
           lastEl.focus();
         }
       } else {
-        // Tab: if focus is on last element, wrap to first
-        if (document.activeElement === lastEl) {
+        // Tab: if focus is on last element OR outside modal, wrap to first
+        if (active === lastEl || (active !== null && !modalEl?.contains(active))) {
           event.preventDefault();
           firstEl.focus();
         }
@@ -127,15 +161,18 @@
         placeholder="/home/user/notes"
       />
 
-      {#if modalState.hasError && modalState.errorKind === "vault-path-error"}
+      <!-- FIND-407: Only render error banner when there is a real errorMessage.
+           Do NOT use ?? fallback to fabricate an empty-error message.
+           The modal's error UI only renders when errorMessage is defined. -->
+      {#if modalState.hasError && modalState.errorKind === "vault-path-error" && modalState.errorMessage !== undefined}
         <p style="color: {DESIGN_TOKENS.warnColor}; font-size: 14px; margin-top: 4px;">
-          {modalState.errorMessage ?? mapVaultPathError({ kind: "empty" })}
+          {modalState.errorMessage}
         </p>
       {/if}
 
-      {#if modalState.hasError && modalState.errorKind === "vault-config-error"}
+      {#if modalState.hasError && modalState.errorKind === "vault-config-error" && modalState.errorMessage !== undefined}
         <p style="color: {DESIGN_TOKENS.warnColor}; font-size: 14px; margin-top: 4px;">
-          {modalState.errorMessage ?? mapVaultConfigError({ kind: "path-not-found", path: "" })}
+          {modalState.errorMessage}
         </p>
       {/if}
 

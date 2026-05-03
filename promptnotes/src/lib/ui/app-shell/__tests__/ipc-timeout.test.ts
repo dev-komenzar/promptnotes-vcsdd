@@ -33,6 +33,7 @@ import {
 
 import {
   appShellStore,
+  setAppShellState,
   type AppShellState,
 } from "$lib/ui/app-shell/appShellStore";
 
@@ -121,6 +122,12 @@ describe("PROP-014: bootOrchestrator transitions to UnexpectedError on IPC timeo
   }, 2000); // jest-style timeout: 2s max
 
   test("PROP-014: late-arrival after timeout does NOT overwrite appShellStore UnexpectedError", async () => {
+    // FIND-404: bootOrchestrator no longer writes to the store. AppShell.svelte
+    // (or this test) applies setAppShellState after bootOrchestrator resolves.
+    // The late-arrival protection is now in the return value contract: once
+    // bootOrchestrator returns UnexpectedError and the caller applies it,
+    // any subsequent resolution of the timed-out IPC does not reach the caller.
+
     let resolveIpc!: (v: any) => void;
     const lateAdapter: TauriAdapter = {
       invokeAppStartup: () => new Promise((resolve) => { resolveIpc = resolve; }),
@@ -143,13 +150,19 @@ describe("PROP-014: bootOrchestrator transitions to UnexpectedError on IPC timeo
     const routeResult = await bootPromise;
     expect(routeResult.state).toBe("UnexpectedError");
 
-    // Verify the store is also UnexpectedError right after boot completes
+    // FIND-404: Simulate AppShell.svelte applying the state after bootOrchestrator.
+    setAppShellState(routeResult.state);
+
+    // Verify the store is also UnexpectedError right after the caller applies state
     let storeValueAfterTimeout: AppShellState | undefined;
     const readUnsub = appShellStore.subscribe((v) => { storeValueAfterTimeout = v; });
     readUnsub();
     expect(storeValueAfterTimeout).toBe("UnexpectedError");
 
-    // Now late-arrive a successful Configured resolution
+    // Now late-arrive a successful Configured resolution from the original timed-out IPC.
+    // bootOrchestrator has already returned — the IPC promise resolves into a void.
+    // The caller (AppShell.svelte) only calls setAppShellState ONCE (from bootPromise result).
+    // This late-arrival has no mechanism to update the store.
     resolveIpc({ ok: true, value: mockInitialUIState });
 
     // Flush microtask queue to allow any potential override to propagate
@@ -157,7 +170,9 @@ describe("PROP-014: bootOrchestrator transitions to UnexpectedError on IPC timeo
     await Promise.resolve();
     await Promise.resolve();
 
-    // The store must STILL be UnexpectedError — late-arrival must be discarded
+    // The store must STILL be UnexpectedError — late-arrival is discarded because
+    // bootOrchestrator has already returned and the late Promise resolution
+    // goes nowhere (Promise.race already settled).
     let storeValueAfterLateArrival: AppShellState | undefined;
     const readUnsub2 = appShellStore.subscribe((v) => { storeValueAfterLateArrival = v; });
     readUnsub2();

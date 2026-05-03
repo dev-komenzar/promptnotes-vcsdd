@@ -34,14 +34,17 @@ export type { AppShellState };
 const _store = writable<AppShellState>("Loading");
 
 /**
- * REQ-020: Single Svelte writable store for the app shell state.
- * Initial value is 'Loading'.
- * Exposes subscribe, set, update (full Writable interface).
+ * REQ-020 / REQ-021 (FIND-408): appShellStore exposes ONLY subscribe.
+ * The set/update methods are intentionally removed from the public interface.
+ * All state writes MUST go through setAppShellState() (REQ-021).
+ *
+ * This structural constraint is enforced at the type level: callers cannot
+ * call appShellStore.set() because it does not exist on the exported object.
+ * The PROP-011 audit catches any attempt to call setAppShellState() from
+ * files outside the ALLOWED_WRITERS set.
  */
-export const appShellStore = {
+export const appShellStore: { subscribe: typeof _store.subscribe } = {
   subscribe: _store.subscribe,
-  set: _store.set,
-  update: _store.update,
 };
 
 /**

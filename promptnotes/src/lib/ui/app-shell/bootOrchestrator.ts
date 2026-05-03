@@ -4,11 +4,10 @@
  * Orchestrates the AppStartup pipeline on first mount.
  * Suppresses re-invocation via the isBootAttempted parameter (HMR guard).
  *
- * EFFECTFUL SHELL: writes to appShellStore via setAppShellState,
- * calls TauriAdapter IPC.
- *
- * REQ-021: Write access to appShellStore is restricted. This module
- * calls setAppShellState (not appShellStore.set directly).
+ * FIND-404: Write authority moved to AppShell.svelte. bootOrchestrator no
+ * longer calls setAppShellState — it returns the desired state and the
+ * .svelte file applies it. This satisfies REQ-021 (writes originate from
+ * the two designated .svelte files only).
  *
  * PROP-012: The module-scope bootAttempted flag starts as false at module
  * load and is set to true on the first bootOrchestrator invocation (when
@@ -26,7 +25,7 @@
  * no-op guard against unanticipated adapter implementations that omit the wrap.
  */
 
-import { setAppShellState, appShellStore } from "./appShellStore.js";
+import { appShellStore } from "./appShellStore.js";
 import { routeStartupResult } from "./routeStartupResult.js";
 import { withIpcTimeout, PIPELINE_IPC_TIMEOUT_MS } from "./tauriAdapter.js";
 import type { TauriAdapter } from "./tauriAdapter.js";
@@ -76,8 +75,10 @@ type BootOrchestratorParams = {
  * REQ-001 / PROP-001: Invokes the AppStartup pipeline exactly once.
  * Suppresses re-invocation when isBootAttempted === true.
  *
- * Sets appShellStore to 'Loading' before the IPC call, then transitions
- * to the routed state on completion.
+ * FIND-404: No longer writes to appShellStore directly. Returns the desired
+ * AppShellRouteResult; AppShell.svelte applies the state transition.
+ * The 'initialLoadingState' parameter signals that AppShell.svelte has already
+ * written 'Loading' before calling this function.
  *
  * Returns the full AppShellRouteResult for caller inspection (including
  * showCorruptedBanner and corruptedFiles data — REQ-009 / FIND-202).
@@ -104,18 +105,17 @@ export async function bootOrchestrator(
   // suppressed immediately without waiting for the IPC to settle.
   bootAttempted = true;
 
-  // REQ-001: Transition to Loading BEFORE awaiting the pipeline
-  setAppShellState("Loading");
+  // FIND-404: The Loading state write was moved to AppShell.svelte.
+  // AppShell.svelte writes 'Loading' before calling bootOrchestrator.
 
   try {
     const ipcPromise = adapter.invokeAppStartup();
     const result = await withIpcTimeout(ipcPromise, timeoutMs);
     const routed = routeStartupResult(result);
-    setAppShellState(routed.state);
+    // FIND-404: Return the routed result; AppShell.svelte applies the state write.
     return routed;
   } catch {
     // IPC crash or timeout → UnexpectedError (PROP-009, REQ-022)
-    setAppShellState("UnexpectedError");
     return { state: "UnexpectedError", isModalOpen: false, showCorruptedBanner: false, corruptedFilesCount: 0 };
   }
 }
