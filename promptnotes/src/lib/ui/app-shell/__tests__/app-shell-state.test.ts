@@ -417,12 +417,23 @@ describe("FIND-410: DOM-mount constraint documentation", () => {
     }
   });
 
-  test("FIND-410: @testing-library/svelte is installed (structural check)", async () => {
-    // Verify the package is installed — the structural prerequisite for a
-    // vitest-bridge test is satisfied. The DOM-environment constraint is separate.
-    // Import the pure entry to avoid auto-setup hooks that conflict with bun:test.
-    const stl = await import("@testing-library/svelte/pure");
-    expect(typeof stl.render).toBe("function");
-    expect(typeof stl.screen).toBe("object");
+  test("FIND-410: vitest + jsdom + Svelte mount() による DOM 検証パスが用意されている (structural check)", async () => {
+    // FIND-410 の DOM-mount 制約は follow-up commit で正規実装に格上げされた。
+    // 公式 Svelte 5 推奨の vitest + jsdom + `mount()` パターンを採用し、
+    // 実テストは __tests__/dom/AppShell.dom.vitest.ts に常駐する。
+    // 本テストは「vitest 実行コマンドが package.json scripts に登録されている」
+    // という構造的前提のみを bun:test 側で確認する。
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const packageJsonPath = path.resolve(process.cwd(), "package.json");
+    const pkgRaw = await fs.promises.readFile(packageJsonPath, "utf8");
+    const pkg = JSON.parse(pkgRaw) as { scripts?: Record<string, string> };
+    expect(pkg.scripts?.["test:dom"]).toMatch(/vitest run/);
+    const vitestConfig = await fs.promises.readFile(
+      path.resolve(process.cwd(), "vitest.config.ts"),
+      "utf8",
+    );
+    expect(vitestConfig).toMatch(/jsdom/);
+    expect(vitestConfig).toMatch(/__tests__\/dom\/\*\*\/\*\.vitest\.ts/);
   });
 });
