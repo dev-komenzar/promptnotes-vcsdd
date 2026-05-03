@@ -233,3 +233,6 @@
 {"timestamp":"2026-05-03T04:56:49.548Z","event":"gate_recorded","featureName":"delete-note","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}
 {"timestamp":"2026-05-03T05:15:33.841Z","event":"phase_transition","featureName":"delete-note","from":"1b","to":"1c","iteration":1,"phase":"1c"}
 {"timestamp":"2026-05-03T05:15:33.842Z","event":"gate_recorded","featureName":"delete-note","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-03T05:17:31.603Z","event":"phase_transition","featureName":"delete-note","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-05-03T05:17:31.603Z","event":"sprint_started","featureName":"delete-note","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-05-03T05:31:31.872Z","event":"sprint_started","featureName":"delete-note","sprintNumber":2}

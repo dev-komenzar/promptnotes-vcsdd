@@ -2,7 +2,7 @@
   "featureName": "delete-note",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -19,12 +19,20 @@
       "to": "1c",
       "timestamp": "2026-05-03T05:15:33.840Z",
       "reason": "spec review iter-2 PASS (lean mode); 6/6 iter-1 findings resolved"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-03T05:17:31.602Z",
+      "reason": "spec review PASS; beginning TDD red phase",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 1,
     "1b": 1,
-    "1c": 1
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [],
   "traceability": {
@@ -46,7 +54,7 @@
       "adversaryReviewedAt": "2026-05-03T05:15:33.842Z"
     }
   },
-  "sprintCount": 0,
+  "sprintCount": 2,
   "createdAt": "2026-05-03T04:38:20.086Z",
-  "updatedAt": "2026-05-03T05:15:33.842Z"
+  "updatedAt": "2026-05-03T05:31:31.872Z"
 }

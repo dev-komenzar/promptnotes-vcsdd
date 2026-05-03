@@ -1,0 +1,47 @@
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/delete-note/pipeline.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../delete-note/pipeline' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/delete-note/pipeline.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/delete-note/step3-trash-file.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../delete-note/normalize-fs-error' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/delete-note/step3-trash-file.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/delete-note/step2-build-delete-request.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../delete-note/build-delete-request' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/delete-note/step2-build-delete-request.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/delete-note/step4-update-projections.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../delete-note/update-projections' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/delete-note/step4-update-projections.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../delete-note/authorize-deletion-pure' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/__tests__/delete-note/step1-authorize-deletion.test.ts'
+-------------------------------
+
+
+ 42 pass
+ 5 fail
+ 5 errors
+ 50 expect() calls
+Ran 47 tests across 8 files. [39.00ms]
