@@ -261,3 +261,5 @@
 {"timestamp":"2026-05-03T09:33:32.159Z","event":"gate_recorded","featureName":"ui-app-shell","phase":"1c","verdict":"PASS","reviewedBy":"human"}
 {"timestamp":"2026-05-03T09:33:32.168Z","event":"phase_transition","featureName":"ui-app-shell","from":"1c","to":"2a","iteration":1,"phase":"2a"}
 {"timestamp":"2026-05-03T09:33:32.168Z","event":"sprint_started","featureName":"ui-app-shell","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-05-03T10:06:36.284Z","event":"phase_transition","featureName":"ui-app-shell","from":"2a","to":"2b","iteration":1,"phase":"2b"}
+{"timestamp":"2026-05-03T13:00:00.000Z","event":"phase_transition","featureName":"ui-app-shell","from":"2b","to":"2c","iteration":1,"phase":"2c"}
