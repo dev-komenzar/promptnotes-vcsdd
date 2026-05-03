@@ -1,0 +1,570 @@
+{
+  "featureName": "ui-app-shell",
+  "mode": "strict",
+  "language": "typescript",
+  "currentPhase": "1b",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-03T06:57:56.930Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-03T06:58:01.791Z"
+    }
+  ],
+  "iterations": {
+    "1a": 2,
+    "1b": 2
+  },
+  "proofObligations": [
+    {
+      "id": "PROP-001a",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-025",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+      "revisedFrom": "PROP-001",
+      "revisionIteration": 2
+    },
+    {
+      "id": "PROP-001b",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-035",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+      "addedInIteration": 2
+    },
+    {
+      "id": "PROP-002",
+      "tier": 0,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-026",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-003",
+      "tier": 0,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-027",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-004",
+      "tier": 2,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-028",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-005",
+      "tier": 2,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-029",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-006",
+      "tier": 3,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-030",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-007",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-031",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-008",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-032",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-009",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-036",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+      "addedInIteration": 2
+    },
+    {
+      "id": "PROP-010",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-037",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+      "addedInIteration": 2
+    },
+    {
+      "id": "PROP-011",
+      "tier": 0,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-038",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+      "addedInIteration": 2
+    },
+    {
+      "id": "PROP-012",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-039",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+      "addedInIteration": 2
+    }
+  ],
+  "traceability": {
+    "epicId": "VCSDD-ui-app-shell-1777790870684",
+    "beads": [
+      {
+        "beadId": "BEAD-001",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-001"
+      },
+      {
+        "beadId": "BEAD-002",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-002"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-003"
+      },
+      {
+        "beadId": "BEAD-004",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-004"
+      },
+      {
+        "beadId": "BEAD-005",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-005"
+      },
+      {
+        "beadId": "BEAD-006",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-006"
+      },
+      {
+        "beadId": "BEAD-007",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-007"
+      },
+      {
+        "beadId": "BEAD-008",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-008"
+      },
+      {
+        "beadId": "BEAD-009",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-009"
+      },
+      {
+        "beadId": "BEAD-010",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-010"
+      },
+      {
+        "beadId": "BEAD-011",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-011"
+      },
+      {
+        "beadId": "BEAD-012",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-012"
+      },
+      {
+        "beadId": "BEAD-013",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-013"
+      },
+      {
+        "beadId": "BEAD-014",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-014"
+      },
+      {
+        "beadId": "BEAD-015",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-015"
+      },
+      {
+        "beadId": "BEAD-016",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-016"
+      },
+      {
+        "beadId": "BEAD-017",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-017"
+      },
+      {
+        "beadId": "BEAD-018",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-018"
+      },
+      {
+        "beadId": "BEAD-019",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-019"
+      },
+      {
+        "beadId": "BEAD-020",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "NEG-REQ-001"
+      },
+      {
+        "beadId": "BEAD-021",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "NEG-REQ-002"
+      },
+      {
+        "beadId": "BEAD-022",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "NEG-REQ-003"
+      },
+      {
+        "beadId": "BEAD-023",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "NEG-REQ-004"
+      },
+      {
+        "beadId": "BEAD-024",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1a",
+        "externalId": "NEG-REQ-005"
+      },
+      {
+        "beadId": "BEAD-025",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-001a",
+        "revisedFrom": "PROP-001",
+        "revisionIteration": 2
+      },
+      {
+        "beadId": "BEAD-026",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-002"
+      },
+      {
+        "beadId": "BEAD-027",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-003"
+      },
+      {
+        "beadId": "BEAD-028",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-004"
+      },
+      {
+        "beadId": "BEAD-029",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-005"
+      },
+      {
+        "beadId": "BEAD-030",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-006"
+      },
+      {
+        "beadId": "BEAD-031",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-007"
+      },
+      {
+        "beadId": "BEAD-032",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T06:59:00.460Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-008"
+      },
+      {
+        "beadId": "BEAD-033",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T07:30:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-020",
+        "addedInIteration": 2,
+        "relatedFinding": "FIND-014"
+      },
+      {
+        "beadId": "BEAD-034",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T07:30:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-021",
+        "addedInIteration": 2,
+        "relatedFinding": "FIND-017"
+      },
+      {
+        "beadId": "BEAD-035",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T07:30:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-001b",
+        "addedInIteration": 2,
+        "relatedFinding": "FIND-007"
+      },
+      {
+        "beadId": "BEAD-036",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T07:30:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-009",
+        "addedInIteration": 2,
+        "relatedFinding": "FIND-005"
+      },
+      {
+        "beadId": "BEAD-037",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T07:30:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-010",
+        "addedInIteration": 2,
+        "relatedFinding": "FIND-005"
+      },
+      {
+        "beadId": "BEAD-038",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T07:30:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-011",
+        "addedInIteration": 2,
+        "relatedFinding": "FIND-017"
+      },
+      {
+        "beadId": "BEAD-039",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-03T07:30:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-012",
+        "addedInIteration": 2,
+        "relatedFinding": "FIND-017"
+      }
+    ]
+  },
+  "gates": {
+    "1c": {
+      "verdict": "FAIL",
+      "timestamp": "2026-05-03T07:14:41.949Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 1,
+        "spec_fidelity": "FAIL",
+        "verification_readiness": "FAIL",
+        "findingsCount": 17,
+        "findingsBySeverity": {
+          "critical": 2,
+          "major": 12,
+          "minor": 3
+        },
+        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-1/output/verdict.json"
+      },
+      "adversaryVerdict": "FAIL",
+      "adversaryReviewedAt": "2026-05-03T07:14:41.949Z"
+    }
+  },
+  "sprintCount": 0,
+  "createdAt": "2026-05-03T06:47:50.684Z",
+  "updatedAt": "2026-05-03T07:35:00.000Z"
+}

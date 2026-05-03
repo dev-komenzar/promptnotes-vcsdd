@@ -1,0 +1,19 @@
+{
+  "feature": "ui-app-shell",
+  "phase": "1c",
+  "iteration": 1,
+  "mode": "strict",
+  "verdict": "FAIL",
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "findingsCount": 17,
+  "findingsBySeverity": {
+    "critical": 2,
+    "major": 12,
+    "minor": 3
+  },
+  "summary": "Phase 1c iteration-1 FAILS in strict mode on both dimensions. Two critical issues: REQ-002's AppShellState union is non-exhaustive against AppStartupError because `scan` errors are not mapped to any concrete state (FIND-002), and REQ-008/REQ-018 lack PROPs entirely with no documented justification (FIND-005). Major spec_fidelity issues: inconsistent Rust smart-constructor naming (FIND-001), REQ-003 EARS/AC contradiction (FIND-003), EC-01 self-contradicts and violates the app-startup dependency contract (FIND-004), REQ-006 leaves the post-configure Tauri command name as 'or equivalent' (FIND-009), NEG-REQ-005 omits VaultId/Timestamp brands (FIND-011), `Loading` AppShellState is never specified (FIND-014), and the edge-case catalog omits symlinks, path-length, network-FS hang, and Settings.save failure variants (FIND-013). Major verification_readiness issues: PROP-005 measures the wrong invariant (FIND-006), PROP-001 only verifies single-mount and never tests the bootAttempted re-mount guard (FIND-007), PROP-002's grep is trivially bypassable (FIND-008), PROP-006's audit cannot detect runtime-injected or non-Svelte-block hex literals (FIND-015), and the EFFECTFUL singletons appShellStore/bootFlag have no PROP guarding their isolation (FIND-017). Minor: wrong DESIGN.md section anchor in REQ-013 (FIND-010), duplicate entry and underspecified rgba allow-list in PROP-006 (FIND-012), and a stale `EditingSessionState` reference in the source-of-truth header (FIND-016).",
+  "reviewedAt": "2026-05-03T00:00:00Z"
+}

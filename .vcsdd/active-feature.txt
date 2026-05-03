@@ -1,1 +1,1 @@
-delete-note
+ui-app-shell

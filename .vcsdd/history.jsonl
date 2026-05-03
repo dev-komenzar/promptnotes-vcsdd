@@ -249,3 +249,7 @@
 {"timestamp":"2026-05-03T06:27:47.241Z","event":"phase_transition","featureName":"delete-note","from":"5","to":"6","iteration":2,"phase":"6"}
 {"timestamp":"2026-05-03T06:31:04.232Z","event":"phase_transition","featureName":"delete-note","from":"6","to":"complete","iteration":1,"phase":"complete"}
 {"timestamp":"2026-05-03T06:31:21.504Z","event":"gate_recorded","featureName":"delete-note","phase":"6","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-03T06:47:50.686Z","event":"feature_created","featureName":"ui-app-shell","mode":"strict","language":"typescript"}
+{"timestamp":"2026-05-03T06:57:56.932Z","event":"phase_transition","featureName":"ui-app-shell","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-05-03T06:58:01.793Z","event":"phase_transition","featureName":"ui-app-shell","from":"1a","to":"1b","iteration":1,"phase":"1b"}
+{"timestamp":"2026-05-03T07:14:41.951Z","event":"gate_recorded","featureName":"ui-app-shell","phase":"1c","verdict":"FAIL","reviewedBy":"adversary"}

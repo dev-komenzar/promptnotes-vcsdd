@@ -307,3 +307,45 @@ What makes Notion's visual language distinctive is its border philosophy. Rather
 6. The warm white (#f6f5f4) section background is essential for visual rhythm
 7. Pill badges (9999px) for status/tags, 4px radius for buttons and inputs
 8. Notion Blue (#0075de) is the only saturated color in core UI -- use it sparingly for CTAs and links
+
+## 10. Token Reference
+
+This section is the **normative source of truth** for all color and rgba values permitted in component source files. Any hex or rgba value used in Svelte components, TypeScript files, or CSS must appear in this section. The audit script `scripts/audit-design-tokens.ts` (PROP-006) reads this section as its allow-list.
+
+### Hex Color Tokens
+
+| Token Name | Value | Source |
+|-----------|-------|--------|
+| Pure White | `#ffffff` | §2 Primary |
+| Notion Black | `#000000f2` | §2 Primary |
+| Notion Blue | `#0075de` | §2 Primary |
+| Deep Navy | `#213183` | §2 Brand Secondary |
+| Active Blue | `#005bab` | §2 Brand Secondary |
+| Warm White | `#f6f5f4` | §2 Warm Neutral Scale |
+| Warm Dark | `#31302e` | §2 Warm Neutral Scale |
+| Warm Gray 500 | `#615d59` | §2 Warm Neutral Scale |
+| Warm Gray 300 | `#a39e98` | §2 Warm Neutral Scale |
+| Teal | `#2a9d99` | §2 Semantic Accent |
+| Green | `#1aae39` | §2 Semantic Accent |
+| Orange (Warn) | `#dd5b00` | §2 Semantic Accent |
+| Pink | `#ff64c8` | §2 Semantic Accent |
+| Purple | `#391c57` | §2 Semantic Accent |
+| Brown | `#523410` | §2 Semantic Accent |
+| Focus Blue | `#097fe8` | §2 Interactive |
+| Link Light Blue | `#62aef0` | §2 Interactive |
+| Badge Blue Bg | `#f2f9ff` | §2 Interactive |
+| Input Border | `#dddddd` | §4 Inputs & Forms |
+
+### rgba Color Tokens
+
+| Token Name | Value | Source |
+|-----------|-------|--------|
+| Near-black text | `rgba(0,0,0,0.95)` | §2 Primary |
+| Input text | `rgba(0,0,0,0.9)` | §4 Inputs & Forms |
+| Whisper Border | `rgba(0,0,0,0.1)` | §2 Shadows & Depth |
+| Secondary button bg | `rgba(0,0,0,0.05)` | §4 Buttons Secondary |
+| Modal overlay scrim | `rgba(0,0,0,0.5)` | §4 Distinctive Components (modal backdrop) |
+| Card Shadow layer 1 | `rgba(0,0,0,0.04)` | §2 Shadows & Depth — Card Shadow |
+| Card Shadow layer 2 | `rgba(0,0,0,0.027)` | §2 Shadows & Depth — Card Shadow |
+| Card / Deep Shadow | `rgba(0,0,0,0.02)` | §2 Shadows & Depth — Card layer 3 / Deep layer 2&3 |
+| Card / Deep Shadow min | `rgba(0,0,0,0.01)` | §2 Shadows & Depth — Card layer 4 / Deep layer 1 |
