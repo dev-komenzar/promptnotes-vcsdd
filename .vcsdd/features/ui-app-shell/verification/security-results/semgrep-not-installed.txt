@@ -1,0 +1,12 @@
+semgrep — 2026-05-03
+
+Command: which semgrep
+Result: NOT INSTALLED
+
+Install command: pip install semgrep  (or: brew install semgrep)
+
+Disposition: SKIP — semgrep not installed. Static analysis covered by:
+  - TypeScript compiler (type-level checks, PROP-002 exhaustive-switch, PROP-003)
+  - ESLint-style source-file audits in __tests__/negative-scope.test.ts and effectful-isolation.test.ts
+  - bun:test design-tokens.audit.test.ts (PROP-006 token allowlist scan)
+  - bun:test startup-error-routing.test.ts (static source-scan for conditional rendering)

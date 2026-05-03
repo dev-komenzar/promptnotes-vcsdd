@@ -2,7 +2,7 @@
   "featureName": "ui-app-shell",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -152,11 +152,19 @@
       "timestamp": "2026-05-03T15:41:40.799Z",
       "reason": "sprint-4 contract approved (0 findings); enter adversarial review iter-4",
       "sprint": 4
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-03T15:42:19.828Z",
+      "reason": "sprint-4 iter-4 Phase 3 PASS — enter formal hardening",
+      "sprint": 4
     }
   ],
   "iterations": {
     "3": 4,
     "4": 3,
+    "5": 1,
     "1a": 2,
     "1b": 2,
     "1c": 1,
@@ -169,113 +177,113 @@
       "id": "PROP-001",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-025",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts"
     },
     {
       "id": "PROP-013",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-035",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts"
     },
     {
       "id": "PROP-014",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-040",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts"
     },
     {
       "id": "PROP-002",
       "tier": 0,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-026",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/negative-scope.test.ts"
     },
     {
       "id": "PROP-003",
       "tier": 0,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-027",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/map-vault-path-error.test.ts"
     },
     {
       "id": "PROP-004",
       "tier": 2,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-028",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/prop/corrupted-banner.prop.test.ts"
     },
     {
       "id": "PROP-005",
       "tier": 2,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-029",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/prop/modal-closeable.prop.test.ts"
     },
     {
       "id": "PROP-006",
       "tier": 3,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-030",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/design-tokens.audit.test.ts"
     },
     {
       "id": "PROP-007",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-031",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/route-startup-result.test.ts"
     },
     {
       "id": "PROP-008",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-032",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/vault-modal.test.ts"
     },
     {
       "id": "PROP-009",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-036",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts"
     },
     {
       "id": "PROP-010",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-037",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts"
     },
     {
       "id": "PROP-011",
       "tier": 0,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-038",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts"
     },
     {
       "id": "PROP-012",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "beadId": "BEAD-039",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+      "artifact": "promptnotes/src/lib/ui/app-shell/__tests__/app-shell-state.test.ts"
     }
   ],
   "traceability": {
@@ -1475,5 +1483,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T15:41:40.848Z"
+  "updatedAt": "2026-05-03T16:00:00.000Z"
 }

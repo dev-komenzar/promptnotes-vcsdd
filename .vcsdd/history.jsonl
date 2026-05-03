@@ -313,3 +313,4 @@
 {"timestamp":"2026-05-03T15:40:45.427Z","event":"gate_recorded","featureName":"ui-app-shell","phase":"contract-review","verdict":"PASS","reviewedBy":"adversary"}
 {"timestamp":"2026-05-03T15:41:40.834Z","event":"phase_transition","featureName":"ui-app-shell","from":"2c","to":"3","iteration":4,"phase":"3"}
 {"timestamp":"2026-05-03T15:41:40.865Z","event":"gate_recorded","featureName":"ui-app-shell","phase":"3","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-03T15:42:19.849Z","event":"phase_transition","featureName":"ui-app-shell","from":"3","to":"5","iteration":1,"phase":"5"}
