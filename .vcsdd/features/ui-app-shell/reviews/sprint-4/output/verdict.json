@@ -1,0 +1,86 @@
+{
+  "sprintNumber": 4,
+  "feature": "ui-app-shell",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-03T16:05:00Z",
+  "iteration": 4,
+  "reviewContext": {
+    "reviewType": "implementation",
+    "contractPath": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md",
+    "contractDigest": "28b42162139c9a65d5cd084b01aaf51851988a821c5bd23a3cdb345da0e2f7f4",
+    "priorClosure": {
+      "FIND-601": "resolved",
+      "FIND-602": "resolved",
+      "FIND-603": "resolved",
+      "FIND-604": "resolved"
+    }
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:57", "description": "FIND-601 closure: header is rendered with `{#if state === \"Loading\" || state === \"Configured\"}` guard. REQ-020 EARS clause ('WHILE Loading THE SYSTEM SHALL render only the global header shell') is satisfied. CRIT-003 passThreshold (header in Loading||Configured) verified."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:72-79", "description": "FIND-602 closure: Loading branch renders only `<div class=\"loading-affordance\">` with LOADING_ARIA_ATTRIBUTES. No `<main>` element appears in the Loading {#if} block. REQ-020 'main feed area SHALL be empty' satisfied. CRIT-018 passThreshold verified."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:94-110", "description": "REQ-011: <main> is wrapped exclusively inside {#if state === \"Configured\"} guard at line 94. CRIT-018 passThreshold for 'full main content block inside Configured guard' verified by static-scan test at startup-error-routing.test.ts:341-354."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:113-115", "description": "REQ-003: VaultSetupModal renders only when `state === \"Unconfigured\" || state === \"StartupError\"`. Modal does NOT appear in Loading, Configured, or UnexpectedError states (verified by file structure)."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:81-91", "description": "REQ-008: UnexpectedError state renders inline error banner with role=alert and data-testid=startup-error-banner. No header, no modal — matches PROP-009 expectation."}
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts:192-355", "description": "FIND-604 closure: 7 static-source-scan tests added under FIND-604/CRIT-003 (4 tests) and FIND-604/CRIT-018 (3 tests). Tests parse AppShell.svelte source via fs.readFileSync at line 190 and assert structural invariants (header in Loading-containing block, header in Configured-containing block, no header in Unconfigured-only or StartupError-only blocks, no <main> in Loading block, no aria-hidden toggle on structural elements, slot in Configured block)."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts:140-158", "description": "EC-20 coverage: bootOrchestrator.ts source declares `let bootAttempted = false;` at line 43 without export keyword. Static-analysis test verifies /let\\s+bootAttempted/ matches and /export\\s+(let|const|var)\\s+bootAttempted/ does NOT match. CRIT-012 passThreshold verified."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/ipc-timeout.test.ts:55-80", "description": "EC-18 coverage: PIPELINE_IPC_TIMEOUT_MS constant test (=== 30000) and withIpcTimeout sentinel rejection test on never-resolving Promise. CRIT-011 passThreshold verified."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/corrupted-banner.unit.test.ts:33-72", "description": "EC-09/EC-10/EC-11 coverage: shouldShowCorruptedBanner tested for 0 items (false), 1 item (true), 100 items (true), null/undefined (false). PROP-004 boundary cases covered."}
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:31-48", "description": "CRIT-004 / CRIT-009 / FIND-404: AppShell.svelte is the sole writer in the boot path. It calls setAppShellState(\"Loading\") at line 37 BEFORE awaiting bootOrchestrator, and setAppShellState(routeResult.state) at line 43 AFTER. bootOrchestrator returns AppShellRouteResult without writing to the store."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/bootOrchestrator.ts:90-121", "description": "bootOrchestrator returns AppShellRouteResult; verified no setAppShellState( call appears anywhere in source (including comments — line 8 says 'no longer calls setAppShellState — it returns' which does NOT match the literal /setAppShellState\\(/ pattern)."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/tauriAdapter.ts:161-165", "description": "CRIT-013 / NEG-REQ-005: defaultClockNow uses Math.round(performance.timeOrigin + performance.now()). No Date.now() call appears in tauriAdapter.ts. Brand construction via `as unknown as Timestamp` is permitted under @vcsdd-allow-brand-construction (line 18)."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/lib.rs:54-82", "description": "CRIT-014: settings_file_path() uses std::env::var(\"XDG_CONFIG_HOME\") with HOME fallback. settings_load returns Result<Option<String>>. settings_save_impl writes JSON {\"vaultPath\": path}. invoke_configure_vault calls settings_save_impl(&path) at line 182 after dir.metadata() validation succeeds."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/lib.rs:145-154", "description": "CRIT-002 / FIND-405: try_vault_path uses Path::new(&raw_path).is_absolute() (cross-platform), not raw_path.starts_with('/'). Empty/whitespace check at line 147."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/lib.rs:25-286", "description": "CRIT-001: lib.rs contains no `invoke_app_startup`, `InitialUIState`, `FeedDto`, `TagInventoryDto`, `CorruptedFileDto`, `EditingSessionStateDto`, `AppStartupErrorDto`, or `ScanReasonDto` identifiers. tauri::generate_handler! at line 274-283 lists only: greet, try_vault_path, invoke_configure_vault, settings_load, settings_save, fs_stat_dir, fs_list_markdown, fs_read_file."}
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/corruptedBanner.ts:18-24", "description": "FIND-603 closure: corruptedBanner.ts is the SOLE exporter of CORRUPTED_BANNER_STYLES with REQ-014-correct values (warnColor=#dd5b00, borderRadius=8px, fontSize=16px, fontWeight=500, border=DESIGN_TOKENS.whisperBorder)."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/designTokens.ts:110-112", "description": "FIND-603 closure: designTokens.ts no longer exports CORRUPTED_BANNER_STYLES. Tombstone comment at lines 110-112 directs importers to corruptedBanner.ts. Single-canonical-export structural invariant restored."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:10-12", "description": "FIND-603 closure: AppShell.svelte imports CORRUPTED_BANNER_STYLES from `./corruptedBanner.js` (not from `./designTokens.js`). Production now renders with the spec-correct (16px, whisperBorder) values."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/appShellStore.ts:46-48", "description": "CRIT-008 / FIND-408: appShellStore is exported with explicit type annotation `{ subscribe: typeof _store.subscribe }`. set/update methods are NOT present on the public object. Type-level enforcement combined with PROP-011 audit catches any literal-write bypass."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/effectful-isolation.test.ts:56-110", "description": "CRIT-017: ALLOWED_WRITERS set has exactly 4 entries (AppShell.svelte, VaultSetupModal.svelte, appShellStore.ts, vaultModalLogic.ts). bootOrchestrator.ts is NOT in the allowed set, and the audit checks both direct (appShellStore.set/update) and indirect (setAppShellState) write patterns."}
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/evidence/sprint-4-red-phase.log:5-15", "description": "Phase 2a evidence: new-feature-tests: FAIL (expected RED), regression-baseline: PASS. 7 new static-source-scan tests for FIND-604 added; 2 listed as failing in RED phase as expected (header in Loading, no main in Loading)."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/evidence/sprint-4-green-phase.log:5-50", "description": "Phase 2b evidence: target-feature-tests: PASS, regression-baseline: PASS. All 7 FIND-604 static-scan tests now PASS. 1238 tests pass / 1242 total; the 4 failures are pre-existing domain harness timeouts unrelated to ui-app-shell. bun run check shows 0 errors in app-shell files."},
+        {"type": "file", "location": ".vcsdd/features/ui-app-shell/evidence/sprint-4-refactor.log:5-58", "description": "Phase 2c evidence: target-feature-tests: PASS, regression-baseline: PASS. FIND-603 dedup applied: designTokens.ts:110-120 replaced with tombstone comment. cargo check 0 errors. All 4 FIND-6XX findings cited as resolved with concrete fix locations."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/__tests__/startup-error-routing.test.ts:189-190", "description": "Static-source-scan tests use fs.readFileSync to read AppShell.svelte source at runtime — these tests are robust against test-side mock divergence and verify production source structure directly. CRIT-019 passThreshold verified."},
+        {"type": "file", "location": "promptnotes/src/lib/ui/app-shell/tauriAdapter.ts:18-22", "description": "Purity-boundary documentation: the @vcsdd-allow-brand-construction comment at line 18 explicitly justifies tauriAdapter.ts as the IPC port adapter. Brand construction occurs only at this designated boundary; PROP-002/NEG-REQ-005 audit excludes this file via the comment-based allowlist (negative-scope.test.ts:141)."}
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-001","CRIT-002","CRIT-003","CRIT-004","CRIT-005","CRIT-006","CRIT-007","CRIT-008","CRIT-009","CRIT-010","CRIT-011","CRIT-012","CRIT-013","CRIT-014","CRIT-015","CRIT-016","CRIT-017","CRIT-018","CRIT-019"],
+    "duplicateFindings": []
+  }
+}
