@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-207",
+  "dimension": "edge_case_coverage",
+  "category": "test_quality",
+  "severity": "high",
+  "description": "The spec is unambiguous: `try_vault_path` (Rust `VaultPath::try_new`) only ever returns `VaultPathError::Empty | VaultPathError::NotAbsolute`. `path-not-found` and `permission-denied` are `VaultConfigError` variants surfaced by `invoke_configure_vault`. The spec even has a §\"Smart Constructor は Rust 側が真実\" callout to emphasize this.\n\nYet the EC-06 test fakes a `tryVaultPath` that returns `{ kind: \"path-not-found\" }` (cast to `any`) and the EC-17 test fakes a `tryVaultPath` that returns `{ kind: \"permission-denied\" }` (cast to `any`). These shapes are not reachable through the domain types and the tests therefore exercise behavior that cannot occur in production. The `as any` casts mask the type violation.\n\nReal EC-17 (picker-then-revoke) would surface a `permission-denied` from `invoke_configure_vault`, not from `try_vault_path`. The current test does NOT exercise the actual code path.\n\nThis means contract CRIT-005 / CRIT-007 passThreshold \"EC-06 ... assertions present\" / \"EC-17 ... permission-denied\" is satisfied only by mock-shaped test code that bears no resemblance to the real flow.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/__tests__/vault-modal.test.ts",
+    "lineRange": "308-336"
+  },
+  "routeToPhase": "2a"
+}
