@@ -1,0 +1,33 @@
+{
+  "reviewType": "spec",
+  "feature": "ui-app-shell",
+  "iteration": 2,
+  "mode": "strict",
+  "language": "typescript",
+  "artifactsToReview": [
+    ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+    ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+  ],
+  "referenceDocuments": [
+    "docs/domain/ui-fields.md",
+    "docs/domain/workflows.md",
+    "DESIGN.md",
+    "docs/domain/code/rust/src/value_objects.rs",
+    "docs/domain/code/ts/src/"
+  ],
+  "priorIteration": {
+    "iteration": 1,
+    "verdict": "FAIL",
+    "findingsCount": 17,
+    "findingsBySeverity": { "critical": 2, "major": 12, "minor": 3 },
+    "verdictPath": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-1/output/verdict.json",
+    "findingsToVerifyResolved": [
+      "FIND-001", "FIND-002", "FIND-003", "FIND-004", "FIND-005",
+      "FIND-006", "FIND-007", "FIND-008", "FIND-009", "FIND-010",
+      "FIND-011", "FIND-012", "FIND-013", "FIND-014", "FIND-015",
+      "FIND-016", "FIND-017"
+    ]
+  },
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "outputDir": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-2/output/"
+}

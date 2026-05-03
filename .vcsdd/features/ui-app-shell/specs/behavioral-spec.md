@@ -2,7 +2,7 @@
 
 **Feature**: `ui-app-shell`
 **Phase**: 1a
-**Revision**: 2 (iteration-2)
+**Revision**: 3 (iteration-3)
 **Mode**: strict
 **Source of truth**:
 - `docs/domain/ui-fields.md` §重要設計前提, §画面 2 (Vault設定誘導モーダル), §UI 状態と型の対応
@@ -38,6 +38,12 @@
 | 2 | FIND-016 | Source of truth ヘッダー | `EditingSessionState` を削除し注意書きを追記。 |
 | 2 | FIND-017 | REQ-021 (新規追加) | `appShellStore` / `bootFlag` の書き込み権限・HMR リセットセマンティクスを REQ-021 として明文化。 |
 | 2 | FIND-012 (minor) | REQ-019 | カラートークン許可リストを REQ-019 内に明記し DESIGN.md Token Reference セクションを参照源に。 |
+| 3 | FIND-018 (CRITICAL) | REQ-006 エッジケース, EC-19 | `disk-full`/`lock`/`unknown` は `VaultConfigError` variants ではない。configure-vault REQ-005/REQ-007 がそれらを `path-not-found` に折り畳む。EC-19 を依存契約に整合した記述に置換。 |
+| 3 | FIND-019 (MAJOR) + FIND-013 partial | REQ-022 (新規), REQ-008 EARS 更新 | IPC タイムアウトポリシーを REQ-022 として明文化。タイムアウト所有者・継続時間・Late-arrival 廃棄・PROP-014 を追加。 |
+| 3 | FIND-020 (MAJOR) | EC-12 削除 | EC-12 は REQ-020/REQ-021/EC-20 と矛盾するため削除。アプリ再ロード挙動は REQ-020 + REQ-021 + EC-20 で完全定義済み。 |
+| 3 | FIND-021 (MAJOR) + FIND-012 partial | REQ-011 AC, NFR-07 | スペーシング許可リストを `[2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32]` (DESIGN.md §5 line 184+185) に統一。PROP-006 と同一リストに揃え。 |
+| 3 | FIND-022 (MINOR) | DESIGN.md §4 | §4 Distinctive Components に "Modal & Overlay" サブセクションを追加し `rgba(0,0,0,0.5)` の定義を提供。§10 の出典引用が正当化される。 |
+| 3 | FIND-023 (MINOR) + FIND-007 partial | (verification-architecture.md PROP-013) | PROP-013 タイトルを "in-process 再マウント" に改名し PROP-012 へのクロスリファレンスを追加。(behavioral-spec 変更なし) |
 
 ---
 
@@ -235,10 +241,11 @@ type AppShellState =
 > `invoke_app_startup_scan` のような partial re-entry コマンドは存在せず、本 feature は追加しない。
 
 **エッジケース**:
-- `invoke_configure_vault` が `path-not-found` エラーを返す: REQ-007 に従いモーダル内エラー表示
+- `invoke_configure_vault` が `path-not-found` エラーを返す: REQ-007 に従いモーダル内エラー表示（Settings.save の `disk-full`/`lock`/`unknown` 失敗もここに含まれる — configure-vault REQ-007 がそれらを `path-not-found` に折り畳む。出典: `.vcsdd/features/configure-vault/specs/behavioral-spec.md` Error Catalog lines 310-315）
 - `invoke_configure_vault` が `permission-denied` エラーを返す: REQ-007 に従いモーダル内エラー表示
-- `invoke_configure_vault` が `disk-full` / `lock` / `unknown` を返す: REQ-008 に従いインラインバナー表示し、モーダルは閉じる
 - `invoke_app_startup()` 再実行中: `AppShellState` を `'Loading'` に戻す（REQ-020 参照）
+
+> **依存契約に関する注記 (FIND-018 解消)**: `invoke_configure_vault` が TypeScript 層へ返す型は `Result<VaultDirectoryConfigured, VaultConfigError>` であり、`VaultConfigError` の variants は `path-not-found` と `permission-denied` の 2 種のみ（`unconfigured` は AppStartup 専用）。`disk-full`/`lock`/`unknown` は `FsError` の variants であり、configure-vault パイプラインが内部で `path-not-found` に折り畳んで返す。これらを `VaultConfigError` として参照することは型システムで不可能であり、本 feature では `path-not-found` ルートとしてのみ処理する。出典: `.vcsdd/features/configure-vault/specs/behavioral-spec.md` REQ-005 (lines 104-114), REQ-007 (lines 133-144), Error Catalog (lines 286-315)。
 
 **Acceptance Criteria**:
 - `invoke_configure_vault` は `try_vault_path` 成功後にのみ呼ばれる
@@ -269,7 +276,7 @@ type AppShellState =
 
 ### REQ-008: Unexpected エラー状態 — インラインバナー表示
 
-**EARS**: WHEN `AppStartupError.kind === 'scan'` OR the Tauri IPC itself throws an unexpected error THEN the system SHALL set `AppShellState` to `'UnexpectedError'`, render a non-modal inline error banner at the top of the application frame WITHOUT opening the vault setup modal.
+**EARS**: WHEN `AppStartupError.kind === 'scan'` OR the Tauri IPC itself throws an unexpected error OR a pipeline IPC has remained pending beyond the configured timeout (see REQ-022) THEN the system SHALL set `AppShellState` to `'UnexpectedError'`, render a non-modal inline error banner at the top of the application frame WITHOUT opening the vault setup modal.
 
 **Acceptance Criteria**:
 - `'UnexpectedError'` 遷移時にモーダルを開かずバナーを表示する
@@ -324,7 +331,7 @@ type AppShellState =
 
 **Acceptance Criteria**:
 - `<main>` 要素が存在する
-- `<main>` 内のスペーシング値は DESIGN.md スペーシングスケール（2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 16, 24, 32px）の値のみを使用する
+- `<main>` 内のスペーシング値は DESIGN.md §5 スペーシングスケール（`2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32` px）の値のみを使用する（出典: DESIGN.md §5 line 184 13 値 + line 185 fractional 追加 5.6px/6.4px。48/64/80/120 は §5 の列挙スケールには含まれず、使用禁止）
 - スケール外のスペーシングハードコード値を含まない
 
 ---
@@ -515,6 +522,31 @@ rgba(0,0,0,0.01)   — Card Shadow layer 4 / Deep Shadow layer 1
 
 ---
 
+### REQ-022: IPC タイムアウトポリシー — クライアントサイドパイプラインタイムアウト (FIND-019 解消 — 新規追加)
+
+**EARS**: WHEN any pipeline IPC (`invoke_app_startup`, `try_vault_path`, or `invoke_configure_vault`) has been pending for longer than `PIPELINE_IPC_TIMEOUT_MS` (= 30000ms, a named constant defined in `tauriAdapter.ts`) THEN the system SHALL transition `AppShellState` to `'UnexpectedError'` and SHALL render the inline error banner per REQ-008. Late-arriving resolutions (success or error arriving after the timeout) SHALL be discarded; the `'UnexpectedError'` state SHALL persist until the user takes a recovery action (e.g., page reload).
+
+> **タイムアウト実装方式**: タイムアウトは **クライアントサイド**（`tauriAdapter` 内）に実装する。`Promise.race([ipcPromise, timeoutSentinel])` パターンを使い、`setTimeout` で `PIPELINE_IPC_TIMEOUT_MS` 後に reject する sentinel Promise と race させる。Rust 側の IPC 自体はキャンセルされないが、TypeScript 層はタイムアウト経過後の resolve/reject を無視する（late-arrival 廃棄）。
+
+**`PIPELINE_IPC_TIMEOUT_MS`定数**:
+- 値: `30000`（ミリ秒）
+- 定義場所: `promptnotes/src/lib/ui/app-shell/tauriAdapter.ts`（エクスポートする定数 — テストで `vi.useFakeTimers()` により制御可能）
+- 全 3 パイプライン IPC に同一タイムアウト値を適用する
+
+**タイムアウト中の UI 挙動**:
+- `0ms` ～ `PIPELINE_IPC_TIMEOUT_MS` の間: `AppShellState === 'Loading'`（REQ-020 の Loading 描画を継続）
+- `PIPELINE_IPC_TIMEOUT_MS` 経過後: `AppShellState → 'UnexpectedError'`、インラインバナー表示（REQ-008）
+- Late-arrival: タイムアウト後に IPC が resolve/reject しても `AppShellState` を上書きしない
+
+**Acceptance Criteria**:
+- `PIPELINE_IPC_TIMEOUT_MS === 30000` が `tauriAdapter.ts` に export される定数として定義される
+- `invoke_app_startup` が 30000ms 以内に resolve しない場合、`AppShellState` が `'UnexpectedError'` に遷移する
+- タイムアウトは `tauriAdapter` 内の `Promise.race` として実装される（Rust 側の変更不要）
+- タイムアウト後に遅延 resolve が来ても `AppShellState` は `'UnexpectedError'` のまま維持される
+- `vi.useFakeTimers()` を使い `T = 30000ms` を人工的に経過させることでタイムアウト挙動が検証可能（PROP-014 参照）
+
+---
+
 ## NEG-REQ: 対象外の明示的排除
 
 ### NEG-REQ-001: エディタ UI の排除
@@ -585,14 +617,14 @@ rgba(0,0,0,0.01)   — Card Shadow layer 4 / Deep Shadow layer 1
 | EC-09 | `corruptedFiles.length === 0` | バナーを表示しない |
 | EC-10 | `corruptedFiles.length === 1` | バナーを表示（「1 件の破損ファイルがあります」） |
 | EC-11 | `corruptedFiles.length >> 1` | バナーを表示（件数を表示） |
-| EC-12 | アプリ再ロード中にモーダルが開いている | モーダルが再マウント後も `Unconfigured` / `StartupError` 状態を維持する |
+| EC-12 | ~~アプリ再ロード中にモーダルが開いている~~ | (削除 — FIND-020 解消: REQ-020 はモジュールインポート時点で `appShellStore` を `'Loading'` に再初期化すると規定。REQ-021 は HMR がモジュール再インポート時に `bootFlag` をリセットすると規定。アプリ再ロード後は `'Loading'` に戻り `invoke_app_startup` が再実行される。再実行結果が同じ `unconfigured`/`path-not-found` を返せばモーダルが再描画されるが、それは「状態維持」ではなく「同じ入力からの再導出」である。EC-20 が HMR mid-flight を網羅している。) |
 | EC-13 | `invoke_app_startup` IPC 自体がクラッシュ | `AppShellState → UnexpectedError`, インラインバナー表示 |
 | EC-14 | Vault パスがシンボリックリンクを指す | Tauri `statDir` はシンボリックリンクを追跡する。最終ターゲットが有効なディレクトリであれば `Ok(true)`。循環シンボリックリンクは OS stat エラー → `path-not-found` 相当 |
 | EC-15 | パス文字列が OS_PATH_MAX を超える | Rust `VaultPath::try_new` は形式チェックのみ（empty / not-absolute）。OS_PATH_MAX 超過は `statDir` で OS エラー → `path-not-found` に折り畳まれる |
 | EC-16 | パス文字列に mid-string NUL バイトを含む (例: `/foo\0bar`) | Rust 側の FFI で NUL はパス終端として扱われ、実際は `/foo` として stat される。UI は `path-not-found` または `permission-denied` エラーを表示する。挙動は OS 依存だが UI の処理は同一 |
 | EC-17 | OS フォルダピッカー後にユーザーがアクセス権限を取り消す（picker-then-revoke） | picker が返したパスへの `try_vault_path` 呼び出しが `permission-denied` を返す → REQ-007 と同様のモーダルエラー表示 |
-| EC-18 | ネットワーク FS が応答なし / タイムアウト (30 秒超) | `invoke_app_startup` の Promise が長時間 pending になる。モーダルは表示せず `AppShellState` は `'Loading'` のまま。30 秒超過は `UnexpectedError` に遷移しインラインバナーを表示する（タイムアウト値は Tauri 側の設定に従う）|
-| EC-19 | `invoke_configure_vault` が `disk-full` / `lock` / `unknown` を返す (`Settings.save` 失敗) | モーダルを閉じ、`AppShellState → UnexpectedError`、インラインバナーを表示する（REQ-008 参照） |
+| EC-18 | ネットワーク FS が応答なし / IPC タイムアウト | `invoke_app_startup` の Promise が `PIPELINE_IPC_TIMEOUT_MS`（= 30000ms）を超えて pending になる。`tauriAdapter` が `Promise.race` で sentinel rejection を投じ、`AppShellState` を `'UnexpectedError'` に遷移してインラインバナーを表示する（REQ-022 参照）。タイムアウト後に IPC が late resolve しても `'UnexpectedError'` 状態を上書きしない |
+| EC-19 | Settings.save が `disk-full`/`lock`/`unknown` で失敗する (`invoke_configure_vault` 内部) | configure-vault の REQ-007 がそれらの `FsError` を `path-not-found` に折り畳んで `VaultConfigError` として返す。`invoke_configure_vault` が `Err({kind:'path-not-found'})` を返すため、REQ-006 → REQ-007 ルートでモーダル内エラー表示となる。`UnexpectedError` には遷移しない。出典: `.vcsdd/features/configure-vault/specs/behavioral-spec.md` REQ-007 (lines 133-144) および Error Catalog (lines 310-315)。 |
 | EC-20 | HMR 中に `try_vault_path` IPC が in-flight | HMR により `bootFlag` がリセットされる。in-flight の Promise resolve はマウント後のインスタンスに届かないため無視する。次回マウント時に `invoke_app_startup` が再実行される（REQ-021 参照） |
 
 ---
@@ -607,6 +639,7 @@ rgba(0,0,0,0.01)   — Card Shadow layer 4 / Deep Shadow layer 1
 | NFR-04 | テーマ | DESIGN.md ライトテーマのみ（ダーク対応は後続フィーチャー） |
 | NFR-05 | カラートークン | DESIGN.md §10 Token Reference 定義値のみ（REQ-019） |
 | NFR-06 | タイポグラフィ | 4 ウェイトシステムのみ（REQ-015） |
-| NFR-07 | スペーシング | DESIGN.md 8px ベーススケールのみ（REQ-011） |
+| NFR-07 | スペーシング | DESIGN.md §5 スペーシングスケール `[2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32]` px のみ（REQ-011） |
 | NFR-08 | Loading 状態の初期値 | モジュールインポート時点で `'Loading'` |
 | NFR-09 | EFFECTFUL 書き込み制限 | `appShellStore` の書き込みは 2 ファイルのみに限定（REQ-021） |
+| NFR-10 | IPC タイムアウト | `PIPELINE_IPC_TIMEOUT_MS = 30000`ms、クライアントサイド `Promise.race`（REQ-022） |

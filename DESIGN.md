@@ -177,6 +177,11 @@ What makes Notion's visual language distinctive is its border philosophy. Rather
 - Description below in warm gray body text
 - Whisper-bordered card container
 
+**Modal & Overlay**
+- Modal overlay scrim: `rgba(0,0,0,0.5)` full-viewport backdrop behind centered Deep-Card-Level-3 modals (e.g., VaultSetupModal). The 0.5 opacity maintains WCAG dimming guidance while preserving page silhouette.
+- Modal container: Deep Shadow (5-layer stack, max opacity 0.05), `border-radius: 16px` (Large scale), centered in viewport
+- Backdrop click and Esc key dismissal: disabled for blocking modals (vault setup, onboarding). Enabled for non-blocking modals.
+
 ## 5. Layout Principles
 
 ### Spacing System
@@ -344,8 +349,30 @@ This section is the **normative source of truth** for all color and rgba values 
 | Input text | `rgba(0,0,0,0.9)` | §4 Inputs & Forms |
 | Whisper Border | `rgba(0,0,0,0.1)` | §2 Shadows & Depth |
 | Secondary button bg | `rgba(0,0,0,0.05)` | §4 Buttons Secondary |
-| Modal overlay scrim | `rgba(0,0,0,0.5)` | §4 Distinctive Components (modal backdrop) |
+| Modal overlay scrim | `rgba(0,0,0,0.5)` | §4 Distinctive Components — Modal & Overlay |
 | Card Shadow layer 1 | `rgba(0,0,0,0.04)` | §2 Shadows & Depth — Card Shadow |
 | Card Shadow layer 2 | `rgba(0,0,0,0.027)` | §2 Shadows & Depth — Card Shadow |
 | Card / Deep Shadow | `rgba(0,0,0,0.02)` | §2 Shadows & Depth — Card layer 3 / Deep layer 2&3 |
 | Card / Deep Shadow min | `rgba(0,0,0,0.01)` | §2 Shadows & Depth — Card layer 4 / Deep layer 1 |
+
+### Spacing Tokens
+
+The permitted spacing values for component source files are the §5 enumerated scale plus the §5 fractional micro-adjustment values. Values 48/64/80/120 appear in §5 Whitespace Philosophy prose but are **not** part of the enumerated scale and are **not** permitted as hardcoded spacing values in component files.
+
+| Value | Unit | Source |
+|-------|------|--------|
+| 2 | px | §5 Spacing Scale |
+| 3 | px | §5 Spacing Scale |
+| 4 | px | §5 Spacing Scale |
+| 5 | px | §5 Spacing Scale |
+| 5.6 | px | §5 Fractional micro-adjustment |
+| 6 | px | §5 Spacing Scale |
+| 6.4 | px | §5 Fractional micro-adjustment |
+| 7 | px | §5 Spacing Scale |
+| 8 | px | §5 Spacing Scale (base unit) |
+| 11 | px | §5 Spacing Scale |
+| 12 | px | §5 Spacing Scale |
+| 14 | px | §5 Spacing Scale |
+| 16 | px | §5 Spacing Scale |
+| 24 | px | §5 Spacing Scale |
+| 32 | px | §5 Spacing Scale |

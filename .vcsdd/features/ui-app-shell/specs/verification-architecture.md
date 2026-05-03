@@ -2,7 +2,7 @@
 
 **Feature**: `ui-app-shell`
 **Phase**: 1b
-**Revision**: 2 (iteration-2)
+**Revision**: 3 (iteration-3)
 **Mode**: strict
 **Source of truth**:
 - `specs/behavioral-spec.md` (REQ-001〜REQ-021, NEG-REQ-001〜NEG-REQ-005)
@@ -25,6 +25,9 @@
 | 2 | FIND-012 | PROP-006 rgba 許可リスト | `rgba(0,0,0,0.05)` 重複を除去。モーダルスクリム `rgba(0,0,0,0.5)` を追加。DESIGN.md §10 Token Reference を規範的源泉に指定。 |
 | 2 | FIND-015 | PROP-006 監査スコープ | `<style>` ブロック + inline `style={}` + `.ts/.svelte.ts` + `Element.style.setProperty` まで監査対象を拡張。 |
 | 2 | FIND-017 | PROP-011 + PROP-012 (新規) | `appShellStore` 書き込み面隔離と `bootFlag` HMR セマンティクスの PROP を追加。 |
+| 3 | FIND-019 (MAJOR) + FIND-013 partial | PROP-014 (新規), REQ-022 トレーサビリティ | IPC タイムアウト検証を PROP-014 として追加。`vi.useFakeTimers()` で 30000ms を経過させてバナー表示を確認。 |
+| 3 | FIND-021 (MAJOR) + FIND-012 partial | PROP-006 許可スペーシングリスト | PROP-006 スペーシングリストを `[2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32]` に修正。REQ-011 AC と同一リストに統一。 |
+| 3 | FIND-023 (MINOR) + FIND-007 partial | PROP-013 タイトル改名 | PROP-013 (旧 PROP-001b) を "AppStartup 呼び出し回数（in-process 再マウント — bootFlag 抑制）" に改名。PROP-012 へのクロスリファレンスを追加。 |
 
 ---
 
@@ -68,8 +71,8 @@
 
 | ID | 説明 | Tier | required | 検証アプローチ |
 |----|------|------|----------|-------------|
-| PROP-001a | AppStartup パイプラインがシングルマウントで 1 回呼ばれる | 1 | true | 統合テスト: コンポーネントを 1 回マウントし、スパイ呼び出し回数 = 1 をアサート |
-| PROP-001b | HMR 二重マウント時も AppStartup は合計 1 回のみ呼ばれる | 1 | true | 統合テスト: マウント→アンマウント→再マウントのシーケンスでスパイ呼び出し回数 = 1 をアサート（FIND-007 解消） |
+| PROP-001 | AppStartup パイプラインがシングルマウントで 1 回呼ばれる | 1 | true | 統合テスト: コンポーネントを 1 回マウントし、スパイ呼び出し回数 = 1 をアサート |
+| PROP-013 | in-process 再マウント時も AppStartup は合計 1 回のみ呼ばれる（bootFlag 抑制） | 1 | true | 統合テスト: マウント→アンマウント→再マウントのシーケンスでスパイ呼び出し回数 = 1 をアサート（FIND-007 解消, FIND-023 解消） |
 | PROP-002 | `VaultPath` 等ブランド型の構築は TypeScript 側で行われない | 0 | true | AST lint: ESLint カスタムルールで TypeAssertion / AsExpression を検出（FIND-008 解消） |
 | PROP-003 | 全 `VaultPathError` variant に UI メッセージマッピングが存在する（網羅性） | 0 | true | TypeScript exhaustive switch: `mapVaultPathError` が `never` ブランチにフォールスルーすればコンパイルエラー |
 | PROP-004 | `corruptedFiles.length >= 1` のときバナーが表示され、`0` のとき非表示 | 2 | true | fast-check プロパティテスト |
@@ -81,6 +84,7 @@
 | PROP-010 | モーダルは `AppShellState` 確定から 100ms 以内に表示される | 1 | true | 統合テスト: `vi.useFakeTimers()` + `performance.now()` 差分で 100ms 以内を検証（FIND-005 解消: REQ-018） |
 | PROP-011 | `appShellStore` の書き込みは `AppShell.svelte` と `VaultSetupModal.svelte` のみから行われる | 0 | true | ESLint アーキテクチャテスト: import graph 解析またはカスタム lint ルール（FIND-017 解消） |
 | PROP-012 | `bootFlag` はモジュールスコープで宣言され、HMR 再マウント後にリセットされる | 1 | true | 統合テスト: モジュール動的 `import()` 後にフラグ値が `false` であることをアサート（FIND-017 解消） |
+| PROP-014 | `PIPELINE_IPC_TIMEOUT_MS` 経過後に `AppShellState` が `'UnexpectedError'` に遷移する | 1 | true | 統合テスト: `vi.useFakeTimers()` で T = 30000ms を経過させ、never-resolving spy に対してインラインバナーが表示されることをアサート（FIND-019 解消） |
 
 ---
 
@@ -96,15 +100,16 @@
 
 ### Tier 1 — ユニット・統合テスト
 
-対象: **PROP-001a**, **PROP-001b**, **PROP-007**, **PROP-008**, **PROP-009**, **PROP-010**, **PROP-012**
+対象: **PROP-001**, **PROP-013**, **PROP-007**, **PROP-008**, **PROP-009**, **PROP-010**, **PROP-012**, **PROP-014**
 
-- **PROP-001a**: `@testing-library/svelte` でコンポーネントをマウントし、スパイ注入で 1 回呼び出しをアサート。
-- **PROP-001b**: マウント → アンマウント → 再マウントのシーケンスでスパイ呼び出し合計 = 1 をアサート。
+- **PROP-001**: `@testing-library/svelte` でコンポーネントをマウントし、スパイ注入で 1 回呼び出しをアサート。
+- **PROP-013**: マウント → アンマウント → 再マウントのシーケンス（同一モジュールインスタンス内）でスパイ呼び出し合計 = 1 をアサート。HMR シナリオは PROP-012 が担当。
 - **PROP-007**: `routeStartupResult` のユニットテストで全 5 経路を網羅（`unconfigured`, `path-not-found`, `permission-denied`, `list-failed`, IPC クラッシュ）。
 - **PROP-008**: モーダルの submit ハンドラのテストで、`try_vault_path` 結果別に `invoke_configure_vault` 呼び出し有無をアサート。
 - **PROP-009**: `scan` エラーケースで `startup-error-banner` が存在し `vault-setup-modal` が不在をアサート。
 - **PROP-010**: `vi.useFakeTimers()` を使い、`invoke_app_startup` の Promise resolve から 100ms 以内に `VaultSetupModal` が DOM に現れることをアサート。
 - **PROP-012**: モジュール動的 import 後に `bootFlag` の内部状態が `false` であることを確認するテスト。
+- **PROP-014**: `vi.useFakeTimers()` で `PIPELINE_IPC_TIMEOUT_MS`（= 30000ms）を経過させ、never-resolving IPC spy に対してインラインバナーが表示されることをアサート。
 
 ### Tier 2 — fast-check プロパティテスト
 
@@ -133,7 +138,7 @@
 
 ## 証明義務詳細
 
-### PROP-001a: AppStartup 呼び出し回数（シングルマウント）
+### PROP-001: AppStartup 呼び出し回数（シングルマウント）
 
 **Statement**: アプリケーションが単一マウントされたとき、`invoke_app_startup` Tauri コマンドはちょうど 1 回呼ばれる。
 
@@ -143,7 +148,7 @@
 **検証アプローチ**:
 ```typescript
 // app-shell.unit.test.ts
-it('PROP-001a: invokes app startup exactly once on single mount', async () => {
+it('PROP-001: invokes app startup exactly once on single mount', async () => {
   const spy = vi.fn().mockResolvedValue({ ok: true, value: mockInitialUIState });
   render(AppShell, { tauriAdapter: { invokeAppStartup: spy, ... } });
   await tick();
@@ -153,9 +158,11 @@ it('PROP-001a: invokes app startup exactly once on single mount', async () => {
 
 ---
 
-### PROP-001b: AppStartup 呼び出し回数（HMR 二重マウント）(FIND-007 解消)
+### PROP-013: AppStartup 呼び出し回数（in-process 再マウント — bootFlag 抑制）(FIND-007 解消, FIND-023 解消)
 
-**Statement**: コンポーネントがマウント→アンマウント→再マウントされたとき（HMR シミュレーション）、`invoke_app_startup` は合計 1 回のみ呼ばれる。
+**Statement**: コンポーネントが同一モジュールインスタンス内でマウント→アンマウント→再マウントされたとき（in-process 再マウント）、`invoke_app_startup` は合計 1 回のみ呼ばれる。`bootFlag` が `true` に設定されているため 2 回目のマウントは invoke しない。
+
+> **HMR シナリオとの区別**: 本 PROP-013 は同一モジュールインスタンス内の in-process 再マウントを検証する（`bootFlag` が `true` を維持）。Vite HMR によるモジュール再インポートでは `bootFlag` が新しいインスタンスに置き換わり `invoke_app_startup` が再実行される。その HMR シナリオは PROP-012 が別途検証する。
 
 **Tier**: 1 (統合テスト)
 **Required**: true
@@ -163,14 +170,14 @@ it('PROP-001a: invokes app startup exactly once on single mount', async () => {
 **検証アプローチ**:
 ```typescript
 // app-shell.unit.test.ts
-it('PROP-001b: invokes app startup only once even on HMR re-mount', async () => {
+it('PROP-013: invokes app startup only once even on in-process re-mount', async () => {
   const spy = vi.fn().mockResolvedValue({ ok: true, value: mockInitialUIState });
   const { unmount } = render(AppShell, { tauriAdapter: { invokeAppStartup: spy, ... } });
   await tick();
   unmount();
   render(AppShell, { tauriAdapter: { invokeAppStartup: spy, ... } });
   await tick();
-  // bootAttempted フラグにより 2 回目のマウントは invoke しない
+  // bootAttempted フラグにより 2 回目のマウントは invoke しない（同一モジュールインスタンス内）
   expect(spy).toHaveBeenCalledTimes(1);
 });
 ```
@@ -307,9 +314,9 @@ rgba(0,0,0,0.02)   — Card Shadow layer 3 / Deep Shadow (DESIGN.md §2)
 rgba(0,0,0,0.01)   — Card Shadow layer 4 / Deep Shadow layer 1 (DESIGN.md §2)
 ```
 
-**許可スペーシングリスト** (DESIGN.md §5 より):
+**許可スペーシングリスト** (DESIGN.md §5 line 184 の 13 値 + line 185 の fractional 追加 2 値。48/64/80/120 は §5 prose の whitespace-philosophy 言及であり列挙スケールには含まれない):
 ```
-[2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32, 48, 64, 80, 120]
+[2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32]
 ```
 
 **監査スコープ** (FIND-015 解消):
@@ -452,6 +459,13 @@ it('PROP-010: modal appears within 100ms of Unconfigured determination', async (
 
 ---
 
+### PROP-013 詳細: AppStartup 呼び出し回数（in-process 再マウント — bootFlag 抑制）(FIND-007 解消, FIND-023 解消)
+
+PROP-013 の詳細は上記「証明義務詳細」の `PROP-013` セクションを参照。
+トレーサビリティ: REQ-001 AC「`bootAttempted === true` の場合、再度 invoke しない（HMR 二重マウント対応）」の in-process side を検証する。HMR side は PROP-012 が担当。
+
+---
+
 ### PROP-012: bootFlag はモジュールスコープで宣言され HMR 後にリセットされる (FIND-017 解消)
 
 **Statement**: `bootFlag` は `export` されないモジュールスコープ変数であり、モジュールを再 import するとリセットされる（`false` に戻る）。
@@ -472,6 +486,51 @@ it('PROP-012: bootFlag resets on module re-import (HMR simulation)', async () =>
 ```
 
 > **注意**: `bootFlag` は `export` しない。テスト用に `// @vcsdd-test-hook` コメントで許可された専用エクスポート関数 `getBootAttempted()` のみをテスト向けに公開する。
+
+---
+
+### PROP-014: PIPELINE_IPC_TIMEOUT_MS 経過後に UnexpectedError に遷移する (FIND-019 解消 — 新規追加)
+
+**Statement**: `invoke_app_startup` IPC が `PIPELINE_IPC_TIMEOUT_MS`（= 30000ms）を超えて pending であるとき、`AppShellState` が `'UnexpectedError'` に遷移し、インラインバナーが表示される。
+
+**Tier**: 1 (統合テスト — `vi.useFakeTimers()`)
+**Required**: true
+
+**検証アプローチ**:
+```typescript
+// app-shell.unit.test.ts
+it('PROP-014: IPC timeout transitions to UnexpectedError after PIPELINE_IPC_TIMEOUT_MS', async () => {
+  vi.useFakeTimers();
+  // never-resolving spy: Promise が永遠に pending のまま
+  const spy = vi.fn().mockReturnValue(new Promise(() => {}));
+  render(AppShell, { tauriAdapter: { invokeAppStartup: spy, ... } });
+  await tick();
+  // タイムアウト前: Loading 状態
+  expect(screen.queryByTestId('startup-error-banner')).not.toBeInTheDocument();
+  // PIPELINE_IPC_TIMEOUT_MS (30000ms) を経過させる
+  await vi.advanceTimersByTimeAsync(30000);
+  // タイムアウト後: UnexpectedError + バナー表示
+  expect(screen.getByTestId('startup-error-banner')).toBeInTheDocument();
+  expect(screen.queryByTestId('vault-setup-modal')).not.toBeInTheDocument();
+  vi.useRealTimers();
+});
+
+it('PROP-014: late IPC resolution after timeout does not overwrite UnexpectedError', async () => {
+  vi.useFakeTimers();
+  let resolve: (v: unknown) => void;
+  const spy = vi.fn().mockReturnValue(
+    new Promise((r) => { resolve = r; })
+  );
+  render(AppShell, { tauriAdapter: { invokeAppStartup: spy, ... } });
+  await vi.advanceTimersByTimeAsync(30000);
+  expect(screen.getByTestId('startup-error-banner')).toBeInTheDocument();
+  // Late arrival: タイムアウト後に resolve を呼んでも状態が上書きされない
+  resolve!({ ok: true, value: mockInitialUIState });
+  await tick();
+  expect(screen.getByTestId('startup-error-banner')).toBeInTheDocument();
+  vi.useRealTimers();
+});
+```
 
 ---
 
@@ -496,7 +555,7 @@ isModalCloseable (pure fn)       ← なし
 
 ```
 promptnotes/src/lib/ui/app-shell/__tests__/
-  app-shell.unit.test.ts         — REQ-001〜REQ-002, PROP-001a, PROP-001b, PROP-009, PROP-010, PROP-012
+  app-shell.unit.test.ts         — REQ-001〜REQ-002, REQ-022, PROP-001, PROP-013, PROP-009, PROP-010, PROP-012, PROP-014
   vault-setup-modal.unit.test.ts — REQ-003〜REQ-007, PROP-003, PROP-005, PROP-008
   corrupted-banner.unit.test.ts  — REQ-009, PROP-004
   route-startup-result.test.ts   — PROP-007 (pure fn unit tests, 全 5 経路)
@@ -513,7 +572,7 @@ promptnotes/src/lib/ui/app-shell/__tests__/
 
 | REQ / NEG-REQ | 関連 PROP | テストファイル |
 |--------------|----------|-------------|
-| REQ-001 | PROP-001a, PROP-001b | `app-shell.unit.test.ts` |
+| REQ-001 | PROP-001, PROP-013 | `app-shell.unit.test.ts` |
 | REQ-002 | PROP-007, PROP-009 | `route-startup-result.test.ts`, `app-shell.unit.test.ts` |
 | REQ-003 | PROP-005 | `vault-setup-modal.unit.test.ts`, `modal-closeable.prop.test.ts` |
 | REQ-004 | PROP-002, PROP-008 | `vault-setup-modal.unit.test.ts` |
@@ -527,8 +586,9 @@ promptnotes/src/lib/ui/app-shell/__tests__/
 | REQ-017 | PROP-006 | `design-tokens.audit.test.ts` |
 | REQ-018 | PROP-010 | `app-shell.unit.test.ts` |
 | REQ-019 | PROP-006 | `design-tokens.audit.test.ts` |
-| REQ-020 | PROP-001a, PROP-009 | `app-shell.unit.test.ts` |
+| REQ-020 | PROP-001, PROP-009 | `app-shell.unit.test.ts` |
 | REQ-021 | PROP-011, PROP-012 | ESLint CI + `app-shell.unit.test.ts` |
+| REQ-022 | PROP-014 | `app-shell.unit.test.ts` |
 | NEG-REQ-001〜NEG-REQ-005 | PROP-002, PROP-011 | AST lint CI |
 
 ---
@@ -537,3 +597,4 @@ promptnotes/src/lib/ui/app-shell/__tests__/
 
 すべての REQ に PROP が割り当てられており、未バインドの要件は存在しない。
 以前に `—` であった REQ-008 と REQ-018 には PROP-009 / PROP-010 が追加された（FIND-005 解消）。
+iteration-3 で追加した REQ-022 には PROP-014 が割り当てられている（FIND-019 解消）。

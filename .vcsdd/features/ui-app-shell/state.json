@@ -21,23 +21,28 @@
   },
   "proofObligations": [
     {
-      "id": "PROP-001a",
+      "id": "PROP-001",
       "tier": 1,
       "required": true,
       "status": "pending",
       "beadId": "BEAD-025",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
-      "revisedFrom": "PROP-001",
-      "revisionIteration": 2
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
     },
     {
-      "id": "PROP-001b",
+      "id": "PROP-013",
       "tier": 1,
       "required": true,
       "status": "pending",
       "beadId": "BEAD-035",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
-      "addedInIteration": 2
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
+    },
+    {
+      "id": "PROP-014",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "beadId": "BEAD-040",
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
     },
     {
       "id": "PROP-002",
@@ -101,8 +106,7 @@
       "required": true,
       "status": "pending",
       "beadId": "BEAD-036",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
-      "addedInIteration": 2
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
     },
     {
       "id": "PROP-010",
@@ -110,8 +114,7 @@
       "required": true,
       "status": "pending",
       "beadId": "BEAD-037",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
-      "addedInIteration": 2
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
     },
     {
       "id": "PROP-011",
@@ -119,8 +122,7 @@
       "required": true,
       "status": "pending",
       "beadId": "BEAD-038",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
-      "addedInIteration": 2
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
     },
     {
       "id": "PROP-012",
@@ -128,8 +130,7 @@
       "required": true,
       "status": "pending",
       "beadId": "BEAD-039",
-      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
-      "addedInIteration": 2
+      "artifact": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md"
     }
   ],
   "traceability": {
@@ -383,9 +384,7 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T06:59:00.460Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-001a",
-        "revisedFrom": "PROP-001",
-        "revisionIteration": 2
+        "externalId": "PROP-001"
       },
       {
         "beadId": "BEAD-026",
@@ -465,9 +464,7 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T07:30:00.000Z",
         "createdInPhase": "1a",
-        "externalId": "REQ-020",
-        "addedInIteration": 2,
-        "relatedFinding": "FIND-014"
+        "externalId": "REQ-020"
       },
       {
         "beadId": "BEAD-034",
@@ -477,9 +474,7 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T07:30:00.000Z",
         "createdInPhase": "1a",
-        "externalId": "REQ-021",
-        "addedInIteration": 2,
-        "relatedFinding": "FIND-017"
+        "externalId": "REQ-021"
       },
       {
         "beadId": "BEAD-035",
@@ -489,9 +484,7 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T07:30:00.000Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-001b",
-        "addedInIteration": 2,
-        "relatedFinding": "FIND-007"
+        "externalId": "PROP-013"
       },
       {
         "beadId": "BEAD-036",
@@ -501,9 +494,7 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T07:30:00.000Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-009",
-        "addedInIteration": 2,
-        "relatedFinding": "FIND-005"
+        "externalId": "PROP-009"
       },
       {
         "beadId": "BEAD-037",
@@ -513,9 +504,7 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T07:30:00.000Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-010",
-        "addedInIteration": 2,
-        "relatedFinding": "FIND-005"
+        "externalId": "PROP-010"
       },
       {
         "beadId": "BEAD-038",
@@ -525,9 +514,7 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T07:30:00.000Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-011",
-        "addedInIteration": 2,
-        "relatedFinding": "FIND-017"
+        "externalId": "PROP-011"
       },
       {
         "beadId": "BEAD-039",
@@ -537,34 +524,81 @@
         "linkedBeads": [],
         "createdAt": "2026-05-03T07:30:00.000Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-012",
-        "addedInIteration": 2,
-        "relatedFinding": "FIND-017"
+        "externalId": "PROP-012"
+      },
+      {
+        "beadId": "BEAD-040",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-041"],
+        "createdAt": "2026-05-03T10:00:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-014"
+      },
+      {
+        "beadId": "BEAD-041",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-040"],
+        "createdAt": "2026-05-03T10:00:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-022"
       }
     ]
   },
   "gates": {
     "1c": {
       "verdict": "FAIL",
-      "timestamp": "2026-05-03T07:14:41.949Z",
+      "timestamp": "2026-05-03T09:11:16.475Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 1,
+        "iteration": 2,
         "spec_fidelity": "FAIL",
         "verification_readiness": "FAIL",
-        "findingsCount": 17,
+        "findingsCount": 6,
         "findingsBySeverity": {
-          "critical": 2,
-          "major": 12,
-          "minor": 3
+          "critical": 1,
+          "major": 3,
+          "minor": 2
         },
-        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-1/output/verdict.json"
+        "priorFindingsResolved": [
+          "FIND-001",
+          "FIND-002",
+          "FIND-003",
+          "FIND-004",
+          "FIND-005",
+          "FIND-006",
+          "FIND-008",
+          "FIND-009",
+          "FIND-010",
+          "FIND-011",
+          "FIND-014",
+          "FIND-015",
+          "FIND-016",
+          "FIND-017"
+        ],
+        "priorFindingsPartiallyResolved": [
+          "FIND-007",
+          "FIND-012",
+          "FIND-013"
+        ],
+        "newFindings": [
+          "FIND-018",
+          "FIND-019",
+          "FIND-020",
+          "FIND-021",
+          "FIND-022",
+          "FIND-023"
+        ],
+        "verdictPath": ".vcsdd/features/ui-app-shell/reviews/spec/iteration-2/output/verdict.json"
       },
       "adversaryVerdict": "FAIL",
-      "adversaryReviewedAt": "2026-05-03T07:14:41.949Z"
+      "adversaryReviewedAt": "2026-05-03T09:11:16.475Z"
     }
   },
   "sprintCount": 0,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T07:35:00.000Z"
+  "updatedAt": "2026-05-03T10:00:00.000Z"
 }

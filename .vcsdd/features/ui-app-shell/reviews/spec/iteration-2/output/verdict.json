@@ -1,0 +1,42 @@
+{
+  "feature": "ui-app-shell",
+  "phase": "1c",
+  "iteration": 2,
+  "mode": "strict",
+  "verdict": "FAIL",
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "priorFindingsResolved": [
+    "FIND-001",
+    "FIND-002",
+    "FIND-003",
+    "FIND-004",
+    "FIND-005",
+    "FIND-006",
+    "FIND-008",
+    "FIND-009",
+    "FIND-010",
+    "FIND-011",
+    "FIND-014",
+    "FIND-015",
+    "FIND-016",
+    "FIND-017"
+  ],
+  "priorFindingsPartiallyResolved": [
+    "FIND-007",
+    "FIND-012",
+    "FIND-013"
+  ],
+  "priorFindingsNotResolved": [],
+  "newFindingsCount": 6,
+  "findingsCount": 6,
+  "findingsBySeverity": {
+    "critical": 1,
+    "major": 3,
+    "minor": 2
+  },
+  "summary": "Phase 1c iteration-2 FAILS in strict mode on both dimensions. The Builder genuinely resolved 14 of 17 prior findings; however, three findings are only partially resolved and the revision introduced new contradictions. CRITICAL: REQ-006 edge case at line 240 and EC-19 at line 595 reference `invoke_configure_vault` returning `disk-full`/`lock`/`unknown` and route them to REQ-008 (UnexpectedError banner), but the configure-vault dependency contract (REQ-005, REQ-007) explicitly collapses these FsError kinds into `path-not-found` before they ever surface as `VaultConfigError`. The phantom variants do not exist in `VaultConfigError` (which has only `unconfigured | path-not-found | permission-denied`), so the routing rules are unreachable AND, for any genuine non-permission Settings.save failure, the actual contract requires StartupError per REQ-007 — the opposite of what EC-19 prescribes. MAJOR: EC-18 introduces a 30-second IPC timeout requirement with the hand-wave 'タイムアウト値は Tauri 側の設定に従う' but no REQ defines the timeout owner, the user-visible state during 0-30s, or the cancel/late-arrival semantics; the iteration-1 FIND-013 remediation request asked for a UI policy, and the Builder added an EC row but skipped the REQ. EC-12 contradicts the brand-new REQ-020 (Loading is the initial value on module import) and REQ-021 (HMR re-import resets bootFlag to false): EC-12 claims 'モーダルが再マウント後も Unconfigured/StartupError 状態を維持する', but after HMR the `appShellStore` is re-instantiated to `'Loading'` and the workflow restarts. PROP-006's spacing allow-list at verification-architecture.md:312 contains `48, 64, 80, 120` and `5.6, 6.4` that disagree with REQ-011's stated AC (line 327: `2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 16, 24, 32`); since DESIGN.md §5 only enumerates the 13-value base scale plus 5.6/6.4 fractionals, two engineers will produce two different audit allow-lists. MINOR: DESIGN.md §10 line 347 attributes `rgba(0,0,0,0.5)` modal overlay scrim to '§4 Distinctive Components (modal backdrop)' but §4 contains no modal backdrop definition; this is a stranded source citation. PROP-001b's verification approach at lines 165-176 mounts → unmounts → re-mounts using the same module import, which validates `bootFlag` in-process suppression but does NOT exercise HMR re-import semantics; the iteration-1 FIND-007 specifically called out 'HMR re-mount' coverage, and the title 'invokes app startup only once even on HMR re-mount' conflates this with PROP-012's responsibility. The Builder did add PROP-012 for the HMR-reset scenario, so the union of PROP-001b + PROP-012 covers both, but PROP-001b's labeling is misleading and risks Phase 2a generating a wrong test.",
+  "reviewedAt": "2026-05-03T00:00:00Z"
+}
