@@ -1,4 +1,4 @@
-# Purity Audit — ui-app-shell
+# Purity Boundary Audit — ui-app-shell
 
 **Feature**: ui-app-shell
 **Phase**: 5 (Formal Hardening)

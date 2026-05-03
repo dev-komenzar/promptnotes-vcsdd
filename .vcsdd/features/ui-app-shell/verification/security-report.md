@@ -1,4 +1,4 @@
-# Security Report — ui-app-shell
+# Security Hardening Report — ui-app-shell
 
 **Feature**: ui-app-shell
 **Phase**: 5 (Formal Hardening)

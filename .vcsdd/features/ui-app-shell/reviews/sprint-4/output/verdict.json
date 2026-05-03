@@ -6,14 +6,8 @@
   "iteration": 4,
   "reviewContext": {
     "reviewType": "implementation",
-    "contractPath": ".vcsdd/features/ui-app-shell/contracts/sprint-4.md",
-    "contractDigest": "28b42162139c9a65d5cd084b01aaf51851988a821c5bd23a3cdb345da0e2f7f4",
-    "priorClosure": {
-      "FIND-601": "resolved",
-      "FIND-602": "resolved",
-      "FIND-603": "resolved",
-      "FIND-604": "resolved"
-    }
+    "contractPath": "contracts/sprint-4.md",
+    "contractDigest": "28b42162139c9a65d5cd084b01aaf51851988a821c5bd23a3cdb345da0e2f7f4"
   },
   "dimensions": [
     {
@@ -79,6 +73,7 @@
   ],
   "convergenceSignals": {
     "findingCount": 0,
+    "previousFindingCount": 4,
     "allCriteriaEvaluated": true,
     "evaluatedCriteria": ["CRIT-001","CRIT-002","CRIT-003","CRIT-004","CRIT-005","CRIT-006","CRIT-007","CRIT-008","CRIT-009","CRIT-010","CRIT-011","CRIT-012","CRIT-013","CRIT-014","CRIT-015","CRIT-016","CRIT-017","CRIT-018","CRIT-019"],
     "duplicateFindings": []
