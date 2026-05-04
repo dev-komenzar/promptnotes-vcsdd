@@ -205,6 +205,8 @@ describe('EditorPane new-note — CRIT-006', () => {
   });
 
   test('Ctrl+N on document.body (outside pane) does NOT call dispatchRequestNewNote', () => {
+    // FIND-011: use bubbles: true from a sibling element outside the pane.
+    // This correctly distinguishes a pane-scoped listener from a document-level listener.
     const app = mount(EditorPane, {
       target,
       props: {
@@ -219,9 +221,13 @@ describe('EditorPane new-note — CRIT-006', () => {
     stateChannel.emit(idleSnapshot);
     flushSync();
 
-    // Dispatch on document.body, not on the pane
-    const event = new KeyboardEvent('keydown', { key: 'n', ctrlKey: true, bubbles: false });
-    document.body.dispatchEvent(event);
+    // Mount a sibling element outside the pane to dispatch from
+    const sibling = document.createElement('div');
+    document.body.appendChild(sibling);
+
+    // Dispatch with bubbles: true from outside the pane
+    const event = new KeyboardEvent('keydown', { key: 'n', ctrlKey: true, bubbles: true });
+    sibling.dispatchEvent(event);
     flushSync();
 
     expect(adapter.dispatchRequestNewNote).not.toHaveBeenCalled();

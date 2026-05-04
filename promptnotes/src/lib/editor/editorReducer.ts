@@ -38,8 +38,9 @@ export function editorReducer(
   switch (action.kind) {
     case 'NoteBodyEdited': {
       // REQ-EDIT-001: User keystroke — update body and set isDirty=true when editing.
-      // In idle, the action is unexpected but must not throw; return state unchanged.
-      if (state.status !== 'editing') {
+      // EC-EDIT-003: Also fires in save-failed state (textarea stays editable per REQ-EDIT-013).
+      // In idle/saving/switching, the action is unexpected but must not throw; return unchanged.
+      if (state.status !== 'editing' && state.status !== 'save-failed') {
         return { state, commands: [] };
       }
       const nextState: EditorViewState = {
@@ -194,8 +195,9 @@ export function editorReducer(
     }
 
     case 'CancelClicked': {
-      // REQ-EDIT-019: Cancel switch from switching state.
-      if (state.status !== 'switching') {
+      // REQ-EDIT-019: Cancel switch from save-failed state (banner Cancel button).
+      // Also handles switching state for symmetry.
+      if (state.status !== 'save-failed' && state.status !== 'switching') {
         return { state, commands: [] };
       }
       const noteId = currentNoteIdOrEmpty(state);

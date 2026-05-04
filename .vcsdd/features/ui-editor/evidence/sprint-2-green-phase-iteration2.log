@@ -1,0 +1,13 @@
+$ vitest run src/lib/editor/__tests__/dom
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes
+
+
+ Test Files  18 passed (18)
+      Tests  126 passed (126)
+   Start at  15:01:59
+   Duration  3.57s (transform 7.96s, setup 1.07s, import 12.17s, tests 1.89s, environment 23.84s)
+
+
+target feature tests: pass
+regression baseline: pass

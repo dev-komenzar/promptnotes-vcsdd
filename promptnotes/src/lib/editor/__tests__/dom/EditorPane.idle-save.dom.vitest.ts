@@ -9,14 +9,19 @@
  * - Advancing by IDLE_SAVE_DEBOUNCE_MS - 1ms fires nothing.
  * - A burst of inputs separated by < IDLE_SAVE_DEBOUNCE_MS produces exactly
  *   ONE save after the burst quiesces.
+ * - FIND-013: oninput while status=idle does NOT schedule idle save via timer.
  *
- * RED phase: textarea is absent, timers are not wired → tests FAIL.
+ * Uses a real createDebounceTimer (with a fake clock) so that vi.useFakeTimers()
+ * patches the underlying setTimeout and tests can advance time deterministically.
+ * This is required after FIND-002 fix: the component now delegates to
+ * timer.scheduleIdleSave instead of raw setTimeout.
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
 import type { EditingSessionState } from '../../types.js';
 import { IDLE_SAVE_DEBOUNCE_MS } from '../../debounceSchedule.js';
+import { createDebounceTimer } from '../../debounceTimer.js';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
@@ -24,7 +29,6 @@ vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 import EditorPane from '../../EditorPane.svelte';
 import type { TauriEditorAdapter } from '../../tauriEditorAdapter.js';
 import type { EditorStateChannel } from '../../editorStateChannel.js';
-import type { DebounceTimer } from '../../debounceTimer.js';
 import type { ClipboardAdapter } from '../../clipboardAdapter.js';
 
 function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeof vi.fn>> {
@@ -87,15 +91,16 @@ describe('EditorPane idle-save — CRIT-002', () => {
   });
 
   test(`advancing exactly ${IDLE_SAVE_DEBOUNCE_MS}ms fires dispatchTriggerIdleSave once`, () => {
+    // Use a real DebounceTimer backed by the fake global setTimeout.
+    // The clock returns Date.now() which is controlled by vi.useFakeTimers().
+    const timer = createDebounceTimer({ now: () => Date.now() });
+
     const app = mount(EditorPane, {
       target,
       props: {
         adapter,
         stateChannel,
-        timer: {
-          scheduleIdleSave: vi.fn(),
-          cancel: vi.fn(),
-        },
+        timer,
         clipboard: makeMockClipboard(),
       },
     });
@@ -122,15 +127,14 @@ describe('EditorPane idle-save — CRIT-002', () => {
   });
 
   test(`advancing ${IDLE_SAVE_DEBOUNCE_MS - 1}ms does NOT fire dispatchTriggerIdleSave`, () => {
+    const timer = createDebounceTimer({ now: () => Date.now() });
+
     const app = mount(EditorPane, {
       target,
       props: {
         adapter,
         stateChannel,
-        timer: {
-          scheduleIdleSave: vi.fn(),
-          cancel: vi.fn(),
-        },
+        timer,
         clipboard: makeMockClipboard(),
       },
     });
@@ -155,16 +159,59 @@ describe('EditorPane idle-save — CRIT-002', () => {
     unmount(app);
   });
 
-  test('EC-EDIT-001: rapid typing produces exactly ONE idle save after quiescence', () => {
+  // FIND-013: typing while status=idle does NOT schedule idle save via injected timer.
+  test('FIND-013: oninput while status=idle does NOT schedule idle save timer', () => {
+    const timerMock = {
+      scheduleIdleSave: vi.fn(),
+      cancel: vi.fn(),
+    };
+
+    const idleSnapshot: EditingSessionState = {
+      status: 'idle',
+      isDirty: false,
+      currentNoteId: null,
+      pendingNextNoteId: null,
+      lastError: null,
+      body: '',
+    };
+
     const app = mount(EditorPane, {
       target,
       props: {
         adapter,
         stateChannel,
-        timer: {
-          scheduleIdleSave: vi.fn(),
-          cancel: vi.fn(),
-        },
+        timer: timerMock,
+        clipboard: makeMockClipboard(),
+      },
+    });
+    flushSync();
+
+    stateChannel.emit(idleSnapshot);
+    flushSync();
+
+    const textarea = target.querySelector<HTMLTextAreaElement>('[data-testid="editor-body"]');
+    expect(textarea).not.toBeNull();
+
+    // Simulate an oninput while idle
+    textarea!.value = 'spurious input while idle';
+    textarea!.dispatchEvent(new Event('input', { bubbles: true }));
+    flushSync();
+
+    // The timer must NOT be scheduled when status is not 'editing'
+    expect(timerMock.scheduleIdleSave).not.toHaveBeenCalled();
+
+    unmount(app);
+  });
+
+  test('EC-EDIT-001: rapid typing produces exactly ONE idle save after quiescence', () => {
+    const timer = createDebounceTimer({ now: () => Date.now() });
+
+    const app = mount(EditorPane, {
+      target,
+      props: {
+        adapter,
+        stateChannel,
+        timer,
         clipboard: makeMockClipboard(),
       },
     });

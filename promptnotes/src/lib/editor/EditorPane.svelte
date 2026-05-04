@@ -1,14 +1,26 @@
 <script lang="ts">
   /**
-   * EditorPane.svelte — Svelte 5 component (Sprint 2 Green phase)
+   * EditorPane.svelte — Svelte 5 component (Sprint 2 Green phase, iteration-2)
    *
    * Props:
    *   adapter       — TauriEditorAdapter (effectful IPC dispatch)
    *   stateChannel  — EditorStateChannel (inbound domain snapshot subscription)
-   *   timer         — DebounceTimer (cancel hook for blur-save coordination)
+   *   timer         — DebounceTimer (injected timer module; sole setTimeout owner per RD-012)
    *   clipboard     — ClipboardAdapter (navigator.clipboard abstraction)
    *   clock         — injected clock (optional, defaults to Date)
    *   initialState  — optional initial EditorViewState
+   *
+   * Fixes in this iteration:
+   *   FIND-001 / REQ-EDIT-025: blur-save-first gate for NewNoteClicked (editing+dirty)
+   *   FIND-002 / RD-012: idle save scheduled via injected timer.scheduleIdleSave only
+   *   FIND-003 / NFR-EDIT-005..007: banner CSS — 5-layer Deep Shadow, #dd5b00, 15px/600
+   *   FIND-005: button labels match ui-fields.md §画面 4 exactly
+   *   FIND-006: banner button handlers dispatch through reducer, not directly to adapter
+   *   FIND-007: inbound snapshot bridge for save-success (timer.cancel) and save-failed
+   *   FIND-008 / REQ-EDIT-009: idle-state placeholder element
+   *   FIND-009 / §6: issuedAt uses new Date(clock.now()).toISOString() for ISO-8601
+   *   FIND-012: aria-disabled on New Note button
+   *   FIND-013: scheduleIdleSave only called when status === 'editing'
    */
   import type { TauriEditorAdapter } from './tauriEditorAdapter.js';
   import type { EditorStateChannel } from './editorStateChannel.js';
@@ -26,11 +38,11 @@
     adapter: TauriEditorAdapter;
     /** Inbound channel that delivers EditingSessionState snapshots from the domain. */
     stateChannel: EditorStateChannel;
-    /** Blur-save coordination hook; cancel() is called on textarea blur. */
+    /** Idle-save timer module; sole setTimeout owner per RD-012. */
     timer: DebounceTimer;
     /** Clipboard write abstraction (navigator.clipboard mock seam). */
     clipboard: ClipboardAdapter;
-    /** Monotonic clock; defaults to Date.now(). Override in tests for determinism. */
+    /** Monotonic clock; defaults to Date. Override in tests for determinism. */
     clock?: { now(): number };
     /** Optional initial EditorViewState; defaults to idle/clean. */
     initialState?: EditorViewState;
@@ -58,29 +70,8 @@
   const _initialSnapshot = untrack(() => initialState ?? defaultViewState);
   let viewState = $state<EditorViewState>({ ..._initialSnapshot });
 
-  // Internal idle-save timer handle (direct setTimeout — bypasses timer.scheduleIdleSave)
-  let idleSaveHandle: ReturnType<typeof setTimeout> | null = null;
-
-  function scheduleIdleSave(): void {
-    // Cancel existing handle
-    if (idleSaveHandle !== null) {
-      clearTimeout(idleSaveHandle);
-      idleSaveHandle = null;
-    }
-    idleSaveHandle = setTimeout(() => {
-      idleSaveHandle = null;
-      if (viewState.status === 'editing' && viewState.isDirty) {
-        adapter.dispatchTriggerIdleSave('capture-idle');
-      }
-    }, IDLE_SAVE_DEBOUNCE_MS);
-  }
-
-  function cancelIdleSave(): void {
-    if (idleSaveHandle !== null) {
-      clearTimeout(idleSaveHandle);
-      idleSaveHandle = null;
-    }
-  }
+  // Track previous status for inbound state bridge (FIND-007)
+  let previousStatus = $state<string>(_initialSnapshot.status);
 
   /** Execute a single EditorCommand produced by the reducer. */
   function executeCommand(cmd: EditorCommand): void {
@@ -95,7 +86,7 @@
         adapter.dispatchTriggerBlurSave(cmd.payload.source);
         break;
       case 'cancel-idle-timer':
-        cancelIdleSave();
+        timer.cancel();
         break;
       case 'retry-save':
         adapter.dispatchRetrySave();
@@ -135,6 +126,17 @@
   // Subscribe to inbound domain snapshots
   $effect(() => {
     const unsubscribe = stateChannel.subscribe((state) => {
+      const incomingStatus = state.status;
+      const prevStatus = previousStatus;
+
+      // FIND-007: inbound state bridge
+      // saving → editing with isDirty=false means save succeeded → cancel idle timer
+      if (prevStatus === 'saving' && incomingStatus === 'editing' && !state.isDirty) {
+        timer.cancel();
+      }
+
+      previousStatus = incomingStatus;
+
       viewState = {
         status: state.status,
         isDirty: state.isDirty,
@@ -153,9 +155,19 @@
   $effect(() => {
     if (!paneRoot) return;
     const detach = attachKeyboardListener(paneRoot, (_source) => {
+      // FIND-001 / REQ-EDIT-025: blur-save-first gate for keyboard shortcut
+      if (viewState.status === 'editing' && viewState.isDirty) {
+        // Emit blur-save first, then new note
+        const noteId = viewState.currentNoteId ?? '';
+        const issuedAt = new Date(clock.now()).toISOString();
+        dispatch({
+          kind: 'BlurEvent',
+          payload: { noteId, body: viewState.body, issuedAt },
+        });
+      }
       dispatch({
         kind: 'NewNoteClicked',
-        payload: { source: 'ctrl-N', issuedAt: clock.now().toString() },
+        payload: { source: 'ctrl-N', issuedAt: new Date(clock.now()).toISOString() },
       });
     });
     return detach;
@@ -165,23 +177,41 @@
   function handleInput(e: Event): void {
     const textarea = e.currentTarget as HTMLTextAreaElement;
     const noteId = viewState.currentNoteId ?? '';
-    const issuedAt = clock.now().toString();
+    // FIND-009: ISO-8601 issuedAt per §6 Glossary and §10
+    const issuedAt = new Date(clock.now()).toISOString();
     dispatch({
       kind: 'NoteBodyEdited',
       payload: { newBody: textarea.value, noteId, issuedAt },
     });
-    // Schedule idle save directly (not through timer.scheduleIdleSave)
-    scheduleIdleSave();
+    // FIND-002 / RD-012: schedule idle save via injected timer only when editing
+    // FIND-013: only schedule when status === 'editing' (after reducer call viewState is updated)
+    if (viewState.status === 'editing') {
+      const fireAt = clock.now() + IDLE_SAVE_DEBOUNCE_MS;
+      timer.scheduleIdleSave(fireAt, () => {
+        if (viewState.status === 'editing' && viewState.isDirty) {
+          const idleNoteId = viewState.currentNoteId ?? '';
+          const idleIssuedAt = new Date(clock.now()).toISOString();
+          dispatch({
+            kind: 'IdleTimerFired',
+            payload: {
+              nowMs: clock.now(),
+              noteId: idleNoteId,
+              body: viewState.body,
+              issuedAt: idleIssuedAt,
+            },
+          });
+        }
+      });
+    }
   }
 
   function handleBlur(): void {
-    // Cancel idle timer via both direct clearTimeout and timer.cancel() hook
-    cancelIdleSave();
+    // Cancel idle timer via injected timer module (FIND-002 / RD-012)
     timer.cancel();
 
     if (viewState.status === 'editing' && viewState.isDirty) {
       const noteId = viewState.currentNoteId ?? '';
-      const issuedAt = clock.now().toString();
+      const issuedAt = new Date(clock.now()).toISOString();
       dispatch({
         kind: 'BlurEvent',
         payload: { noteId, body: viewState.body, issuedAt },
@@ -199,22 +229,32 @@
   }
 
   function handleNewNoteClick(): void {
+    // FIND-001 / REQ-EDIT-025: blur-save-first gate for button click
+    if (viewState.status === 'editing' && viewState.isDirty) {
+      const noteId = viewState.currentNoteId ?? '';
+      const issuedAt = new Date(clock.now()).toISOString();
+      dispatch({
+        kind: 'BlurEvent',
+        payload: { noteId, body: viewState.body, issuedAt },
+      });
+    }
     dispatch({
       kind: 'NewNoteClicked',
-      payload: { source: 'explicit-button', issuedAt: clock.now().toString() },
+      payload: { source: 'explicit-button', issuedAt: new Date(clock.now()).toISOString() },
     });
   }
 
+  // FIND-006: banner button handlers dispatch through reducer, not directly to adapter
   function handleRetryClick(): void {
-    adapter.dispatchRetrySave();
+    dispatch({ kind: 'RetryClicked' });
   }
 
   function handleDiscardClick(): void {
-    adapter.dispatchDiscardCurrentSession();
+    dispatch({ kind: 'DiscardClicked' });
   }
 
   function handleCancelClick(): void {
-    adapter.dispatchCancelSwitch();
+    dispatch({ kind: 'CancelClicked' });
   }
 
   // Derived values
@@ -235,8 +275,15 @@
   data-state={viewState.status}
   bind:this={paneRoot}
 >
+  {#if viewState.status === 'idle'}
+    <!-- FIND-008 / REQ-EDIT-009: Idle state placeholder -->
+    <div data-testid="idle-placeholder" class="idle-placeholder">
+      ノートを選択してください
+    </div>
+  {/if}
+
   {#if showDirtyIndicator}
-    <span data-testid="dirty-indicator" class="dirty-indicator">●</span>
+    <span data-testid="dirty-indicator" aria-hidden="true" class="dirty-indicator">●</span>
   {/if}
 
   {#if showSaveIndicator}
@@ -245,8 +292,11 @@
 
   {#if showSaveFailedBanner}
     <div data-testid="save-failure-banner" role="alert" class="save-failure-banner">
-      <p class="banner-message">{bannerMessage}</p>
+      {#if bannerMessage}
+        <p data-testid="save-failure-message" class="banner-message">{bannerMessage}</p>
+      {/if}
       <div class="banner-actions">
+        <!-- FIND-005: exact labels from ui-fields.md §画面 4 -->
         <button
           data-testid="retry-save-button"
           onclick={handleRetryClick}
@@ -259,14 +309,14 @@
           onclick={handleDiscardClick}
           class="banner-btn banner-btn--discard"
         >
-          破棄
+          変更を破棄
         </button>
         <button
           data-testid="cancel-switch-button"
           onclick={handleCancelClick}
           class="banner-btn banner-btn--cancel"
         >
-          キャンセル
+          閉じる（このまま編集を続ける）
         </button>
       </div>
     </div>
@@ -293,10 +343,12 @@
       コピー
     </button>
 
+    <!-- FIND-012: aria-disabled on New Note button -->
     <button
       data-testid="new-note-button"
       onclick={handleNewNoteClick}
       disabled={isNewNoteDisabled}
+      aria-disabled={isNewNoteDisabled ? 'true' : 'false'}
       class="toolbar-btn toolbar-btn--new-note"
     >
       +新規
@@ -310,90 +362,104 @@
     flex-direction: column;
     height: 100%;
     background: #fafaf9;
-    border: 1px solid #e8e8e4;
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
     overflow: hidden;
     position: relative;
   }
 
+  /* FIND-008 / REQ-EDIT-009: Idle state placeholder */
+  .idle-placeholder {
+    padding: 24px 16px;
+    color: #a39e98;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+  }
+
   .dirty-indicator {
     position: absolute;
     top: 8px;
     right: 12px;
-    color: #f59e0b;
+    color: #dd5b00;
     font-size: 10px;
     line-height: 1;
   }
 
   .save-indicator {
     padding: 6px 12px;
-    background: #f0fdf4;
-    color: #16a34a;
+    background: #f6f5f4;
+    color: #615d59;
     font-size: 12px;
-    font-weight: 500;
-    border-bottom: 1px solid #bbf7d0;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
   }
 
+  /* FIND-003: 5-layer Deep Shadow + #dd5b00 accent + 8px radius per REQ-EDIT-020 / DESIGN.md */
   .save-failure-banner {
-    padding: 12px 16px;
-    background: #fff7ed;
-    border-bottom: 1px solid #fed7aa;
+    padding: 16px;
+    background: #ffffff;
+    border-left: 4px solid #dd5b00;
+    border-radius: 8px;
+    box-shadow: rgba(0,0,0,0.01) 0px 1px 3px, rgba(0,0,0,0.02) 0px 3px 7px, rgba(0,0,0,0.02) 0px 7px 15px, rgba(0,0,0,0.04) 0px 14px 28px, rgba(0,0,0,0.05) 0px 23px 52px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin: 8px;
   }
 
   .banner-message {
     margin: 0;
-    font-size: 13px;
-    color: #9a3412;
+    font-size: 14px;
+    color: #615d59;
     font-weight: 500;
   }
 
   .banner-actions {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
   }
 
+  /* FIND-003: NFR-EDIT-006 button typography: 15px / 600; DESIGN.md §4 Buttons */
   .banner-btn {
-    padding: 4px 10px;
-    font-size: 12px;
+    padding: 8px 16px;
+    font-size: 15px;
     border-radius: 4px;
     border: 1px solid transparent;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     transition: background 0.15s;
   }
 
+  /* FIND-003: Retry → Primary Blue (#0075de) per DESIGN.md §4 Buttons */
   .banner-btn--retry {
-    background: #ea580c;
-    color: white;
-    border-color: #c2410c;
+    background: #0075de;
+    color: #ffffff;
   }
 
   .banner-btn--retry:hover {
-    background: #c2410c;
+    background: #005bab;
   }
 
+  /* FIND-003: Discard / Cancel → Secondary (rgba(0,0,0,0.05)) per DESIGN.md */
   .banner-btn--discard {
-    background: #f8f8f7;
-    color: #6b7280;
-    border-color: #e8e8e4;
+    background: rgba(0,0,0,0.05);
+    color: #000000;
   }
 
   .banner-btn--discard:hover {
-    background: #f0f0ef;
+    background: rgba(0,0,0,0.08);
   }
 
   .banner-btn--cancel {
-    background: #f8f8f7;
-    color: #6b7280;
-    border-color: #e8e8e4;
+    background: rgba(0,0,0,0.05);
+    color: #000000;
   }
 
   .banner-btn--cancel:hover {
-    background: #f0f0ef;
+    background: rgba(0,0,0,0.08);
   }
 
   .editor-body {
@@ -405,7 +471,7 @@
     resize: none;
     font-size: 14px;
     line-height: 1.6;
-    color: #2d2d2b;
+    color: rgba(0,0,0,0.9);
     background: transparent;
     font-family: inherit;
     box-sizing: border-box;
@@ -420,28 +486,29 @@
     display: flex;
     gap: 8px;
     padding: 8px 12px;
-    border-top: 1px solid #e8e8e4;
-    background: #f8f8f7;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    background: #f6f5f4;
   }
 
   .toolbar-btn {
-    padding: 5px 12px;
-    font-size: 12px;
+    padding: 8px 16px;
+    font-size: 15px;
     border-radius: 4px;
-    border: 1px solid #e8e8e4;
+    border: 1px solid rgba(0,0,0,0.1);
     background: #ffffff;
-    color: #4b5563;
+    color: rgba(0,0,0,0.95);
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     transition: background 0.15s, border-color 0.15s;
   }
 
   .toolbar-btn:hover:not(:disabled) {
-    background: #f0f0ef;
-    border-color: #d4d4d0;
+    background: #f6f5f4;
+    border-color: rgba(0,0,0,0.15);
   }
 
   .toolbar-btn:disabled {
+    color: #a39e98;
     opacity: 0.4;
     cursor: not-allowed;
   }
