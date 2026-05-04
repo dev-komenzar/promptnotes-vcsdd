@@ -121,7 +121,12 @@ describe('EditorPane idle-save — CRIT-002', () => {
     flushSync();
 
     expect(adapter.dispatchTriggerIdleSave).toHaveBeenCalledOnce();
-    expect(adapter.dispatchTriggerIdleSave).toHaveBeenCalledWith('capture-idle');
+    expect(adapter.dispatchTriggerIdleSave).toHaveBeenCalledWith({
+      source: 'capture-idle',
+      noteId: 'note-001',
+      body: 'some content',
+      issuedAt: expect.any(String),
+    });
 
     unmount(app);
   });

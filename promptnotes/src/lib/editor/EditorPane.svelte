@@ -77,32 +77,38 @@
   function executeCommand(cmd: EditorCommand): void {
     switch (cmd.kind) {
       case 'edit-note-body':
-        adapter.dispatchEditNoteBody(cmd.payload.noteId, cmd.payload.newBody, cmd.payload.issuedAt);
+        // Map EditorCommand field 'newBody' to IPC wire field 'body' (domain convention).
+        adapter.dispatchEditNoteBody({
+          noteId: cmd.payload.noteId,
+          body: cmd.payload.newBody,
+          issuedAt: cmd.payload.issuedAt,
+          dirty: true,
+        });
         break;
       case 'trigger-idle-save':
-        adapter.dispatchTriggerIdleSave(cmd.payload.source);
+        adapter.dispatchTriggerIdleSave(cmd.payload);
         break;
       case 'trigger-blur-save':
-        adapter.dispatchTriggerBlurSave(cmd.payload.source);
+        adapter.dispatchTriggerBlurSave(cmd.payload);
         break;
       case 'cancel-idle-timer':
         timer.cancel();
         break;
       case 'retry-save':
-        adapter.dispatchRetrySave();
+        adapter.dispatchRetrySave(cmd.payload);
         break;
       case 'discard-current-session':
-        adapter.dispatchDiscardCurrentSession();
+        adapter.dispatchDiscardCurrentSession(cmd.payload);
         break;
       case 'cancel-switch':
-        adapter.dispatchCancelSwitch();
+        adapter.dispatchCancelSwitch(cmd.payload);
         break;
       case 'copy-note-body':
-        adapter.dispatchCopyNoteBody(cmd.payload.noteId);
+        adapter.dispatchCopyNoteBody(cmd.payload);
         clipboard.write(cmd.payload.body);
         break;
       case 'request-new-note':
-        adapter.dispatchRequestNewNote(cmd.payload.source, cmd.payload.issuedAt);
+        adapter.dispatchRequestNewNote(cmd.payload);
         break;
       default: {
         const _exhaustive: never = cmd;

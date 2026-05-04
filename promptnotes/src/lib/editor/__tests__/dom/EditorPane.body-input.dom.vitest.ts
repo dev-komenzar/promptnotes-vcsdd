@@ -116,11 +116,12 @@ describe('EditorPane body-input — CRIT-001', () => {
     flushSync();
 
     expect(adapter.dispatchEditNoteBody).toHaveBeenCalledOnce();
-    expect(adapter.dispatchEditNoteBody).toHaveBeenCalledWith(
-      'note-001',
-      'hello world',
-      expect.any(String)
-    );
+    expect(adapter.dispatchEditNoteBody).toHaveBeenCalledWith({
+      noteId: 'note-001',
+      body: 'hello world',
+      issuedAt: expect.any(String),
+      dirty: true,
+    });
 
     unmount(app);
   });

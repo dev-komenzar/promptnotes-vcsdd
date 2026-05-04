@@ -200,8 +200,8 @@ describe('editor-validation — PROP-EDIT-032', () => {
 
     expect(adapter.dispatchEditNoteBody).toHaveBeenCalledOnce();
     const a = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    const [, , issuedAt] = a['dispatchEditNoteBody'].mock.calls[0] as [string, string, string];
-    expect(issuedAt).toMatch(ISO_8601_REGEX);
+    const [payload] = a['dispatchEditNoteBody'].mock.calls[0] as [{ noteId: string; body: string; issuedAt: string; dirty: true }];
+    expect(payload.issuedAt).toMatch(ISO_8601_REGEX);
 
     unmount(app);
   });
@@ -238,8 +238,8 @@ describe('editor-validation — PROP-EDIT-032', () => {
 
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
     const a2 = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    const [, issuedAt] = a2['dispatchRequestNewNote'].mock.calls[0] as [string, string];
-    expect(issuedAt).toMatch(ISO_8601_REGEX);
+    const [payload2] = a2['dispatchRequestNewNote'].mock.calls[0] as [{ source: string; issuedAt: string }];
+    expect(payload2.issuedAt).toMatch(ISO_8601_REGEX);
 
     unmount(app);
   });
@@ -276,10 +276,12 @@ describe('editor-validation — PROP-EDIT-032', () => {
     flushSync();
 
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
-    // dispatchTriggerBlurSave signature: (source: 'capture-blur') — source only at adapter level
-    // The issuedAt is embedded in the EditorCommand payload but current adapter only passes source.
-    // We verify at least that source is correct and the call was made.
-    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith('capture-blur');
+    // dispatchTriggerBlurSave now receives the full EditorCommand payload (FIND-010 fix).
+    // Verify source and that issuedAt is ISO-8601.
+    const a3 = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
+    const [blurPayload] = a3['dispatchTriggerBlurSave'].mock.calls[0] as [{ source: string; noteId: string; body: string; issuedAt: string }];
+    expect(blurPayload.source).toBe('capture-blur');
+    expect(blurPayload.issuedAt).toMatch(ISO_8601_REGEX);
 
     unmount(app);
   });

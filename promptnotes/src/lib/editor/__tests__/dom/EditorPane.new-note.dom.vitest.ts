@@ -119,7 +119,10 @@ describe('EditorPane new-note — CRIT-006', () => {
     flushSync();
 
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('explicit-button', expect.any(String));
+    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
+      source: 'explicit-button',
+      issuedAt: expect.any(String),
+    });
 
     unmount(app);
   });
@@ -147,7 +150,10 @@ describe('EditorPane new-note — CRIT-006', () => {
     flushSync();
 
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('ctrl-N', expect.any(String));
+    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
+      source: 'ctrl-N',
+      issuedAt: expect.any(String),
+    });
 
     unmount(app);
   });
@@ -199,7 +205,10 @@ describe('EditorPane new-note — CRIT-006', () => {
     flushSync();
 
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('ctrl-N', expect.any(String));
+    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
+      source: 'ctrl-N',
+      issuedAt: expect.any(String),
+    });
 
     unmount(app);
   });

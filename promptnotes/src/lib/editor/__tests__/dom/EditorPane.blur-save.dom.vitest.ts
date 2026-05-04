@@ -132,7 +132,12 @@ describe('EditorPane blur-save — CRIT-003', () => {
     flushSync();
 
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
-    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith('capture-blur');
+    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith({
+      source: 'capture-blur',
+      noteId: 'note-001',
+      body: 'some content',
+      issuedAt: expect.any(String),
+    });
 
     unmount(app);
   });
@@ -145,9 +150,9 @@ describe('EditorPane blur-save — CRIT-003', () => {
 
     // patch dispatchTriggerBlurSave to also track call order
     const origBlurSave = adapter.dispatchTriggerBlurSave;
-    adapter.dispatchTriggerBlurSave = vi.fn().mockImplementation(() => {
+    adapter.dispatchTriggerBlurSave = vi.fn().mockImplementation((payload) => {
       callOrder.push('blurSave');
-      return origBlurSave('capture-blur');
+      return origBlurSave(payload);
     }) as unknown as typeof adapter.dispatchTriggerBlurSave;
 
     const app = mount(EditorPane, {

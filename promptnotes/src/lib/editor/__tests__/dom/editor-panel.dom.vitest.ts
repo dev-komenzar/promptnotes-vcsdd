@@ -139,9 +139,17 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
 
     // TriggerBlurSave MUST come before RequestNewNote
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
-    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith('capture-blur');
+    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith({
+      source: 'capture-blur',
+      noteId: 'note-001',
+      body: 'unsaved content',
+      issuedAt: expect.any(String),
+    });
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('explicit-button', expect.any(String));
+    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
+      source: 'explicit-button',
+      issuedAt: expect.any(String),
+    });
     expect(callOrder).toEqual(['dispatchTriggerBlurSave', 'dispatchRequestNewNote']);
 
     unmount(app);
@@ -179,9 +187,17 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
     flushSync();
 
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
-    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith('capture-blur');
+    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith({
+      source: 'capture-blur',
+      noteId: 'note-001',
+      body: 'unsaved content',
+      issuedAt: expect.any(String),
+    });
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('ctrl-N', expect.any(String));
+    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
+      source: 'ctrl-N',
+      issuedAt: expect.any(String),
+    });
     expect(callOrder).toEqual(['dispatchTriggerBlurSave', 'dispatchRequestNewNote']);
 
     unmount(app);
@@ -213,7 +229,10 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
 
     expect(adapter.dispatchTriggerBlurSave).not.toHaveBeenCalled();
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('explicit-button', expect.any(String));
+    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
+      source: 'explicit-button',
+      issuedAt: expect.any(String),
+    });
 
     unmount(app);
   });
@@ -240,7 +259,10 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
 
     expect(adapter.dispatchTriggerBlurSave).not.toHaveBeenCalled();
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('ctrl-N', expect.any(String));
+    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
+      source: 'ctrl-N',
+      issuedAt: expect.any(String),
+    });
 
     unmount(app);
   });

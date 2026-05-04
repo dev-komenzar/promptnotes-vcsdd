@@ -30,48 +30,48 @@ const CMD = {
 
 export interface TauriEditorAdapter {
   /** Persist keystroke body change to the domain. */
-  dispatchEditNoteBody(noteId: string, body: string, issuedAt: string): Promise<void>;
+  dispatchEditNoteBody(payload: { noteId: string; body: string; issuedAt: string; dirty: true }): Promise<void>;
   /** Trigger an idle-debounce save to the domain. */
-  dispatchTriggerIdleSave(source: 'capture-idle'): Promise<void>;
+  dispatchTriggerIdleSave(payload: { noteId: string; body: string; issuedAt: string; source: 'capture-idle' }): Promise<void>;
   /** Trigger a blur-event save to the domain. */
-  dispatchTriggerBlurSave(source: 'capture-blur'): Promise<void>;
+  dispatchTriggerBlurSave(payload: { noteId: string; body: string; issuedAt: string; source: 'capture-blur' }): Promise<void>;
   /** Retry a failed save. */
-  dispatchRetrySave(): Promise<void>;
+  dispatchRetrySave(payload: { noteId: string; body: string; issuedAt: string }): Promise<void>;
   /** Discard the current editing session. */
-  dispatchDiscardCurrentSession(): Promise<void>;
+  dispatchDiscardCurrentSession(payload: { noteId: string }): Promise<void>;
   /** Cancel a pending note-switch. */
-  dispatchCancelSwitch(): Promise<void>;
+  dispatchCancelSwitch(payload: { noteId: string }): Promise<void>;
   /** Copy the note body to clipboard via the domain. */
-  dispatchCopyNoteBody(noteId: string): Promise<void>;
+  dispatchCopyNoteBody(payload: { noteId: string; body: string }): Promise<void>;
   /** Request creation of a new note from the given source. */
-  dispatchRequestNewNote(source: 'explicit-button' | 'ctrl-N', issuedAt: string): Promise<void>;
+  dispatchRequestNewNote(payload: { source: 'explicit-button' | 'ctrl-N'; issuedAt: string }): Promise<void>;
 }
 
 export function createTauriEditorAdapter(): TauriEditorAdapter {
   return {
-    dispatchEditNoteBody(noteId: string, body: string, issuedAt: string): Promise<void> {
-      return invoke(CMD.editNoteBody, { noteId, body, issuedAt, dirty: true });
+    dispatchEditNoteBody(payload: { noteId: string; body: string; issuedAt: string; dirty: true }): Promise<void> {
+      return invoke(CMD.editNoteBody, payload);
     },
-    dispatchTriggerIdleSave(source: 'capture-idle'): Promise<void> {
-      return invoke(CMD.triggerIdleSave, { source });
+    dispatchTriggerIdleSave(payload: { noteId: string; body: string; issuedAt: string; source: 'capture-idle' }): Promise<void> {
+      return invoke(CMD.triggerIdleSave, payload);
     },
-    dispatchTriggerBlurSave(source: 'capture-blur'): Promise<void> {
-      return invoke(CMD.triggerBlurSave, { source });
+    dispatchTriggerBlurSave(payload: { noteId: string; body: string; issuedAt: string; source: 'capture-blur' }): Promise<void> {
+      return invoke(CMD.triggerBlurSave, payload);
     },
-    dispatchRetrySave(): Promise<void> {
-      return invoke(CMD.retrySave, {});
+    dispatchRetrySave(payload: { noteId: string; body: string; issuedAt: string }): Promise<void> {
+      return invoke(CMD.retrySave, payload);
     },
-    dispatchDiscardCurrentSession(): Promise<void> {
-      return invoke(CMD.discardCurrentSession, {});
+    dispatchDiscardCurrentSession(payload: { noteId: string }): Promise<void> {
+      return invoke(CMD.discardCurrentSession, payload);
     },
-    dispatchCancelSwitch(): Promise<void> {
-      return invoke(CMD.cancelSwitch, {});
+    dispatchCancelSwitch(payload: { noteId: string }): Promise<void> {
+      return invoke(CMD.cancelSwitch, payload);
     },
-    dispatchCopyNoteBody(noteId: string): Promise<void> {
-      return invoke(CMD.copyNoteBody, { noteId });
+    dispatchCopyNoteBody(payload: { noteId: string; body: string }): Promise<void> {
+      return invoke(CMD.copyNoteBody, payload);
     },
-    dispatchRequestNewNote(source: 'explicit-button' | 'ctrl-N', issuedAt: string): Promise<void> {
-      return invoke(CMD.requestNewNote, { source, issuedAt });
+    dispatchRequestNewNote(payload: { source: 'explicit-button' | 'ctrl-N'; issuedAt: string }): Promise<void> {
+      return invoke(CMD.requestNewNote, payload);
     },
   };
 }
