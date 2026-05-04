@@ -1,0 +1,35 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "structural_integrity",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "Multiple pass thresholds and the Definition of Done gate convergence on the command `bun run test` inside promptnotes/, with the §4 claim that this single command 'runs both — vitest handles all test files'. This is factually incorrect on three points: (a) promptnotes/package.json defines no `test` script (only `test:dom` and `test:dom:watch`), so `bun run test` will fail with a missing-script error; (b) `bun test` (bun's built-in runner) auto-discovers `*.test.ts` / `*.spec.ts` but NOT `*.vitest.ts` files; (c) vitest with the current config include pattern `src/lib/**/__tests__/dom/**/*.vitest.ts` discovers ONLY `.vitest.ts` files inside __tests__/dom/ — it does NOT pick up the adapter-tier `.test.ts` files referenced by CRIT-009..CRIT-012. Therefore there is no single `bun run test` invocation that exercises both the DOM tier (`.vitest.ts` under __tests__/dom/) and the adapter tier (`.test.ts` under __tests__/) as the contract claims. Convergence cannot be evaluated against a non-existent script, and the 'all 126 Sprint 1 tests + all 220 app-shell tests + all Sprint 2 tests pass with one command' assertion in CRIT-008 is unfalsifiable as written.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-2.md",
+    "lineRange": "276-279",
+    "snippet": "Run commands:\n- DOM tests: `bun run test:dom` inside `promptnotes/`\n- Adapter unit tests: `bun run test` inside `promptnotes/`\n- Full suite: `bun run test` (runs both — vitest handles all test files)"
+  },
+  "supportingEvidence": [
+    {
+      "filePath": ".vcsdd/features/ui-editor/contracts/sprint-2.md",
+      "lineRange": "47",
+      "snippet": "passThreshold (CRIT-008): 'bun run test inside promptnotes/ exits 0 with all 126 Sprint 1 tests and all 220 app-shell tests still passing'"
+    },
+    {
+      "filePath": ".vcsdd/features/ui-editor/contracts/sprint-2.md",
+      "lineRange": "321",
+      "snippet": "DoD item 1: 'All Sprint 2 DOM tests (8 primary files in __tests__/dom/) and adapter unit tests (5 files in __tests__/) pass: `bun run test` inside `promptnotes/` exits 0.'"
+    },
+    {
+      "filePath": "promptnotes/package.json",
+      "lineRange": "6-15",
+      "snippet": "scripts: { dev, build, preview, check, check:watch, test:dom, test:dom:watch, tauri }"
+    },
+    {
+      "filePath": "promptnotes/vitest.config.ts",
+      "lineRange": "18-23",
+      "snippet": "// bun:test との衝突を避けるため `.vitest.ts` 拡張子のみ vitest で実行する。\n// bun:test は `*.test.ts` / `*.spec.ts` を auto-discover するため、\n// `.vitest.ts` は bun の検索範囲外。\ninclude: ['src/lib/**/__tests__/dom/**/*.vitest.ts']"
+    }
+  ],
+  "routeToPhase": "1c-contract-revision"
+}

@@ -1,0 +1,25 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "critical",
+  "description": "CRIT-009, CRIT-010, CRIT-011, and CRIT-012 specify adapter unit tests as 'bun:test' files (tauriEditorAdapter.test.ts, editorStateChannel.test.ts, debounceTimer.test.ts, keyboardListener.test.ts, clipboardAdapter.test.ts at promptnotes/src/lib/editor/__tests__/) but the pass thresholds and descriptions use the vitest-only API surface vi.mocked(invoke), vi.mock('@tauri-apps/api/core'), vi.mock('@tauri-apps/api/event'). bun:test does not expose the `vi` namespace — it uses its own `mock()`, `spyOn()`, and `mock.module()` primitives from `bun:test`. The same file cannot simultaneously be a bun:test file and use vi.mock(). This is a tooling mismatch that will cause Phase 2a Red to fail not because the tests detect missing implementation, but because the framework cannot resolve `vi`. Compounding the problem: vitest.config.ts has include: ['src/lib/**/__tests__/dom/**/*.vitest.ts'] (line 22) — meaning if the adapter tests are intended to run under vitest, they must (a) live under __tests__/dom/ and (b) carry the `.vitest.ts` extension. Neither is true under the contract's current naming. Pick one runner and align filenames + assertion API consistently before the Red phase begins.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-2.md",
+    "lineRange": "49-67",
+    "snippet": "id: CRIT-009 ... 'tauriEditorAdapter.ts unit tests (tauriEditorAdapter.test.ts, bun:test): each of the eight dispatchXxx methods ... calls vi.mocked(invoke) with the exact snake_case command name'\nid: CRIT-010 ... 'editorStateChannel.test.ts, bun:test ... vi.mock(\"@tauri-apps/api/event\") used so no real Tauri runtime is required'\nid: CRIT-011 ... 'debounceTimer.test.ts, bun:test'\nid: CRIT-012 ... 'keyboardListener.test.ts, clipboardAdapter.test.ts, bun:test or vitest'"
+  },
+  "supportingEvidence": [
+    {
+      "filePath": "promptnotes/vitest.config.ts",
+      "lineRange": "16-24",
+      "snippet": "test: { environment: 'jsdom', globals: false, include: ['src/lib/**/__tests__/dom/**/*.vitest.ts'], setupFiles: ['./src/lib/__tests__/setup/vitest-setup.ts'] }"
+    },
+    {
+      "filePath": "promptnotes/package.json",
+      "lineRange": "6-15",
+      "snippet": "scripts: { dev, build, preview, check, check:watch, test:dom, test:dom:watch, tauri } — no `test` script defined; `bun run test` referenced by contract §5 CRIT-008 and §7 DoD-1 does not exist as an npm script."
+    }
+  ],
+  "routeToPhase": "1c-contract-revision"
+}

@@ -1,0 +1,1074 @@
+$ vitest run src/lib/editor/__tests__/dom
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes
+
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts (9 tests | 9 failed) 26ms
+     × dispatchEditNoteBody calls invoke("edit_note_body", { noteId, body, issuedAt, dirty: true }) 12ms
+     × dispatchTriggerIdleSave calls invoke("trigger_idle_save", { source: "capture-idle" }) 2ms
+     × dispatchTriggerBlurSave calls invoke("trigger_blur_save", { source: "capture-blur" }) 1ms
+     × dispatchRetrySave calls invoke("retry_save", {}) 5ms
+     × dispatchDiscardCurrentSession calls invoke("discard_current_session", {}) 1ms
+     × dispatchCancelSwitch calls invoke("cancel_switch", {}) 2ms
+     × dispatchCopyNoteBody calls invoke("copy_note_body", { noteId }) 1ms
+     × dispatchRequestNewNote calls invoke("request_new_note", { source, issuedAt }) 0ms
+     × dispatchRequestNewNote with ctrl-N source 1ms
+ ❯ src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts (6 tests | 6 failed) 72ms
+     × scheduleIdleSave(at, cb): setTimeout is called with delay = at - clock.now() 33ms
+     × callback fires after advancing fake timers by delay 8ms
+     × cancel() prevents the callback from firing 4ms
+     × cancel() calls clearTimeout 6ms
+     × re-scheduling cancels the previous timer (only one callback fires) 2ms
+     × cancel() before any scheduleIdleSave does not throw 14ms
+ ❯ src/lib/editor/__tests__/dom/clipboardAdapter.dom.vitest.ts (4 tests | 3 failed) 26ms
+     × write(text) calls navigator.clipboard.writeText(text) 21ms
+     × write(empty string) calls navigator.clipboard.writeText with empty string 2ms
+     × write returns a Promise that resolves 1ms
+ ❯ src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts (4 tests | 4 failed) 16ms
+     × subscribe() calls listen("editing_session_state_changed", handler) 11ms
+     × returned cleanup function calls the unlisten function 1ms
+     × payload extraction: handler receives event.payload.state 1ms
+     × handler is not called before a Tauri event arrives 1ms
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts (7 tests | 7 failed) 18ms
+     × Ctrl+N on panelRoot fires onNewNote("ctrl-N") 10ms
+     × Cmd+N (metaKey) on panelRoot fires onNewNote("ctrl-N") 2ms
+     × Ctrl+N calls event.preventDefault() 1ms
+     × Ctrl+N dispatched on document.body (outside pane) does NOT fire 1ms
+     × non-N key with ctrlKey does NOT fire 1ms
+     × cleanup removes the listener: Ctrl+N after cleanup does not fire 1ms
+     × uppercase N with ctrlKey also fires (case-insensitive match) 1ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts (4 tests | 3 failed) 40ms
+     × input event on textarea calls dispatchEditNoteBody exactly once 31ms
+     × each separate input event calls dispatchEditNoteBody once per event 3ms
+     × dirty-indicator appears after input when isDirty becomes true 2ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts (5 tests | 5 failed) 48ms
+     × blur while isDirty=true fires dispatchTriggerBlurSave once with source: "capture-blur" 34ms
+     × blur while isDirty=true cancels the idle timer before dispatching 3ms
+     × blur while status="saving" fires nothing (EC-EDIT-002) 3ms
+     × blur while isDirty=false fires nothing 3ms
+     × no duplicate: blur cancels the pending idle timer so only TriggerBlurSave fires 3ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts (3 tests | 3 failed) 53ms
+     × advancing exactly 2000ms fires dispatchTriggerIdleSave once 40ms
+     × advancing 1999ms does NOT fire dispatchTriggerIdleSave 7ms
+     × EC-EDIT-001: rapid typing produces exactly ONE idle save after quiescence 3ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts (4 tests | 3 failed) 50ms
+     × textarea with data-testid="editor-body" is present after mount 17ms
+     × copy button with data-testid="copy-body-button" is present after mount 4ms
+     × +新規 button with data-testid="new-note-button" is present after mount 3ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts (7 tests | 6 failed) 59ms
+     × +新規 button click calls dispatchRequestNewNote with source: "explicit-button" 36ms
+     × Ctrl+N on pane calls dispatchRequestNewNote with source: "ctrl-N" 5ms
+     × Ctrl+N on pane calls event.preventDefault() 4ms
+     × Cmd+N (metaKey) on pane calls dispatchRequestNewNote with source: "ctrl-N" 3ms
+     × +新規 button is disabled in switching state 3ms
+     × +新規 button is enabled in idle state 2ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts (8 tests | 8 failed) 69ms
+     × click with non-empty body calls clipboard.write(body) once 47ms
+     × click when body is whitespace-only does NOT call clipboard.write 4ms
+     × copy button is disabled in idle state 3ms
+     × copy button is disabled in switching state 3ms
+     × copy button is disabled in save-failed state 3ms
+     × copy button is enabled in editing state with non-empty body 2ms
+     × copy button is enabled in saving state with non-empty body 2ms
+     × EC-EDIT-006: reactive toggle from whitespace to non-empty re-enables the button 2ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts (10 tests | 9 failed) 73ms
+     × save-failure-banner with role="alert" is present when status="save-failed" 43ms
+     × banner shows correct Japanese message for FsError kind="permission" 5ms
+     × banner shows correct Japanese message for FsError kind="disk-full" 3ms
+     × banner shows correct Japanese message for FsError kind="lock" 3ms
+     × banner shows correct Japanese message for FsError kind="unknown" 2ms
+     × Retry button click calls dispatchRetrySave once 2ms
+     × Discard button click calls dispatchDiscardCurrentSession once 2ms
+     × Cancel button click calls dispatchCancelSwitch once 4ms
+     × all three buttons are present when status="save-failed" 3ms
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts (14 tests | 13 failed) 82ms
+       × textarea is readonly or absent 34ms
+       × copy button is disabled in idle 4ms
+       × textarea is editable (not readonly, not disabled) 4ms
+       × dirty indicator is present when isDirty=true 4ms
+       × save indicator with role="status" and aria-label containing "保存中" is present 3ms
+       × textarea is not disabled in saving 3ms
+       × textarea is disabled in switching 3ms
+       × copy button is disabled in switching 6ms
+       × new-note button is disabled in switching 3ms
+       × save-failure-banner is present 2ms
+       × textarea is editable in save-failed 2ms
+       × copy button is disabled in save-failed 6ms
+       × new-note button is enabled in save-failed 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 79 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts > EditorPane blur-save — CRIT-003 > blur while isDirty=true fires dispatchTriggerBlurSave once with source: "capture-blur"
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts:129:26
+    127|
+    128|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    129|     expect(textarea).not.toBeNull();
+       |                          ^
+    130|
+    131|     textarea!.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts > EditorPane blur-save — CRIT-003 > blur while isDirty=true cancels the idle timer before dispatching
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts:168:26
+    166|
+    167|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    168|     expect(textarea).not.toBeNull();
+       |                          ^
+    169|
+    170|     textarea!.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts > EditorPane blur-save — CRIT-003 > blur while status="saving" fires nothing (EC-EDIT-002)
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts:198:26
+    196|
+    197|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    198|     expect(textarea).not.toBeNull();
+       |                          ^
+    199|
+    200|     textarea!.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts > EditorPane blur-save — CRIT-003 > blur while isDirty=false fires nothing
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts:224:26
+    222|
+    223|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    224|     expect(textarea).not.toBeNull();
+       |                          ^
+    225|
+    226|     textarea!.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts > EditorPane blur-save — CRIT-003 > no duplicate: blur cancels the pending idle timer so only TriggerBlurSave fires
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts:250:26
+    248|
+    249|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    250|     expect(textarea).not.toBeNull();
+       |                          ^
+    251|
+    252|     // Blur before the idle timer fires
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts > EditorPane body-input — CRIT-001 > input event on textarea calls dispatchEditNoteBody exactly once
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts:111:26
+    109|
+    110|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    111|     expect(textarea).not.toBeNull();
+       |                          ^
+    112|
+    113|     // Simulate typing
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts > EditorPane body-input — CRIT-001 > each separate input event calls dispatchEditNoteBody once per event
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts:144:26
+    142|
+    143|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    144|     expect(textarea).not.toBeNull();
+       |                          ^
+    145|
+    146|     textarea!.value = 'a';
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts > EditorPane body-input — CRIT-001 > dirty-indicator appears after input when isDirty becomes true
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts:175:26
+    173|
+    174|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    175|     expect(textarea).not.toBeNull();
+       |                          ^
+    176|
+    177|     textarea!.value = 'dirty content';
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > click with non-empty body calls clipboard.write(body) once
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:102:25
+    100|
+    101|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    102|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    103|     expect(copyBtn!.disabled).toBe(false);
+    104|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > click when body is whitespace-only does NOT call clipboard.write
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:125:25
+    123|
+    124|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    125|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    126|     // Button should be disabled when body is whitespace-only
+    127|     expect(copyBtn!.disabled).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > copy button is disabled in idle state
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:148:25
+    146|
+    147|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    148|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    149|     expect(copyBtn!.disabled).toBe(true);
+    150|     expect(copyBtn!.getAttribute('aria-disabled')).toBe('true');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > copy button is disabled in switching state
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:166:25
+    164|
+    165|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    166|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    167|     expect(copyBtn!.disabled).toBe(true);
+    168|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > copy button is disabled in save-failed state
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:191:25
+    189|
+    190|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    191|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    192|     expect(copyBtn!.disabled).toBe(true);
+    193|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > copy button is enabled in editing state with non-empty body
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:208:25
+    206|
+    207|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    208|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    209|     expect(copyBtn!.disabled).toBe(false);
+    210|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > copy button is enabled in saving state with non-empty body
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:225:25
+    223|
+    224|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    225|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    226|     expect(copyBtn!.disabled).toBe(false);
+    227|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts > EditorPane copy button — CRIT-005 > EC-EDIT-006: reactive toggle from whitespace to non-empty re-enables the button
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:243:25
+    241|
+    242|     const copyBtn = target.querySelector<HTMLButtonElement>('[data-tes…
+    243|     expect(copyBtn).not.toBeNull();
+       |                         ^
+    244|     expect(copyBtn!.disabled).toBe(true);
+    245|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts > EditorPane idle-save — CRIT-002 > advancing exactly 2000ms fires dispatchTriggerIdleSave once
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts:108:26
+    106|
+    107|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    108|     expect(textarea).not.toBeNull();
+       |                          ^
+    109|
+    110|     textarea!.value = 'some content';
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts > EditorPane idle-save — CRIT-002 > advancing 1999ms does NOT fire dispatchTriggerIdleSave
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts:143:26
+    141|
+    142|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    143|     expect(textarea).not.toBeNull();
+       |                          ^
+    144|
+    145|     textarea!.value = 'some content';
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts > EditorPane idle-save — CRIT-002 > EC-EDIT-001: rapid typing produces exactly ONE idle save after quiescence
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts:177:26
+    175|
+    176|     const textarea = target.querySelector<HTMLTextAreaElement>('[data-…
+    177|     expect(textarea).not.toBeNull();
+       |                          ^
+    178|
+    179|     // Simulate a burst of edits within the debounce window
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts > EditorPane.mount — CRIT-008 > textarea with data-testid="editor-body" is present after mount
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts:100:26
+     98|
+     99|     const textarea = target.querySelector('[data-testid="editor-body"]…
+    100|     expect(textarea).not.toBeNull();
+       |                          ^
+    101|
+    102|     unmount(app);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts > EditorPane.mount — CRIT-008 > copy button with data-testid="copy-body-button" is present after mount
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts:117:28
+    115|
+    116|     const copyButton = target.querySelector('[data-testid="copy-body-b…
+    117|     expect(copyButton).not.toBeNull();
+       |                            ^
+    118|
+    119|     unmount(app);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts > EditorPane.mount — CRIT-008 > +新規 button with data-testid="new-note-button" is present after mount
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts:134:31
+    132|
+    133|     const newNoteButton = target.querySelector('[data-testid="new-note…
+    134|     expect(newNoteButton).not.toBeNull();
+       |                               ^
+    135|
+    136|     unmount(app);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts > EditorPane new-note — CRIT-006 > +新規 button click calls dispatchRequestNewNote with source: "explicit-button"
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts:116:28
+    114|
+    115|     const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-…
+    116|     expect(newNoteBtn).not.toBeNull();
+       |                            ^
+    117|
+    118|     newNoteBtn!.click();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts > EditorPane new-note — CRIT-006 > Ctrl+N on pane calls dispatchRequestNewNote with source: "ctrl-N"
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts:149:44
+    147|     flushSync();
+    148|
+    149|     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
+       |                                            ^
+    150|     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('ctrl-…
+    151|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts > EditorPane new-note — CRIT-006 > Ctrl+N on pane calls event.preventDefault()
+AssertionError: expected "preventDefault" to be called once, but got 0 times
+ ❯ src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts:176:31
+    174|     flushSync();
+    175|
+    176|     expect(preventDefaultSpy).toHaveBeenCalledOnce();
+       |                               ^
+    177|
+    178|     unmount(app);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts > EditorPane new-note — CRIT-006 > Cmd+N (metaKey) on pane calls dispatchRequestNewNote with source: "ctrl-N"
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts:201:44
+    199|     flushSync();
+    200|
+    201|     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
+       |                                            ^
+    202|     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith('ctrl-…
+    203|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts > EditorPane new-note — CRIT-006 > +新規 button is disabled in switching state
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts:248:28
+    246|
+    247|     const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-…
+    248|     expect(newNoteBtn).not.toBeNull();
+       |                            ^
+    249|     expect(newNoteBtn!.disabled).toBe(true);
+    250|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts > EditorPane new-note — CRIT-006 > +新規 button is enabled in idle state
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts:270:28
+    268|
+    269|     const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-…
+    270|     expect(newNoteBtn).not.toBeNull();
+       |                            ^
+    271|     expect(newNoteBtn!.disabled).toBe(false);
+    272|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > save-failure-banner with role="alert" is present when status="save-failed"
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts:121:24
+    119|
+    120|     const banner = target.querySelector('[data-testid="save-failure-ba…
+    121|     expect(banner).not.toBeNull();
+       |                        ^
+    122|     expect(banner!.getAttribute('role')).toBe('alert');
+    123|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > banner shows correct Japanese message for FsError kind="permission"
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > banner shows correct Japanese message for FsError kind="disk-full"
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > banner shows correct Japanese message for FsError kind="lock"
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > banner shows correct Japanese message for FsError kind="unknown"
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts:171:26
+    169|
+    170|       const banner = target.querySelector('[data-testid="save-failure-…
+    171|       expect(banner).not.toBeNull();
+       |                          ^
+    172|       expect(banner!.textContent).toContain(expectedMessage!);
+    173|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > Retry button click calls dispatchRetrySave once
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts:194:26
+    192|
+    193|     const retryBtn = target.querySelector<HTMLButtonElement>('[data-te…
+    194|     expect(retryBtn).not.toBeNull();
+       |                          ^
+    195|
+    196|     retryBtn!.click();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > Discard button click calls dispatchDiscardCurrentSession once
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts:220:28
+    218|
+    219|     const discardBtn = target.querySelector<HTMLButtonElement>('[data-…
+    220|     expect(discardBtn).not.toBeNull();
+       |                            ^
+    221|
+    222|     discardBtn!.click();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > Cancel button click calls dispatchCancelSwitch once
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts:246:27
+    244|
+    245|     const cancelBtn = target.querySelector<HTMLButtonElement>('[data-t…
+    246|     expect(cancelBtn).not.toBeNull();
+       |                           ^
+    247|
+    248|     cancelBtn!.click();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts > EditorPane save-failed banner — CRIT-004 > all three buttons are present when status="save-failed"
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts:271:75
+    269|     flushSync();
+    270|
+    271|     expect(target.querySelector('[data-testid="retry-save-button"]')).…
+       |                                                                           ^
+    272|     expect(target.querySelector('[data-testid="discard-session-button"…
+    273|     expect(target.querySelector('[data-testid="cancel-switch-button"]'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > idle status > textarea is readonly or absent
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:105:28
+    103|
+    104|       const textarea = target.querySelector<HTMLTextAreaElement>('[dat…
+    105|       expect(textarea).not.toBeNull();
+       |                            ^
+    106|       // idle: textarea should be readonly (or disabled)
+    107|       const isReadonly = textarea!.readOnly || textarea!.disabled;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > idle status > copy button is disabled in idle
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:124:27
+    122|
+    123|       const copyBtn = target.querySelector<HTMLButtonElement>('[data-t…
+    124|       expect(copyBtn).not.toBeNull();
+       |                           ^
+    125|       expect(copyBtn!.disabled).toBe(true);
+    126|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > editing status > textarea is editable (not readonly, not disabled)
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:143:28
+    141|
+    142|       const textarea = target.querySelector<HTMLTextAreaElement>('[dat…
+    143|       expect(textarea).not.toBeNull();
+       |                            ^
+    144|       expect(textarea!.readOnly).toBe(false);
+    145|       expect(textarea!.disabled).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > editing status > dirty indicator is present when isDirty=true
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:161:34
+    159|
+    160|       const dirtyIndicator = target.querySelector('[data-testid="dirty…
+    161|       expect(dirtyIndicator).not.toBeNull();
+       |                                  ^
+    162|
+    163|       unmount(app);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > saving status > save indicator with role="status" and aria-label containing "保存中" is present
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:195:33
+    193|
+    194|       const saveIndicator = target.querySelector('[role="status"]');
+    195|       expect(saveIndicator).not.toBeNull();
+       |                                 ^
+    196|       expect(saveIndicator!.getAttribute('aria-label')).toContain('保存中…
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > saving status > textarea is not disabled in saving
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:212:28
+    210|
+    211|       const textarea = target.querySelector<HTMLTextAreaElement>('[dat…
+    212|       expect(textarea).not.toBeNull();
+       |                            ^
+    213|       expect(textarea!.disabled).toBe(false);
+    214|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > switching status > textarea is disabled in switching
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:231:28
+    229|
+    230|       const textarea = target.querySelector<HTMLTextAreaElement>('[dat…
+    231|       expect(textarea).not.toBeNull();
+       |                            ^
+    232|       expect(textarea!.disabled).toBe(true);
+    233|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > switching status > copy button is disabled in switching
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:248:27
+    246|
+    247|       const copyBtn = target.querySelector<HTMLButtonElement>('[data-t…
+    248|       expect(copyBtn).not.toBeNull();
+       |                           ^
+    249|       expect(copyBtn!.disabled).toBe(true);
+    250|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > switching status > new-note button is disabled in switching
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:265:30
+    263|
+    264|       const newNoteBtn = target.querySelector<HTMLButtonElement>('[dat…
+    265|       expect(newNoteBtn).not.toBeNull();
+       |                              ^
+    266|       expect(newNoteBtn!.disabled).toBe(true);
+    267|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > save-failed status > save-failure-banner is present
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:293:26
+    291|
+    292|       const banner = target.querySelector('[data-testid="save-failure-…
+    293|       expect(banner).not.toBeNull();
+       |                          ^
+    294|
+    295|       unmount(app);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > save-failed status > textarea is editable in save-failed
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:309:28
+    307|
+    308|       const textarea = target.querySelector<HTMLTextAreaElement>('[dat…
+    309|       expect(textarea).not.toBeNull();
+       |                            ^
+    310|       expect(textarea!.disabled).toBe(false);
+    311|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > save-failed status > copy button is disabled in save-failed
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:326:27
+    324|
+    325|       const copyBtn = target.querySelector<HTMLButtonElement>('[data-t…
+    326|       expect(copyBtn).not.toBeNull();
+       |                           ^
+    327|       expect(copyBtn!.disabled).toBe(true);
+    328|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts > EditorPane state-mirror — CRIT-007 > save-failed status > new-note button is enabled in save-failed
+AssertionError: expected null not to be null
+ ❯ src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:343:30
+    341|
+    342|       const newNoteBtn = target.querySelector<HTMLButtonElement>('[dat…
+    343|       expect(newNoteBtn).not.toBeNull();
+       |                              ^
+    344|       expect(newNoteBtn!.disabled).toBe(false);
+    345|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/clipboardAdapter.dom.vitest.ts > ClipboardAdapter — CRIT-012 > write(text) calls navigator.clipboard.writeText(text)
+Error: not implemented (Red phase)
+ ❯ Object.write src/lib/editor/clipboardAdapter.ts:18:13
+     16|   return {
+     17|     write(_text: string): Promise<void> {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|   };
+ ❯ src/lib/editor/__tests__/dom/clipboardAdapter.dom.vitest.ts:34:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/clipboardAdapter.dom.vitest.ts > ClipboardAdapter — CRIT-012 > write(empty string) calls navigator.clipboard.writeText with empty string
+Error: not implemented (Red phase)
+ ❯ Object.write src/lib/editor/clipboardAdapter.ts:18:13
+     16|   return {
+     17|     write(_text: string): Promise<void> {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|   };
+ ❯ src/lib/editor/__tests__/dom/clipboardAdapter.dom.vitest.ts:40:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/clipboardAdapter.dom.vitest.ts > ClipboardAdapter — CRIT-012 > write returns a Promise that resolves
+Error: not implemented (Red phase)
+ ❯ Object.write src/lib/editor/clipboardAdapter.ts:18:13
+     16|   return {
+     17|     write(_text: string): Promise<void> {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|   };
+ ❯ src/lib/editor/__tests__/dom/clipboardAdapter.dom.vitest.ts:45:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts > DebounceTimer — CRIT-011 > scheduleIdleSave(at, cb): setTimeout is called with delay = at - clock.now()
+Error: not implemented (Red phase)
+ ❯ Object.scheduleIdleSave src/lib/editor/debounceTimer.ts:18:13
+     16|   return {
+     17|     scheduleIdleSave(_at: number, _callback: () => void): void {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|     cancel(): void {
+ ❯ src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts:40:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts > DebounceTimer — CRIT-011 > callback fires after advancing fake timers by delay
+Error: not implemented (Red phase)
+ ❯ Object.scheduleIdleSave src/lib/editor/debounceTimer.ts:18:13
+     16|   return {
+     17|     scheduleIdleSave(_at: number, _callback: () => void): void {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|     cancel(): void {
+ ❯ src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts:51:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts > DebounceTimer — CRIT-011 > cancel() prevents the callback from firing
+Error: not implemented (Red phase)
+ ❯ Object.scheduleIdleSave src/lib/editor/debounceTimer.ts:18:13
+     16|   return {
+     17|     scheduleIdleSave(_at: number, _callback: () => void): void {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|     cancel(): void {
+ ❯ src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts:63:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts > DebounceTimer — CRIT-011 > cancel() calls clearTimeout
+Error: not implemented (Red phase)
+ ❯ Object.scheduleIdleSave src/lib/editor/debounceTimer.ts:18:13
+     16|   return {
+     17|     scheduleIdleSave(_at: number, _callback: () => void): void {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|     cancel(): void {
+ ❯ src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts:75:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts > DebounceTimer — CRIT-011 > re-scheduling cancels the previous timer (only one callback fires)
+Error: not implemented (Red phase)
+ ❯ Object.scheduleIdleSave src/lib/editor/debounceTimer.ts:18:13
+     16|   return {
+     17|     scheduleIdleSave(_at: number, _callback: () => void): void {
+     18|       throw new Error('not implemented (Red phase)');
+       |             ^
+     19|     },
+     20|     cancel(): void {
+ ❯ src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts:86:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts > DebounceTimer — CRIT-011 > cancel() before any scheduleIdleSave does not throw
+AssertionError: expected [Function] to not throw an error but 'Error: not implemented (Red phase)' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"Error: not implemented (Red phase)"
+
+ ❯ src/lib/editor/__tests__/dom/debounceTimer.dom.vitest.ts:96:38
+     94|
+     95|   test('cancel() before any scheduleIdleSave does not throw', () => {
+     96|     expect(() => timer.cancel()).not.toThrow();
+       |                                      ^
+     97|   });
+     98| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts > EditorStateChannel — CRIT-010 > subscribe() calls listen("editing_session_state_changed", handler)
+Error: not implemented (Red phase)
+ ❯ Object.subscribe src/lib/editor/editorStateChannel.ts:20:13
+     18|   return {
+     19|     subscribe(_handler: (state: EditingSessionState) => void): () => v…
+     20|       throw new Error('not implemented (Red phase)');
+       |             ^
+     21|     },
+     22|   };
+ ❯ src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts:54:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts > EditorStateChannel — CRIT-010 > returned cleanup function calls the unlisten function
+Error: not implemented (Red phase)
+ ❯ Object.subscribe src/lib/editor/editorStateChannel.ts:20:13
+     18|   return {
+     19|     subscribe(_handler: (state: EditingSessionState) => void): () => v…
+     20|       throw new Error('not implemented (Red phase)');
+       |             ^
+     21|     },
+     22|   };
+ ❯ src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts:64:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts > EditorStateChannel — CRIT-010 > payload extraction: handler receives event.payload.state
+Error: not implemented (Red phase)
+ ❯ Object.subscribe src/lib/editor/editorStateChannel.ts:20:13
+     18|   return {
+     19|     subscribe(_handler: (state: EditingSessionState) => void): () => v…
+     20|       throw new Error('not implemented (Red phase)');
+       |             ^
+     21|     },
+     22|   };
+ ❯ src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts:72:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts > EditorStateChannel — CRIT-010 > handler is not called before a Tauri event arrives
+Error: not implemented (Red phase)
+ ❯ Object.subscribe src/lib/editor/editorStateChannel.ts:20:13
+     18|   return {
+     19|     subscribe(_handler: (state: EditingSessionState) => void): () => v…
+     20|       throw new Error('not implemented (Red phase)');
+       |             ^
+     21|     },
+     22|   };
+ ❯ src/lib/editor/__tests__/dom/editorStateChannel.dom.vitest.ts:87:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts > keyboardListener — CRIT-012 > Ctrl+N on panelRoot fires onNewNote("ctrl-N")
+Error: not implemented (Red phase)
+ ❯ Module.attachKeyboardListener src/lib/editor/keyboardListener.ts:14:9
+     12|   _onNewNote: (source: 'ctrl-N') => void
+     13| ): () => void {
+     14|   throw new Error('not implemented (Red phase)');
+       |         ^
+     15| }
+     16|
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:34:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts > keyboardListener — CRIT-012 > Cmd+N (metaKey) on panelRoot fires onNewNote("ctrl-N")
+Error: not implemented (Red phase)
+ ❯ Module.attachKeyboardListener src/lib/editor/keyboardListener.ts:14:9
+     12|   _onNewNote: (source: 'ctrl-N') => void
+     13| ): () => void {
+     14|   throw new Error('not implemented (Red phase)');
+       |         ^
+     15| }
+     16|
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:46:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts > keyboardListener — CRIT-012 > Ctrl+N calls event.preventDefault()
+Error: not implemented (Red phase)
+ ❯ Module.attachKeyboardListener src/lib/editor/keyboardListener.ts:14:9
+     12|   _onNewNote: (source: 'ctrl-N') => void
+     13| ): () => void {
+     14|   throw new Error('not implemented (Red phase)');
+       |         ^
+     15| }
+     16|
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:58:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts > keyboardListener — CRIT-012 > Ctrl+N dispatched on document.body (outside pane) does NOT fire
+Error: not implemented (Red phase)
+ ❯ Module.attachKeyboardListener src/lib/editor/keyboardListener.ts:14:9
+     12|   _onNewNote: (source: 'ctrl-N') => void
+     13| ): () => void {
+     14|   throw new Error('not implemented (Red phase)');
+       |         ^
+     15| }
+     16|
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:70:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts > keyboardListener — CRIT-012 > non-N key with ctrlKey does NOT fire
+Error: not implemented (Red phase)
+ ❯ Module.attachKeyboardListener src/lib/editor/keyboardListener.ts:14:9
+     12|   _onNewNote: (source: 'ctrl-N') => void
+     13| ): () => void {
+     14|   throw new Error('not implemented (Red phase)');
+       |         ^
+     15| }
+     16|
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:82:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts > keyboardListener — CRIT-012 > cleanup removes the listener: Ctrl+N after cleanup does not fire
+Error: not implemented (Red phase)
+ ❯ Module.attachKeyboardListener src/lib/editor/keyboardListener.ts:14:9
+     12|   _onNewNote: (source: 'ctrl-N') => void
+     13| ): () => void {
+     14|   throw new Error('not implemented (Red phase)');
+       |         ^
+     15| }
+     16|
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:93:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts > keyboardListener — CRIT-012 > uppercase N with ctrlKey also fires (case-insensitive match)
+Error: not implemented (Red phase)
+ ❯ Module.attachKeyboardListener src/lib/editor/keyboardListener.ts:14:9
+     12|   _onNewNote: (source: 'ctrl-N') => void
+     13| ): () => void {
+     14|   throw new Error('not implemented (Red phase)');
+       |         ^
+     15| }
+     16|
+ ❯ src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:104:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchEditNoteBody calls invoke("edit_note_body", { noteId, body, issuedAt, dirty: true })
+Error: not implemented (Red phase)
+ ❯ Object.dispatchEditNoteBody src/lib/editor/tauriEditorAdapter.ts:35:13
+     33|   return {
+     34|     dispatchEditNoteBody(_noteId: string, _body: string, _issuedAt: st…
+     35|       throw new Error('not implemented (Red phase)');
+       |             ^
+     36|     },
+     37|     dispatchTriggerIdleSave(_source: 'capture-idle'): Promise<void> {
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:31:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchTriggerIdleSave calls invoke("trigger_idle_save", { source: "capture-idle" })
+Error: not implemented (Red phase)
+ ❯ Object.dispatchTriggerIdleSave src/lib/editor/tauriEditorAdapter.ts:38:13
+     36|     },
+     37|     dispatchTriggerIdleSave(_source: 'capture-idle'): Promise<void> {
+     38|       throw new Error('not implemented (Red phase)');
+       |             ^
+     39|     },
+     40|     dispatchTriggerBlurSave(_source: 'capture-blur'): Promise<void> {
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:42:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchTriggerBlurSave calls invoke("trigger_blur_save", { source: "capture-blur" })
+Error: not implemented (Red phase)
+ ❯ Object.dispatchTriggerBlurSave src/lib/editor/tauriEditorAdapter.ts:41:13
+     39|     },
+     40|     dispatchTriggerBlurSave(_source: 'capture-blur'): Promise<void> {
+     41|       throw new Error('not implemented (Red phase)');
+       |             ^
+     42|     },
+     43|     dispatchRetrySave(): Promise<void> {
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:50:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[70/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchRetrySave calls invoke("retry_save", {})
+Error: not implemented (Red phase)
+ ❯ Object.dispatchRetrySave src/lib/editor/tauriEditorAdapter.ts:44:13
+     42|     },
+     43|     dispatchRetrySave(): Promise<void> {
+     44|       throw new Error('not implemented (Red phase)');
+       |             ^
+     45|     },
+     46|     dispatchDiscardCurrentSession(): Promise<void> {
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:58:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[71/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchDiscardCurrentSession calls invoke("discard_current_session", {})
+Error: not implemented (Red phase)
+ ❯ Object.dispatchDiscardCurrentSession src/lib/editor/tauriEditorAdapter.ts:47:13
+     45|     },
+     46|     dispatchDiscardCurrentSession(): Promise<void> {
+     47|       throw new Error('not implemented (Red phase)');
+       |             ^
+     48|     },
+     49|     dispatchCancelSwitch(): Promise<void> {
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:64:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[72/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchCancelSwitch calls invoke("cancel_switch", {})
+Error: not implemented (Red phase)
+ ❯ Object.dispatchCancelSwitch src/lib/editor/tauriEditorAdapter.ts:50:13
+     48|     },
+     49|     dispatchCancelSwitch(): Promise<void> {
+     50|       throw new Error('not implemented (Red phase)');
+       |             ^
+     51|     },
+     52|     dispatchCopyNoteBody(_noteId: string): Promise<void> {
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:70:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[73/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchCopyNoteBody calls invoke("copy_note_body", { noteId })
+Error: not implemented (Red phase)
+ ❯ Object.dispatchCopyNoteBody src/lib/editor/tauriEditorAdapter.ts:53:13
+     51|     },
+     52|     dispatchCopyNoteBody(_noteId: string): Promise<void> {
+     53|       throw new Error('not implemented (Red phase)');
+       |             ^
+     54|     },
+     55|     dispatchRequestNewNote(_source: 'explicit-button' | 'ctrl-N', _iss…
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:76:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[74/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchRequestNewNote calls invoke("request_new_note", { source, issuedAt })
+Error: not implemented (Red phase)
+ ❯ Object.dispatchRequestNewNote src/lib/editor/tauriEditorAdapter.ts:56:13
+     54|     },
+     55|     dispatchRequestNewNote(_source: 'explicit-button' | 'ctrl-N', _iss…
+     56|       throw new Error('not implemented (Red phase)');
+       |             ^
+     57|     },
+     58|   };
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:82:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[75/79]⎯
+
+ FAIL  src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts > TauriEditorAdapter — CRIT-009 > dispatchRequestNewNote with ctrl-N source
+Error: not implemented (Red phase)
+ ❯ Object.dispatchRequestNewNote src/lib/editor/tauriEditorAdapter.ts:56:13
+     54|     },
+     55|     dispatchRequestNewNote(_source: 'explicit-button' | 'ctrl-N', _iss…
+     56|       throw new Error('not implemented (Red phase)');
+       |             ^
+     57|     },
+     58|   };
+ ❯ src/lib/editor/__tests__/dom/tauriEditorAdapter.dom.vitest.ts:91:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[76/79]⎯
+
+
+ Test Files  13 failed (13)
+      Tests  79 failed | 6 passed (85)
+   Start at  14:12:57
+   Duration  2.84s (transform 4.05s, setup 561ms, import 6.65s, tests 634ms, environment 20.57s)
+
+error: script "test:dom" exited with code 1
+
+---
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+Sprint 2 Red Phase Gate Evidence:
+  sprint-2 vitest (editor/__tests__/dom): 79 failed | 6 passed (85 total)
+  sprint-1 bun:test (editor):             126 pass | 0 fail
+  app-shell bun:test:                     220 pass | 0 fail
+  svelte-check (editor files):            0 errors | 0 warnings
+
+Passing tests are valid true-negative/structural checks:
+  - EditorPane mounts without throwing (placeholder renders fine)
+  - no real invoke() is called when using mock adapter (isolation confirmed)
+  - Ctrl+N on document.body does NOT call dispatchRequestNewNote (true negative for pane-scoped handler)
+  - banner is absent when status="editing" (true negative for stub with no banner)
+  - dirty indicator is absent when isDirty=false (true negative)
+  - ClipboardAdapter interface is a named export (compile-time type check)

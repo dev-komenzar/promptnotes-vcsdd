@@ -14,7 +14,7 @@
   import type { EditorStateChannel } from './editorStateChannel.js';
   import type { DebounceTimer } from './debounceTimer.js';
   import type { ClipboardAdapter } from './clipboardAdapter.js';
-  import type { EditorViewState, EditorAction } from './types.js';
+  import type { EditorViewState, EditorAction, EditorCommand } from './types.js';
   import { untrack } from 'svelte';
   import { editorReducer } from './editorReducer.js';
   import { canCopy, bannerMessageFor } from './editorPredicates.js';
@@ -22,11 +22,17 @@
   import { attachKeyboardListener } from './keyboardListener.js';
 
   interface Props {
+    /** Outbound IPC adapter for domain dispatch calls. */
     adapter: TauriEditorAdapter;
+    /** Inbound channel that delivers EditingSessionState snapshots from the domain. */
     stateChannel: EditorStateChannel;
+    /** Blur-save coordination hook; cancel() is called on textarea blur. */
     timer: DebounceTimer;
+    /** Clipboard write abstraction (navigator.clipboard mock seam). */
     clipboard: ClipboardAdapter;
+    /** Monotonic clock; defaults to Date.now(). Override in tests for determinism. */
     clock?: { now(): number };
+    /** Optional initial EditorViewState; defaults to idle/clean. */
     initialState?: EditorViewState;
   }
 
@@ -76,48 +82,53 @@
     }
   }
 
+  /** Execute a single EditorCommand produced by the reducer. */
+  function executeCommand(cmd: EditorCommand): void {
+    switch (cmd.kind) {
+      case 'edit-note-body':
+        adapter.dispatchEditNoteBody(cmd.payload.noteId, cmd.payload.newBody, cmd.payload.issuedAt);
+        break;
+      case 'trigger-idle-save':
+        adapter.dispatchTriggerIdleSave(cmd.payload.source);
+        break;
+      case 'trigger-blur-save':
+        adapter.dispatchTriggerBlurSave(cmd.payload.source);
+        break;
+      case 'cancel-idle-timer':
+        cancelIdleSave();
+        break;
+      case 'retry-save':
+        adapter.dispatchRetrySave();
+        break;
+      case 'discard-current-session':
+        adapter.dispatchDiscardCurrentSession();
+        break;
+      case 'cancel-switch':
+        adapter.dispatchCancelSwitch();
+        break;
+      case 'copy-note-body':
+        adapter.dispatchCopyNoteBody(cmd.payload.noteId);
+        clipboard.write(cmd.payload.body);
+        break;
+      case 'request-new-note':
+        adapter.dispatchRequestNewNote(cmd.payload.source, cmd.payload.issuedAt);
+        break;
+      default: {
+        const _exhaustive: never = cmd;
+        void _exhaustive;
+      }
+    }
+  }
+
   /**
-   * Dispatch an action through the pure reducer and execute resulting commands.
+   * Run action through the pure reducer, update viewState, and execute all
+   * resulting commands via executeCommand.
    */
   function dispatch(action: EditorAction): void {
     const result = editorReducer(viewState, action);
     viewState = result.state;
-
     for (const cmd of result.commands) {
-      switch (cmd.kind) {
-        case 'edit-note-body':
-          adapter.dispatchEditNoteBody(cmd.payload.noteId, cmd.payload.newBody, cmd.payload.issuedAt);
-          break;
-        case 'trigger-idle-save':
-          adapter.dispatchTriggerIdleSave(cmd.payload.source);
-          break;
-        case 'trigger-blur-save':
-          adapter.dispatchTriggerBlurSave(cmd.payload.source);
-          break;
-        case 'cancel-idle-timer':
-          cancelIdleSave();
-          break;
-        case 'retry-save':
-          adapter.dispatchRetrySave();
-          break;
-        case 'discard-current-session':
-          adapter.dispatchDiscardCurrentSession();
-          break;
-        case 'cancel-switch':
-          adapter.dispatchCancelSwitch();
-          break;
-        case 'copy-note-body':
-          adapter.dispatchCopyNoteBody(cmd.payload.noteId);
-          clipboard.write(cmd.payload.body);
-          break;
-        case 'request-new-note':
-          adapter.dispatchRequestNewNote(cmd.payload.source, cmd.payload.issuedAt);
-          break;
-        default: {
-          const _exhaustive: never = cmd;
-          void _exhaustive;
-        }
-      }
+      executeCommand(cmd);
     }
   }
 

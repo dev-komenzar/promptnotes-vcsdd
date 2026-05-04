@@ -6,20 +6,25 @@
  */
 
 export interface DebounceTimer {
+  /** Schedule an idle-save callback to fire at absolute epoch millisecond `at`. */
   scheduleIdleSave(at: number, callback: () => void): void;
+  /** Cancel any pending idle-save timer. Safe to call when no timer is active. */
   cancel(): void;
 }
 
 export function createDebounceTimer(clock: { now(): number }): DebounceTimer {
   let handle: ReturnType<typeof setTimeout> | null = null;
 
+  function clearHandle(): void {
+    if (handle !== null) {
+      clearTimeout(handle);
+      handle = null;
+    }
+  }
+
   return {
     scheduleIdleSave(at: number, callback: () => void): void {
-      // Cancel any existing timer before scheduling a new one
-      if (handle !== null) {
-        clearTimeout(handle);
-        handle = null;
-      }
+      clearHandle();
       const delay = at - clock.now();
       handle = setTimeout(() => {
         handle = null;
@@ -27,10 +32,7 @@ export function createDebounceTimer(clock: { now(): number }): DebounceTimer {
       }, delay);
     },
     cancel(): void {
-      if (handle !== null) {
-        clearTimeout(handle);
-        handle = null;
-      }
+      clearHandle();
     },
   };
 }
