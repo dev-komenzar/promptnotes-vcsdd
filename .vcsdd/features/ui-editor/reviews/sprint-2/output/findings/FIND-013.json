@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-013",
+  "dimension": "edge_case_coverage",
+  "category": "missing_edge_case",
+  "severity": "low",
+  "description": "oninput handler schedules an idle save unconditionally, violating REQ-EDIT-004 timer-not-started-when-isDirty===false invariant.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "95-115"
+  },
+  "routeToPhase": "2b"
+}

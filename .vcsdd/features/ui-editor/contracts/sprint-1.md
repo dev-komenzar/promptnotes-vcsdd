@@ -1,6 +1,7 @@
 ---
 sprintNumber: 1
 feature: ui-editor
+status: approved
 scope: "Pure core of the ui-editor feature: the deterministic, side-effect-free modules that constitute the testable logic layer. Specifically: the state predicates (canCopy, isEmptyAfterTrim, bannerMessageFor, classifySource), the mirror reducer (editorReducer), the debounce scheduling logic (computeNextFireAt, shouldFireIdleSave, nextFireAt), and the TypeScript type definitions (EditorViewState, EditorAction, EditorCommand 9-variant union, SaveError, EditingSessionStatus 5 variants). EXPLICITLY EXCLUDED from this sprint: Svelte components (EditorPanel.svelte, SaveFailureBanner.svelte), Tauri invoke/listen calls (tauriEditorAdapter.ts, editorStateChannel.ts), the setTimeout/clearTimeout shell (timerModule.ts), the clipboard adapter (clipboardAdapter.ts), DOM event handlers (keyboard listener, blur/input event wiring), $state/$effect/$derived runes (component-tier only), and all DOM integration tests (*.dom.vitest.ts). Sprint 2 delivers the effectful shell and component integration."
 criteria:
   - id: CRIT-001

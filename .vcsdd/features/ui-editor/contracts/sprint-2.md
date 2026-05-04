@@ -3,7 +3,7 @@ sprintNumber: 2
 feature: ui-editor
 scope: "Effectful shell adapters and Svelte 5 EditorPane component that wires the pure reducer (Sprint 1) to DOM events and outbound IPC. Specifically: tauriEditorAdapter.ts (outbound IPC wrapping all eight dispatchXxx methods behind a TauriEditorAdapter interface), editorStateChannel.ts (inbound event.listen wrapper behind an EditorStateChannel interface), debounceTimer.ts (setTimeout/clearTimeout shell with injected clock), keyboardListener.ts (pane-scoped keydown handler for Ctrl+N/Cmd+N), clipboardAdapter.ts (navigator.clipboard or Tauri clipboard plugin wrapper behind a ClipboardAdapter interface), EditorPane.svelte (Svelte 5 component using $state/$effect/$derived runes, owns textarea, isDirty indicator, save indicator, save-failed banner with Retry/Discard/Cancel buttons, Copy button, +新規 button, all driven by the Sprint 1 editorReducer), and integration of EditorPane into +page.svelte (replacing the right-pane placeholder inside AppShell). DOM tests use vitest+jsdom with raw Svelte 5 mount/unmount/flushSync API and vi.fn() mock adapters; no @testing-library/svelte. Out of scope: any modification to the pure core modules (types.ts, editorPredicates.ts, editorReducer.ts, debounceSchedule.ts) or their Sprint 1 tests; Rust-side Tauri command handler implementations (no Rust receiver exists yet — all DOM tests mock invoke)."
 negotiationRound: 0
-status: under-review
+status: approved
 criteria:
   - id: CRIT-001
     dimension: spec_fidelity

@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "high",
+  "description": "NoteFileSaved/NoteSaveFailed actions are never produced from inbound state-channel events; cancel-idle-timer command never fires; PROP-EDIT-010 is dead at runtime.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "85-130"
+  },
+  "routeToPhase": "2b"
+}

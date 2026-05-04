@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-009",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "high",
+  "description": "issuedAt is constructed as a millisecond integer string, not the ISO-8601 string mandated by §6/§10/§11; every Tauri save call would fail validation when the backend handler lands.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "160-200"
+  },
+  "routeToPhase": "2b"
+}

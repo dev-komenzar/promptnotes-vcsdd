@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "structural_integrity",
+  "category": "code_structure",
+  "severity": "critical",
+  "description": "EditorPane.svelte runs its own setTimeout/clearTimeout idle-save loop instead of routing through the injected DebounceTimer.scheduleIdleSave; computeNextFireAt from Sprint 1 is never called from the runtime path.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "62-83"
+  },
+  "routeToPhase": "2b"
+}

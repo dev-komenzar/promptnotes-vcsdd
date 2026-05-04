@@ -16,3 +16,6 @@ bun test v1.3.11 (af24e281)
  0 fail
  275 expect() calls
 Ran 220 tests across 14 files. [309.00ms]
+
+target feature tests: pass (bun:test 126/126 across src/lib/editor)
+regression baseline: pass (app-shell bun:test 220/220 unchanged)
