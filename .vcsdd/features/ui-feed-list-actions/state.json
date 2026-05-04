@@ -1,0 +1,17 @@
+{
+  "featureName": "ui-feed-list-actions",
+  "mode": "strict",
+  "language": "typescript",
+  "currentPhase": "init",
+  "phaseHistory": [],
+  "iterations": {},
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-ui-feed-list-actions-1777887913224",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-05-04T09:45:13.224Z",
+  "updatedAt": "2026-05-04T09:45:13.224Z"
+}
