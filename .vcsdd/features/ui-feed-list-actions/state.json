@@ -2,16 +2,74 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
-  "iterations": {},
+  "currentPhase": "1c",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-04T10:03:47.651Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-04T10:03:47.653Z"
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "timestamp": "2026-05-04T10:18:12.546Z",
+      "reason": "Phase 1c FAIL routing: return to earliest impacted phase (behavioral-spec corrections required)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-04T10:25:57.406Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-04T10:25:57.409Z"
+    },
+    {
+      "from": "1c",
+      "to": "1b",
+      "timestamp": "2026-05-04T10:34:31.031Z",
+      "reason": "iter-2 FAIL: 5 findings cluster in verification-architecture; backward routing via direct state edit"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-04T10:38:09.677Z"
+    }
+  ],
+  "iterations": {
+    "1a": 2,
+    "1b": 3,
+    "1c": 2
+  },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-ui-feed-list-actions-1777887913224",
     "beads": []
   },
-  "gates": {},
+  "gates": {
+    "1c": {
+      "verdict": "FAIL",
+      "timestamp": "2026-05-04T10:33:33.168Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2,
+        "findings": {
+          "high": 1,
+          "medium": 3,
+          "low": 1
+        }
+      },
+      "adversaryVerdict": "FAIL",
+      "adversaryReviewedAt": "2026-05-04T10:33:33.168Z"
+    }
+  },
   "sprintCount": 0,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-04T09:45:13.224Z"
+  "updatedAt": "2026-05-04T10:38:09.677Z"
 }
