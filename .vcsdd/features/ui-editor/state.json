@@ -829,16 +829,15 @@
     },
     "contract-review": {
       "verdict": "PASS",
-      "timestamp": "2026-05-04T04:21:50.935Z",
+      "timestamp": "2026-05-04T04:56:58.776Z",
       "reviewedBy": "adversary",
       "details": {
-        "sprint": 1,
-        "iteration": 3,
-        "findingsCount": 0
+        "sprint": 2,
+        "iteration": 2
       }
     }
   },
-  "sprintCount": 1,
+  "sprintCount": 2,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-04T04:41:04.053Z"
+  "updatedAt": "2026-05-04T04:56:58.776Z"
 }
