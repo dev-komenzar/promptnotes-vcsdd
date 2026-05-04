@@ -2,12 +2,12 @@
   "sprintNumber": 1,
   "feature": "ui-feed-list-actions",
   "overallVerdict": "PASS",
-  "timestamp": "2026-05-04T11:46:33.000Z",
-  "iteration": 1,
+  "timestamp": "2026-05-04T12:30:00.000Z",
+  "iteration": 2,
   "reviewContext": {
     "reviewType": "contract",
     "contractPath": "contracts/sprint-1.md",
-    "contractDigest": "dafdd93dac2042a88285837ec9456f1c3b1a7cf5907842428442a88aea60dfeb"
+    "contractDigest": "896567526253f017e3fd52f94d4cc27cca6205272930b62297ce821b60640cb6"
   },
   "dimensions": [
     {
@@ -18,7 +18,7 @@
         {
           "type": "file",
           "location": "promptnotes/src/lib/feed/feedReducer.ts",
-          "description": "feedReducer is total over all 10 FeedAction variants × FeedViewState; PROP-FEED-005..007d + 035 all green; REQ-FEED-005..018 covered in feedReducer.test.ts"
+          "description": "feedReducer is total over all 10 FeedAction variants × FeedViewState; PROP-FEED-005..007d + 035 all green; REQ-FEED-005..018 covered with named per-PROP test bindings (CRIT-001..005)"
         }
       ]
     },
@@ -30,7 +30,7 @@
         {
           "type": "file",
           "location": "promptnotes/src/lib/feed/__tests__/dom/FeedList.dom.vitest.ts",
-          "description": "EC-FEED-001/003/014/015 covered; filtered empty state, loading state, deleted row removal all verified in DOM tests"
+          "description": "All 15 EC-FEED-001..015 named in CRIT-006 passThreshold (EC-FEED-006 rebound to PROP-FEED-002 per FIND-CONTRACT-09; EC-FEED-010 carved out as wire-unreachable)"
         }
       ]
     },
@@ -41,8 +41,8 @@
       "evidence": [
         {
           "type": "file",
-          "location": "promptnotes/src/lib/feed/__tests__/purityAudit.test.ts",
-          "description": "PROP-FEED-030/031 purity audit: 4/4 pass; PROP-FEED-032 IPC boundary: 3/3 pass; new Date / Date( absent from all 3 pure core modules"
+          "location": "promptnotes/src/lib/feed/__tests__/feedReducer.test.ts",
+          "description": "PROP-FEED-005 totality fast-check >=300 numRuns; PROP-FEED-006 ref transparency >=200 numRuns; PROP-FEED-007a/b/c/d mirroring >=200 numRuns each (CRIT-007/008)"
         }
       ]
     },
@@ -53,8 +53,8 @@
       "evidence": [
         {
           "type": "file",
-          "location": "promptnotes/src/lib/feed/types.ts",
-          "description": "FeedCommand 7-variant union, FeedAction 10-variant union, FeedViewState type — all conform to verification-architecture.md §9/§9b; tsc check returns 0 errors in feed/"
+          "location": "promptnotes/src/lib/feed/__tests__/purityAudit.test.ts",
+          "description": "CRIT-009: PROP-FEED-030/031 purity audit zero hits in 3 pure modules; PROP-FEED-032 IPC boundary tauriFeedAdapter has no listen, feedStateChannel has no invoke; types.ts FeedCommand/FeedAction/FeedViewState conform to v-arch sec 9 / 9b"
         }
       ]
     },
@@ -66,7 +66,7 @@
         {
           "type": "file",
           "location": ".vcsdd/features/ui-feed-list-actions/evidence/sprint-1-green-phase.log",
-          "description": "target feature tests: pass; regression baseline: pass; bun 1463 + vitest 174"
+          "description": "Target feature tests pass; regression baseline pass; bun 1463 + vitest 174. Phase-3 evaluable grep checks for DESIGN.md tokens (CRIT-010): max-width:160px, color #dd5b00, focus ring #097fe8 in feed Svelte sources. KNOWN GAP (FIND-CONTRACT-11, deferred to Phase 3 adversary): REQ-FEED-015 explicit Enter-key dispatch test absent; mitigation via <button> native semantics. Architect (human) approved this gap deferral via /vcsdd-escalate iter-2 (escalations/escalation-2026-05-04-contract-review.md)."
         }
       ]
     }
@@ -74,7 +74,7 @@
   "convergenceSignals": {
     "findingCount": 0,
     "allCriteriaEvaluated": true,
-    "evaluatedCriteria": ["CRIT-001", "CRIT-002", "CRIT-003", "CRIT-004", "CRIT-005"],
+    "evaluatedCriteria": ["CRIT-001", "CRIT-002", "CRIT-003", "CRIT-004", "CRIT-005", "CRIT-006", "CRIT-007", "CRIT-008", "CRIT-009", "CRIT-010"],
     "duplicateFindings": []
   }
 }

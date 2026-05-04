@@ -53,6 +53,7 @@ Math\.random|crypto\.|performance\.|window\.|globalThis|self\.|document\.|naviga
 | `DeletionFailureBanner.svelte` | impure | Svelte 5 component: `role="alert"` バナー。再試行ボタン。条件付きレンダリング。 |
 | `tauriFeedAdapter.ts` | impure | **OUTBOUND only.** `dispatchSelectPastNote`, `dispatchRequestNoteDeletion`, `dispatchConfirmNoteDeletion`, `dispatchCancelNoteDeletion` の Tauri `invoke(...)` ラッパー。`@tauri-apps/api/event listen(...)` は呼ばない。 |
 | `feedStateChannel.ts` | impure | **INBOUND only.** `@tauri-apps/api/event listen(...)` ラッパー。`EditingSessionState` / `FeedState` スナップショットの購読。`invoke(...)` は呼ばない。pure tier がこのチャネルを観測することはない。 |
+| `clockHelpers.ts` | impure | `Clock.now(): string` を提供するクロックシェル。`Date.now()` / `new Date()` を使用して `issuedAt` タイムスタンプ文字列を生成する。canonical purity-audit grep の対象外。`FeedRow.svelte` / `DeleteConfirmModal.svelte` が `issuedAt` フィールドを必要とする際に呼び出す。|
 
 ---
 
@@ -112,12 +113,18 @@ Target: **≥ 95% branch coverage** per file.
 
 `ui-editor` フィーチャで確立したパターン (`mount`/`unmount`/`flushSync` from `svelte`, `vi.fn()` mock adapter, NO `@testing-library/svelte`) を踏襲する。
 
-Files:
-- `promptnotes/src/lib/feed/__tests__/feed-row.dom.vitest.ts` — 行クリック、削除ボタン disabled、aria-disabled
-- `promptnotes/src/lib/feed/__tests__/feed-list-state.dom.vitest.ts` — 空状態、ローディング、再描画
-- `promptnotes/src/lib/feed/__tests__/delete-confirm-modal.dom.vitest.ts` — モーダル文言、ボタン、Esc/backdrop
-- `promptnotes/src/lib/feed/__tests__/deletion-failure-banner.dom.vitest.ts` — バナー表示、再試行
-- `promptnotes/src/lib/feed/__tests__/feed-accessibility.dom.vitest.ts` — ARIA、tabindex、role
+Files (実装後の正規パス、Phase 2c リファクタ反映済み):
+- `promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts` — 行クリック、削除ボタン disabled、aria-disabled、`<button>` 要素 a11y (REQ-FEED-015 partial)
+- `promptnotes/src/lib/feed/__tests__/dom/FeedList.dom.vitest.ts` — 空状態、ローディング、再描画、フィルタ更新 (PROP-FEED-025 を行表示変化として実装)
+- `promptnotes/src/lib/feed/__tests__/dom/DeleteConfirmModal.dom.vitest.ts` — モーダル文言、ボタン、Esc/backdrop、role=dialog + aria-labelledby (PROP-FEED-029 を modal a11y として実装)
+- `promptnotes/src/lib/feed/__tests__/dom/DeletionFailureBanner.dom.vitest.ts` — バナー表示 (role=alert)、再試行
+- `promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts` (bun:test, Phase 2c で feedReducer.property.test.ts から抽出) — PROP-FEED-035 biconditional
+
+NOTE: 当初想定された `feed-accessibility.dom.vitest.ts` は廃止し、以下に分散実装:
+- PROP-FEED-025 (行表示変化、filter update): `FeedList.dom.vitest.ts`
+- PROP-FEED-029 (modal role + aria): `DeleteConfirmModal.dom.vitest.ts`
+- REQ-FEED-015 a11y (`<button>` 要素): `FeedRow.dom.vitest.ts`
+- REQ-FEED-015 keyboard (Enter キー dispatch) は **未実装** — Phase 3 adversary が impl 不足を判断する場合は修正対象。現状は `<button>` ネイティブ動作 (Enter/Space で `click` 発火) に依存。
 
 ---
 
