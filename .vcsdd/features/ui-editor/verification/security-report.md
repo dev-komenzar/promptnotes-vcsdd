@@ -1,4 +1,4 @@
-# Security Report — ui-editor (Phase 5)
+# Security Hardening Report — ui-editor (Phase 5)
 
 ## Feature: ui-editor | Date: 2026-05-04
 

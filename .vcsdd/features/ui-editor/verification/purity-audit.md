@@ -1,4 +1,4 @@
-# Purity Audit — ui-editor (Phase 5)
+# Purity Boundary Audit — ui-editor (Phase 5)
 
 ## Feature: ui-editor | Date: 2026-05-04
 
