@@ -1,27 +1,36 @@
 <script lang="ts">
   import AppShell from "$lib/ui/app-shell/AppShell.svelte";
+  import EditorPane from "$lib/editor/EditorPane.svelte";
+  import { createTauriEditorAdapter } from "$lib/editor/tauriEditorAdapter.js";
+  import { createEditorStateChannel } from "$lib/editor/editorStateChannel.js";
+  import { createDebounceTimer } from "$lib/editor/debounceTimer.js";
+  import { createClipboardAdapter } from "$lib/editor/clipboardAdapter.js";
+
+  const clock = { now: () => Date.now() };
+  const adapter = createTauriEditorAdapter();
+  const stateChannel = createEditorStateChannel();
+  const timer = createDebounceTimer(clock);
+  const clipboard = createClipboardAdapter();
 </script>
 
 <AppShell>
   <!-- Configured 状態のときに表示される本体スロット。
-       後続 feature (ui-feed-list-actions, ui-editor 等) でフィード行・エディタ等を埋める。 -->
-  <div class="placeholder">
-    <p>PromptNotes — Vault が設定されました。</p>
-    <p style="opacity: 0.6">フィード一覧やエディタは後続 feature で実装されます。</p>
-  </div>
+       EditorPane が Vault 設定済み状態でマウントされる。 -->
+  <EditorPane
+    {adapter}
+    {stateChannel}
+    {timer}
+    {clipboard}
+    {clock}
+  />
 </AppShell>
 
 <style>
-  .placeholder {
-    padding: 24px;
-    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-    color: #1f1f1f;
-  }
-
   :global(html, body) {
     margin: 0;
     padding: 0;
     background-color: #ffffff;
+    height: 100%;
   }
 
   :global(:root) {

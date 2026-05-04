@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "Five mandated integration test files are missing; PROP-EDIT-020a/020b/032/033/034/037/038/039 plus the REQ-EDIT-020 grep target are uncovered by any DOM test.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts",
+    "lineRange": "1-50"
+  },
+  "routeToPhase": "2a"
+}

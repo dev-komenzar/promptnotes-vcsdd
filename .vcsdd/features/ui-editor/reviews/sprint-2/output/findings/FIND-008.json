@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "REQ-EDIT-009 idle-state placeholder/hint message (空の状態メッセージ) is not rendered when status is idle.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "300-340"
+  },
+  "routeToPhase": "2b"
+}

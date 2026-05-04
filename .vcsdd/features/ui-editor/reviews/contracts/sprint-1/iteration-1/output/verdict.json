@@ -1,0 +1,16 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "sprint": 1,
+  "iteration": 1,
+  "mode": "strict",
+  "verdict": "FAIL",
+  "findingsCount": 3,
+  "findingsBySeverity": { "critical": 0, "major": 1, "minor": 2 },
+  "summary": "Contract math is correct (weights sum to 1.00 exactly), every PROP-EDIT cited exists with the claimed tier and Required:true status, every REQ-EDIT/EC-EDIT/RD reference resolves in the spec set, the 9-variant EditorCommand enumeration matches verification-architecture.md §10 word-for-word, and the locked computeNextFireAt/shouldFireIdleSave signatures match RD-019. Out-of-scope §3 correctly enumerates every effectful shell module (EditorPanel.svelte, SaveFailureBanner.svelte, tauriEditorAdapter.ts, editorStateChannel.ts, timerModule.ts, clipboardAdapter.ts, keyboardListener.ts, *.dom.vitest.ts) and they do not leak into §2 or §4. Definition of Done is testable via concrete commands. However, CRIT-001 propagates a major fidelity gap for REQ-EDIT-014: the description claims DomainSnapshotReceived mirroring is covered, but the binary YAML passThreshold names only SaveSuccess/SaveFailed/NoteBodyEdited assertions, and neither PROP-EDIT-001 (idempotent dirty) nor PROP-EDIT-008 (referential transparency) asserts that the reducer actually mirrors snapshot.status / isDirty / currentNoteId / pendingNextNoteId fields. The §5 table mentions DomainSnapshotReceived but the authoritative frontmatter omits it, so an implementation could no-op the action and still pass. Two minor findings: §6 omits the canonical-pattern token invoke( (relying on @tauri-apps/api ban to catch it indirectly), and EditorAction's variant set is not enumerated in §2 types.ts so CRIT-007's reducer-totality cross-product is not pinned to a closed action set at the contract level (Tier 0 exhaustive switch via CRIT-010 partially compensates).",
+  "reviewedAt": "2026-05-04T00:00:00Z",
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-1.md"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "feature": "ui-editor",
+  "phase": "3",
+  "iteration": 1,
+  "mode": "strict",
+  "verdict": "FAIL",
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "edge_case_coverage": "FAIL",
+    "implementation_correctness": "FAIL",
+    "structural_integrity": "FAIL",
+    "verification_readiness": "FAIL"
+  },
+  "findingsCount": 13,
+  "findingsBySeverity": {
+    "critical": 5,
+    "major": 6,
+    "minor": 2
+  },
+  "summary": "EditorPane.svelte ships substantial spec divergence and structural debt. (1) REQ-EDIT-025 blur-save-first gating before RequestNewNote is wholly absent in both reducer and component — Ctrl+N or +新規 in an editing+dirty session never emits TriggerBlurSave first. (2) Banner button labels diverge from REQ-EDIT-018/019 normative strings ('破棄' vs '変更を破棄'; 'キャンセル' vs '閉じる（このまま編集を続ける）'). (3) The component uses a raw setTimeout/clearTimeout idle-save loop in EditorPane.svelte (lines 62-83) instead of the injected DebounceTimer port, defeating the dependency-injection contract from sprint-2 §2 / RD-012; the injected `timer.scheduleIdleSave` is never called and `timer.cancel()` is only called on blur. (4) Banner styling violates REQ-EDIT-020/CRIT-013 in every audited dimension: no 5-layer Deep Shadow string, no #dd5b00 left accent, no 8px banner radius, no 15px/600 button typography, retry uses #ea580c (not the spec's Primary Blue #0075de) and discard/cancel use #f8f8f7 (not rgba(0,0,0,0.05)). (5) Five integration-tier test files mandated by verification-architecture.md §5 (editor-panel, editor-session-state, save-failure-banner, editor-validation, editor-accessibility) are missing entirely — PROP-EDIT-020a/020b/032/033/034/037/038/039 and the REQ-EDIT-020 style grep have no automated coverage. (6) The pure reducer's NoteFileSaved → cancel-idle-timer side-effect is dead code: the shell never dispatches NoteFileSaved/NoteSaveFailed, so PROP-EDIT-010 is never exercised at runtime and the component's own setTimeout handle is never cancelled on save success. (7) Banner Retry/Discard/Cancel handlers bypass the reducer entirely (EditorPane.svelte lines 208-218) — the EditorAction discriminated union RetryClicked/DiscardClicked/CancelClicked is also dead at runtime. The Sprint 2 evidence log records 85/85 vitest passes, but the green tests measure only what the implementation does; they do not assert what the spec requires.",
+  "reviewedAt": "2026-05-04T00:00:00Z"
+}

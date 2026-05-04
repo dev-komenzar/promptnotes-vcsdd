@@ -1,0 +1,57 @@
+{
+  "feature": "ui-editor",
+  "phase": "1c",
+  "mode": "strict",
+  "iteration": 2,
+  "reviewedAt": "2026-05-04T00:00:00Z",
+  "reviewType": "spec",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "All iter-1 spec_fidelity findings (FIND-003, FIND-004, FIND-005, FIND-009, FIND-010, FIND-011, FIND-014, FIND-016, FIND-017) are resolved with concrete textual evidence. New §3.4a State Ownership Contract (line 220) introduces EditorViewState as a UI mirror of EditingSessionState (FIND-004). REQ-EDIT-024 (line 400) scopes Ctrl+N listener to the editor pane root, NOT document (FIND-010). REQ-EDIT-025 (line 421) plus EC-EDIT-008 (line 619-623) resolve the save-failed/blur-save contradiction (FIND-003). §11 Brand Type Construction Contracts (line 753) plus glossary updates (lines 647-651, 658) cover FIND-005 and FIND-017. REQ-EDIT-023 enable matrix (lines 383-388) plus per-state acceptance bullets in REQ-EDIT-009/011/012/013 resolve FIND-011. REQ-EDIT-016 (line 277) and REQ-EDIT-027 (line 465) plus RD-007 specify the empty-body-on-idle successor state (FIND-014). §10 Domain↔UI State Synchronization (line 721) plus RD-011 define the inbound editing_session_state_changed channel (FIND-016). RD-001..RD-014 in §9 (lines 700-717) document each previously contested decision and cite the originating finding. Fresh full read found no new spec_fidelity contradictions."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-019", "FIND-020", "FIND-021", "FIND-022"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-002 resolved: Tier 3 (lines 91-101, 238-253) replaces Stryker with vitest --coverage v8 provider; explicit note at line 253 says 'Stryker NOT installed... MUST NOT be referenced'. Integration tier (lines 103-145) uses raw Svelte 5 mount API per AppShell precedent — no @testing-library/svelte. PROP-EDIT-033 (line 187) explicitly 'No axe-core dependency required'. FIND-007 resolved: canonical purity regex at §2 line 31 supersedes the previously narrower §7 regex. FIND-008 resolved: §5 Tooling Map (lines 259-260) replaces ESLint custom rules with grep audits + tsc --strict. FIND-012 resolved: §12 Debounce Contract in behavioral-spec.md (lines 785-807) plus §2 debounceSchedule.ts row (line 42). FIND-013 resolved: §2 line 41 reducer signature is now (state, action) -> {state, commands}; PROP-EDIT-002/007/008/009 reference this. FIND-015 resolved: PROP-EDIT-015 (line 168) and PROP-EDIT-035 (line 189) replaced with grep-of-source + manual review. However, NEW issues introduced: FIND-019 (major), FIND-020/021/022 (minor)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/package.json",
+          "description": "Confirmed installed: vitest@4.1.5, @vitest/ui@4.1.5, fast-check@3.23.2, jsdom@29.1.1, svelte-check@4, typescript@5.6.2, svelte@5, @sveltejs/kit@2.9, @tauri-apps/api@2. Confirmed NOT installed: @testing-library/svelte, @stryker-mutator/*, axe-core, eslint, @vitest/coverage-v8, @vitest/coverage-istanbul. The coverage-provider gap is the basis of FIND-019."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "iter1FindingsResolved": 18,
+    "iter1FindingsPartial": 0,
+    "iter1FindingsOpen": 0,
+    "newFindingsIntroducedInIter2": 4,
+    "severityBreakdown": {
+      "critical": 0,
+      "major": 1,
+      "minor": 3
+    },
+    "narrative": "Builder resolved every iter-1 finding (18/18) with concrete textual remediation; the regression report is uniformly green. Spec_fidelity dimension is clean and a fresh read found no new contradictions. Verification_readiness still FAILS because the iter-2 revisions introduced one new major: the Phase 5 branch-coverage gate (verification-architecture.md §3 Tier 3 lines 91-101 and §7 line 335) names 'vitest --coverage' with the v8 provider as a hard gate, but neither @vitest/coverage-v8 nor @vitest/coverage-istanbul is installed in promptnotes/package.json. That is the same class of defect as iter-1 FIND-002 (named gate without installed tooling), reintroduced in a new form. Three minor issues round out the iteration: PROP-EDIT-002 and PROP-EDIT-009 are near-duplicates of the same source-field property (FIND-020); EditorCommand discriminated union is referenced by PROP-EDIT-007/010 but never enumerated (FIND-021); tauriEditorAdapter.ts and editorStateChannel.ts both wrap inbound listen() per §2 lines 52 and 54, leaving the responsibility split ambiguous (FIND-022). Per the stated verdict rule (PASS iff zero critical AND zero major findings against the dimension), verification_readiness FAILS due to FIND-019. Overall verdict: FAIL — but only by the slim margin of one tooling-installation gap that is mechanically addressable."
+  },
+  "convergenceSignals": {
+    "findingCount": 4,
+    "regressionStatus": "all-resolved",
+    "newIssueCount": 4
+  }
+}

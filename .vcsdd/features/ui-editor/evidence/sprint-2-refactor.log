@@ -1,0 +1,10 @@
+$ vitest run src/lib/editor/__tests__/dom
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes
+
+
+ Test Files  13 passed (13)
+      Tests  85 passed (85)
+   Start at  14:28:12
+   Duration  2.45s (transform 4.57s, setup 613ms, import 6.45s, tests 673ms, environment 17.16s)
+

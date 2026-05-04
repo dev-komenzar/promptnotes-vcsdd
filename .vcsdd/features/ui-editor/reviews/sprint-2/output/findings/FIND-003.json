@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "structural_integrity",
+  "category": "code_structure",
+  "severity": "critical",
+  "description": "Save-failed banner styling violates REQ-EDIT-020 / NFR-EDIT-005..007 / CRIT-013: missing 5-layer Deep Shadow, missing #dd5b00 accent, wrong border-radius and typography weight on banner buttons.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "350-440"
+  },
+  "routeToPhase": "2b"
+}

@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-014",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-EDIT-025 acceptance criterion 2: BlurEvent and NewNoteClicked dispatched synchronously instead of deferring NewNoteClicked until domain transitions away from saving.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "237-251"
+  },
+  "routeToPhase": "2b"
+}

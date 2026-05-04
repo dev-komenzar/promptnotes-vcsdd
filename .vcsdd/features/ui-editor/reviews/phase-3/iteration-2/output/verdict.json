@@ -1,0 +1,38 @@
+{
+  "feature": "ui-editor",
+  "phase": "3",
+  "iteration": 2,
+  "mode": "strict",
+  "verdict": "FAIL",
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "edge_case_coverage": "FAIL",
+    "implementation_correctness": "FAIL",
+    "structural_integrity": "PASS",
+    "verification_readiness": "FAIL"
+  },
+  "findingsCount": 4,
+  "findingsBySeverity": {
+    "critical": 1,
+    "major": 3,
+    "minor": 0
+  },
+  "iter1RegressionStatus": {
+    "FIND-001": "RESOLVED — blur-save-first gate now in place at EditorPane.svelte:163-178 (keyboard) and 237-251 (button); editor-panel.dom.vitest.ts asserts call order. Note: see FIND-014 for residual asynchrony defect.",
+    "FIND-002": "RESOLVED — raw setTimeout block removed from EditorPane.svelte; handleInput now calls timer.scheduleIdleSave (line 196) and handleBlur calls timer.cancel (line 216). PROP-EDIT-034 covered.",
+    "FIND-003": "RESOLVED — banner CSS rewritten with 5-layer Deep Shadow (line 411), border-left:4px solid #dd5b00 (line 409), border-radius:8px, .banner-btn font-size:15px font-weight:600, .banner-btn--retry background:#0075de, secondary buttons use rgba(0,0,0,0.05). save-failure-banner.dom.vitest.ts grep tests pass.",
+    "FIND-004": "RESOLVED — all five mandated DOM test files now present: editor-panel.dom.vitest.ts, editor-session-state.dom.vitest.ts, save-failure-banner.dom.vitest.ts, editor-validation.dom.vitest.ts, editor-accessibility.dom.vitest.ts.",
+    "FIND-005": "RESOLVED — button labels at EditorPane.svelte:311 (再試行), 318 (変更を破棄), 325 (閉じる（このまま編集を続ける）); save-failure-banner.dom.vitest.ts asserts exact textContent.",
+    "FIND-006": "RESOLVED — handleRetryClick/handleDiscardClick/handleCancelClick (lines 254-264) now call dispatch({ kind: 'RetryClicked'|'DiscardClicked'|'CancelClicked' }); reducer-driven path verified.",
+    "FIND-007": "PARTIAL — inbound bridge at EditorPane.svelte:140-142 calls timer.cancel() on saving→editing(clean) transition. However, NoteFileSaved and NoteSaveFailed actions remain dead code in the reducer and EditorAction union (never dispatched at runtime). The bridge bypasses the reducer rather than dispatching synthetic actions; PROP-EDIT-010's runtime path remains unexercised. Acceptable per RD-005 but creates structural debt.",
+    "FIND-008": "RESOLVED — idle placeholder at EditorPane.svelte:284-289 with data-testid='idle-placeholder' and Japanese string; editor-session-state.dom.vitest.ts asserts presence.",
+    "FIND-009": "RESOLVED — all three call sites (handleInput line 187, keyboard listener line 168, handleNewNoteClick line 241) use new Date(clock.now()).toISOString(); editor-validation.dom.vitest.ts asserts ISO-8601 regex match.",
+    "FIND-010": "RESOLVED — adapter signatures at tauriEditorAdapter.ts:33-47 now carry full payloads (noteId, body, issuedAt, source for save commands); EditorPane executeCommand passes cmd.payload through unchanged.",
+    "FIND-011": "RESOLVED — EditorPane.new-note.dom.vitest.ts:233-244 now uses sibling element with bubbles:true, correctly distinguishes pane-scoped from document-level listener.",
+    "FIND-012": "RESOLVED — New Note button at EditorPane.svelte:357 has aria-disabled binding; editor-accessibility.dom.vitest.ts asserts aria-disabled='true' in switching, 'false' otherwise.",
+    "FIND-013": "PARTIAL — narrowed scheduleIdleSave to status==='editing' (line 194), but the fix overcorrected: PROP-EDIT-037 / EC-EDIT-003 explicitly requires the idle timer to continue running while in save-failed state, and the current code does not schedule in save-failed. The PROP-EDIT-037 test does not enforce timer.scheduleIdleSave so this regression is invisible to the suite. Tracked as FIND-017."
+  },
+  "summary": "Iteration-2 resolved 11 of 13 iter-1 findings cleanly and one partially (FIND-007) and introduced or surfaced 4 new defects. Critical: REQ-EDIT-025 acceptance criterion 'RequestNewNote is NOT dispatched until the domain transitions away from saving' is violated — handleNewNoteClick (EditorPane.svelte:237-251) and the keyboard listener (lines 163-178) dispatch BlurEvent and NewNoteClicked synchronously in the same JS task, causing dispatchTriggerBlurSave and dispatchRequestNewNote to fire back-to-back without any await on the domain snapshot transition out of 'saving'. The new editor-panel.dom.vitest.ts (lines 153, 201) explicitly asserts callOrder=['dispatchTriggerBlurSave','dispatchRequestNewNote'], shaping the test to current implementation rather than to the spec — this is a test_quality defect compounding the requirement_mismatch. Major: editorReducer.ts:175 emits retry-save with issuedAt:'' (empty string), violating §10/§11 which require ISO-8601 strings at the wire boundary; FIND-009's remediation missed this branch. Major: PROP-EDIT-037/EC-EDIT-003 requires scheduleIdleSave to continue running in save-failed state so the domain can resolve via retry gate, but EditorPane.svelte:194 guards on status==='editing' only — save-failed input does not reschedule the timer. The PROP-EDIT-037 DOM test does not spy on scheduleIdleSave and so does not catch this. Major: NoteFileSaved and NoteSaveFailed action variants in types.ts:151,157 plus the cancel-idle-timer EditorCommand emitted by editorReducer.ts:144 are dead at runtime — no inbound code path constructs these actions; the FIND-007 fix used a direct timer.cancel() call in the snapshot bridge instead of routing through the reducer. The EditorAction discriminated union now contains 11 variants of which 2 are unreachable, weakening the totality contract.",
+  "evaluatedCriteria": ["CRIT-001", "CRIT-002", "CRIT-003", "CRIT-004", "CRIT-005", "CRIT-006", "CRIT-007", "CRIT-008", "CRIT-009", "CRIT-010", "CRIT-011", "CRIT-012", "CRIT-013", "CRIT-014"],
+  "reviewedAt": "2026-05-04T00:00:00Z"
+}

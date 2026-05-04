@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-011",
+  "dimension": "edge_case_coverage",
+  "category": "test_quality",
+  "severity": "high",
+  "description": "Out-of-pane Ctrl+N keyboard test uses bubbles:false, making the assertion tautological — it would still pass against a buggy document-level listener.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts",
+    "lineRange": "1-275"
+  },
+  "routeToPhase": "2a"
+}

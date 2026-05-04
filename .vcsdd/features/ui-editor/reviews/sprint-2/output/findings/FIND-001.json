@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-EDIT-025 blur-save-first gate is absent: EditorPane new-note handler dispatches request-new-note directly without first emitting trigger-blur-save when status=editing+isDirty=true.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "153-206"
+  },
+  "routeToPhase": "2b"
+}

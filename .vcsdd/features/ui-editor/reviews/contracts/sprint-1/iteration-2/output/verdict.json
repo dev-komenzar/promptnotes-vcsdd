@@ -1,0 +1,96 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "sprint": 1,
+  "iteration": 2,
+  "mode": "strict",
+  "verdict": "FAIL",
+  "overallVerdict": "FAIL",
+  "findingsCount": 2,
+  "findingsBySeverity": { "critical": 0, "major": 1, "minor": 1 },
+  "summary": "Iter-1 FIND-002 (invoke( in §6 forbidden list) is fully resolved at line 192. Iter-1 FIND-001 (DomainSnapshotReceived not bound) is resolved by the new CRIT-012 with PROP-EDIT-040, weight 0.03, naming editorReducer.test.ts test 'DomainSnapshotReceived mirrors S.status/isDirty/currentNoteId/pendingNextNoteId' and editorReducer.property.test.ts property 'snapshot mirroring is identity over state fields'. Weights sum: 0.09+0.11+0.10+0.10+0.10+0.10+0.10+0.08+0.07+0.07+0.05+0.03 = 1.00 exactly. §6 grep pattern matches verification-architecture.md §2 byte-for-byte. The 9-variant EditorCommand union in §2 still matches verification-architecture.md §10 word-for-word. However, iter-1 FIND-003's remediation introduced a major contract incoherence: the new closed EditorAction enumeration in §2 (lines 88-99) lists 9 variants — EditNoteBody, BlurEvent, IdleTimerFired, DomainSnapshotReceived, RetryClicked, DiscardClicked, CancelClicked, CopyClicked, NewNoteClicked — but every other section of the contract continues to reference the action kinds NoteBodyEdited, SaveSuccess (or NoteFileSaved), and SaveFailed (or NoteSaveFailed) which are not in the enumeration. CRIT-001's binary YAML passThreshold 'SaveSuccess/SaveFailed/NoteBodyEdited assertions pass 100%' cannot be satisfied against a closed union that omits these variants; CRIT-007 and CRIT-008 reference the same missing variants in their pass thresholds; §2 lines 109-110 of the editorReducer description reference NoteBodyEdited/NoteFileSaved/NoteSaveFailed/SaveSuccess transitions explicitly. Either the enumeration's 'closed' claim (line 86) is false, or the binary pass thresholds are unsatisfiable — either way the contract is internally incoherent. A second minor finding: PROP-EDIT-040, which CRIT-012 binds to, is referenced multiple times in the contract but is not added to the authoritative verification-architecture.md §4 PROP-EDIT table (which still ends at PROP-EDIT-039); contract line 70 itself states 'PROP-EDIT-001..039, including 020a/020b' — contradicting the new PROP-EDIT-040 it introduces.",
+  "reviewedAt": "2026-05-04T00:00:00Z",
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-1.md"
+  },
+  "iteration_resolved_findings": {
+    "FIND-001 (iter-1, major)": "RESOLVED — new CRIT-012 binds DomainSnapshotReceived mirroring to PROP-EDIT-040 with concrete test names and weight 0.03; weight rebalance preserves sum 1.00.",
+    "FIND-002 (iter-1, minor)": "RESOLVED — §6 line 192 explicitly lists 'invoke(' as a forbidden token, mirroring the canonical pattern.",
+    "FIND-003 (iter-1, minor)": "PARTIALLY RESOLVED but introduced new MAJOR finding — §2 now enumerates a closed EditorAction variant set, but the chosen 9-variant set omits NoteBodyEdited/SaveSuccess/SaveFailed which are referenced in CRIT-001/007/008 pass thresholds and in §2's editorReducer description; see FIND-001 (iter-2)."
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-001"],
+      "evidence": []
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-1.md lines 32-45",
+          "description": "CRIT-006/007/008 cover canCopy parity over all 5×bodies, reducer totality over cross-product, and SaveSuccess cancel-idle-timer command emission with concrete fast-check property names."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-1.md lines 47-60, 114-119",
+          "description": "CRIT-009 locks the computeNextFireAt({lastEditAt, lastSaveAt, debounceMs, nowMs}) signature and CRIT-011 ties classifySource to literal-union return type. Both signatures match verification-architecture.md §2 word-for-word."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-1.md lines 184-192, 200",
+          "description": "§6 grep pattern matches verification-architecture.md §2 line 31 byte-for-byte (Math.random|crypto.|...|invoke(|@tauri-apps/api). Iter-1 FIND-002 fully resolved by adding 'invoke(' to the human-readable list at line 192."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-1.md line 174",
+          "description": "Weight arithmetic: 0.09+0.11+0.10+0.10+0.10+0.10+0.10+0.08+0.07+0.07+0.05+0.03 = 1.00 (verified)."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-002"],
+      "evidence": []
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-001",
+      "CRIT-002",
+      "CRIT-003",
+      "CRIT-004",
+      "CRIT-005",
+      "CRIT-006",
+      "CRIT-007",
+      "CRIT-008",
+      "CRIT-009",
+      "CRIT-010",
+      "CRIT-011",
+      "CRIT-012"
+    ],
+    "duplicateFindings": []
+  }
+}

@@ -1,0 +1,1864 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+--- raw test output follows ---
+
+bun test v1.3.11 (af24e281)
+
+src/lib/editor/__tests__/editorReducer.test.ts:
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:71:20)
+(fail) REQ-EDIT-001: editing + NoteBodyEdited → isDirty=true, body updated > NoteBodyEdited in editing sets isDirty=true and updates body
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:83:20)
+(fail) REQ-EDIT-001: editing + NoteBodyEdited → isDirty=true, body updated > NoteBodyEdited in editing emits no state-transition commands
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:97:20)
+(fail) REQ-EDIT-001: editing + NoteBodyEdited → isDirty=true, body updated > NoteBodyEdited in idle state does not change status to editing prematurely
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:113:20)
+(fail) REQ-EDIT-002, PROP-EDIT-010, CRIT-008: saving + NoteFileSaved → isDirty=false + cancel-idle-timer > NoteFileSaved in saving sets isDirty=false
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:123:20)
+(fail) REQ-EDIT-002, PROP-EDIT-010, CRIT-008: saving + NoteFileSaved → isDirty=false + cancel-idle-timer > NoteFileSaved in saving emits cancel-idle-timer command (CRIT-008)
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:134:20)
+(fail) REQ-EDIT-002, PROP-EDIT-010, CRIT-008: saving + NoteFileSaved → isDirty=false + cancel-idle-timer > NoteFileSaved in saving does NOT emit trigger-idle-save (CRIT-008)
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:145:20)
+(fail) REQ-EDIT-002, PROP-EDIT-010, CRIT-008: saving + NoteFileSaved → isDirty=false + cancel-idle-timer > NoteFileSaved transitions saving → editing
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:159:20)
+(fail) REQ-EDIT-002, REQ-EDIT-013: saving + NoteSaveFailed → save-failed, isDirty retained > NoteSaveFailed in saving transitions to save-failed
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:169:20)
+(fail) REQ-EDIT-002, REQ-EDIT-013: saving + NoteSaveFailed → save-failed, isDirty retained > NoteSaveFailed retains isDirty=true (REQ-EDIT-002 save failure does not clear dirty)
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:179:20)
+(fail) REQ-EDIT-002, REQ-EDIT-013: saving + NoteSaveFailed → save-failed, isDirty retained > NoteSaveFailed stores the error in lastError
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:189:20)
+(fail) REQ-EDIT-002, REQ-EDIT-013: saving + NoteSaveFailed → save-failed, isDirty retained > NoteSaveFailed emits no commands
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:201:20)
+(fail) REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status, isDirty, currentNoteId, pendingNextNoteId} > DomainSnapshotReceived mirrors status from snapshot [1.00ms]
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:209:20)
+(fail) REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status, isDirty, currentNoteId, pendingNextNoteId} > DomainSnapshotReceived mirrors isDirty from snapshot
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:217:20)
+(fail) REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status, isDirty, currentNoteId, pendingNextNoteId} > DomainSnapshotReceived mirrors currentNoteId from snapshot
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:225:20)
+(fail) REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status, isDirty, currentNoteId, pendingNextNoteId} > DomainSnapshotReceived mirrors pendingNextNoteId from snapshot
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:233:20)
+(fail) REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status, isDirty, currentNoteId, pendingNextNoteId} > DomainSnapshotReceived mirrors null currentNoteId from snapshot (idle state)
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:242:20)
+(fail) REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status, isDirty, currentNoteId, pendingNextNoteId} > DomainSnapshotReceived emits no commands
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:255:20)
+(fail) REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status, isDirty, currentNoteId, pendingNextNoteId} > DomainSnapshotReceived mirrors all four fields simultaneously
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:272:20)
+(fail) REQ-EDIT-006, REQ-EDIT-007: editing + BlurEvent (isDirty=true) → saving + trigger-blur-save > BlurEvent in editing with isDirty=true transitions to saving
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:282:20)
+(fail) REQ-EDIT-006, REQ-EDIT-007: editing + BlurEvent (isDirty=true) → saving + trigger-blur-save > BlurEvent in editing with isDirty=true emits trigger-blur-save command
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:293:20)
+(fail) REQ-EDIT-006, REQ-EDIT-007: editing + BlurEvent (isDirty=true) → saving + trigger-blur-save > trigger-blur-save command carries source=capture-blur
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:307:20)
+(fail) REQ-EDIT-006, REQ-EDIT-007: editing + BlurEvent (isDirty=true) → saving + trigger-blur-save > BlurEvent in editing with isDirty=false emits no save command
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:329:20)
+(fail) REQ-EDIT-004: editing + IdleTimerFired (isDirty=true) → saving + trigger-idle-save > IdleTimerFired in editing with isDirty=true transitions to saving
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:344:20)
+(fail) REQ-EDIT-004: editing + IdleTimerFired (isDirty=true) → saving + trigger-idle-save > IdleTimerFired in editing emits trigger-idle-save command with source=capture-idle
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:362:20)
+(fail) REQ-EDIT-008, EC-EDIT-002, PROP-EDIT-011: saving + BlurEvent → commands=[] > BlurEvent in saving state emits no commands (guard against double-fire)
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:372:20)
+(fail) REQ-EDIT-008, EC-EDIT-002, PROP-EDIT-011: saving + BlurEvent → commands=[] > BlurEvent in saving does NOT change status away from saving
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:389:20)
+(fail) REQ-EDIT-017: save-failed + RetryClicked → retry-save command > RetryClicked in save-failed emits retry-save command
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:397:20)
+(fail) REQ-EDIT-017: save-failed + RetryClicked → retry-save command > RetryClicked in save-failed transitions to saving
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:413:20)
+(fail) REQ-EDIT-018: save-failed + DiscardClicked → discard-current-session command > DiscardClicked in save-failed emits discard-current-session command
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:430:20)
+(fail) REQ-EDIT-019: switching + CancelClicked → cancel-switch command > CancelClicked in switching emits cancel-switch command
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:450:20)
+(fail) REQ-EDIT-021: editing + CopyClicked (non-empty body) → copy-note-body command > CopyClicked in editing with non-empty body emits copy-note-body command
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:464:20)
+(fail) REQ-EDIT-021: editing + CopyClicked (non-empty body) → copy-note-body command > CopyClicked in idle state emits no copy-note-body command [1.00ms]
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:479:20)
+(fail) REQ-EDIT-023, REQ-EDIT-024: NewNoteClicked → request-new-note command > NewNoteClicked with source=explicit-button emits request-new-note with that source
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:493:20)
+(fail) REQ-EDIT-023, REQ-EDIT-024: NewNoteClicked → request-new-note command > NewNoteClicked with source=ctrl-N emits request-new-note with source=ctrl-N
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:509:22)
+(fail) REQ-EDIT-023, REQ-EDIT-024: NewNoteClicked → request-new-note command > NewNoteClicked source is passed through unmodified (source pass-through contract)
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:543:22)
+(fail) editorReducer structural invariants (PROP-EDIT-007 example-based) > editorReducer never returns undefined state for any status
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:552:22)
+(fail) editorReducer structural invariants (PROP-EDIT-007 example-based) > editorReducer always returns a valid status value
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:560:22)
+(fail) editorReducer structural invariants (PROP-EDIT-007 example-based) > editorReducer always returns an array for commands
+31 |   state: EditorViewState,
+32 |   action: EditorAction
+33 | ): ReducerResult {
+34 |   void state;
+35 |   void action;
+36 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:579:24)
+(fail) editorReducer structural invariants (PROP-EDIT-007 example-based) > editorReducer commands only contain valid EditorCommand kinds
+
+src/lib/editor/__tests__/debounceSchedule.test.ts:
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:37:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > exactly at threshold: nowMs===lastEditAt+debounceMs → shouldFire=true
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:48:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > one ms before threshold: nowMs===lastEditAt+debounceMs-1 → shouldFire=false
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:59:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > one ms after threshold: nowMs===lastEditAt+debounceMs+1 → shouldFire=true
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:71:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > lastSaveAt > lastEditAt+debounceMs → shouldFire=false, fireAt=null (CRIT-009) [1.00ms]
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:83:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > lastSaveAt === lastEditAt → shouldFire=false when debounce not elapsed
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:95:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > lastSaveAt between 0 and lastEditAt → shouldFire depends on debounce elapsed
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:105:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > fresh editor: lastEditAt=0, lastSaveAt=0 → shouldFire=true once debounce elapsed
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:117:20)
+(fail) computeNextFireAt (CRIT-009, PROP-EDIT-003 boundary) > very large timestamps do not cause overflow
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:135:20)
+(fail) PROP-EDIT-004 boundary: lastSaveAt > lastEditAt → shouldFire=false > if blur-save completed (lastSaveAt > lastEditAt), idle should NOT fire
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:145:20)
+(fail) PROP-EDIT-004 boundary: lastSaveAt > lastEditAt → shouldFire=false > if blur save completed AFTER the fire point, idle would be stale
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:157:20)
+(fail) PROP-EDIT-004 boundary: lastSaveAt > lastEditAt → shouldFire=false > if blur save completed BEFORE the fire point but after edit, idle should still not fire
+34 |   lastSaveAt: number;
+35 |   debounceMs: number;
+36 |   nowMs: number;
+37 | }): { shouldFire: boolean; fireAt: number | null } {
+38 |   void params;
+39 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:168:20)
+(fail) PROP-EDIT-004 boundary: lastSaveAt > lastEditAt → shouldFire=false > if no save has occurred and debounce elapsed, idle fires
+59 | ): boolean {
+60 |   void editTimestamps;
+61 |   void lastSaveTimestamp;
+62 |   void debounceMs;
+63 |   void nowMs;
+64 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:183:7)
+(fail) shouldFireIdleSave (PROP-EDIT-003, EC-EDIT-001) > single edit timestamp: fires when debounce elapsed
+59 | ): boolean {
+60 |   void editTimestamps;
+61 |   void lastSaveTimestamp;
+62 |   void debounceMs;
+63 |   void nowMs;
+64 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:189:7)
+(fail) shouldFireIdleSave (PROP-EDIT-003, EC-EDIT-001) > single edit timestamp: does NOT fire one ms before threshold
+59 | ): boolean {
+60 |   void editTimestamps;
+61 |   void lastSaveTimestamp;
+62 |   void debounceMs;
+63 |   void nowMs;
+64 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:196:12)
+(fail) shouldFireIdleSave (PROP-EDIT-003, EC-EDIT-001) > last edit in a burst determines fire time
+59 | ): boolean {
+60 |   void editTimestamps;
+61 |   void lastSaveTimestamp;
+62 |   void debounceMs;
+63 |   void nowMs;
+64 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:201:12)
+(fail) shouldFireIdleSave (PROP-EDIT-003, EC-EDIT-001) > returns false when lastSaveAt is after last edit (already saved)
+59 | ): boolean {
+60 |   void editTimestamps;
+61 |   void lastSaveTimestamp;
+62 |   void debounceMs;
+63 |   void nowMs;
+64 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:206:20)
+(fail) shouldFireIdleSave (PROP-EDIT-003, EC-EDIT-001) > returns false for empty edit timestamps array (no edits, nothing to save)
+59 | ): boolean {
+60 |   void editTimestamps;
+61 |   void lastSaveTimestamp;
+62 |   void debounceMs;
+63 |   void nowMs;
+64 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:217:12)
+(fail) shouldFireIdleSave (PROP-EDIT-003, EC-EDIT-001) > rapid-burst scenario: only fires after quiescence (EC-EDIT-001)
+69 |  * last edit. Used to schedule the setTimeout delay in the impure shell.
+70 |  */
+71 | export function nextFireAt(lastEditTimestamp: number, debounceMs: number): number {
+72 |   void lastEditTimestamp;
+73 |   void debounceMs;
+74 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at nextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:74:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:226:12)
+(fail) nextFireAt pure helper > nextFireAt returns lastEditTimestamp + debounceMs
+69 |  * last edit. Used to schedule the setTimeout delay in the impure shell.
+70 |  */
+71 | export function nextFireAt(lastEditTimestamp: number, debounceMs: number): number {
+72 |   void lastEditTimestamp;
+73 |   void debounceMs;
+74 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at nextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:74:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:230:12)
+(fail) nextFireAt pure helper > nextFireAt with zero lastEdit returns debounceMs
+69 |  * last edit. Used to schedule the setTimeout delay in the impure shell.
+70 |  */
+71 | export function nextFireAt(lastEditTimestamp: number, debounceMs: number): number {
+72 |   void lastEditTimestamp;
+73 |   void debounceMs;
+74 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at nextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:74:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:235:12)
+(fail) nextFireAt pure helper > nextFireAt is consistent with IDLE_SAVE_DEBOUNCE_MS
+
+src/lib/editor/__tests__/editorPredicates.test.ts:
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:25:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > empty string is empty after trim
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:29:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > whitespace-only string is empty after trim
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:33:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > tabs-only is empty after trim
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:37:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > newline-only is empty after trim
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:41:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > mixed whitespace is empty after trim
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:45:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > non-whitespace single character is NOT empty
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:49:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > body with leading/trailing whitespace but non-empty interior is NOT empty
+26 |  * REQ-EDIT-003
+27 |  * Returns true iff body.trim().length === 0 per ECMAScript String.prototype.trim.
+28 |  */
+29 | export function isEmptyAfterTrim(bodyStr: string): boolean {
+30 |   void bodyStr;
+31 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at isEmptyAfterTrim (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:31:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:53:12)
+(fail) isEmptyAfterTrim (REQ-EDIT-003, RD-006) > body with only newlines and then text is NOT empty
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:63:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for idle regardless of body [1.00ms]
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:67:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for idle when body is empty
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:71:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for switching regardless of body
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:75:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for switching when body is empty
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:79:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for save-failed regardless of body (REQ-EDIT-013)
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:83:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for save-failed when body is empty
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:89:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns true for editing with non-empty body
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:93:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for editing with empty body
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:97:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for editing with whitespace-only body (EC-EDIT-006)
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:101:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns true for saving with non-empty body
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:105:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for saving with empty body
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:109:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy returns false for saving with whitespace-only body
+17 |  * - !isEmptyAfterTrim(bodyStr) for status ∈ {'editing', 'saving'}.
+18 |  */
+19 | export function canCopy(bodyStr: string, status: EditingSessionStatus): boolean {
+20 |   void bodyStr;
+21 |   void status;
+22 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:113:12)
+(fail) canCopy (REQ-EDIT-003, REQ-EDIT-022, EC-EDIT-006) > canCopy: body with leading whitespace and non-empty content — editing enables copy
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:128:12)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > fs permission → exact Japanese message
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:132:12)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > fs disk-full → exact Japanese message
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:136:12)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > fs lock → exact Japanese message
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:140:12)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > fs unknown → generic Japanese message
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:144:12)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > validation invariant-violated → returns null (silent, REQ-EDIT-016)
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:148:12)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > validation empty-body-on-idle → returns null (silent discard path, REQ-EDIT-016)
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:161:22)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > bannerMessageFor never returns undefined for any SaveError
+36 |  * Returns the user-facing Japanese message for fs errors; null for validation errors.
+37 |  * Exhaustive switch enforced at compile time (Tier 0 obligation).
+38 |  */
+39 | export function bannerMessageFor(error: SaveError): string | null {
+40 |   void error;
+41 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:169:22)
+(fail) bannerMessageFor (REQ-EDIT-016, PROP-EDIT-031) > fs errors always return a non-empty string
+46 |  * Pure mapping from trigger event kind to domain SaveSource enum value.
+47 |  * 'idle' → 'capture-idle'; 'blur' → 'capture-blur'.
+48 |  */
+49 | export function classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | 'capture-blur' {
+50 |   void triggerKind;
+51 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at classifySource (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:51:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:180:12)
+(fail) classifySource (REQ-EDIT-026, CRIT-011, RD-013) > classifySource('idle') returns 'capture-idle'
+46 |  * Pure mapping from trigger event kind to domain SaveSource enum value.
+47 |  * 'idle' → 'capture-idle'; 'blur' → 'capture-blur'.
+48 |  */
+49 | export function classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | 'capture-blur' {
+50 |   void triggerKind;
+51 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at classifySource (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:51:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:184:12)
+(fail) classifySource (REQ-EDIT-026, CRIT-011, RD-013) > classifySource('blur') returns 'capture-blur'
+46 |  * Pure mapping from trigger event kind to domain SaveSource enum value.
+47 |  * 'idle' → 'capture-idle'; 'blur' → 'capture-blur'.
+48 |  */
+49 | export function classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | 'capture-blur' {
+50 |   void triggerKind;
+51 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at classifySource (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:51:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:188:53)
+(fail) classifySource (REQ-EDIT-026, CRIT-011, RD-013) > classifySource result for idle matches domain enum value
+46 |  * Pure mapping from trigger event kind to domain SaveSource enum value.
+47 |  * 'idle' → 'capture-idle'; 'blur' → 'capture-blur'.
+48 |  */
+49 | export function classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | 'capture-blur' {
+50 |   void triggerKind;
+51 |   throw new Error('not implemented (Red phase)');
+                                                    ^
+error: not implemented (Red phase)
+      at classifySource (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:51:48)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts:193:53)
+(fail) classifySource (REQ-EDIT-026, CRIT-011, RD-013) > classifySource result for blur matches domain enum value
+
+src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1222310240, path: "0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":" ","lastError":{"kind":"validation","reason":{"kind":"invariant-violated"}}},{"kind":"NewNoteClicked","payload":{"source":"explicit-button","issuedAt":"2026-05-04T10:00:00.000Z"}}]
+Shrunk 5 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:181:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:179:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:179:8)
+(fail) PROP-EDIT-007 (fast-check): reducer totality over all (status, action) pairs > PROP-EDIT-007a: never returns undefined state (≥100 runs) [6.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -80885035, path: "0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":null,"lastError":null},{"kind":"DomainSnapshotReceived","snapshot":{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":" ","lastError":{"kind":"fs","reason":{"kind":"permission"}}}}]
+Shrunk 6 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:191:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:189:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:189:8)
+(fail) PROP-EDIT-007 (fast-check): reducer totality over all (status, action) pairs > PROP-EDIT-007b: returned status is always in the 5-value enum (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1099877651, path: "0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":" ","lastError":{"kind":"validation","reason":{"kind":"invariant-violated"}}},{"kind":"DomainSnapshotReceived","snapshot":{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":" ","lastError":null}}]
+Shrunk 7 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:201:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:199:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:199:8)
+(fail) PROP-EDIT-007 (fast-check): reducer totality over all (status, action) pairs > PROP-EDIT-007c: commands is always a defined array (never undefined) (≥100 runs) [2.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1397838559, path: "0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":null,"lastError":{"kind":"validation","reason":{"kind":"invariant-violated"}}},{"kind":"DomainSnapshotReceived","snapshot":{"status":"idle","isDirty":false,"currentNoteId":" ","body":"","pendingNextNoteId":" ","lastError":{"kind":"validation","reason":{"kind":"invariant-violated"}}}}]
+Shrunk 10 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:211:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:209:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:209:8)
+(fail) PROP-EDIT-007 (fast-check): reducer totality over all (status, action) pairs > PROP-EDIT-007d: every commands[i].kind is in the 9-variant EditorCommand union (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1550194636, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":null,"lastError":null},{"kind":"DiscardClicked"}]
+Shrunk 3 time(s)
+Got error: Property failed by returning false
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:219:8)
+(fail) PROP-EDIT-007 (fast-check): reducer totality over all (status, action) pairs > PROP-EDIT-007e: reducer never throws (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -945178412, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [" ","","2026-05-04T10:00:00.000Z"]
+Shrunk 3 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:249:30)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:234:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:234:8)
+(fail) PROP-EDIT-007 (fast-check): reducer totality over all (status, action) pairs > PROP-EDIT-007f: isDirty transitions: editing+NoteBodyEdited→true, saving+NoteFileSaved→false (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -671262280, path: "0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":" ","body":"","pendingNextNoteId":" ","lastError":{"kind":"validation","reason":{"kind":"invariant-violated"}}},{"kind":"BlurEvent","payload":{"noteId":" ","body":"","issuedAt":"2026-05-04T10:00:00.000Z"}}]
+Shrunk 10 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:282:25)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:280:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:280:8)
+(fail) PROP-EDIT-008 (fast-check): reducer is referentially transparent > calling editorReducer twice with equal (state, action) produces deep-equal results (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1331673734, path: "0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"editing","isDirty":true,"currentNoteId":null,"body":"","pendingNextNoteId":null,"lastError":{"kind":"validation","reason":{"kind":"invariant-violated"}}}," ","","2026-05-04T10:00:00.000Z"]
+Shrunk 5 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:309:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:298:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:298:8)
+(fail) PROP-EDIT-002 (fast-check): save command source equals action payload source > PROP-EDIT-002a: trigger-blur-save source equals the source that caused the save (≥100 runs) [2.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 2062630804, path: "0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":" ","body":"","pendingNextNoteId":null,"lastError":null},{"kind":"IdleTimerFired","payload":{"nowMs":0,"noteId":" ","body":"","issuedAt":"2026-05-04T10:00:00.000Z"}}]
+Shrunk 8 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:330:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:328:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:328:8)
+(fail) PROP-EDIT-002 (fast-check): save command source equals action payload source > PROP-EDIT-002b: save source is always in EditorCommandSaveSource (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1220491804, path: "0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":" ","body":"","pendingNextNoteId":null,"lastError":null},{"kind":"NewNoteClicked","payload":{"source":"explicit-button","issuedAt":"2026-05-04T10:00:00.000Z"}}]
+Shrunk 6 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:352:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:350:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:350:8)
+(fail) PROP-EDIT-002 (fast-check): save command source equals action payload source > PROP-EDIT-002c: no save command carries invalid source strings (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -294718566, path: "0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":" ","body":"","pendingNextNoteId":" ","lastError":{"kind":"fs","reason":{"kind":"permission"}}},{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":null,"lastError":null}]
+Shrunk 9 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:372:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:369:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:369:8)
+(fail) PROP-EDIT-040 (fast-check): DomainSnapshotReceived is identity over state fields > snapshot mirroring is identity over state fields (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1217447619, path: "0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"status":"idle","isDirty":false,"currentNoteId":" ","body":"","pendingNextNoteId":null,"lastError":null},{"status":"idle","isDirty":false,"currentNoteId":null,"body":"","pendingNextNoteId":null,"lastError":null}]
+Shrunk 7 time(s)
+Got error: not implemented (Red phase)
+    at editorReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorReducer.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:388:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:385:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts:385:8)
+(fail) PROP-EDIT-040 (fast-check): DomainSnapshotReceived is identity over state fields > DomainSnapshotReceived emits no commands for any (state, snapshot) pair (≥100 runs)
+
+src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -100678708, path: "0:0", endOnFailure: true }
+Counterexample: [{"kind":"fs","reason":{"kind":"permission"}}]
+Shrunk 1 time(s)
+Got error: not implemented (Red phase)
+    at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:68:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:66:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:66:8)
+(fail) PROP-EDIT-005 (fast-check): bannerMessageFor exhaustiveness and totality > PROP-EDIT-005a: bannerMessageFor(fs error) returns non-empty string for all FsError variants (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1974423314, path: "0:0", endOnFailure: true }
+Counterexample: [{"kind":"validation","reason":{"kind":"invariant-violated"}}]
+Shrunk 1 time(s)
+Got error: not implemented (Red phase)
+    at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:78:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:76:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:76:8)
+(fail) PROP-EDIT-005 (fast-check): bannerMessageFor exhaustiveness and totality > PROP-EDIT-005b: bannerMessageFor(validation error) returns null for all SaveValidationError variants (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1114585538, path: "0", endOnFailure: true }
+Counterexample: [{"kind":"fs","reason":{"kind":"permission"}}]
+Shrunk 0 time(s)
+Got error: not implemented (Red phase)
+    at bannerMessageFor (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:41:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:88:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:86:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:86:8)
+(fail) PROP-EDIT-005 (fast-check): bannerMessageFor exhaustiveness and totality > PROP-EDIT-005c: bannerMessageFor never returns undefined for any SaveError (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -729587059, path: "0:0", endOnFailure: true }
+Counterexample: [{"kind":"validation","reason":{"kind":"invariant-violated"}}]
+Shrunk 1 time(s)
+Got error: Property failed by returning false
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:96:8)
+(fail) PROP-EDIT-005 (fast-check): bannerMessageFor exhaustiveness and totality > PROP-EDIT-005d: bannerMessageFor never throws for any SaveError (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 316375158, path: "0:0", endOnFailure: true }
+Counterexample: [""]
+Shrunk 1 time(s)
+Got error: not implemented (Red phase)
+    at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:117:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:115:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:115:8)
+(fail) PROP-EDIT-006 (fast-check): canCopy copy-enable parity > PROP-EDIT-006a: canCopy is false for idle regardless of body (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -473804311, path: "0:0", endOnFailure: true }
+Counterexample: [""]
+Shrunk 1 time(s)
+Got error: not implemented (Red phase)
+    at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:126:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:124:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:124:8)
+(fail) PROP-EDIT-006 (fast-check): canCopy copy-enable parity > PROP-EDIT-006b: canCopy is false for switching regardless of body (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 188853798, path: "0:0", endOnFailure: true }
+Counterexample: [""]
+Shrunk 1 time(s)
+Got error: not implemented (Red phase)
+    at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:135:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:133:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:133:8)
+(fail) PROP-EDIT-006 (fast-check): canCopy copy-enable parity > PROP-EDIT-006c: canCopy is false for save-failed regardless of body (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 928845136, path: "0", endOnFailure: true }
+Counterexample: [""]
+Shrunk 0 time(s)
+Got error: not implemented (Red phase)
+    at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:144:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:142:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:142:8)
+(fail) PROP-EDIT-006 (fast-check): canCopy copy-enable parity > PROP-EDIT-006d: canCopy for editing equals !isEmptyAfterTrim(body) (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 2038095286, path: "0:0", endOnFailure: true }
+Counterexample: [""]
+Shrunk 1 time(s)
+Got error: not implemented (Red phase)
+    at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:153:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:151:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:151:8)
+(fail) PROP-EDIT-006 (fast-check): canCopy copy-enable parity > PROP-EDIT-006e: canCopy for saving equals !isEmptyAfterTrim(body) (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1575675543, path: "0:0:0", endOnFailure: true }
+Counterexample: ["","idle"]
+Shrunk 2 time(s)
+Got error: not implemented (Red phase)
+    at canCopy (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/editorPredicates.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:162:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:160:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts:160:8)
+(fail) PROP-EDIT-006 (fast-check): canCopy copy-enable parity > PROP-EDIT-006f: canCopy result is always boolean (never undefined/null) for any status and body (≥200 runs)
+
+src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 770001154, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [0,100,0]
+Shrunk 3 time(s)
+Got error: not implemented (Red phase)
+    at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:40:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:32:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:32:8)
+(fail) PROP-EDIT-003 (fast-check): debounce semantics > PROP-EDIT-003a: shouldFire=true iff lastEditAt+debounceMs <= nowMs AND lastSaveAt <= lastEditAt (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 802765420, path: "0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [1,100,1]
+Shrunk 6 time(s)
+Got error: not implemented (Red phase)
+    at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:62:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:54:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:54:8)
+(fail) PROP-EDIT-003 (fast-check): debounce semantics > PROP-EDIT-003b: shouldFire=false when nowMs < lastEditAt+debounceMs (within debounce window) (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1738227676, path: "0:0:0", endOnFailure: true }
+Counterexample: [0,100]
+Shrunk 2 time(s)
+Got error: not implemented (Red phase)
+    at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:78:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:76:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:76:8)
+(fail) PROP-EDIT-003 (fast-check): debounce semantics > PROP-EDIT-003c: fireAt is always lastEditAt+debounceMs when no save supersedes (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1669790610, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [[0],100,0]
+Shrunk 3 time(s)
+Got error: not implemented (Red phase)
+    at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:101:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:92:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:92:8)
+(fail) PROP-EDIT-003 (fast-check): debounce semantics > PROP-EDIT-003d: shouldFireIdleSave semantics: fires iff last edit + debounceMs <= nowMs AND not saved (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1188135996, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [[0,0],100]
+Shrunk 4 time(s)
+Got error: not implemented (Red phase)
+    at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:120:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:110:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:110:8)
+(fail) PROP-EDIT-003 (fast-check): debounce semantics > PROP-EDIT-003e: burst never fires within debounce window (≥100 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1964507908, path: "0:0:0", endOnFailure: true }
+Counterexample: [0,100]
+Shrunk 2 time(s)
+Got error: not implemented (Red phase)
+    at nextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:74:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:131:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:129:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:129:8)
+(fail) PROP-EDIT-003 (fast-check): debounce semantics > PROP-EDIT-003f: nextFireAt(t, d) === t + d for all t,d (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -162792549, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [0,100,1]
+Shrunk 3 time(s)
+Got error: not implemented (Red phase)
+    at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:150:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:142:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:142:8)
+(fail) PROP-EDIT-004 (fast-check): blur-cancels-idle — lastSaveAt > lastEditAt → shouldFire=false > PROP-EDIT-004a: if lastSaveAt > lastEditAt, shouldFire is always false (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1057497777, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [0,100,1]
+Shrunk 3 time(s)
+Got error: not implemented (Red phase)
+    at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:172:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:164:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:164:8)
+(fail) PROP-EDIT-004 (fast-check): blur-cancels-idle — lastSaveAt > lastEditAt → shouldFire=false > PROP-EDIT-004b: if lastSaveAt > lastEditAt, fireAt is null (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 49640122, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [[0],100,1]
+Shrunk 4 time(s)
+Got error: not implemented (Red phase)
+    at shouldFireIdleSave (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:64:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:195:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:186:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:186:8)
+(fail) PROP-EDIT-004 (fast-check): blur-cancels-idle — lastSaveAt > lastEditAt → shouldFire=false > PROP-EDIT-004c: shouldFireIdleSave returns false when saved after last edit (≥100 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1045300977, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [0,0,100,0]
+Shrunk 4 time(s)
+Got error: not implemented (Red phase)
+    at computeNextFireAt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/debounceSchedule.ts:39:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:212:27)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:204:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts:204:8)
+(fail) PROP-EDIT-004 (fast-check): blur-cancels-idle — lastSaveAt > lastEditAt → shouldFire=false > PROP-EDIT-004d: computeNextFireAt is pure — same inputs always produce same outputs (≥100 runs)
+
+ 1 pass
+ 125 fail
+ 1 expect() calls
+Ran 126 tests across 6 files. [103.00ms]

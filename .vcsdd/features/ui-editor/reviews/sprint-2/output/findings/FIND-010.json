@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-010",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "high",
+  "description": "Adapter wire payload only forwards source field while reducer commands carry noteId/body/issuedAt; the lossy reduction breaks the §10 EditorCommand contract and downstream save will be missing fields.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/tauriEditorAdapter.ts",
+    "lineRange": "1-77"
+  },
+  "routeToPhase": "2b"
+}

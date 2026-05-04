@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "Save-failed banner button labels diverge from REQ-EDIT-018/019 normative strings (current 破棄 / キャンセル, expected 変更を破棄 / 閉じる（このまま編集を続ける）).",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "380-420"
+  },
+  "routeToPhase": "2b"
+}
