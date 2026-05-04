@@ -1,0 +1,1282 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+---
+bun test summary (pure + property tests):
+  78 FAIL (all src/lib/feed/__tests__/ — stubs throw not implemented)
+  1385 PASS (existing regression baseline)
+
+vitest DOM tests (bun run test:dom):
+  40 FAIL (all src/lib/feed/__tests__/dom/ — Svelte stubs render nothing)
+  134 PASS (existing DOM regression baseline)
+
+=== bun test output ===
+bun test v1.3.11 (af24e281)
+
+src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:37:20)
+(fail) PROP-FEED-008: deletionErrorMessage totality > PROP-FEED-008a: permission → non-empty string (example)
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:43:20)
+(fail) PROP-FEED-008: deletionErrorMessage totality > PROP-FEED-008b: lock → non-empty string (example)
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:49:20)
+(fail) PROP-FEED-008: deletionErrorMessage totality > PROP-FEED-008c: unknown → non-empty string (example)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 498071943, path: "0", endOnFailure: true }
+Counterexample: ["permission",undefined]
+Shrunk 0 time(s)
+Got error: Property failed by returning false
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:55:8)
+(fail) PROP-FEED-008: deletionErrorMessage totality > PROP-FEED-008d: fast-check — totality: never throws, always non-empty (≥200 runs) [3.00ms]
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:76:12)
+(fail) PROP-FEED-009: deletionErrorMessage non-empty and detail appended for unknown > PROP-FEED-009a: permission → exact message 「削除に失敗しました（権限不足）」
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:80:12)
+(fail) PROP-FEED-009: deletionErrorMessage non-empty and detail appended for unknown > PROP-FEED-009b: lock → exact message 「削除に失敗しました（ファイルがロック中）」
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:84:12)
+(fail) PROP-FEED-009: deletionErrorMessage non-empty and detail appended for unknown > PROP-FEED-009c: unknown + no detail → 「削除に失敗しました」
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:88:12)
+(fail) PROP-FEED-009: deletionErrorMessage non-empty and detail appended for unknown > PROP-FEED-009d: unknown + detail=disk-full → 「削除に失敗しました（disk-full）」 (FIND-SPEC-2-05)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -778948657, path: "0:0:0", endOnFailure: true }
+Counterexample: [" "]
+Shrunk 2 time(s)
+Got error: not implemented
+    at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:94:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:92:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:92:8)
+(fail) PROP-FEED-009: deletionErrorMessage non-empty and detail appended for unknown > PROP-FEED-009e: unknown + arbitrary detail → string contains detail (fast-check, ≥200 runs) [2.00ms]
+21 |  */
+22 | export function deletionErrorMessage(
+23 |   reason: NoteDeletionFailureReason,
+24 |   detail?: string
+25 | ): string {
+26 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at deletionErrorMessage (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:26:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:103:20)
+(fail) PROP-FEED-009: deletionErrorMessage non-empty and detail appended for unknown > PROP-FEED-009f: unknown + no detail does NOT contain parentheses (fast-check, ≥100 runs)
+31 |  * Returns true iff the delete modal can be opened for rowNoteId.
+32 |  * Returns false when rowNoteId === editingNoteId (self-delete prevention).
+33 |  * canOpenDeleteModal(a, a) === false for all a: string.
+34 |  */
+35 | export function canOpenDeleteModal(rowNoteId: string, editingNoteId: string | null): boolean {
+36 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at canOpenDeleteModal (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:36:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:112:12)
+(fail) PROP-FEED-010: canOpenDeleteModal self-delete prevention > PROP-FEED-010a: canOpenDeleteModal(a, a) === false (example)
+31 |  * Returns true iff the delete modal can be opened for rowNoteId.
+32 |  * Returns false when rowNoteId === editingNoteId (self-delete prevention).
+33 |  * canOpenDeleteModal(a, a) === false for all a: string.
+34 |  */
+35 | export function canOpenDeleteModal(rowNoteId: string, editingNoteId: string | null): boolean {
+36 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at canOpenDeleteModal (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:36:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:116:12)
+(fail) PROP-FEED-010: canOpenDeleteModal self-delete prevention > PROP-FEED-010b: canOpenDeleteModal(a, b) === true when a !== b
+31 |  * Returns true iff the delete modal can be opened for rowNoteId.
+32 |  * Returns false when rowNoteId === editingNoteId (self-delete prevention).
+33 |  * canOpenDeleteModal(a, a) === false for all a: string.
+34 |  */
+35 | export function canOpenDeleteModal(rowNoteId: string, editingNoteId: string | null): boolean {
+36 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at canOpenDeleteModal (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:36:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:120:12)
+(fail) PROP-FEED-010: canOpenDeleteModal self-delete prevention > PROP-FEED-010c: canOpenDeleteModal(a, null) === true (no editing note)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -404742204, path: "0:0:0", endOnFailure: true }
+Counterexample: [" "]
+Shrunk 2 time(s)
+Got error: not implemented
+    at canOpenDeleteModal (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:126:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:124:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:124:8)
+(fail) PROP-FEED-010: canOpenDeleteModal self-delete prevention > PROP-FEED-010d: fast-check — canOpenDeleteModal(a, a) === false ∀a (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1580355397, path: "0:0:0", endOnFailure: true }
+Counterexample: [" "]
+Shrunk 2 time(s)
+Got error: not implemented
+    at canOpenDeleteModal (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:135:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:133:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:133:8)
+(fail) PROP-FEED-010: canOpenDeleteModal self-delete prevention > PROP-FEED-010e: fast-check — canOpenDeleteModal(a, null) === true ∀a (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1438770102, path: "0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [[" ","!"]]
+Shrunk 9 time(s)
+Got error: not implemented
+    at canOpenDeleteModal (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/deleteConfirmPredicates.ts:36:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:146:18)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:142:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/deleteConfirmPredicates.test.ts:142:8)
+(fail) PROP-FEED-010: canOpenDeleteModal self-delete prevention > PROP-FEED-010f: fast-check — canOpenDeleteModal(a, b) where a≠b === true (≥200 runs) [1.00ms]
+
+src/lib/feed/__tests__/refreshFeedEmission.test.ts:
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 2120110284, path: "0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":" ","lastDeletionError":{"reason":"permission","detail":" "}},[]]
+Shrunk 10 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:124:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:121:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:121:8)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (fast-check) > PROP-FEED-035a: FilterApplied ALWAYS emits 'refresh-feed' (≥200 runs) [2.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1445870307, path: "0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":" ","pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":null,"lastDeletionError":null},[]]
+Shrunk 5 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:135:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:132:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:132:8)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (fast-check) > PROP-FEED-035b: FilterCleared ALWAYS emits 'refresh-feed' (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -296809033, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":null,"visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":" ","lastDeletionError":null},{"editing":{"status":"idle","currentNoteId":null,"pendingNextNoteId":" "},"feed":{"visibleNoteIds":[],"filterApplied":false},"delete":{"activeDeleteModalNoteId":" ","lastDeletionError":{"reason":"permission","detail":" "}},"cause":{"kind":"InitialLoad"}},{"kind":"NoteFileSaved","savedNoteId":" "}]
+Shrunk 16 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:147:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:143:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:143:8)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (fast-check) > PROP-FEED-035c: DomainSnapshotReceived + NoteFileSaved/NoteFileDeleted ALWAYS emits 'refresh-feed' (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1476951759, path: "0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":null,"lastDeletionError":null},{"editing":{"status":"idle","currentNoteId":null,"pendingNextNoteId":null},"feed":{"visibleNoteIds":[],"filterApplied":false},"delete":{"activeDeleteModalNoteId":null,"lastDeletionError":{"reason":"permission","detail":undefined}},"cause":{"kind":"EditingStateChanged"}},{"kind":"EditingStateChanged"}]
+Shrunk 8 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:159:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:155:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:155:8)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (fast-check) > PROP-FEED-035d: DomainSnapshotReceived + non-refresh cause NEVER emits 'refresh-feed' (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1608602767, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":null,"visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":" ","lastDeletionError":null},{"kind":"LoadingStateChanged","status":"loading"}]
+Shrunk 4 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:180:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:178:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:178:8)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (fast-check) > PROP-FEED-035e: non-filter, non-snapshot actions NEVER emit 'refresh-feed' (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1194001942, path: "0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":" ","lastDeletionError":{"reason":"permission","detail":" "}},{"kind":"DeleteCancelled"}]
+Shrunk 9 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:190:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:188:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts:188:8)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (fast-check) > PROP-FEED-035f: full biconditional over all actions (≥500 runs) [1.00ms]
+
+src/lib/feed/__tests__/feedRowPredicates.test.ts:
+46 |  * Returns a human-readable timestamp string for the given epoch ms value.
+47 |  * Uses Intl.DateTimeFormat(locale).format(epochMs) — no clock access.
+48 |  * Pure and deterministic: same (epochMs, locale) always produces same output.
+49 |  */
+50 | export function timestampLabel(epochMs: number, locale: string): string {
+51 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at timestampLabel (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:51:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:49:16)
+(fail) REQ-FEED-001 / PROP-FEED-033: timestampLabel determinism > PROP-FEED-033a: same (epochMs, locale) returns same string twice (example)
+46 |  * Returns a human-readable timestamp string for the given epoch ms value.
+47 |  * Uses Intl.DateTimeFormat(locale).format(epochMs) — no clock access.
+48 |  * Pure and deterministic: same (epochMs, locale) always produces same output.
+49 |  */
+50 | export function timestampLabel(epochMs: number, locale: string): string {
+51 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at timestampLabel (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:51:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:55:20)
+(fail) REQ-FEED-001 / PROP-FEED-033: timestampLabel determinism > PROP-FEED-033b: returns a non-empty string for valid epoch (example)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1663284072, path: "0:0:0", endOnFailure: true }
+Counterexample: [0,"ja-JP"]
+Shrunk 2 time(s)
+Got error: not implemented
+    at timestampLabel (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:51:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:63:20)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:61:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:61:8)
+(fail) REQ-FEED-001 / PROP-FEED-033: timestampLabel determinism > PROP-FEED-033c: fast-check — same (epochMs, locale) always equal (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1430379840, path: "0:0", endOnFailure: true }
+Counterexample: [0,"ja-JP"]
+Shrunk 1 time(s)
+Got error: not implemented
+    at timestampLabel (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:51:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:74:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:72:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:72:8)
+(fail) REQ-FEED-001 / PROP-FEED-033: timestampLabel determinism > PROP-FEED-033d: fast-check — always returns non-empty string (≥200 runs) [1.00ms]
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:86:20)
+(fail) REQ-FEED-002 / PROP-FEED-003: bodyPreviewLines length ≤ maxLines > PROP-FEED-003a: empty body with maxLines=2 returns array of length ≤ 2
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:91:20)
+(fail) REQ-FEED-002 / PROP-FEED-003: bodyPreviewLines length ≤ maxLines > PROP-FEED-003b: single-line body with maxLines=2 returns exactly 1 element
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:96:20)
+(fail) REQ-FEED-002 / PROP-FEED-003: bodyPreviewLines length ≤ maxLines > PROP-FEED-003c: two-line body with maxLines=2 returns exactly 2 elements
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:101:20)
+(fail) REQ-FEED-002 / PROP-FEED-003: bodyPreviewLines length ≤ maxLines > PROP-FEED-003d: three-line body with maxLines=2 returns exactly 2 elements (truncated)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 547276208, path: "0:0:0", endOnFailure: true }
+Counterexample: ["",0]
+Shrunk 2 time(s)
+Got error: not implemented
+    at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:108:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:106:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:106:8)
+(fail) REQ-FEED-002 / PROP-FEED-003: bodyPreviewLines length ≤ maxLines > PROP-FEED-003e: fast-check — length always ≤ maxLines (≥200 runs)
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:120:20)
+(fail) REQ-FEED-002 / PROP-FEED-004: bodyPreviewLines content matches split+slice > PROP-FEED-004a: empty body returns empty array
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:127:20)
+(fail) REQ-FEED-002 / PROP-FEED-004: bodyPreviewLines content matches split+slice > PROP-FEED-004b: content matches body.split(newline).slice(0, 2)
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:134:20)
+(fail) REQ-FEED-002 / PROP-FEED-004: bodyPreviewLines content matches split+slice > PROP-FEED-004c: single line body matches
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1883418503, path: "0:0:0", endOnFailure: true }
+Counterexample: ["",0]
+Shrunk 2 time(s)
+Got error: not implemented
+    at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:141:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:139:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:139:8)
+(fail) REQ-FEED-002 / PROP-FEED-004: bodyPreviewLines content matches split+slice > PROP-FEED-004d: fast-check — content equals split+slice (≥200 runs)
+12 |  * REQ-FEED-010 / PROP-FEED-001
+13 |  * Returns true iff rowNoteId is the currently-editing note.
+14 |  * Null-safe: editingNoteId === null always yields false.
+15 |  */
+16 | export function isEditingNote(rowNoteId: string, editingNoteId: string | null): boolean {
+17 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isEditingNote (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:17:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:158:12)
+(fail) REQ-FEED-010 / PROP-FEED-001: isEditingNote null safety > PROP-FEED-001a: isEditingNote(any, null) === false (example)
+12 |  * REQ-FEED-010 / PROP-FEED-001
+13 |  * Returns true iff rowNoteId is the currently-editing note.
+14 |  * Null-safe: editingNoteId === null always yields false.
+15 |  */
+16 | export function isEditingNote(rowNoteId: string, editingNoteId: string | null): boolean {
+17 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isEditingNote (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:17:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:162:12)
+(fail) REQ-FEED-010 / PROP-FEED-001: isEditingNote null safety > PROP-FEED-001b: isEditingNote("x", "x") === true when IDs match
+12 |  * REQ-FEED-010 / PROP-FEED-001
+13 |  * Returns true iff rowNoteId is the currently-editing note.
+14 |  * Null-safe: editingNoteId === null always yields false.
+15 |  */
+16 | export function isEditingNote(rowNoteId: string, editingNoteId: string | null): boolean {
+17 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isEditingNote (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:17:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:166:12)
+(fail) REQ-FEED-010 / PROP-FEED-001: isEditingNote null safety > PROP-FEED-001c: isEditingNote("x", "y") === false when IDs differ
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 224172354, path: "0:0:0", endOnFailure: true }
+Counterexample: [" "]
+Shrunk 2 time(s)
+Got error: not implemented
+    at isEditingNote (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:17:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:172:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:170:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:170:8)
+(fail) REQ-FEED-010 / PROP-FEED-001: isEditingNote null safety > PROP-FEED-001d: fast-check — isEditingNote(x, null) === false ∀x (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 860895006, path: "0:0:0", endOnFailure: true }
+Counterexample: [" "]
+Shrunk 2 time(s)
+Got error: not implemented
+    at isEditingNote (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:17:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:181:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:179:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:179:8)
+(fail) REQ-FEED-010 / PROP-FEED-001: isEditingNote null safety > PROP-FEED-001e: fast-check — isEditingNote(x, x) === true ∀x (≥200 runs)
+27 | export function isDeleteButtonDisabled(
+28 |   rowNoteId: string,
+29 |   status: FeedViewState['editingStatus'],
+30 |   editingNoteId: string | null
+31 | ): boolean {
+32 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isDeleteButtonDisabled (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:32:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:192:12)
+(fail) REQ-FEED-010 / PROP-FEED-002: isDeleteButtonDisabled safety > PROP-FEED-002a: editingNoteId===null → always false (example)
+27 | export function isDeleteButtonDisabled(
+28 |   rowNoteId: string,
+29 |   status: FeedViewState['editingStatus'],
+30 |   editingNoteId: string | null
+31 | ): boolean {
+32 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isDeleteButtonDisabled (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:32:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:199:12)
+(fail) REQ-FEED-010 / PROP-FEED-002: isDeleteButtonDisabled safety > PROP-FEED-002b: status === idle → always false (example)
+27 | export function isDeleteButtonDisabled(
+28 |   rowNoteId: string,
+29 |   status: FeedViewState['editingStatus'],
+30 |   editingNoteId: string | null
+31 | ): boolean {
+32 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isDeleteButtonDisabled (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:32:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:205:12)
+(fail) REQ-FEED-010 / PROP-FEED-002: isDeleteButtonDisabled safety > PROP-FEED-002c: editing + same noteId → true
+27 | export function isDeleteButtonDisabled(
+28 |   rowNoteId: string,
+29 |   status: FeedViewState['editingStatus'],
+30 |   editingNoteId: string | null
+31 | ): boolean {
+32 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isDeleteButtonDisabled (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:32:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:209:12)
+(fail) REQ-FEED-010 / PROP-FEED-002: isDeleteButtonDisabled safety > PROP-FEED-002d: editing + different noteId → false
+27 | export function isDeleteButtonDisabled(
+28 |   rowNoteId: string,
+29 |   status: FeedViewState['editingStatus'],
+30 |   editingNoteId: string | null
+31 | ): boolean {
+32 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at isDeleteButtonDisabled (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:32:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:213:12)
+(fail) REQ-FEED-010 / PROP-FEED-002: isDeleteButtonDisabled safety > PROP-FEED-002e: save-failed + same noteId → true (EC-FEED-006)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 393210896, path: "0:0:0", endOnFailure: true }
+Counterexample: [" ","idle"]
+Shrunk 2 time(s)
+Got error: not implemented
+    at isDeleteButtonDisabled (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:32:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:219:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:217:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:217:8)
+(fail) REQ-FEED-010 / PROP-FEED-002: isDeleteButtonDisabled safety > PROP-FEED-002f: fast-check — editingNoteId===null → false ∀(noteId, status) (≥200 runs)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -381349457, path: "0:0:0", endOnFailure: true }
+Counterexample: [" ",null]
+Shrunk 2 time(s)
+Got error: not implemented
+    at isDeleteButtonDisabled (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:32:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:228:16)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:226:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:226:8)
+(fail) REQ-FEED-010 / PROP-FEED-002: isDeleteButtonDisabled safety > PROP-FEED-002g: fast-check — status===idle → false ∀(noteId, editingNoteId) (≥200 runs)
+36 |  * REQ-FEED-002 / PROP-FEED-003 / PROP-FEED-004
+37 |  * Returns the first maxLines lines of body (split on '\n').
+38 |  * Result length is always ≤ maxLines.
+39 |  */
+40 | export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
+41 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:240:20)
+(fail) REQ-FEED-003 / PROP-FEED-034: tag array order and length preservation > PROP-FEED-034a: bodyPreviewLines preserves order of lines (example)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 895782070, path: "0:0:0", endOnFailure: true }
+Counterexample: [[""]]
+Shrunk 2 time(s)
+Got error: not implemented
+    at bodyPreviewLines (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedRowPredicates.ts:41:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:253:26)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:247:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:247:8)
+(fail) REQ-FEED-003 / PROP-FEED-034: tag array order and length preservation > PROP-FEED-034b: fast-check — order preserved for all bodies (≥200 runs) [1.00ms]
+
+src/lib/feed/__tests__/feedReducer.test.ts:
+146 | describe('PROP-FEED-005: feedReducer totality', () => {
+147 |   test('PROP-FEED-005a: never throws for idle + DomainSnapshotReceived (example)', () => {
+148 |     const state = makeInitialState({ editingStatus: 'idle' });
+149 |     const snapshot = makeSnapshot();
+150 |     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+151 |     expect(() => feedReducer(state, action)).not.toThrow();
+                                                       ^
+error: expect(received).not.toThrow()
+
+Error name: "Error"
+Error message: "not implemented"
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:151:50)
+(fail) PROP-FEED-005: feedReducer totality > PROP-FEED-005a: never throws for idle + DomainSnapshotReceived (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:157:20)
+(fail) PROP-FEED-005: feedReducer totality > PROP-FEED-005b: result.commands is always an array (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:165:20)
+(fail) PROP-FEED-005: feedReducer totality > PROP-FEED-005c: result.state.editingStatus is within 5-value enum (example)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -1343287234, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":null,"visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":null,"lastDeletionError":{"reason":"permission","detail":undefined}},{"kind":"DeleteButtonClicked","noteId":" "}]
+Shrunk 4 time(s)
+Got error: Property failed by returning false
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:171:8)
+(fail) PROP-FEED-005: feedReducer totality > PROP-FEED-005d: fast-check — totality over all (state, action) pairs (≥300 runs)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:198:16)
+(fail) PROP-FEED-006: feedReducer referential transparency > PROP-FEED-006a: same (state, action) produces deep-equal result twice (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:226:20)
+(fail) PROP-FEED-007a: DomainSnapshotReceived mirrors editing fields > PROP-FEED-007a-example: editingStatus mirrors S.editing.status
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 2055503578, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":" ","pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":null,"lastDeletionError":null},{"editing":{"status":"idle","currentNoteId":" ","pendingNextNoteId":null},"feed":{"visibleNoteIds":[],"filterApplied":false},"delete":{"activeDeleteModalNoteId":null,"lastDeletionError":{"reason":"permission","detail":" "}},"cause":{"kind":"EditingStateChanged"}}]
+Shrunk 13 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:236:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:233:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:233:8)
+(fail) PROP-FEED-007a: DomainSnapshotReceived mirrors editing fields > PROP-FEED-007a-fast-check: editingStatus/editingNoteId/pendingNextNoteId mirrored (≥200 runs) [1.00ms]
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:255:20)
+(fail) PROP-FEED-007b: DomainSnapshotReceived mirrors visibleNoteIds > PROP-FEED-007b-example: visibleNoteIds matches S.feed.visibleNoteIds
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1602511316, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":null,"visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":null,"lastDeletionError":{"reason":"permission","detail":" "}},{"editing":{"status":"idle","currentNoteId":" ","pendingNextNoteId":" "},"feed":{"visibleNoteIds":[],"filterApplied":false},"delete":{"activeDeleteModalNoteId":" ","lastDeletionError":{"reason":"permission","detail":undefined}},"cause":{"kind":"NoteFileDeleted","deletedNoteId":" "}}]
+Shrunk 16 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:263:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:260:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:260:8)
+(fail) PROP-FEED-007b: DomainSnapshotReceived mirrors visibleNoteIds > PROP-FEED-007b-fast-check: visibleNoteIds always mirrors snapshot (≥200 runs) [1.00ms]
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:283:20)
+(fail) PROP-FEED-007c: LoadingStateChanged mirrors loadingStatus (REQ-FEED-008) > PROP-FEED-007c-example: loading status transitions to ready
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:290:20)
+(fail) PROP-FEED-007c: LoadingStateChanged mirrors loadingStatus (REQ-FEED-008) > PROP-FEED-007c-example: ready → loading
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 1268654700, path: "0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":null,"pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":" ","lastDeletionError":null},"loading"]
+Shrunk 8 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:298:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:295:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:295:8)
+(fail) PROP-FEED-007c: LoadingStateChanged mirrors loadingStatus (REQ-FEED-008) > PROP-FEED-007c-fast-check: loadingStatus always mirrored (≥200 runs) [1.00ms]
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:315:20)
+(fail) PROP-FEED-007d: DomainSnapshotReceived mirrors delete fields (FIND-SPEC-3-01) > PROP-FEED-007d-example: activeDeleteModalNoteId mirrored
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:330:20)
+(fail) PROP-FEED-007d: DomainSnapshotReceived mirrors delete fields (FIND-SPEC-3-01) > PROP-FEED-007d-example: NoteFileDeleted cause resets lastDeletionError to null
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:344:20)
+(fail) PROP-FEED-007d: DomainSnapshotReceived mirrors delete fields (FIND-SPEC-3-01) > PROP-FEED-007d-example: NoteDeletionFailed cause preserves lastDeletionError from snapshot
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 400145720, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":" ","pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":" ","lastDeletionError":null},{"editing":{"status":"idle","currentNoteId":" ","pendingNextNoteId":" "},"feed":{"visibleNoteIds":[],"filterApplied":false},"delete":{"activeDeleteModalNoteId":null,"lastDeletionError":{"reason":"permission","detail":undefined}},"cause":{"kind":"NoteFileDeleted","deletedNoteId":" "}}," "]
+Shrunk 14 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:357:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:350:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:350:8)
+(fail) PROP-FEED-007d: DomainSnapshotReceived mirrors delete fields (FIND-SPEC-3-01) > PROP-FEED-007d-fast-check: NoteFileDeleted always yields lastDeletionError===null (≥200 runs) [1.00ms]
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: 119977896, path: "0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":" ","pendingNextNoteId":null,"visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":null,"lastDeletionError":null},{"editing":{"status":"idle","currentNoteId":null,"pendingNextNoteId":" "},"feed":{"visibleNoteIds":[],"filterApplied":false},"delete":{"activeDeleteModalNoteId":null,"lastDeletionError":{"reason":"permission","detail":undefined}},"cause":{"kind":"InitialLoad"}}]
+Shrunk 9 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:368:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:365:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:365:8)
+(fail) PROP-FEED-007d: DomainSnapshotReceived mirrors delete fields (FIND-SPEC-3-01) > PROP-FEED-007d-fast-check: activeDeleteModalNoteId mirrors snapshot.delete.activeDeleteModalNoteId (≥200 runs) [1.00ms]
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:384:20)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (REQ-FEED-017, REQ-FEED-018) > PROP-FEED-035a: FilterApplied emits refresh-feed (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:392:20)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (REQ-FEED-017, REQ-FEED-018) > PROP-FEED-035b: FilterCleared emits refresh-feed (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:401:20)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (REQ-FEED-017, REQ-FEED-018) > PROP-FEED-035c: DomainSnapshotReceived + NoteFileSaved cause emits refresh-feed (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:410:20)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (REQ-FEED-017, REQ-FEED-018) > PROP-FEED-035d: DomainSnapshotReceived + NoteFileDeleted cause emits refresh-feed (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:419:20)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (REQ-FEED-017, REQ-FEED-018) > PROP-FEED-035e: DomainSnapshotReceived + EditingStateChanged does NOT emit refresh-feed (example)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:427:20)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (REQ-FEED-017, REQ-FEED-018) > PROP-FEED-035f: DeleteButtonClicked does NOT emit refresh-feed (example)
+121 |     }
+122 |     return defaultReportMessageInternal(out, stringifySecond);
+123 | }
+124 | function buildError(errorMessage, out) {
+125 |     if (!out.runConfiguration.errorWithCause) {
+126 |         throw new Error(errorMessage);
+                                          ^
+error: Property failed after 1 tests
+{ seed: -564924850, path: "0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"editingStatus":"idle","editingNoteId":" ","pendingNextNoteId":" ","visibleNoteIds":[],"loadingStatus":"loading","activeDeleteModalNoteId":" ","lastDeletionError":null},{"kind":"DeleteCancelled"}]
+Shrunk 8 time(s)
+Got error: not implemented
+    at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:13)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:435:24)
+    at run (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+    at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:65:17)
+    at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:433:8)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:37)
+      at throwIfFailed (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:138:11)
+      at assert (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/node_modules/fast-check/lib/esm/check/runner/Runner.js:69:9)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:433:8)
+(fail) PROP-FEED-035: 'refresh-feed' emission biconditional (REQ-FEED-017, REQ-FEED-018) > PROP-FEED-035g: fast-check biconditional — refresh-feed iff trigger condition (≥300 runs)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:461:20)
+(fail) REQ-FEED-013: feedReducer removes deleted note from visibleNoteIds > after DomainSnapshotReceived with NoteFileDeleted, visibleNoteIds excludes deleted note [1.00ms]
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:474:20)
+(fail) REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allowed > FeedRowClicked in idle+ready state emits select-past-note
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:482:20)
+(fail) REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allowed > FeedRowClicked in saving state does NOT emit select-past-note (EC-FEED-004)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:490:20)
+(fail) REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allowed > FeedRowClicked in switching state does NOT emit select-past-note (EC-FEED-005)
+17 |  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
+18 |  * Pure mirror reducer: maps (state, action) → { state, commands }.
+19 |  * Total over all (FeedViewState, FeedAction) pairs.
+20 |  */
+21 | export function feedReducer(state: FeedViewState, action: FeedAction): FeedReducerResult {
+22 |   throw new Error('not implemented');
+                                        ^
+error: not implemented
+      at feedReducer (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts:22:36)
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.test.ts:498:20)
+(fail) REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allowed > FeedRowClicked in loading state does NOT emit select-past-note (EC-FEED-015)
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+[perf] applyFilterOrSearch median: 0.684ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.002ms (advisory bound: 5ms)
+
+ 1385 pass
+ 78 fail
+ 22566 expect() calls
+Ran 1463 tests across 130 files. [12.91s]
