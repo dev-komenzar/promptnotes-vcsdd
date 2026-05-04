@@ -1,0 +1,18 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+--- target-feature-tests output ---
+bun test v1.3.11 (af24e281)
+
+ 126 pass
+ 0 fail
+ 151 expect() calls
+Ran 126 tests across 6 files. [142.00ms]
+
+--- regression-baseline output ---
+bun test v1.3.11 (af24e281)
+
+ 220 pass
+ 0 fail
+ 275 expect() calls
+Ran 220 tests across 14 files. [309.00ms]
