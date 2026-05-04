@@ -60,18 +60,27 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
     }
 
     case 'DeleteButtonClicked': {
+      const nextState: FeedViewState = {
+        ...state,
+        activeDeleteModalNoteId: action.noteId,
+      };
       const commands: FeedCommand[] = [
         { kind: 'request-note-deletion', payload: { noteId: action.noteId, issuedAt: '' } },
         { kind: 'open-delete-modal', payload: { noteId: action.noteId } },
       ];
-      return { state, commands };
+      return { state: nextState, commands };
     }
 
     case 'DeleteConfirmed': {
+      const nextState: FeedViewState = {
+        ...state,
+        activeDeleteModalNoteId: null,
+      };
       const commands: FeedCommand[] = [
         { kind: 'confirm-note-deletion', payload: { noteId: action.noteId, issuedAt: '' } },
+        { kind: 'close-delete-modal' },
       ];
-      return { state, commands };
+      return { state: nextState, commands };
     }
 
     case 'DeleteCancelled': {

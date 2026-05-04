@@ -479,6 +479,50 @@ describe('REQ-FEED-013: feedReducer removes deleted note from visibleNoteIds', (
   });
 });
 
+// ── REQ-FEED-011: DeleteButtonClicked sets activeDeleteModalNoteId (UI mount fix) ─
+
+describe('REQ-FEED-011: DeleteButtonClicked sets activeDeleteModalNoteId in next state', () => {
+  test('DeleteButtonClicked sets activeDeleteModalNoteId to action.noteId (UI mount fix)', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: null });
+    const action: FeedAction = { kind: 'DeleteButtonClicked', noteId: 'note-to-delete' };
+    const result = feedReducer(state, action);
+
+    expect(result.state.activeDeleteModalNoteId).toBe('note-to-delete');
+  });
+
+  test('DeleteButtonClicked emits request-note-deletion + open-delete-modal commands', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: null });
+    const action: FeedAction = { kind: 'DeleteButtonClicked', noteId: 'note-x' };
+    const result = feedReducer(state, action);
+
+    expect(result.commands).toHaveLength(2);
+    expect(result.commands[0].kind).toBe('request-note-deletion');
+    expect(result.commands[1].kind).toBe('open-delete-modal');
+  });
+});
+
+// ── REQ-FEED-012: DeleteConfirmed closes the modal ────────────────────────────
+
+describe('REQ-FEED-012: DeleteConfirmed sets activeDeleteModalNoteId to null', () => {
+  test('DeleteConfirmed sets activeDeleteModalNoteId to null (UI mount fix)', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: 'note-x' });
+    const action: FeedAction = { kind: 'DeleteConfirmed', noteId: 'note-x' };
+    const result = feedReducer(state, action);
+
+    expect(result.state.activeDeleteModalNoteId).toBeNull();
+  });
+
+  test('DeleteConfirmed emits confirm-note-deletion + close-delete-modal commands', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: 'note-x' });
+    const action: FeedAction = { kind: 'DeleteConfirmed', noteId: 'note-x' };
+    const result = feedReducer(state, action);
+
+    expect(result.commands).toHaveLength(2);
+    expect(result.commands[0].kind).toBe('confirm-note-deletion');
+    expect(result.commands[1].kind).toBe('close-delete-modal');
+  });
+});
+
 // ── REQ-FEED-012: DeleteCancelled emits cancel-note-deletion + close-delete-modal ─
 
 describe('REQ-FEED-012: DeleteCancelled emits both cancel-note-deletion and close-delete-modal', () => {
