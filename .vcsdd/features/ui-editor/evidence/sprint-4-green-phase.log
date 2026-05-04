@@ -1,0 +1,8 @@
+Sprint-4 Green phase: addressed FIND-014/015/016/017.
+- types.ts: RetryClicked.payload now { issuedAt: string }
+- editorReducer.ts: NewNoteClicked deferred via pendingNewNoteIntent; DomainSnapshotReceived emits cancel-idle-timer when isDirty=false; RetryClicked copies issuedAt
+- EditorPane.svelte: handleRetryClick passes ISO-8601 issuedAt; handleInput broadens guard to editing|save-failed; subscribe callback dispatches DomainSnapshotReceived (no direct viewState mutation)
+- editor-panel.dom.vitest.ts: blur-immediate / RequestNewNote-deferred / save-failed-drops assertions
+
+target feature tests: pass (vitest 127/127 + bun:test 133/133 in src/lib/editor)
+regression baseline: pass (app-shell 220 + 4 + vite build unchanged)

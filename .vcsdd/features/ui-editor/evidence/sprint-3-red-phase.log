@@ -1,0 +1,16 @@
+Sprint-3 = remediation sprint for Phase-3 iter-1 findings.
+Red phase ran across 5 new test files added per FIND-004:
+- editor-panel.dom.vitest.ts (PROP-EDIT-020a/020b/034)
+- save-failure-banner.dom.vitest.ts (PROP-EDIT-015/038)
+- editor-session-state.dom.vitest.ts (PROP-EDIT-037/039)
+- editor-validation.dom.vitest.ts (PROP-EDIT-032)
+- editor-accessibility.dom.vitest.ts (PROP-EDIT-033)
+Plus strengthened EditorPane.idle-save (FIND-013) and new-note (FIND-011) tests.
+
+Initial state: 41 of these new tests failed (asserting spec behavior the
+implementation did not yet satisfy). Old behavior of pre-existing 85 vitest
+DOM tests + 126 Sprint-1 unit tests + 220 app-shell unit + 4 app-shell DOM
+all remained green during Red phase (no regression).
+
+target feature tests: red (41 new tests fail asserting spec behavior the implementation did not yet satisfy — Red gate met)
+regression baseline: pass (Sprint-1 unit + app-shell unit/DOM all unchanged during Red phase)

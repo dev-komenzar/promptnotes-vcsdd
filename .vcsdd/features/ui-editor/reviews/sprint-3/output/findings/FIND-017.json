@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-017",
+  "dimension": "verification_readiness",
+  "category": "invariant_violation",
+  "severity": "high",
+  "description": "Inbound state-channel callback bypasses the reducer and mutates viewState directly; §3.4a normative invariant requires the reducer to be the only producer of new EditorViewState.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPane.svelte",
+    "lineRange": "138-153"
+  },
+  "routeToPhase": "2b"
+}

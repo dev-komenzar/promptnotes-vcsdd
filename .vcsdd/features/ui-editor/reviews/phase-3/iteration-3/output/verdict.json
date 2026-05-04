@@ -1,0 +1,145 @@
+{
+  "sprintNumber": 4,
+  "feature": "ui-editor",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-04T09:30:00Z",
+  "iteration": 3,
+  "reviewContext": {
+    "reviewType": "phase-3",
+    "scope": "phase-3 iteration-3 — verifies remediation of FIND-014, FIND-015, FIND-016, FIND-017"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/types.ts",
+          "description": "lines 87-92: pendingNewNoteIntent field added to EditorViewState; lines 165-170: RetryClicked action carries payload.issuedAt"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/editorReducer.ts",
+          "description": "lines 265-293: NewNoteClicked records pendingNewNoteIntent in saving (FIND-014); lines 118-166: DomainSnapshotReceived drains intent on saving→editing(clean) and drops on saving→save-failed (REQ-EDIT-025 acceptance criteria 2 & 3)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/EditorPane.svelte",
+          "description": "lines 134-139: subscribe callback dispatches DomainSnapshotReceived through the reducer (REQ-EDIT-014 acceptance §3.4a invariant satisfied)"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/dom/editor-panel.dom.vitest.ts",
+          "description": "lines 114-167: PROP-EDIT-020a — TriggerBlurSave called immediately, RequestNewNote NOT called until save-success snapshot arrives; lines 169-212: save-failed drops intent; lines 214-266: Ctrl+N variant"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts",
+          "description": "lines 560-610: FIND-014 reducer-level tests — pendingNewNoteIntent recorded, drained on save-success, dropped on save-failed"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/EditorPane.svelte",
+          "description": "lines 184-201: handleInput now schedules idle-save when status is 'editing' OR 'save-failed' (FIND-016 / EC-EDIT-003 / PROP-EDIT-037)"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/dom/editor-session-state.dom.vitest.ts",
+          "description": "lines 272-309: PROP-EDIT-037 test now asserts timer.scheduleIdleSave is called when typing in save-failed state (line 306)"
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/editorReducer.ts",
+          "description": "lines 193-215: RetryClicked branch reads action.payload.issuedAt and emits retry-save with the ISO-8601 string (FIND-015)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/EditorPane.svelte",
+          "description": "lines 251-253: handleRetryClick constructs new Date(clock.now()).toISOString() and passes it via RetryClicked.payload.issuedAt"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/dom/save-failure-banner.dom.vitest.ts",
+          "description": "lines 245-249: payload.issuedAt asserted to be non-empty AND match ISO-8601 regex /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$/"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts",
+          "description": "lines 427-438: FIND-015 test asserts retry-save payload.issuedAt matches the ISO-8601 string passed via the action"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/EditorPane.svelte",
+          "description": "lines 122-128: dispatch() is the sole producer of new viewState; lines 134-139: subscribe callback no longer mutates viewState directly nor calls timer.cancel directly — both go through dispatch → reducer → executeCommand"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/editorReducer.ts",
+          "description": "lines 168-181: NoteFileSaved branch retained as live producer of cancel-idle-timer for any future direct domain-event path; not dead code at the type level (executeCommand has corresponding case)"
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/editorReducer.ts",
+          "description": "lines 118-166: DomainSnapshotReceived branch emits cancel-idle-timer when snapshot.isDirty=false (PROP-EDIT-010 / FIND-017); reducer remains the only state producer"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts",
+          "description": "lines 252-269: FIND-017 unit tests — cancel-idle-timer emitted iff snapshot.isDirty=false"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts",
+          "description": "lines 402-425: property tests — DomainSnapshotReceived emits only allowed commands; cancel-idle-timer iff snapshot.isDirty=false (≥100 runs)"
+        },
+        {
+          "type": "test-output",
+          "location": "promptnotes/src/lib/editor/__tests__/dom/editor-session-state.dom.vitest.ts",
+          "description": "lines 203-241: FIND-007/FIND-017 test — saving→editing(clean) inbound snapshot routes through reducer and reaches timer.cancel via executeCommand"
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-001", "CRIT-002", "CRIT-003", "CRIT-004"],
+    "duplicateFindings": [],
+    "iter2RegressionStatus": {
+      "FIND-014": "RESOLVED",
+      "FIND-015": "RESOLVED",
+      "FIND-016": "RESOLVED",
+      "FIND-017": "RESOLVED"
+    }
+  }
+}

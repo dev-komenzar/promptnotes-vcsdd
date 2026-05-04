@@ -1,0 +1,4 @@
+Sprint-4 = Phase-3 iter-2 remediation sprint.
+Red phase: 4 new test assertions added/changed for FIND-014/015/016/017.
+target feature tests: red (4 new assertions fail asserting the spec — Red gate met)
+regression baseline: pass (Sprint-1 pure 126/126, app-shell unit 220/220, app-shell DOM 4/4 unchanged)

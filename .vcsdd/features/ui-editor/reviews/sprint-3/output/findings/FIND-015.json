@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-015",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "high",
+  "description": "retry-save command emits issuedAt empty string; FIND-009 ISO-8601 remediation missed this branch; behavioral-spec.md §10/§11 require ISO-8601 at the wire boundary.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/editorReducer.ts",
+    "lineRange": "170-180"
+  },
+  "routeToPhase": "2b"
+}
