@@ -47,6 +47,7 @@ function makeViewState(overrides: Partial<FeedViewState> = {}): FeedViewState {
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
+    noteMetadata: {},
     ...overrides,
   };
 }
@@ -330,6 +331,93 @@ describe('FeedRow DOM structure requirements', () => {
     const ariaLabel = deleteBtn!.getAttribute('aria-label');
     expect(ariaLabel).not.toBeNull();
     expect(ariaLabel!.length).toBeGreaterThan(0);
+
+    unmount(app);
+  });
+
+  /**
+   * FIND-007 fix: disabled delete button must convey reason via aria-label/title.
+   * REQ-FEED-010 EC: 'ツールチップ: 無効化された削除ボタンには「編集を終了してから削除してください」'
+   */
+  test('FIND-007: disabled delete button shows explanation in aria-label and title (REQ-FEED-010 EC)', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'editing', editingNoteId: 'note-001' });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const deleteBtn = target.querySelector('[data-testid="delete-button"]');
+    expect(deleteBtn).not.toBeNull();
+    expect(deleteBtn!.hasAttribute('disabled')).toBe(true);
+
+    const ariaLabel = deleteBtn!.getAttribute('aria-label');
+    expect(ariaLabel).toBe('編集を終了してから削除してください');
+
+    const title = deleteBtn!.getAttribute('title');
+    expect(title).toBe('編集を終了してから削除してください');
+
+    unmount(app);
+  });
+
+  test('enabled delete button has standard aria-label (not the disabled explanation)', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'idle', editingNoteId: null });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const deleteBtn = target.querySelector('[data-testid="delete-button"]');
+    expect(deleteBtn).not.toBeNull();
+    expect(deleteBtn!.hasAttribute('disabled')).toBe(false);
+    expect(deleteBtn!.getAttribute('aria-label')).toBe('削除');
+
+    unmount(app);
+  });
+});
+
+// ── FIND-006: showPendingSwitch editingStatus guard ────────────────────────────
+
+describe('FIND-006 / REQ-FEED-009: showPendingSwitch requires editingStatus guard (defense-in-depth)', () => {
+  test('NO pending-switch-indicator when editingStatus=editing even if pendingNextNoteId===noteId', () => {
+    const adapter = makeMockAdapter();
+    // Malformed state: pendingNextNoteId set but editingStatus is 'editing' (not switching/save-failed)
+    const viewState = makeViewState({
+      editingStatus: 'editing',
+      pendingNextNoteId: 'note-001',
+    });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const indicator = target.querySelector('[data-testid="pending-switch-indicator"]');
+    expect(indicator).toBeNull();
+
+    unmount(app);
+  });
+
+  test('NO pending-switch-indicator when editingStatus=idle even if pendingNextNoteId===noteId', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({
+      editingStatus: 'idle',
+      pendingNextNoteId: 'note-001',
+    });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const indicator = target.querySelector('[data-testid="pending-switch-indicator"]');
+    expect(indicator).toBeNull();
+
+    unmount(app);
+  });
+
+  test('pending-switch-indicator shown when editingStatus=switching AND pendingNextNoteId===noteId', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({
+      editingStatus: 'switching',
+      pendingNextNoteId: 'note-001',
+    });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const indicator = target.querySelector('[data-testid="pending-switch-indicator"]');
+    expect(indicator).not.toBeNull();
 
     unmount(app);
   });

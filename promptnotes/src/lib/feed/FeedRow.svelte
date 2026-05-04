@@ -3,13 +3,15 @@
    * FeedRow.svelte — Single feed list row component.
    *
    * Props:
-   *   noteId     — The note's unique ID
-   *   body       — The note body text
-   *   createdAt  — Epoch ms timestamp for creation
-   *   updatedAt  — Epoch ms timestamp for last update
-   *   tags       — Array of tag strings
-   *   viewState  — FeedViewState (shared across all rows)
-   *   adapter    — TauriFeedAdapter for IPC dispatch
+   *   noteId       — The note's unique ID
+   *   body         — The note body text
+   *   createdAt    — Epoch ms timestamp for creation
+   *   updatedAt    — Epoch ms timestamp for last update
+   *   tags         — Array of tag strings
+   *   viewState    — FeedViewState (shared across all rows)
+   *   adapter      — TauriFeedAdapter for IPC dispatch (fallback when no callbacks)
+   *   onRowClick   — Optional callback: row clicked with noteId (FIND-008 command bus)
+   *   onDeleteClick — Optional callback: delete button clicked with noteId (FIND-008)
    */
 
   import type { TauriFeedAdapter } from './tauriFeedAdapter.js';
@@ -30,10 +32,12 @@
     tags: readonly string[];
     viewState: FeedViewState;
     adapter: TauriFeedAdapter;
+    onRowClick?: (noteId: string) => void;
+    onDeleteClick?: (noteId: string) => void;
     onDeleteRequest?: (noteId: string) => void;
   }
 
-  const { noteId, body, createdAt, updatedAt, tags, viewState, adapter }: Props = $props();
+  const { noteId, body, createdAt, updatedAt, tags, viewState, adapter, onRowClick, onDeleteClick }: Props = $props();
 
   const locale = 'ja-JP';
 
@@ -41,20 +45,47 @@
   const updatedAtLabel = $derived(timestampLabel(updatedAt, locale));
   const previewLines = $derived(bodyPreviewLines(body, 2));
   const deleteDisabled = $derived(isDeleteButtonDisabled(noteId, viewState.editingStatus, viewState.editingNoteId));
-  const showPendingSwitch = $derived(viewState.pendingNextNoteId === noteId);
+
+  /**
+   * FIND-006 fix: showPendingSwitch requires BOTH pendingNextNoteId match AND
+   * editingStatus ∈ {'switching', 'save-failed'} (defense-in-depth guard per REQ-FEED-009).
+   */
+  const showPendingSwitch = $derived(
+    viewState.pendingNextNoteId === noteId &&
+    (viewState.editingStatus === 'switching' || viewState.editingStatus === 'save-failed')
+  );
 
   const rowDisabled = $derived(
     isFeedRowClickBlocked(viewState.editingStatus, viewState.loadingStatus)
   );
 
+  /**
+   * FIND-007 fix: dynamic aria-label and title for delete button.
+   * When disabled (editing this note), inform the user why via tooltip and screen-reader label.
+   */
+  const deleteAriaLabel = $derived(
+    deleteDisabled ? '編集を終了してから削除してください' : '削除'
+  );
+  const deleteTitle = $derived(
+    deleteDisabled ? '編集を終了してから削除してください' : undefined
+  );
+
   function handleRowClick(): void {
     if (rowDisabled) return;
-    adapter.dispatchSelectPastNote(noteId, nowIso());
+    if (onRowClick) {
+      onRowClick(noteId);
+    } else {
+      adapter.dispatchSelectPastNote(noteId, nowIso());
+    }
   }
 
   function handleDeleteClick(): void {
     if (deleteDisabled) return;
-    adapter.dispatchRequestNoteDeletion(noteId, nowIso());
+    if (onDeleteClick) {
+      onDeleteClick(noteId);
+    } else {
+      adapter.dispatchRequestNoteDeletion(noteId, nowIso());
+    }
   }
 </script>
 
@@ -113,7 +144,8 @@
 
     <button
       data-testid="delete-button"
-      aria-label="削除"
+      aria-label={deleteAriaLabel}
+      title={deleteTitle}
       disabled={deleteDisabled}
       aria-disabled={deleteDisabled ? 'true' : 'false'}
       onclick={handleDeleteClick}

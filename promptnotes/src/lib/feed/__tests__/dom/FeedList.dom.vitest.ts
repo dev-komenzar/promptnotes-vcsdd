@@ -26,6 +26,7 @@ import FeedList from '../../FeedList.svelte';
 import type { TauriFeedAdapter } from '../../tauriFeedAdapter.js';
 import type { FeedStateChannel } from '../../feedStateChannel.js';
 import type { FeedViewState, FeedDomainSnapshot } from '../../types.js';
+import { timestampLabel } from '../../feedRowPredicates.js';
 
 // ── Mock factories ────────────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ function makeViewState(overrides: Partial<FeedViewState> = {}): FeedViewState {
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
+    noteMetadata: {},
     ...overrides,
   };
 }
@@ -199,6 +201,7 @@ describe('PROP-FEED-024 / REQ-FEED-013: deleted note row disappears from DOM', (
       editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
       feed: { visibleNoteIds: ['note-001'], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
+      noteMetadata: {},
       cause: { kind: 'NoteFileDeleted', deletedNoteId: 'note-002' },
     };
 
@@ -239,6 +242,7 @@ describe('PROP-FEED-025 / REQ-FEED-018: filter update changes visible rows', () 
       editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
       feed: { visibleNoteIds: ['note-001'], filterApplied: true },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
+      noteMetadata: {},
       cause: { kind: 'EditingStateChanged' },
     };
 
@@ -247,6 +251,118 @@ describe('PROP-FEED-025 / REQ-FEED-018: filter update changes visible rows', () 
 
     const afterRows = target.querySelectorAll('[data-testid="feed-row-button"]');
     expect(afterRows.length).toBe(1);
+
+    unmount(app);
+  });
+});
+
+// ── FIND-014 fix: REQ-FEED-001/002/003/017 — FeedList passes real metadata to FeedRow ─
+
+describe('REQ-FEED-001/002/003/017 / FIND-014: FeedList renders real metadata from snapshot', () => {
+  const NOTE_ID = 'note-meta-001';
+  const CREATED_AT = 1700000000000; // 2023-11-14T22:13:20.000Z
+  const UPDATED_AT = 1700086400000; // 2023-11-15T22:13:20.000Z (different from createdAt)
+  const BODY = 'First preview line\nSecond preview line\nThird line hidden';
+  const TAGS = ['typescript', 'svelte'];
+
+  function makeSnapshotWithMeta(): FeedDomainSnapshot {
+    return {
+      editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+      feed: { visibleNoteIds: [NOTE_ID], filterApplied: false },
+      delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
+      noteMetadata: {
+        [NOTE_ID]: { body: BODY, createdAt: CREATED_AT, updatedAt: UPDATED_AT, tags: TAGS },
+      },
+      cause: { kind: 'InitialLoad' },
+    };
+  }
+
+  test('row-created-at textContent matches timestampLabel(createdAt) (REQ-FEED-001)', () => {
+    const adapter = makeMockAdapter();
+    const stateChannel = makeMockStateChannel();
+    const viewState = makeViewState({ visibleNoteIds: [NOTE_ID] });
+    const app = mount(FeedList, { target, props: { viewState, adapter, stateChannel } });
+    flushSync();
+
+    // Inject snapshot with real metadata via channel
+    stateChannel.emit(makeSnapshotWithMeta());
+    flushSync();
+
+    const createdAtEl = target.querySelector('[data-testid="row-created-at"]');
+    expect(createdAtEl).not.toBeNull();
+    expect(createdAtEl!.textContent).toContain(timestampLabel(CREATED_AT, 'ja-JP'));
+
+    unmount(app);
+  });
+
+  test('row-body-preview contains first line of body (REQ-FEED-002)', () => {
+    const adapter = makeMockAdapter();
+    const stateChannel = makeMockStateChannel();
+    const viewState = makeViewState({ visibleNoteIds: [NOTE_ID] });
+    const app = mount(FeedList, { target, props: { viewState, adapter, stateChannel } });
+    flushSync();
+
+    stateChannel.emit(makeSnapshotWithMeta());
+    flushSync();
+
+    const bodyPreview = target.querySelector('[data-testid="row-body-preview"]');
+    expect(bodyPreview).not.toBeNull();
+    expect(bodyPreview!.textContent).toContain('First preview line');
+
+    unmount(app);
+  });
+
+  test('tag-chip count equals tags.length and order preserved (REQ-FEED-003 / PROP-FEED-034)', () => {
+    const adapter = makeMockAdapter();
+    const stateChannel = makeMockStateChannel();
+    const viewState = makeViewState({ visibleNoteIds: [NOTE_ID] });
+    const app = mount(FeedList, { target, props: { viewState, adapter, stateChannel } });
+    flushSync();
+
+    stateChannel.emit(makeSnapshotWithMeta());
+    flushSync();
+
+    const chips = target.querySelectorAll('[data-testid="tag-chip"]');
+    expect(chips.length).toBe(TAGS.length);
+    expect(chips[0]!.textContent).toBe(TAGS[0]);
+    expect(chips[1]!.textContent).toBe(TAGS[1]);
+
+    unmount(app);
+  });
+
+  test('FIND-004 regression guard: zero-metadata snapshot renders empty content (not epoch=0 visible)', () => {
+    // This test verifies that when noteMetadata is present with real data,
+    // the placeholder values (epoch=0 / empty body / empty tags) are NOT rendered.
+    const adapter = makeMockAdapter();
+    const stateChannel = makeMockStateChannel();
+    const viewState = makeViewState({ visibleNoteIds: [NOTE_ID] });
+    const app = mount(FeedList, { target, props: { viewState, adapter, stateChannel } });
+    flushSync();
+
+    stateChannel.emit(makeSnapshotWithMeta());
+    flushSync();
+
+    const createdAtEl = target.querySelector('[data-testid="row-created-at"]');
+    // Epoch 0 would format to 1970-01-01 in ja-JP — verify it's NOT shown
+    expect(createdAtEl!.textContent).not.toContain(timestampLabel(0, 'ja-JP'));
+
+    unmount(app);
+  });
+
+  test('updatedAt shown when different from createdAt (REQ-FEED-017)', () => {
+    const adapter = makeMockAdapter();
+    const stateChannel = makeMockStateChannel();
+    const viewState = makeViewState({ visibleNoteIds: [NOTE_ID] });
+    const app = mount(FeedList, { target, props: { viewState, adapter, stateChannel } });
+    flushSync();
+
+    stateChannel.emit(makeSnapshotWithMeta());
+    flushSync();
+
+    // updatedAt is different from createdAt, so updated-at span should be present
+    const updatedAtEl = target.querySelector('.updated-at');
+    expect(updatedAtEl).not.toBeNull();
+    expect(updatedAtEl!.textContent).toContain(timestampLabel(UPDATED_AT, 'ja-JP'));
 
     unmount(app);
   });

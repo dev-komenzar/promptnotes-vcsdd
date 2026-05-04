@@ -3,9 +3,10 @@
    * DeleteConfirmModal.svelte — Delete confirmation modal.
    *
    * Props:
-   *   noteId   — The note ID to confirm deletion for
-   *   adapter  — TauriFeedAdapter for IPC dispatch
-   *   onClose  — Optional close callback
+   *   noteId    — The note ID to confirm deletion for
+   *   adapter   — TauriFeedAdapter for IPC dispatch
+   *   onConfirm — Optional callback when user confirms (FIND-008 command bus)
+   *   onClose   — Optional close callback
    */
 
   import type { TauriFeedAdapter } from './tauriFeedAdapter.js';
@@ -15,23 +16,38 @@
   interface Props {
     noteId: string;
     adapter: TauriFeedAdapter;
+    onConfirm?: (noteId: string) => void;
     onClose?: () => void;
   }
 
-  const { noteId, adapter, onClose }: Props = $props();
+  const { noteId, adapter, onConfirm, onClose }: Props = $props();
 
   let visible = $state(true);
+  /**
+   * FIND-009 fix: in-flight guard to prevent double-dispatch on rapid clicks.
+   * Set true after first confirm dispatch; reset only when modal unmounts.
+   */
+  let isConfirmPending = $state(false);
 
   const modalTitleId = 'delete-confirm-modal-title';
 
   function handleCancel(): void {
-    adapter.dispatchCancelNoteDeletion(noteId, nowIso());
+    if (onClose) {
+      onClose();
+    } else {
+      adapter.dispatchCancelNoteDeletion(noteId, nowIso());
+    }
     visible = false;
-    onClose?.();
   }
 
   function handleConfirm(): void {
-    adapter.dispatchConfirmNoteDeletion(noteId, nowIso());
+    if (isConfirmPending) return;
+    isConfirmPending = true;
+    if (onConfirm) {
+      onConfirm(noteId);
+    } else {
+      adapter.dispatchConfirmNoteDeletion(noteId, nowIso());
+    }
   }
 
   function handleBackdropClick(event: MouseEvent): void {
@@ -71,8 +87,9 @@
     >
       <h2 id={modalTitleId} class="modal-title">削除の確認</h2>
 
+      <!-- FIND-001 fix: spec-mandated wording '後で復元できます' -->
       <p class="modal-body">
-        このノートを OS のゴミ箱に移動します。この操作は取り消せません。
+        このノートを OS のゴミ箱に送ります。後で復元できます。
       </p>
 
       <div class="modal-actions">
@@ -83,12 +100,14 @@
         >
           キャンセル
         </button>
+        <!-- FIND-002 fix: spec-mandated label '削除（OS ゴミ箱に送る）' -->
         <button
           data-testid="confirm-delete-button"
           onclick={handleConfirm}
+          disabled={isConfirmPending}
           class="modal-button-confirm"
         >
-          削除する
+          削除（OS ゴミ箱に送る）
         </button>
       </div>
     </div>
@@ -155,6 +174,11 @@
     font-weight: 600;
     color: #ffffff;
     cursor: pointer;
+  }
+
+  .modal-button-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .modal-button-cancel:focus-visible,

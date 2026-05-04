@@ -44,6 +44,24 @@ export type FeedViewState = {
   readonly loadingStatus: 'loading' | 'ready';
   readonly activeDeleteModalNoteId: string | null;
   readonly lastDeletionError: { reason: NoteDeletionFailureReason; detail?: string } | null;
+  /** Per-noteId row metadata. Mirrors FeedDomainSnapshot.noteMetadata (FIND-004). */
+  readonly noteMetadata: Readonly<Record<string, NoteRowMetadata>>;
+};
+
+// ── NoteRowMetadata ───────────────────────────────────────────────────────────
+
+/**
+ * Per-note metadata required to render a FeedRow.
+ * Carried by FeedDomainSnapshot.noteMetadata (keyed by noteId).
+ * Resolves FIND-004: FeedList must pass real values to FeedRow, not placeholders.
+ *
+ * Source: verification-architecture.md §9b FeedDomainSnapshot (FIND-004 extension)
+ */
+export type NoteRowMetadata = {
+  readonly body: string;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly tags: readonly string[];
 };
 
 // ── FeedDomainSnapshot ────────────────────────────────────────────────────────
@@ -52,6 +70,9 @@ export type FeedViewState = {
  * DomainSnapshotReceived payload type. Synthesizes EditingSessionState
  * (Capture Context) and Feed projection (Curate Context). The `cause`
  * discriminator identifies upstream domain event kind.
+ *
+ * noteMetadata carries per-noteId row data (body, createdAt, updatedAt, tags)
+ * so FeedList can pass real values to FeedRow (FIND-004 fix).
  *
  * Source: verification-architecture.md §9b FeedDomainSnapshot
  */
@@ -69,6 +90,8 @@ export type FeedDomainSnapshot = {
     readonly activeDeleteModalNoteId: string | null;
     readonly lastDeletionError: { reason: NoteDeletionFailureReason; detail?: string } | null;
   };
+  /** Per-noteId row metadata for rendering. Key is noteId. */
+  readonly noteMetadata: Readonly<Record<string, NoteRowMetadata>>;
   readonly cause:
     | { readonly kind: 'NoteFileSaved';      readonly savedNoteId: string }
     | { readonly kind: 'NoteFileDeleted';    readonly deletedNoteId: string }

@@ -62,6 +62,57 @@ describe('PROP-FEED-016 / REQ-FEED-012: modal content and structure', () => {
     unmount(app);
   });
 
+  /**
+   * FIND-001 fix: spec mandates '後で復元できます' (can be restored later).
+   * Prior impl had '取り消せません' (cannot be undone) — opposite user contract.
+   */
+  test('FIND-001: modal body contains "後で復元できます" (REQ-FEED-012 spec wording)', () => {
+    const adapter = makeMockAdapter();
+    const app = mount(DeleteConfirmModal, { target, props: { noteId: 'note-001', adapter } });
+    flushSync();
+
+    expect(target.textContent).toContain('後で復元できます');
+    expect(target.textContent).not.toContain('取り消せません');
+
+    unmount(app);
+  });
+
+  /**
+   * FIND-002 fix: spec mandates '削除（OS ゴミ箱に送る）' as confirm button label.
+   * Prior impl had '削除する' — user could not distinguish from hard-delete.
+   */
+  test('FIND-002: confirm button label is "削除（OS ゴミ箱に送る）" (REQ-FEED-012)', () => {
+    const adapter = makeMockAdapter();
+    const app = mount(DeleteConfirmModal, { target, props: { noteId: 'note-001', adapter } });
+    flushSync();
+
+    const confirmBtn = target.querySelector('[data-testid="confirm-delete-button"]');
+    expect(confirmBtn).not.toBeNull();
+    expect(confirmBtn!.textContent?.trim()).toBe('削除（OS ゴミ箱に送る）');
+
+    unmount(app);
+  });
+
+  /**
+   * FIND-009 fix: in-flight guard prevents double-dispatch on rapid clicks.
+   */
+  test('FIND-009: rapid double-click on confirm does not dispatch twice', () => {
+    const adapter = makeMockAdapter();
+    const app = mount(DeleteConfirmModal, { target, props: { noteId: 'note-001', adapter } });
+    flushSync();
+
+    const confirmBtn = target.querySelector('[data-testid="confirm-delete-button"]') as HTMLButtonElement | null;
+    expect(confirmBtn).not.toBeNull();
+    confirmBtn!.click();
+    confirmBtn!.click();
+    flushSync();
+
+    // Should only dispatch once despite two rapid clicks
+    expect(adapter.dispatchConfirmNoteDeletion).toHaveBeenCalledTimes(1);
+
+    unmount(app);
+  });
+
   test('data-testid="confirm-delete-button" is present', () => {
     const adapter = makeMockAdapter();
     const app = mount(DeleteConfirmModal, { target, props: { noteId: 'note-001', adapter } });

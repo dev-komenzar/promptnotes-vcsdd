@@ -349,7 +349,9 @@ type FeedViewState = {
   readonly visibleNoteIds: readonly string[];
   readonly loadingStatus: 'loading' | 'ready';
   readonly activeDeleteModalNoteId: string | null;
-  readonly lastDeletionError: NoteDeletionFailureReason | null;
+  readonly lastDeletionError: { reason: NoteDeletionFailureReason; detail?: string } | null;
+  /** Per-noteId row metadata mirrored from FeedDomainSnapshot.noteMetadata (FIND-004). */
+  readonly noteMetadata: Readonly<Record<string, NoteRowMetadata>>;
 };
 ```
 
@@ -358,6 +360,14 @@ type FeedViewState = {
 `DomainSnapshotReceived` アクションのペイロード型。`EditingSessionState` (Capture Context) と `Feed` projection (Curate Context) の両方のフィールドを合成し、`cause` discriminator でアップストリームイベントの種別を識別する。Phase 2 実装者はこの型をそのまま `feedReducer.ts` に書ける完成度とする。fast-check は `FeedDomainSnapshot` の arbitrary を構成してプロパティテストを駆動する。
 
 ```typescript
+/** Per-note metadata required to render a FeedRow. (FIND-004 extension) */
+type NoteRowMetadata = {
+  readonly body: string;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+  readonly tags: readonly string[];
+};
+
 type FeedDomainSnapshot = {
   readonly editing: {
     readonly status: 'idle' | 'editing' | 'saving' | 'switching' | 'save-failed';
@@ -372,6 +382,12 @@ type FeedDomainSnapshot = {
     readonly activeDeleteModalNoteId: string | null;
     readonly lastDeletionError: { reason: 'permission' | 'lock' | 'unknown'; detail?: string } | null;
   };
+  /**
+   * Per-noteId row metadata for rendering (FIND-004 fix).
+   * Key is noteId. FeedList reads this to pass real body/createdAt/updatedAt/tags to FeedRow.
+   * Eliminates placeholder zeros and empty strings that caused REQ-FEED-001/002/003/017 violations.
+   */
+  readonly noteMetadata: Readonly<Record<string, NoteRowMetadata>>;
   readonly cause:
     | { readonly kind: 'NoteFileSaved';      readonly savedNoteId: string }
     | { readonly kind: 'NoteFileDeleted';    readonly deletedNoteId: string }

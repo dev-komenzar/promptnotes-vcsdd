@@ -58,6 +58,16 @@ const arbLastDeletionError: fc.Arbitrary<{ reason: NoteDeletionFailureReason; de
 
 const arbVisibleNoteIds: fc.Arbitrary<readonly string[]> = fc.array(arbNoteId, { minLength: 0, maxLength: 10 });
 
+const arbNoteRowMetadata = fc.record({
+  body: fc.string({ maxLength: 200 }),
+  createdAt: fc.integer({ min: 0 }),
+  updatedAt: fc.integer({ min: 0 }),
+  tags: fc.array(fc.string({ minLength: 1, maxLength: 20 }), { maxLength: 5 }),
+});
+
+const arbNoteMetadata: fc.Arbitrary<Readonly<Record<string, import('$lib/feed/types').NoteRowMetadata>>> =
+  fc.dictionary(arbNoteId, arbNoteRowMetadata);
+
 const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   editingStatus: arbEditingStatus,
   editingNoteId: arbNoteIdOrNull,
@@ -66,6 +76,7 @@ const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   loadingStatus: arbLoadingStatus,
   activeDeleteModalNoteId: arbNoteIdOrNull,
   lastDeletionError: arbLastDeletionError,
+  noteMetadata: arbNoteMetadata,
 });
 
 const arbCause: fc.Arbitrary<FeedDomainSnapshot['cause']> = fc.oneof(
@@ -90,6 +101,7 @@ const arbFeedDomainSnapshot: fc.Arbitrary<FeedDomainSnapshot> = fc.record({
     activeDeleteModalNoteId: arbNoteIdOrNull,
     lastDeletionError: arbLastDeletionError,
   }),
+  noteMetadata: arbNoteMetadata,
   cause: arbCause,
 });
 
@@ -117,6 +129,7 @@ function makeInitialState(overrides: Partial<FeedViewState> = {}): FeedViewState
     loadingStatus: 'loading',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
+    noteMetadata: {},
     ...overrides,
   };
 }
@@ -136,6 +149,7 @@ function makeSnapshot(overrides: Partial<FeedDomainSnapshot> = {}): FeedDomainSn
       activeDeleteModalNoteId: null,
       lastDeletionError: null,
     },
+    noteMetadata: {},
     cause: { kind: 'EditingStateChanged' },
     ...overrides,
   };

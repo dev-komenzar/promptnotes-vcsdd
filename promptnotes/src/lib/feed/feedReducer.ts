@@ -38,6 +38,7 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
           snapshot.cause.kind === 'NoteFileDeleted'
             ? null
             : snapshot.delete.lastDeletionError,
+        noteMetadata: snapshot.noteMetadata,
       };
 
       if (REFRESH_TRIGGER_CAUSES.has(snapshot.cause.kind)) {
