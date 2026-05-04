@@ -23,8 +23,11 @@
   import DeletionFailureBanner from './DeletionFailureBanner.svelte';
   import { onDestroy, untrack } from 'svelte';
 
+  /** Extended prop type that allows filterApplied to be passed alongside viewState. */
+  type FeedListViewState = FeedViewState & { filterApplied?: boolean };
+
   interface Props {
-    viewState: FeedViewState & { filterApplied?: boolean };
+    viewState: FeedListViewState;
     adapter: TauriFeedAdapter;
     stateChannel: FeedStateChannel;
   }
@@ -33,14 +36,14 @@
 
   const _initial = untrack(() => initialViewState);
   let currentViewState = $state<FeedViewState>({ ..._initial });
-  let _filterApplied = $state(_initial.filterApplied ?? false);
+  let filterApplied = $state(_initial.filterApplied ?? false);
 
   const _channel = untrack(() => stateChannel);
 
   const unsubscribe = _channel.subscribe((snapshot) => {
     const result = feedReducer(currentViewState, { kind: 'DomainSnapshotReceived', snapshot });
     currentViewState = result.state;
-    _filterApplied = snapshot.feed.filterApplied;
+    filterApplied = snapshot.feed.filterApplied;
   });
 
   onDestroy(() => {
@@ -51,8 +54,8 @@
   const loadingStatus = $derived(currentViewState.loadingStatus);
   const isLoading = $derived(loadingStatus === 'loading');
   const isEmpty = $derived(visibleNoteIds.length === 0 && !isLoading);
-  const isFilteredEmpty = $derived(isEmpty && _filterApplied);
-  const isPlainEmpty = $derived(isEmpty && !_filterApplied);
+  const isFilteredEmpty = $derived(isEmpty && filterApplied);
+  const isPlainEmpty = $derived(isEmpty && !filterApplied);
 
   const activeDeleteModalNoteId = $derived(currentViewState.activeDeleteModalNoteId);
   const lastDeletionError = $derived(currentViewState.lastDeletionError);

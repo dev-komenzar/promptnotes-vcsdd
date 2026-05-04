@@ -9,6 +9,7 @@
    */
 
   import type { TauriFeedAdapter } from './tauriFeedAdapter.js';
+  import { nowIso } from './clockHelpers.js';
   import { onMount, onDestroy } from 'svelte';
 
   interface Props {
@@ -24,15 +25,13 @@
   const modalTitleId = 'delete-confirm-modal-title';
 
   function handleCancel(): void {
-    const isoAt = new Date().toISOString();
-    adapter.dispatchCancelNoteDeletion(noteId, isoAt);
+    adapter.dispatchCancelNoteDeletion(noteId, nowIso());
     visible = false;
     onClose?.();
   }
 
   function handleConfirm(): void {
-    const isoAt = new Date().toISOString();
-    adapter.dispatchConfirmNoteDeletion(noteId, isoAt);
+    adapter.dispatchConfirmNoteDeletion(noteId, nowIso());
   }
 
   function handleBackdropClick(event: MouseEvent): void {

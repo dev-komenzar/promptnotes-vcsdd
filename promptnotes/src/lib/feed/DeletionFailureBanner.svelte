@@ -12,6 +12,7 @@
   import type { TauriFeedAdapter } from './tauriFeedAdapter.js';
   import type { NoteDeletionFailureReason } from './types.js';
   import { deletionErrorMessage } from './deleteConfirmPredicates.js';
+  import { nowIso } from './clockHelpers.js';
 
   interface Props {
     reason: NoteDeletionFailureReason;
@@ -25,8 +26,7 @@
   const errorMessage = $derived(deletionErrorMessage(reason, detail));
 
   function handleRetryClick(): void {
-    const isoAt = new Date().toISOString();
-    adapter.dispatchConfirmNoteDeletion(noteId, isoAt);
+    adapter.dispatchConfirmNoteDeletion(noteId, nowIso());
   }
 </script>
 

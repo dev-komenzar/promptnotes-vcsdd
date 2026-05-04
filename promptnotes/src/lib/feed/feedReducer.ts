@@ -12,6 +12,7 @@
  */
 
 import type { FeedViewState, FeedAction, FeedReducerResult, FeedCommand } from './types.js';
+import { isFeedRowClickBlocked } from './feedRowPredicates.js';
 
 const REFRESH_TRIGGER_CAUSES: ReadonlySet<string> = new Set(['NoteFileSaved', 'NoteFileDeleted']);
 
@@ -47,12 +48,7 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
     }
 
     case 'FeedRowClicked': {
-      const isBlocked =
-        state.editingStatus === 'saving' ||
-        state.editingStatus === 'switching' ||
-        state.loadingStatus === 'loading';
-
-      if (isBlocked) {
+      if (isFeedRowClickBlocked(state.editingStatus, state.loadingStatus)) {
         return { state, commands: [] };
       }
 

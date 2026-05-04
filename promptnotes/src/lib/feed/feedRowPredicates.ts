@@ -9,6 +9,23 @@
 import type { FeedViewState } from './types.js';
 
 /**
+ * REQ-FEED-005 / REQ-FEED-006 / PROP-FEED-005..007
+ * Returns true iff the FeedRow click interaction is blocked.
+ * Blocked when editingStatus ∈ {'saving','switching'} OR loadingStatus === 'loading'.
+ * Used by both feedReducer (FeedRowClicked guard) and FeedRow component (rowDisabled derived).
+ */
+export function isFeedRowClickBlocked(
+  editingStatus: FeedViewState['editingStatus'],
+  loadingStatus: FeedViewState['loadingStatus']
+): boolean {
+  return (
+    editingStatus === 'saving' ||
+    editingStatus === 'switching' ||
+    loadingStatus === 'loading'
+  );
+}
+
+/**
  * REQ-FEED-010 / PROP-FEED-001
  * Returns true iff rowNoteId is the currently-editing note.
  * Null-safe: editingNoteId === null always yields false.

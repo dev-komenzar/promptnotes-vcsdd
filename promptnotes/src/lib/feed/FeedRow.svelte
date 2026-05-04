@@ -16,9 +16,11 @@
   import type { FeedViewState } from './types.js';
   import {
     isDeleteButtonDisabled,
+    isFeedRowClickBlocked,
     bodyPreviewLines,
     timestampLabel,
   } from './feedRowPredicates.js';
+  import { nowIso } from './clockHelpers.js';
 
   interface Props {
     noteId: string;
@@ -42,21 +44,17 @@
   const showPendingSwitch = $derived(viewState.pendingNextNoteId === noteId);
 
   const rowDisabled = $derived(
-    viewState.editingStatus === 'saving' ||
-    viewState.editingStatus === 'switching' ||
-    viewState.loadingStatus === 'loading'
+    isFeedRowClickBlocked(viewState.editingStatus, viewState.loadingStatus)
   );
 
   function handleRowClick(): void {
     if (rowDisabled) return;
-    const isoAt = new Date().toISOString();
-    adapter.dispatchSelectPastNote(noteId, isoAt);
+    adapter.dispatchSelectPastNote(noteId, nowIso());
   }
 
   function handleDeleteClick(): void {
     if (deleteDisabled) return;
-    const isoAt = new Date().toISOString();
-    adapter.dispatchRequestNoteDeletion(noteId, isoAt);
+    adapter.dispatchRequestNoteDeletion(noteId, nowIso());
   }
 </script>
 
