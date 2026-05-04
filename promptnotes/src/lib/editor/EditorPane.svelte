@@ -65,13 +65,11 @@
     body: '',
     pendingNextNoteId: null,
     lastError: null,
+    pendingNewNoteIntent: null,
   };
 
   const _initialSnapshot = untrack(() => initialState ?? defaultViewState);
   let viewState = $state<EditorViewState>({ ..._initialSnapshot });
-
-  // Track previous status for inbound state bridge (FIND-007)
-  let previousStatus = $state<string>(_initialSnapshot.status);
 
   /** Execute a single EditorCommand produced by the reducer. */
   function executeCommand(cmd: EditorCommand): void {
@@ -129,28 +127,13 @@
     }
   }
 
-  // Subscribe to inbound domain snapshots
+  // Subscribe to inbound domain snapshots.
+  // FIND-017: Route snapshots through the reducer (§3.4a invariant).
+  // The reducer's DomainSnapshotReceived branch emits cancel-idle-timer when
+  // isDirty=false and drains any pendingNewNoteIntent on save-success.
   $effect(() => {
-    const unsubscribe = stateChannel.subscribe((state) => {
-      const incomingStatus = state.status;
-      const prevStatus = previousStatus;
-
-      // FIND-007: inbound state bridge
-      // saving → editing with isDirty=false means save succeeded → cancel idle timer
-      if (prevStatus === 'saving' && incomingStatus === 'editing' && !state.isDirty) {
-        timer.cancel();
-      }
-
-      previousStatus = incomingStatus;
-
-      viewState = {
-        status: state.status,
-        isDirty: state.isDirty,
-        currentNoteId: state.currentNoteId,
-        pendingNextNoteId: state.pendingNextNoteId,
-        lastError: state.lastError,
-        body: state.body,
-      };
+    const unsubscribe = stateChannel.subscribe((snapshot) => {
+      dispatch({ kind: 'DomainSnapshotReceived', snapshot });
     });
     return unsubscribe;
   });
@@ -161,9 +144,12 @@
   $effect(() => {
     if (!paneRoot) return;
     const detach = attachKeyboardListener(paneRoot, (_source) => {
-      // FIND-001 / REQ-EDIT-025: blur-save-first gate for keyboard shortcut
+      // REQ-EDIT-025 / FIND-014: deferred new-note intent pattern.
+      // When editing+dirty: dispatch BlurEvent first (reducer → saving state),
+      // then dispatch NewNoteClicked. The reducer stores the intent in
+      // pendingNewNoteIntent because status is now 'saving'; it will emit
+      // request-new-note only after DomainSnapshotReceived confirms save success.
       if (viewState.status === 'editing' && viewState.isDirty) {
-        // Emit blur-save first, then new note
         const noteId = viewState.currentNoteId ?? '';
         const issuedAt = new Date(clock.now()).toISOString();
         dispatch({
@@ -171,6 +157,8 @@
           payload: { noteId, body: viewState.body, issuedAt },
         });
       }
+      // NewNoteClicked: reducer either emits request-new-note immediately (not saving)
+      // or records a pendingNewNoteIntent (saving) to defer until domain confirms.
       dispatch({
         kind: 'NewNoteClicked',
         payload: { source: 'ctrl-N', issuedAt: new Date(clock.now()).toISOString() },
@@ -189,9 +177,11 @@
       kind: 'NoteBodyEdited',
       payload: { newBody: textarea.value, noteId, issuedAt },
     });
-    // FIND-002 / RD-012: schedule idle save via injected timer only when editing
-    // FIND-013: only schedule when status === 'editing' (after reducer call viewState is updated)
-    if (viewState.status === 'editing') {
+    // FIND-002 / RD-012: schedule idle save via injected timer
+    // FIND-013: only schedule when status === 'editing'
+    // FIND-016 / PROP-EDIT-037 / EC-EDIT-003: also schedule in 'save-failed' (textarea
+    // remains editable; idle timer drives domain retry-gate machinery).
+    if (viewState.status === 'editing' || viewState.status === 'save-failed') {
       const fireAt = clock.now() + IDLE_SAVE_DEBOUNCE_MS;
       timer.scheduleIdleSave(fireAt, () => {
         if (viewState.status === 'editing' && viewState.isDirty) {
@@ -235,7 +225,11 @@
   }
 
   function handleNewNoteClick(): void {
-    // FIND-001 / REQ-EDIT-025: blur-save-first gate for button click
+    // REQ-EDIT-025 / FIND-014: deferred new-note intent pattern.
+    // When editing+dirty: dispatch BlurEvent first (reducer → saving state),
+    // then dispatch NewNoteClicked. The reducer stores the intent in
+    // pendingNewNoteIntent because status is now 'saving'; it will emit
+    // request-new-note only after DomainSnapshotReceived confirms save success.
     if (viewState.status === 'editing' && viewState.isDirty) {
       const noteId = viewState.currentNoteId ?? '';
       const issuedAt = new Date(clock.now()).toISOString();
@@ -244,6 +238,8 @@
         payload: { noteId, body: viewState.body, issuedAt },
       });
     }
+    // NewNoteClicked: reducer either emits request-new-note immediately (not saving)
+    // or records a pendingNewNoteIntent (saving) to defer until domain confirms.
     dispatch({
       kind: 'NewNoteClicked',
       payload: { source: 'explicit-button', issuedAt: new Date(clock.now()).toISOString() },
@@ -251,8 +247,9 @@
   }
 
   // FIND-006: banner button handlers dispatch through reducer, not directly to adapter
+  // FIND-015: issuedAt is supplied by the impure shell; pure reducer must not call Date.now()
   function handleRetryClick(): void {
-    dispatch({ kind: 'RetryClicked' });
+    dispatch({ kind: 'RetryClicked', payload: { issuedAt: new Date(clock.now()).toISOString() } });
   }
 
   function handleDiscardClick(): void {

@@ -209,15 +209,10 @@ describe('save-failure-banner — PROP-EDIT-015 / PROP-EDIT-038', () => {
   // alongside adapter calls.
 
   test('FIND-006: Retry click goes through reducer — status transitions to saving before adapter call', () => {
-    const stateTransitions: string[] = [];
-    // We track the status at the moment dispatchRetrySave is called.
-    // If the reducer is used, status is 'saving' when dispatchRetrySave fires
-    // (RetryClicked reducer branch sets status='saving' then emits retry-save command).
-    // If adapter is called directly (bypass), status stays 'save-failed'.
-    let statusAtAdapterCall: string | null = null;
+    let capturedPayload: { noteId: string; body: string; issuedAt: string } | null = null;
     const a = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    a['dispatchRetrySave'].mockImplementation(() => {
-      statusAtAdapterCall = 'called';
+    a['dispatchRetrySave'].mockImplementation((payload: { noteId: string; body: string; issuedAt: string }) => {
+      capturedPayload = payload;
       return Promise.resolve();
     });
 
@@ -244,10 +239,14 @@ describe('save-failure-banner — PROP-EDIT-015 / PROP-EDIT-038', () => {
     // The adapter must have been called exactly once (through reducer)
     expect(adapter.dispatchRetrySave).toHaveBeenCalledOnce();
     // The banner should be gone (reducer set status to 'saving')
-    // Note: in practice, the domain's snapshot drives status; locally the reducer sets
-    // saving optimistically. We verify the banner is not present (reducer path used).
     const banner = target.querySelector('[data-testid="save-failure-banner"]');
     expect(banner).toBeNull();
+
+    // FIND-015: retry-save payload.issuedAt must be a non-empty ISO-8601 string
+    // (not '' — the impure shell supplies it via RetryClicked.payload.issuedAt)
+    expect(capturedPayload).not.toBeNull();
+    expect(capturedPayload!.issuedAt).toBeTruthy();
+    expect(capturedPayload!.issuedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
 
     unmount(app);
   });

@@ -200,7 +200,14 @@ describe('editor-session-state — PROP-EDIT-037 / PROP-EDIT-039', () => {
 
   // ── FIND-007: Inbound state bridge for save success / failure ──
 
-  test('FIND-007: Inbound transition saving→editing(isDirty=false) cancels idle timer via timer.cancel()', () => {
+  test('FIND-007/FIND-017: Inbound transition saving→editing(isDirty=false) cancels idle timer via executeCommand pathway', () => {
+    // FIND-017: timer.cancel() must be reached via:
+    //   stateChannel.subscribe callback
+    //   → dispatch({ kind: 'DomainSnapshotReceived', snapshot })
+    //   → reducer emits { kind: 'cancel-idle-timer' } (because isDirty=false)
+    //   → executeCommand({ kind: 'cancel-idle-timer' }) → timer.cancel()
+    // This is verified by observing that timer.cancel() is called after the snapshot
+    // arrives (behaviour is the same; the route is now through the reducer).
     const timer = makeMockTimer();
     vi.useFakeTimers();
 
@@ -225,7 +232,8 @@ describe('editor-session-state — PROP-EDIT-037 / PROP-EDIT-039', () => {
     stateChannel.emit(savedSnapshot);
     flushSync();
 
-    // The idle timer must be cancelled when save succeeds (REQ-EDIT-005)
+    // The idle timer must be cancelled when save succeeds (REQ-EDIT-005, FIND-017).
+    // The route is now: DomainSnapshotReceived → reducer cancel-idle-timer → executeCommand.
     expect(timer.cancel).toHaveBeenCalled();
 
     vi.useRealTimers();
@@ -261,13 +269,14 @@ describe('editor-session-state — PROP-EDIT-037 / PROP-EDIT-039', () => {
 
   // ── PROP-EDIT-037: EC-EDIT-003 — user continues typing while save-failed ──
 
-  test('PROP-EDIT-037: EC-EDIT-003 — typing in save-failed state dispatches EditNoteBody', () => {
+  test('PROP-EDIT-037: EC-EDIT-003 — typing in save-failed state dispatches EditNoteBody and schedules idle timer', () => {
+    const timer = makeMockTimer();
     const app = mount(EditorPane, {
       target,
       props: {
         adapter,
         stateChannel,
-        timer: makeMockTimer(),
+        timer,
         clipboard: makeMockClipboard(),
       },
     });
@@ -291,6 +300,10 @@ describe('editor-session-state — PROP-EDIT-037 / PROP-EDIT-039', () => {
 
     // EditNoteBody should have been dispatched
     expect(adapter.dispatchEditNoteBody).toHaveBeenCalledOnce();
+
+    // FIND-016 / PROP-EDIT-037: idle timer must be scheduled in save-failed state
+    // (drives domain retry-gate machinery per EC-EDIT-003)
+    expect((timer as unknown as Record<string, ReturnType<typeof vi.fn>>)['scheduleIdleSave']).toHaveBeenCalled();
 
     unmount(app);
   });

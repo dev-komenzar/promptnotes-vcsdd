@@ -41,6 +41,7 @@ function makeState(overrides: Partial<EditorViewState> = {}): EditorViewState {
     body: '',
     pendingNextNoteId: null,
     lastError: null,
+    pendingNewNoteIntent: null,
     ...overrides,
   };
 }
@@ -235,12 +236,36 @@ describe('REQ-EDIT-014, PROP-EDIT-040: DomainSnapshotReceived mirrors S.{status,
     expect(result.state.status).toBe('idle');
   });
 
-  test('DomainSnapshotReceived emits no commands', () => {
+  test('DomainSnapshotReceived emits no commands when snapshot isDirty=true (no cancel needed)', () => {
     const state = makeState();
-    const snapshot = makeSnapshot({ status: 'save-failed' });
+    const snapshot = makeSnapshot({ status: 'save-failed', isDirty: true });
     const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
     const result = editorReducer(state, action);
-    expect(result.commands).toHaveLength(0);
+    // isDirty=true → no cancel-idle-timer; save-failed with no pending intent → no request-new-note
+    const nonCancelCmds = result.commands.filter(c => c.kind !== 'cancel-idle-timer');
+    expect(nonCancelCmds).toHaveLength(0);
+    // No cancel-idle-timer when still dirty
+    const cancelCmds = result.commands.filter(c => c.kind === 'cancel-idle-timer');
+    expect(cancelCmds).toHaveLength(0);
+  });
+
+  // FIND-017: DomainSnapshotReceived emits cancel-idle-timer when isDirty=false
+  test('FIND-017: DomainSnapshotReceived with isDirty=false emits cancel-idle-timer', () => {
+    const state = makeState({ status: 'saving', isDirty: true });
+    const snapshot = makeSnapshot({ status: 'editing', isDirty: false });
+    const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = editorReducer(state, action);
+    const cancelCmds = result.commands.filter(c => c.kind === 'cancel-idle-timer');
+    expect(cancelCmds.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('FIND-017: DomainSnapshotReceived with isDirty=true does NOT emit cancel-idle-timer', () => {
+    const state = makeState({ status: 'editing', isDirty: true });
+    const snapshot = makeSnapshot({ status: 'save-failed', isDirty: true });
+    const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = editorReducer(state, action);
+    const cancelCmds = result.commands.filter(c => c.kind === 'cancel-idle-timer');
+    expect(cancelCmds).toHaveLength(0);
   });
 
   test('DomainSnapshotReceived mirrors all four fields simultaneously', () => {
@@ -385,7 +410,7 @@ describe('REQ-EDIT-017: save-failed + RetryClicked → retry-save command', () =
       body: 'content',
       lastError: sampleSaveError,
     });
-    const action: EditorAction = { kind: 'RetryClicked' };
+    const action: EditorAction = { kind: 'RetryClicked', payload: { issuedAt: '2026-05-04T10:00:00.000Z' } };
     const result = editorReducer(state, action);
     const retryCmd = result.commands.find(c => c.kind === 'retry-save');
     expect(retryCmd).toBeDefined();
@@ -393,9 +418,23 @@ describe('REQ-EDIT-017: save-failed + RetryClicked → retry-save command', () =
 
   test('RetryClicked in save-failed transitions to saving', () => {
     const state = makeState({ status: 'save-failed', lastError: sampleSaveError });
-    const action: EditorAction = { kind: 'RetryClicked' };
+    const action: EditorAction = { kind: 'RetryClicked', payload: { issuedAt: '2026-05-04T10:00:00.000Z' } };
     const result = editorReducer(state, action);
     expect(result.state.status).toBe('saving');
+  });
+
+  // FIND-015: retry-save command carries the issuedAt from the action payload (ISO-8601)
+  test('FIND-015: RetryClicked passes issuedAt through to retry-save command payload', () => {
+    const state = makeState({ status: 'save-failed', isDirty: true, body: 'content', lastError: sampleSaveError });
+    const issuedAt = '2026-05-04T12:34:56.789Z';
+    const action: EditorAction = { kind: 'RetryClicked', payload: { issuedAt } };
+    const result = editorReducer(state, action);
+    const retryCmd = result.commands.find(c => c.kind === 'retry-save');
+    expect(retryCmd).toBeDefined();
+    if (retryCmd && retryCmd.kind === 'retry-save') {
+      expect(retryCmd.payload.issuedAt).toBe(issuedAt);
+      expect(retryCmd.payload.issuedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
+    }
   });
 });
 
@@ -516,6 +555,60 @@ describe('REQ-EDIT-023, REQ-EDIT-024: NewNoteClicked → request-new-note comman
   });
 });
 
+// ── FIND-014: REQ-EDIT-025 deferred new-note intent ──────────────────────────
+
+describe('FIND-014: REQ-EDIT-025 — NewNoteClicked while saving records intent, not immediate dispatch', () => {
+  test('NewNoteClicked in saving state records pendingNewNoteIntent, emits no commands', () => {
+    // Simulate the state after BlurEvent was dispatched: status is 'saving'
+    const state = makeState({ status: 'saving', isDirty: true });
+    const action: EditorAction = {
+      kind: 'NewNoteClicked',
+      payload: { source: 'explicit-button', issuedAt: '2026-05-04T10:00:00.000Z' },
+    };
+    const result = editorReducer(state, action);
+    expect(result.state.pendingNewNoteIntent).toEqual({
+      source: 'explicit-button',
+      issuedAt: '2026-05-04T10:00:00.000Z',
+    });
+    // Must NOT emit request-new-note yet
+    const newNoteCmds = result.commands.filter(c => c.kind === 'request-new-note');
+    expect(newNoteCmds).toHaveLength(0);
+  });
+
+  test('DomainSnapshotReceived saving→editing(clean) with pending intent emits request-new-note', () => {
+    const state = makeState({
+      status: 'saving',
+      isDirty: true,
+      pendingNewNoteIntent: { source: 'ctrl-N', issuedAt: '2026-05-04T10:00:00.000Z' },
+    });
+    const snapshot = makeSnapshot({ status: 'editing', isDirty: false });
+    const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = editorReducer(state, action);
+    const newNoteCmds = result.commands.filter(c => c.kind === 'request-new-note');
+    expect(newNoteCmds).toHaveLength(1);
+    if (newNoteCmds[0] && newNoteCmds[0].kind === 'request-new-note') {
+      expect(newNoteCmds[0].payload.source).toBe('ctrl-N');
+    }
+    // Intent is cleared
+    expect(result.state.pendingNewNoteIntent).toBeNull();
+  });
+
+  test('DomainSnapshotReceived saving→save-failed with pending intent drops the intent (no request-new-note)', () => {
+    const state = makeState({
+      status: 'saving',
+      isDirty: true,
+      pendingNewNoteIntent: { source: 'explicit-button', issuedAt: '2026-05-04T10:00:00.000Z' },
+    });
+    const snapshot = makeSnapshot({ status: 'save-failed', isDirty: true, lastError: sampleSaveError });
+    const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = editorReducer(state, action);
+    const newNoteCmds = result.commands.filter(c => c.kind === 'request-new-note');
+    expect(newNoteCmds).toHaveLength(0);
+    // Intent is cleared (dropped)
+    expect(result.state.pendingNewNoteIntent).toBeNull();
+  });
+});
+
 // ── Reducer structural invariants ─────────────────────────────────────────────
 
 describe('editorReducer structural invariants (PROP-EDIT-007 example-based)', () => {
@@ -566,7 +659,7 @@ describe('editorReducer structural invariants (PROP-EDIT-007 example-based)', ()
     const actions: EditorAction[] = [
       { kind: 'NoteBodyEdited', payload: { newBody: 'x', noteId: 'n', issuedAt: '' } },
       { kind: 'BlurEvent', payload: { noteId: 'n', body: 'x', issuedAt: '' } },
-      { kind: 'RetryClicked' },
+      { kind: 'RetryClicked', payload: { issuedAt: '' } },
       { kind: 'DiscardClicked' },
       { kind: 'CancelClicked' },
       { kind: 'CopyClicked', payload: { noteId: 'n', body: 'x' } },

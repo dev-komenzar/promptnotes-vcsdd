@@ -53,6 +53,15 @@ const arbSaveError: fc.Arbitrary<SaveError> = fc.oneof(
   )
 );
 
+const arbPendingNewNoteIntent: fc.Arbitrary<{ source: NewNoteSource; issuedAt: string } | null> =
+  fc.oneof(
+    fc.constant(null),
+    fc.record({
+      source: arbNewNoteSource,
+      issuedAt: arbIssuedAt,
+    })
+  );
+
 const arbViewState: fc.Arbitrary<EditorViewState> = fc.record({
   status: arbStatus,
   isDirty: fc.boolean(),
@@ -60,6 +69,7 @@ const arbViewState: fc.Arbitrary<EditorViewState> = fc.record({
   body: arbBody,
   pendingNextNoteId: fc.oneof(fc.constant(null), arbNoteId),
   lastError: fc.oneof(fc.constant(null), arbSaveError),
+  pendingNewNoteIntent: arbPendingNewNoteIntent,
 });
 
 const arbSnapshotState: fc.Arbitrary<EditingSessionState> = fc.record({
@@ -116,7 +126,10 @@ const arbAction: fc.Arbitrary<EditorAction> = fc.oneof(
       error: arbSaveError,
     }),
   }),
-  fc.constant({ kind: 'RetryClicked' as const }),
+  fc.record({
+    kind: fc.constant('RetryClicked' as const),
+    payload: fc.record({ issuedAt: arbIssuedAt }),
+  }),
   fc.constant({ kind: 'DiscardClicked' as const }),
   fc.constant({ kind: 'CancelClicked' as const }),
   fc.record({
@@ -245,6 +258,7 @@ describe('PROP-EDIT-007 (fast-check): reducer totality over all (status, action)
             body: '',
             pendingNextNoteId: null,
             lastError: null,
+            pendingNewNoteIntent: null,
           };
           const editResult = editorReducer(editingState, {
             kind: 'NoteBodyEdited',
@@ -259,6 +273,7 @@ describe('PROP-EDIT-007 (fast-check): reducer totality over all (status, action)
             body: newBody,
             pendingNextNoteId: null,
             lastError: null,
+            pendingNewNoteIntent: null,
           };
           const saveResult = editorReducer(savingState, {
             kind: 'NoteFileSaved',
@@ -381,12 +396,29 @@ describe('PROP-EDIT-040 (fast-check): DomainSnapshotReceived is identity over st
     );
   });
 
-  test('DomainSnapshotReceived emits no commands for any (state, snapshot) pair (≥100 runs)', () => {
+  // FIND-017: DomainSnapshotReceived may emit cancel-idle-timer (when isDirty=false)
+  // and request-new-note (when draining a pending intent on save-success).
+  // The property is: emitted commands are only from the allowed set.
+  test('DomainSnapshotReceived emits only allowed commands for any (state, snapshot) pair (≥100 runs)', () => {
+    const allowedKinds = new Set(['cancel-idle-timer', 'request-new-note']);
     fc.assert(
       fc.property(arbViewState, arbSnapshotState, (state, snapshot) => {
         const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
         const result = editorReducer(state, action);
-        return result.commands.length === 0;
+        return result.commands.every(cmd => allowedKinds.has(cmd.kind));
+      }),
+      { numRuns: 100 }
+    );
+  });
+
+  // FIND-017: cancel-idle-timer is emitted IFF snapshot.isDirty=false
+  test('FIND-017: cancel-idle-timer emitted iff snapshot.isDirty=false (≥100 runs)', () => {
+    fc.assert(
+      fc.property(arbViewState, arbSnapshotState, (state, snapshot) => {
+        const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
+        const result = editorReducer(state, action);
+        const hasCancelTimer = result.commands.some(c => c.kind === 'cancel-idle-timer');
+        return hasCancelTimer === !snapshot.isDirty;
       }),
       { numRuns: 100 }
     );

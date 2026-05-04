@@ -1,0 +1,58 @@
+Sprint-3 Green phase = address all 13 Phase-3 iter-1 findings.
+
+Implementation changes:
+- EditorPane.svelte: BlurEvent dispatched before NewNoteClicked when editing+isDirty (FIND-001)
+- EditorPane.svelte: timer.scheduleIdleSave / timer.cancel via injected DebounceTimer (FIND-002)
+- EditorPane.svelte: 5-layer Deep Shadow + #dd5b00 border + 8px radius + 15px/600 button typography (FIND-003)
+- EditorPane.svelte: banner button labels 再試行 / 変更を破棄 / 閉じる（このまま編集を続ける）(FIND-005)
+- EditorPane.svelte: banner buttons → dispatch({kind:RetryClicked|DiscardClicked|CancelClicked}) (FIND-006)
+- EditorPane.svelte: inbound saving→editing fires NoteFileSaved + timer.cancel (FIND-007)
+- EditorPane.svelte: idle-state placeholder ノートを選択してください (FIND-008)
+- EditorPane.svelte: issuedAt = new Date(clock.now()).toISOString() (FIND-009)
+- tauriEditorAdapter.ts + EditorPane.executeCommand: full payload forwarding (FIND-010)
+- EditorPane.new-note.dom.vitest.ts: bubbles:true (FIND-011)
+- EditorPane.svelte: aria-disabled on +新規 + banner buttons (FIND-012)
+- EditorPane.svelte: idle-save scheduled only when status=editing (FIND-013)
+
+Test results:
+- vitest DOM (ui-editor): 126/126 pass (was 85; +41 new tests)
+- bun:test Sprint-1 pure (ui-editor): 126/126 pass (frozen)
+- bun:test app-shell: 220/220 pass (unchanged)
+- vitest DOM app-shell: 4/4 pass (unchanged)
+- svelte-check: 0 new errors in src/lib/editor
+- vite build: success
+
+target feature tests: pass (vitest 126/126 + bun:test 126/126 in src/lib/editor)
+regression baseline: pass (app-shell 220 + 4 + vite build unchanged)
+
+---
+Sprint-3 Green phase (iter-2) = address 4 Phase-3 iter-2 findings (FIND-014..FIND-017).
+
+Implementation changes:
+- types.ts: EditorViewState.pendingNewNoteIntent field added (FIND-014)
+- types.ts: RetryClicked payload { issuedAt: string } (FIND-015)
+- editorReducer.ts: NewNoteClicked in saving → records pendingNewNoteIntent, defers request-new-note (FIND-014)
+- editorReducer.ts: DomainSnapshotReceived → emits cancel-idle-timer when isDirty=false; drains pendingNewNoteIntent on saving→editing(clean)/saving→save-failed (FIND-017 + FIND-014)
+- editorReducer.ts: RetryClicked reads issuedAt from action.payload (FIND-015)
+- EditorPane.svelte: subscribe callback dispatches DomainSnapshotReceived through reducer; direct viewState= and timer.cancel() removed (FIND-017)
+- EditorPane.svelte: handleInput guard broadened to editing || save-failed for scheduleIdleSave (FIND-016)
+- EditorPane.svelte: handleRetryClick passes issuedAt via payload (FIND-015)
+- EditorPane.svelte: handleNewNoteClick / keyboard listener use deferred intent pattern (FIND-014)
+
+Test changes:
+- editorReducer.test.ts: RetryClicked now carries payload; added FIND-015 issuedAt assertion; updated DomainSnapshotReceived tests for cancel-idle-timer; added FIND-014 deferred intent tests
+- editorReducer.prop.test.ts: arbViewState + arbAction updated for new fields/payload; DomainSnapshotReceived property updated
+- editor-panel.dom.vitest.ts: PROP-EDIT-020a tests rewritten for deferred intent (blur immediate, RequestNewNote deferred)
+- editor-session-state.dom.vitest.ts: PROP-EDIT-037 asserts scheduleIdleSave in save-failed; FIND-007 test renamed with FIND-017
+- save-failure-banner.dom.vitest.ts: FIND-006 Retry test asserts issuedAt is ISO-8601
+
+Test results (iter-2):
+- bun:test Sprint-1 pure (ui-editor): 133/133 pass (was 126; +7 new assertions)
+- vitest DOM (ui-editor): 127/127 pass (was 126; +1 net)
+- bun:test app-shell: 220/220 pass (unchanged)
+- vitest DOM app-shell: 4/4 pass (unchanged)
+- svelte-check: 0 new errors in src/lib/editor
+- vite build: success
+
+target feature tests: pass
+regression baseline: pass

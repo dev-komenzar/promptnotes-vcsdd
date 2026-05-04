@@ -84,6 +84,12 @@ export type EditorViewState = {
   pendingNextNoteId: string | null;
   /** Last save error; non-null only when status === 'save-failed'. */
   lastError: SaveError | null;
+  /**
+   * REQ-EDIT-025: Deferred new-note intent set when +新規 / Ctrl+N fires while
+   * saving. Drained by the reducer when DomainSnapshotReceived shows the domain
+   * has left 'saving'. Null when no intent is pending.
+   */
+  pendingNewNoteIntent: { source: NewNoteSource; issuedAt: string } | null;
 };
 
 // ── EditingSessionState ──────────────────────────────────────────────────────
@@ -159,8 +165,9 @@ export type EditorAction =
   /**
    * REQ-EDIT-017: Retry button click in save-failed state.
    * Produced by SaveFailureBanner.svelte (Sprint 2).
+   * issuedAt is supplied by the impure shell (pure modules must not call Date.now()).
    */
-  | { kind: 'RetryClicked' }
+  | { kind: 'RetryClicked'; payload: { issuedAt: string } }
 
   /**
    * REQ-EDIT-018: Discard button click in save-failed state.

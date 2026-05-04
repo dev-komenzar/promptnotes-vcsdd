@@ -12,7 +12,7 @@
  * - commands[i].kind is always one of the 9 EditorCommand variants.
  */
 
-import type { EditorViewState, EditorAction, EditorCommand } from './types.js';
+import type { EditorViewState, EditorAction, EditorCommand, NewNoteSource } from './types.js';
 import { canCopy } from './editorPredicates.js';
 
 /** Returns the current note id, or '' when null (used by retry/discard/cancel). */
@@ -117,8 +117,41 @@ export function editorReducer(
 
     case 'DomainSnapshotReceived': {
       // REQ-EDIT-014, PROP-EDIT-040: Mirror the snapshot fields 1:1 into view state.
-      // No commands emitted; the shell reconciles by re-rendering.
+      // FIND-017: emit cancel-idle-timer when inbound snapshot has isDirty=false
+      //   (domain confirmed clean — the idle timer must be cancelled).
+      // FIND-014: drain pendingNewNoteIntent when domain leaves 'saving'.
+      //   - saving → editing (success): emit request-new-note from the pending intent.
+      //   - saving → save-failed (failure): drop the intent (banner is shown).
       const { snapshot } = action;
+      const commands: EditorCommand[] = [];
+
+      // FIND-017: cancel idle timer whenever the domain says isDirty=false
+      if (!snapshot.isDirty) {
+        commands.push({ kind: 'cancel-idle-timer' });
+      }
+
+      // FIND-014: resolve deferred new-note intent based on save outcome
+      let resolvedIntent: { source: NewNoteSource; issuedAt: string } | null =
+        state.pendingNewNoteIntent;
+
+      if (state.status === 'saving' && state.pendingNewNoteIntent !== null) {
+        if (snapshot.status === 'editing' && !snapshot.isDirty) {
+          // Save succeeded — dispatch the deferred new-note request
+          commands.push({
+            kind: 'request-new-note',
+            payload: {
+              source: state.pendingNewNoteIntent.source,
+              issuedAt: state.pendingNewNoteIntent.issuedAt,
+            },
+          });
+          resolvedIntent = null;
+        } else if (snapshot.status === 'save-failed') {
+          // Save failed — drop the intent; the banner will be shown
+          resolvedIntent = null;
+        }
+        // Still saving or other transitions: leave intent intact
+      }
+
       const nextState: EditorViewState = {
         ...state,
         status: snapshot.status,
@@ -127,8 +160,9 @@ export function editorReducer(
         pendingNextNoteId: snapshot.pendingNextNoteId,
         lastError: snapshot.lastError,
         body: snapshot.body,
+        pendingNewNoteIntent: resolvedIntent,
       };
-      return { state: nextState, commands: [] };
+      return { state: nextState, commands };
     }
 
     case 'NoteFileSaved': {
@@ -158,6 +192,7 @@ export function editorReducer(
 
     case 'RetryClicked': {
       // REQ-EDIT-017: Retry save from save-failed state.
+      // FIND-015: issuedAt is supplied by the impure shell via action.payload.issuedAt.
       if (state.status !== 'save-failed') {
         return { state, commands: [] };
       }
@@ -172,7 +207,7 @@ export function editorReducer(
           payload: {
             noteId,
             body: state.body,
-            issuedAt: '',
+            issuedAt: action.payload.issuedAt,
           },
         },
       ];
@@ -228,7 +263,23 @@ export function editorReducer(
     }
 
     case 'NewNoteClicked': {
-      // REQ-EDIT-023, REQ-EDIT-024: New Note request — pass source through unmodified.
+      // REQ-EDIT-023, REQ-EDIT-024, REQ-EDIT-025: New Note request.
+      // FIND-014: When the reducer's current status is 'saving' (BlurEvent was already
+      // dispatched in the same tick by handleNewNoteClick), record the intent and defer
+      // request-new-note until DomainSnapshotReceived confirms the domain left 'saving'.
+      // When not saving, pass through immediately.
+      if (state.status === 'saving') {
+        // Record the deferred intent; do NOT emit request-new-note yet.
+        const nextState: EditorViewState = {
+          ...state,
+          pendingNewNoteIntent: {
+            source: action.payload.source,
+            issuedAt: action.payload.issuedAt,
+          },
+        };
+        return { state: nextState, commands: [] };
+      }
+      // Not saving: dispatch immediately.
       const commands: EditorCommand[] = [
         {
           kind: 'request-new-note',

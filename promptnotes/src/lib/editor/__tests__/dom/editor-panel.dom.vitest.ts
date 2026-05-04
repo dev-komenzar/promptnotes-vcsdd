@@ -103,20 +103,15 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
     vi.restoreAllMocks();
   });
 
-  // ── PROP-EDIT-020a: editing+dirty → TriggerBlurSave fires BEFORE RequestNewNote ──
+  // ── PROP-EDIT-020a: editing+dirty → TriggerBlurSave fires; RequestNewNote deferred ──
+  //
+  // REQ-EDIT-025 (FIND-014): When +新規 / Ctrl+N fires while editing+dirty:
+  // (a) dispatchTriggerBlurSave IS called immediately.
+  // (b) dispatchRequestNewNote is NOT called yet (intent is queued in reducer).
+  // (c) After the domain snapshot arrives with status=editing/isDirty=false,
+  //     dispatchRequestNewNote IS called.
 
-  test('PROP-EDIT-020a: +新規 click when editing+dirty dispatches TriggerBlurSave before RequestNewNote', () => {
-    const callOrder: string[] = [];
-    const a = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    a['dispatchTriggerBlurSave'].mockImplementation(() => {
-      callOrder.push('dispatchTriggerBlurSave');
-      return Promise.resolve();
-    });
-    a['dispatchRequestNewNote'].mockImplementation(() => {
-      callOrder.push('dispatchRequestNewNote');
-      return Promise.resolve();
-    });
-
+  test('PROP-EDIT-020a: +新規 click when editing+dirty — TriggerBlurSave called immediately, RequestNewNote NOT yet', () => {
     const app = mount(EditorPane, {
       target,
       props: {
@@ -137,7 +132,7 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
     newNoteBtn!.click();
     flushSync();
 
-    // TriggerBlurSave MUST come before RequestNewNote
+    // (a) TriggerBlurSave MUST have been called immediately
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith({
       source: 'capture-blur',
@@ -145,28 +140,78 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
       body: 'unsaved content',
       issuedAt: expect.any(String),
     });
+
+    // (b) RequestNewNote MUST NOT have been called yet (intent is deferred)
+    expect(adapter.dispatchRequestNewNote).not.toHaveBeenCalled();
+
+    // (c) Simulate inbound save-success snapshot from the domain (saving → editing, isDirty=false)
+    const saveSuccessSnapshot: EditingSessionState = {
+      status: 'editing',
+      isDirty: false,
+      currentNoteId: 'note-001',
+      pendingNextNoteId: null,
+      lastError: null,
+      body: 'unsaved content',
+    };
+    stateChannel.emit(saveSuccessSnapshot);
+    flushSync();
+
+    // Now RequestNewNote MUST have been called with the correct source
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
       source: 'explicit-button',
       issuedAt: expect.any(String),
     });
-    expect(callOrder).toEqual(['dispatchTriggerBlurSave', 'dispatchRequestNewNote']);
 
     unmount(app);
   });
 
-  test('PROP-EDIT-020a: Ctrl+N when editing+dirty dispatches TriggerBlurSave before RequestNewNote', () => {
-    const callOrder: string[] = [];
-    const a = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    a['dispatchTriggerBlurSave'].mockImplementation(() => {
-      callOrder.push('dispatchTriggerBlurSave');
-      return Promise.resolve();
+  test('PROP-EDIT-020a: +新規 click when editing+dirty — save-failed drops the intent (no RequestNewNote)', () => {
+    const app = mount(EditorPane, {
+      target,
+      props: {
+        adapter,
+        stateChannel,
+        timer: makeMockTimer(),
+        clipboard: makeMockClipboard(),
+      },
     });
-    a['dispatchRequestNewNote'].mockImplementation(() => {
-      callOrder.push('dispatchRequestNewNote');
-      return Promise.resolve();
-    });
+    flushSync();
 
+    stateChannel.emit(editingDirtySnapshot);
+    flushSync();
+
+    const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-testid="new-note-button"]');
+    newNoteBtn!.click();
+    flushSync();
+
+    // TriggerBlurSave called, RequestNewNote not yet
+    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
+    expect(adapter.dispatchRequestNewNote).not.toHaveBeenCalled();
+
+    // Simulate inbound save-failed snapshot
+    const saveFailedDomainSnapshot: EditingSessionState = {
+      status: 'save-failed',
+      isDirty: true,
+      currentNoteId: 'note-001',
+      pendingNextNoteId: null,
+      lastError: { kind: 'fs', reason: { kind: 'unknown' } },
+      body: 'unsaved content',
+    };
+    stateChannel.emit(saveFailedDomainSnapshot);
+    flushSync();
+
+    // Intent must have been dropped — no RequestNewNote
+    expect(adapter.dispatchRequestNewNote).not.toHaveBeenCalled();
+
+    // The save-failure banner should be visible
+    const banner = target.querySelector('[data-testid="save-failure-banner"]');
+    expect(banner).not.toBeNull();
+
+    unmount(app);
+  });
+
+  test('PROP-EDIT-020a: Ctrl+N when editing+dirty — TriggerBlurSave called immediately, RequestNewNote NOT yet', () => {
     const app = mount(EditorPane, {
       target,
       props: {
@@ -186,6 +231,7 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
     paneRoot.dispatchEvent(event);
     flushSync();
 
+    // (a) TriggerBlurSave called immediately
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledWith({
       source: 'capture-blur',
@@ -193,12 +239,28 @@ describe('editor-panel — PROP-EDIT-020a / PROP-EDIT-020b / PROP-EDIT-034', () 
       body: 'unsaved content',
       issuedAt: expect.any(String),
     });
+
+    // (b) RequestNewNote NOT yet called
+    expect(adapter.dispatchRequestNewNote).not.toHaveBeenCalled();
+
+    // (c) Simulate save success from domain
+    const saveSuccessSnapshot: EditingSessionState = {
+      status: 'editing',
+      isDirty: false,
+      currentNoteId: 'note-001',
+      pendingNextNoteId: null,
+      lastError: null,
+      body: 'unsaved content',
+    };
+    stateChannel.emit(saveSuccessSnapshot);
+    flushSync();
+
+    // Now RequestNewNote called with ctrl-N source
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith({
       source: 'ctrl-N',
       issuedAt: expect.any(String),
     });
-    expect(callOrder).toEqual(['dispatchTriggerBlurSave', 'dispatchRequestNewNote']);
 
     unmount(app);
   });
