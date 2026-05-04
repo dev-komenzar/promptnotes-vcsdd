@@ -5,7 +5,14 @@
  * PROP-FEED-032: IPC boundary — no inbound event subscription here.
  */
 
-// IPC boundary: command dispatch is OUTBOUND only
+import { invoke } from '@tauri-apps/api/core';
+
+const CMD = {
+  selectPastNote: 'select_past_note',
+  requestNoteDeletion: 'request_note_deletion',
+  confirmNoteDeletion: 'confirm_note_deletion',
+  cancelNoteDeletion: 'cancel_note_deletion',
+} as const;
 
 export interface TauriFeedAdapter {
   dispatchSelectPastNote(noteId: string, issuedAt: string): Promise<void>;
@@ -15,5 +22,18 @@ export interface TauriFeedAdapter {
 }
 
 export function createTauriFeedAdapter(): TauriFeedAdapter {
-  throw new Error('not implemented');
+  return {
+    dispatchSelectPastNote(noteId: string, issuedAt: string): Promise<void> {
+      return invoke(CMD.selectPastNote, { noteId, issuedAt });
+    },
+    dispatchRequestNoteDeletion(noteId: string, issuedAt: string): Promise<void> {
+      return invoke(CMD.requestNoteDeletion, { noteId, issuedAt });
+    },
+    dispatchConfirmNoteDeletion(noteId: string, issuedAt: string): Promise<void> {
+      return invoke(CMD.confirmNoteDeletion, { noteId, issuedAt });
+    },
+    dispatchCancelNoteDeletion(noteId: string, issuedAt: string): Promise<void> {
+      return invoke(CMD.cancelNoteDeletion, { noteId, issuedAt });
+    },
+  };
 }

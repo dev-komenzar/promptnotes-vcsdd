@@ -14,7 +14,8 @@ import type { FeedViewState } from './types.js';
  * Null-safe: editingNoteId === null always yields false.
  */
 export function isEditingNote(rowNoteId: string, editingNoteId: string | null): boolean {
-  throw new Error('not implemented');
+  if (editingNoteId === null) return false;
+  return rowNoteId === editingNoteId;
 }
 
 /**
@@ -29,7 +30,9 @@ export function isDeleteButtonDisabled(
   status: FeedViewState['editingStatus'],
   editingNoteId: string | null
 ): boolean {
-  throw new Error('not implemented');
+  if (editingNoteId === null) return false;
+  if (status === 'idle') return false;
+  return rowNoteId === editingNoteId;
 }
 
 /**
@@ -38,7 +41,7 @@ export function isDeleteButtonDisabled(
  * Result length is always ≤ maxLines.
  */
 export function bodyPreviewLines(body: string, maxLines: number): readonly string[] {
-  throw new Error('not implemented');
+  return body.split('\n').slice(0, maxLines);
 }
 
 /**
@@ -48,5 +51,5 @@ export function bodyPreviewLines(body: string, maxLines: number): readonly strin
  * Pure and deterministic: same (epochMs, locale) always produces same output.
  */
 export function timestampLabel(epochMs: number, locale: string): string {
-  throw new Error('not implemented');
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(epochMs);
 }

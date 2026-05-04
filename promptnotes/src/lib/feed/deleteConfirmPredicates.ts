@@ -23,7 +23,23 @@ export function deletionErrorMessage(
   reason: NoteDeletionFailureReason,
   detail?: string
 ): string {
-  throw new Error('not implemented');
+  switch (reason) {
+    case 'permission':
+      return '削除に失敗しました（権限不足）';
+    case 'lock':
+      return '削除に失敗しました（ファイルがロック中）';
+    case 'unknown': {
+      if (detail !== undefined && detail.length > 0) {
+        return `削除に失敗しました（${detail}）`;
+      }
+      return '削除に失敗しました';
+    }
+    default: {
+      // Exhaustive check: TypeScript will error if a new variant is added without handling it.
+      const _exhaustive: never = reason;
+      return _exhaustive;
+    }
+  }
 }
 
 /**
@@ -33,5 +49,6 @@ export function deletionErrorMessage(
  * canOpenDeleteModal(a, a) === false for all a: string.
  */
 export function canOpenDeleteModal(rowNoteId: string, editingNoteId: string | null): boolean {
-  throw new Error('not implemented');
+  if (editingNoteId === null) return true;
+  return rowNoteId !== editingNoteId;
 }
