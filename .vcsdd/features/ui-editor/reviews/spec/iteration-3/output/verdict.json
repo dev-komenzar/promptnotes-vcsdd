@@ -1,0 +1,67 @@
+{
+  "feature": "ui-editor",
+  "phase": "1c",
+  "mode": "strict",
+  "iteration": 3,
+  "reviewedAt": "2026-05-04T00:00:00Z",
+  "reviewType": "spec",
+  "overallVerdict": "PASS",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "Fresh read confirms no spec_fidelity contradictions. The previously-tense pair (REQ-EDIT-001 line 62 'NO separate optimistic UI flag' vs §3.4a line 230 'optimistic isDirty=true') is consistent: both passages describe the same EditorViewState.isDirty field optimistically updated by the reducer, then superseded by the next domain snapshot — see PROP-EDIT-021 line 182 ('optimistic mirror, before domain snapshot'). REQ-EDIT-016 line 277 (validation.empty-body-on-idle silent + successor state) is internally consistent with RD-007 line 710 and PROP-EDIT-032 line 193. REQ-EDIT-025 line 421 + EC-EDIT-008 line 619 + RD-009 line 712 form a coherent triangle for the save-failed/Ctrl+N case. The 9-variant EditorCommand union in verification-architecture.md §10 (lines 400-411) is referenced consistently from PROP-EDIT-002/007/009/010, RD-017, and the Tier 0 exhaustive-switch obligation. New Note enable matrix in REQ-EDIT-023 (lines 383-388) is reflected verbatim in PROP-EDIT-024..028."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "Coverage Matrix §6 (lines 280-316) lists every REQ-EDIT-001..027 and EC-EDIT-001..010 with at least one PROP-EDIT-XXX. RD-001..RD-017 in behavioral-spec §9 mirror their adversary-finding originators. No REQ-EDIT or EC-EDIT is left without a property obligation."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": ["FIND-023", "FIND-024"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/package.json",
+          "description": "Line 27: '@vitest/coverage-v8': '^4.1.5' is now installed in devDependencies, matching vitest 4.1.5. This resolves iter-2 FIND-019 (the major). Phase 2 entry criterion at verification-architecture.md line 97 ties the gate to bun.lock presence."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-019 resolved: §3 Tier 3 line 95, §5 line 247, §7 Phase 5 gate line 344 all cite '@vitest/coverage-v8' by package name with version pin. FIND-020 resolved: PROP-EDIT-009 line 169 marked subsumed; tier-table Required column line 89 = false; Coverage Matrix REQ-EDIT-026 row line 305 cites only PROP-EDIT-002 as required. FIND-021 resolved: §10 EditorCommand union (lines 394-435) defines all 9 variants; PROP-EDIT-007 (line 167) cites the 9-variant count; PROP-EDIT-010 (line 170) cites 'cancel-idle-timer' literally; Tier 0 exhaustive-switch obligation added at line 425. FIND-022 resolved: §2 tauriEditorAdapter.ts row (line 52, 'OUTBOUND only ... Does NOT call listen(...)') and editorStateChannel.ts row (line 54, 'INBOUND only ... Does NOT call invoke(...)') document the non-overlap; RD-016 line 719 and §8 Threat Model line 369 reinforce. Two new minor findings remain: FIND-023 (EditorCommand union missing noteId/issuedAt for edit-note-body and copy-note-body variants) and FIND-024 (computeNextFireAt signature disagreement between behavioral-spec §12 and verification-architecture §2)."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "iter2FindingsResolved": 4,
+    "iter2FindingsPartial": 0,
+    "iter2FindingsOpen": 0,
+    "newFindingsIntroducedInIter3": 2,
+    "severityBreakdown": {
+      "critical": 0,
+      "major": 0,
+      "minor": 2
+    },
+    "narrative": "Builder resolved every iter-2 finding (4/4) with concrete textual remediation. The major (FIND-019, missing @vitest/coverage-v8) is closed by the actual package.json edit installing @vitest/coverage-v8@^4.1.5 plus the Phase 2 entry criterion at verification-architecture.md line 97. The three minors (FIND-020 PROP duplication, FIND-021 EditorCommand enumeration, FIND-022 adapter responsibility split) are each resolved with named-and-cited spec text. Fresh sweep surfaces two minor follow-ons that strict mode flags but do not gate convergence under the dimension-PASS rule (zero critical AND zero major): FIND-023 — the canonical 9-variant EditorCommand union added to resolve FIND-021 omits noteId from the 'edit-note-body' and 'copy-note-body' variants and omits issuedAt from 'edit-note-body', creating an under-specified pure-shell contract that Phase 2 must guess at; FIND-024 — the computeNextFireAt parameter object differs between behavioral-spec §12 (3 fields) and verification-architecture §2 (4 fields including nowMs), and the §12 shell pattern at line 805 references a destructured 'now' that matches neither. Both are pure spec-fidelity errata at the contract surface and are minor — they do not block Phase 2 entry but should be folded into the next spec edit. By the stated thresholds (dimension PASSES iff zero critical AND zero major; overall PASSES iff both dimensions PASS), spec_fidelity = PASS, verification_readiness = PASS, overall = PASS. Strict-mode human-approval gate may now be requested."
+  },
+  "convergenceSignals": {
+    "findingCount": 2,
+    "regressionStatus": "all-resolved",
+    "newIssueCount": 2,
+    "newIssueSeverity": {
+      "critical": 0,
+      "major": 0,
+      "minor": 2
+    }
+  }
+}
