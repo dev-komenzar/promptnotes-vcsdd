@@ -1,0 +1,55 @@
+=== SECURITY AUDIT RAW RESULTS ===
+Date: 2026-05-04T09:10:33Z
+
+--- Grep 1: XSS patterns ({@html, innerHTML, outerHTML, insertAdjacentHTML, eval, Function, dangerouslySetInnerHTML) ---
+Command: grep -nrE 'eval\(|Function\(|dangerouslySetInnerHTML|\{@html|outerHTML|insertAdjacentHTML' promptnotes/src/lib/editor/ --include='*.ts' --include='*.svelte'
+[ZERO HITS - PASS]
+
+--- Grep 2: innerHTML in production source (*.ts, *.svelte only) ---
+Command: grep -nrE 'innerHTML' promptnotes/src/lib/editor/ --include='*.ts' --include='*.svelte'
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.new-note.dom.vitest.ts:97:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.idle-save.dom.vitest.ts:90:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.state-mirror.dom.vitest.ts:90:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.copy.dom.vitest.ts:88:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/save-failure-banner.dom.vitest.ts:101:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.mount.dom.vitest.ts:70:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/editor-validation.dom.vitest.ts:89:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.save-failed.dom.vitest.ts:102:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/editor-accessibility.dom.vitest.ts:116:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/editor-panel.dom.vitest.ts:102:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/editor-session-state.dom.vitest.ts:139:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/keyboardListener.dom.vitest.ts:29:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.body-input.dom.vitest.ts:91:    document.body.innerHTML = '';
+promptnotes/src/lib/editor/__tests__/dom/EditorPane.blur-save.dom.vitest.ts:110:    document.body.innerHTML = '';
+[HITS FOUND]
+
+--- Grep 3: svelte/store imports (PROP-EDIT-036) ---
+Command: grep -nrE "from 'svelte/store'" promptnotes/src/lib/editor/ --include='*.ts' --include='*.svelte'
+[ZERO HITS - PASS]
+
+--- Grep 4: EditingSessionState mutations in .svelte (PROP-EDIT-029) ---
+Command: grep -nrE 'EditingSessionState' promptnotes/src/lib/editor/*.svelte
+promptnotes/src/lib/editor/EditorPane.svelte:39:    /** Inbound channel that delivers EditingSessionState snapshots from the domain. */
+
+--- invoke() surface audit (tauriEditorAdapter.ts) ---
+Command: grep -nE 'invoke\(' promptnotes/src/lib/editor/tauriEditorAdapter.ts
+4: * Wraps @tauri-apps/api/core invoke() for each of the 8 domain dispatch methods.
+6: * inject a vi.fn() mock without calling real invoke().
+53:      return invoke(CMD.editNoteBody, payload);
+56:      return invoke(CMD.triggerIdleSave, payload);
+59:      return invoke(CMD.triggerBlurSave, payload);
+62:      return invoke(CMD.retrySave, payload);
+65:      return invoke(CMD.discardCurrentSession, payload);
+68:      return invoke(CMD.cancelSwitch, payload);
+71:      return invoke(CMD.copyNoteBody, payload);
+74:      return invoke(CMD.requestNewNote, payload);
+
+--- editorStateChannel.ts: confirm no invoke() ---
+[ZERO HITS - PASS: editorStateChannel does not call invoke()]
+
+--- Purity audit: pure modules ---
+Command: grep -nE 'setTimeout|setInterval|Date\.now|new Date|Math\.random|...' pure modules
+promptnotes/src/lib/editor/debounceSchedule.ts:8: * some epoch). This module NEVER calls Date.now() — the caller provides nowMs.
+promptnotes/src/lib/editor/debounceSchedule.ts:19: * last edit. Used to schedule the setTimeout delay in the impure shell.
+promptnotes/src/lib/editor/debounceSchedule.ts:68: * - nowMs: current clock time (supplied by caller, never Date.now())
+[RUNTIME HITS - INVESTIGATE]

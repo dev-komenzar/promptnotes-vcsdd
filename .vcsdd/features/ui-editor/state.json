@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -98,11 +98,18 @@
       "to": "3",
       "timestamp": "2026-05-04T09:01:28.870Z",
       "sprint": 4
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-04T09:06:03.578Z",
+      "sprint": 4
     }
   ],
   "iterations": {
     "3": 3,
     "4": 2,
+    "5": 1,
     "1a": 1,
     "1b": 1,
     "1c": 1,
@@ -110,7 +117,141 @@
     "2b": 3,
     "2c": 3
   },
-  "proofObligations": [],
+  "proofObligations": [
+    {
+      "id": "PROP-EDIT-001",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check (via PROP-EDIT-007 + PROP-EDIT-008 sub-assertions)",
+      "artifact": "verification/proof-harnesses/README.md",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-002",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-003",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check + bun:test",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-004",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check + bun:test",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-005",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-006",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-007",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-008",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-009",
+      "tier": 2,
+      "required": false,
+      "status": "skipped",
+      "note": "Subsumed by PROP-EDIT-002 per verification-architecture.md §4"
+    },
+    {
+      "id": "PROP-EDIT-010",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "bun:test (vitest)",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-011",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "bun:test (vitest)",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-029",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "tool": "tsc --strict + grep",
+      "artifact": "verification/security-results/audit-run-2026-05-04.txt",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-031",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "tool": "bun:test (vitest)",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-036",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "tool": "grep audit",
+      "artifact": "verification/security-results/audit-run-2026-05-04.txt",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    },
+    {
+      "id": "PROP-EDIT-040",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "tool": "fast-check + bun:test",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts",
+      "provedAt": "2026-05-04T09:10:00.000Z"
+    }
+  ],
   "traceability": {
     "epicId": "VCSDD-ui-editor-1777848480742",
     "beads": [
@@ -915,5 +1056,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-04T09:05:39.656Z"
+  "updatedAt": "2026-05-04T09:10:33.000Z"
 }
