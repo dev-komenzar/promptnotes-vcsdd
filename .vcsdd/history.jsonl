@@ -478,3 +478,5 @@
 {"timestamp":"2026-05-04T14:08:51.458Z","event":"gate_recorded","featureName":"ui-feed-list-actions","phase":"contract-review","verdict":"PASS","reviewedBy":"human"}
 {"timestamp":"2026-05-04T14:10:19.303Z","event":"gate_recorded","featureName":"ui-feed-list-actions","phase":"contract-review","verdict":"PASS","reviewedBy":"human"}
 {"timestamp":"2026-05-04T14:24:01.823Z","event":"gate_recorded","featureName":"ui-feed-list-actions","phase":"3","verdict":"FAIL","reviewedBy":"adversary"}
+{"timestamp":"2026-05-04T14:57:11.119Z","event":"gate_recorded","featureName":"ui-feed-list-actions","phase":"5","verdict":"PASS","reviewedBy":"verifier"}
+{"timestamp":"2026-05-04T15:03:05.167Z","event":"phase_transition","featureName":"ui-feed-list-actions","from":"5","to":"6","iteration":1,"phase":"6"}
