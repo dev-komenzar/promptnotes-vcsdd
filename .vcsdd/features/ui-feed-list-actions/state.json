@@ -68,7 +68,7 @@
     }
   ],
   "iterations": {
-    "3": 2,
+    "3": 3,
     "1a": 2,
     "1b": 3,
     "1c": 2,
@@ -85,14 +85,23 @@
   "gates": {
     "3": {
       "verdict": "FAIL",
-      "timestamp": "2026-05-04T14:24:01.822Z",
+      "timestamp": "2026-05-04T16:30:00Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 1,
+        "iteration": 2,
         "findings": {
-          "high": 6,
-          "medium": 6,
-          "low": 2
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "iter1": {
+          "verdict": "FAIL",
+          "timestamp": "2026-05-04T14:24:01.822Z",
+          "findings": {
+            "high": 6,
+            "medium": 6,
+            "low": 2
+          }
         }
       }
     },
@@ -123,5 +132,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-04T23:35:00.000Z"
+  "updatedAt": "2026-05-04T23:43:00Z"
 }

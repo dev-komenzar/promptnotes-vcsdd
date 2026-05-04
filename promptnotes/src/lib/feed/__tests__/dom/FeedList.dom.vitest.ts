@@ -367,3 +367,49 @@ describe('REQ-FEED-001/002/003/017 / FIND-014: FeedList renders real metadata fr
     unmount(app);
   });
 });
+
+// ── REQ-FEED-012 / FIND-I2-001: FeedList cancel wiring calls dispatchCancelNoteDeletion ─
+
+describe('REQ-FEED-012 / FIND-I2-001: FeedList cancel path calls dispatchCancelNoteDeletion via command bus', () => {
+  /**
+   * This test verifies the PRODUCTION wiring:
+   *   cancel button / Esc / backdrop → onClose={handleDeleteCancel}
+   *   → feedReducer(DeleteCancelled) → cancel-note-deletion command
+   *   → dispatchCommand → adapter.dispatchCancelNoteDeletion
+   *
+   * Unlike DeleteConfirmModal.dom.vitest.ts:227-240 which tests the fallback
+   * path (no onClose prop), this test verifies the command bus path used by FeedList.
+   */
+  test('cancel button in DeleteConfirmModal calls dispatchCancelNoteDeletion exactly 1× through FeedList wiring (FIND-I2-001)', async () => {
+    const adapter = makeMockAdapter();
+    const stateChannel = makeMockStateChannel();
+
+    // Start with a note visible and delete modal active for that note
+    const NOTE_ID_DEL = 'note-cancel-test';
+    const viewState = makeViewState({
+      visibleNoteIds: [NOTE_ID_DEL],
+      activeDeleteModalNoteId: NOTE_ID_DEL,
+      loadingStatus: 'ready',
+    });
+
+    const app = mount(FeedList, { target, props: { viewState, adapter, stateChannel } });
+    flushSync();
+
+    // DeleteConfirmModal should be rendered (activeDeleteModalNoteId is set)
+    const modal = target.querySelector('[data-testid="delete-confirm-modal"]');
+    expect(modal).not.toBeNull();
+
+    // Find the cancel button inside the modal (testid matches DeleteConfirmModal.svelte:97)
+    const cancelBtn = target.querySelector('[data-testid="cancel-delete-button"]') as HTMLButtonElement | null;
+    expect(cancelBtn).not.toBeNull();
+
+    // Click cancel — this routes through onClose={handleDeleteCancel} → feedReducer(DeleteCancelled)
+    // → cancel-note-deletion command → dispatchCommand → adapter.dispatchCancelNoteDeletion
+    cancelBtn!.click();
+    flushSync();
+
+    expect(adapter.dispatchCancelNoteDeletion).toHaveBeenCalledTimes(1);
+
+    unmount(app);
+  });
+});

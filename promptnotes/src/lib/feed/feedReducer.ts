@@ -75,11 +75,18 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
     }
 
     case 'DeleteCancelled': {
+      const noteId = state.activeDeleteModalNoteId ?? '';
       const nextState: FeedViewState = {
         ...state,
         activeDeleteModalNoteId: null,
       };
-      return { state: nextState, commands: [{ kind: 'close-delete-modal' }] };
+      return {
+        state: nextState,
+        commands: [
+          { kind: 'cancel-note-deletion', payload: { noteId, issuedAt: '' } },
+          { kind: 'close-delete-modal' },
+        ],
+      };
     }
 
     case 'DeletionRetryClicked': {

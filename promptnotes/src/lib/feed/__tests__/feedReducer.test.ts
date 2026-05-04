@@ -479,6 +479,63 @@ describe('REQ-FEED-013: feedReducer removes deleted note from visibleNoteIds', (
   });
 });
 
+// ── REQ-FEED-012: DeleteCancelled emits cancel-note-deletion + close-delete-modal ─
+
+describe('REQ-FEED-012: DeleteCancelled emits both cancel-note-deletion and close-delete-modal', () => {
+  test('DeleteCancelled with activeDeleteModalNoteId in state emits cancel-note-deletion first (FIND-I2-001)', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: 'note-to-cancel' });
+    const action: FeedAction = { kind: 'DeleteCancelled' };
+    const result = feedReducer(state, action);
+
+    const cancelCmd = result.commands.find(c => c.kind === 'cancel-note-deletion');
+    expect(cancelCmd).toBeDefined();
+    expect(cancelCmd).toMatchObject({
+      kind: 'cancel-note-deletion',
+      payload: { noteId: 'note-to-cancel' },
+    });
+  });
+
+  test('DeleteCancelled emits close-delete-modal (FIND-I2-001)', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: 'note-to-cancel' });
+    const action: FeedAction = { kind: 'DeleteCancelled' };
+    const result = feedReducer(state, action);
+
+    const closeCmd = result.commands.find(c => c.kind === 'close-delete-modal');
+    expect(closeCmd).toBeDefined();
+  });
+
+  test('DeleteCancelled emits both commands — exactly 2 commands (FIND-I2-001)', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: 'note-abc' });
+    const action: FeedAction = { kind: 'DeleteCancelled' };
+    const result = feedReducer(state, action);
+
+    expect(result.commands).toHaveLength(2);
+    expect(result.commands[0].kind).toBe('cancel-note-deletion');
+    expect(result.commands[1].kind).toBe('close-delete-modal');
+  });
+
+  test('DeleteCancelled with null activeDeleteModalNoteId uses empty noteId fallback (FIND-I2-001)', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: null });
+    const action: FeedAction = { kind: 'DeleteCancelled' };
+    const result = feedReducer(state, action);
+
+    const cancelCmd = result.commands.find(c => c.kind === 'cancel-note-deletion');
+    expect(cancelCmd).toBeDefined();
+    expect(cancelCmd).toMatchObject({
+      kind: 'cancel-note-deletion',
+      payload: { noteId: '' },
+    });
+  });
+
+  test('DeleteCancelled sets activeDeleteModalNoteId to null in next state (FIND-I2-001)', () => {
+    const state = makeInitialState({ activeDeleteModalNoteId: 'note-to-cancel' });
+    const action: FeedAction = { kind: 'DeleteCancelled' };
+    const result = feedReducer(state, action);
+
+    expect(result.state.activeDeleteModalNoteId).toBeNull();
+  });
+});
+
 // ── REQ-FEED-005/006: FeedRowClicked command emission ─────────────────────────
 
 describe('REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allowed', () => {
