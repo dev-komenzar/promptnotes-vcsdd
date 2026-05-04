@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "edge_case_coverage",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "reqRefs": ["REQ-FEED-009", "EC-FEED-013"],
+  "description": "REQ-FEED-009 EARS clause requires the pending-switch indicator to be displayed 'WHEN FeedViewState.pendingNextNoteId !== null である (すなわち editingStatus ∈ {switching, save-failed})'. The implementation reduces this to a single check `viewState.pendingNextNoteId === noteId` with no editingStatus guard. While the spec rationale notes the domain invariant guarantees `pendingNextNoteId` is null outside switching/save-failed, the impl is brittle: any defect or test fixture that breaks the domain invariant (e.g., a malformed FeedDomainSnapshot fixture during regression testing or an upstream bug in EditingSessionState) will silently surface a false 'switching' indicator while the user is editing or idle. Defense-in-depth absent. Test FeedRow.dom.vitest.ts:257-267 only verifies absence when pendingNextNoteId is null; never asserts absence when status='editing' AND pendingNextNoteId === noteId.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "44-44",
+    "snippet": "const showPendingSwitch = $derived(viewState.pendingNextNoteId === noteId);"
+  },
+  "recommendation": "Tighten predicate to: `viewState.pendingNextNoteId === noteId && (viewState.editingStatus === 'switching' || viewState.editingStatus === 'save-failed')`. Add a DOM test that asserts the indicator is NOT shown when editingStatus='editing' but pendingNextNoteId === noteId.",
+  "routeToPhase": "2b"
+}

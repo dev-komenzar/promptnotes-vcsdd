@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-010",
+  "dimension": "structural_integrity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "reqRefs": ["REQ-FEED-014", "NFR-FEED-003"],
+  "description": "(See FIND-005 for the full DESIGN.md token violation.) Logging this as a separate structural_integrity finding because the wrong border style and shadow layer count are detectable by a deterministic source-grep audit (PROP-FEED-027/028 family pattern) and represent a structural conformance defect, not just a behavioral mismatch.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
+    "lineRange": "49-58",
+    "snippet": "border: 1px solid rgba(221, 91, 0, 0.3); /* should be border-left: Nx solid #dd5b00 */\nbox-shadow: …4 layers… /* should be 5-layer Deep Shadow */"
+  },
+  "recommendation": "Extend NFR-FEED-003 grep audit (audit-design-tokens.ts) to enforce 'border-left' presence and 5-layer shadow on banner.",
+  "routeToPhase": "2b"
+}

@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-011",
+  "dimension": "structural_integrity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "reqRefs": ["REQ-FEED-014", "NFR-FEED-003"],
+  "description": "Retry button in DeletionFailureBanner uses #dd5b00 (Orange/Warn) for both background and message text, in violation of REQ-FEED-014 'Primary Blue #0075de'. Combined with FIND-001/FIND-002 this creates a token-collision: the destructive confirm button (DeleteConfirmModal.svelte:150 #dd5b00) and the recovery retry button (DeletionFailureBanner.svelte:68 #dd5b00) share the same chromatic affordance, undermining DESIGN.md's color semantics for warn vs primary action.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
+    "lineRange": "60-77",
+    "snippet": ".banner-message { color: #dd5b00; }\n.retry-button {\n  background: #dd5b00;\n  color: #ffffff;\n  …\n}"
+  },
+  "recommendation": "Set retry-button background to #0075de, font-size 15px, weight 600, padding 8px 16px. Banner-message color should align with DESIGN.md error/warn text token (likely a near-black or warn-text token, not the same #dd5b00 used as accent border).",
+  "routeToPhase": "2b"
+}

@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "reqRefs": ["REQ-FEED-012"],
+  "description": "REQ-FEED-012 specifies the destructive action button label as '削除（OS ゴミ箱に送る）'. Implementation renders '削除する'. Disambiguation between trash-send vs hard-delete is lost; the user interface no longer telegraphs that the destructive action moves the file to the OS trash and is reversible.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
+    "lineRange": "86-92",
+    "snippet": "<button\n  data-testid=\"confirm-delete-button\"\n  onclick={handleConfirm}\n  class=\"modal-button-confirm\"\n>\n  削除する\n</button>"
+  },
+  "recommendation": "Use '削除（OS ゴミ箱に送る）' as the confirm button label (or an equivalent phrase that includes 'OS ゴミ箱に送る'). Add a DOM assertion on confirm-delete-button textContent.",
+  "routeToPhase": "2b"
+}

@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "reqRefs": ["REQ-FEED-001", "REQ-FEED-002", "REQ-FEED-003", "REQ-FEED-017"],
+  "description": "FeedList.svelte renders each visible row by mounting FeedRow with literal placeholders body=\"\", createdAt={0}, updatedAt={0}, tags={[]}. There is no projection of Note.frontmatter (createdAt, updatedAt, tags) nor Note.body into the row. As wired, every produced row will display 'Created: 1970-01-01 09:00', empty preview, and zero tag chips at runtime — directly violating REQ-FEED-001 (createdAt/updatedAt timestamps), REQ-FEED-002 (2-line body preview), REQ-FEED-003 (tag pill rendering), and REQ-FEED-017 (post-save updatedAt refresh has nothing to refresh). The contract scope explicitly enumerates FeedList.svelte as part of Sprint 1 deliverable and 'Full working feed list with row click ... and all purity/IPC boundary constraints enforced' (contracts/sprint-1.md:67), so deferring this to a downstream feature is not legal under the approved contract. The integration tests pass because they assert only row count and the missing data, but they do not assert any timestamp / preview / tag content.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedList.svelte",
+    "lineRange": "78-88",
+    "snippet": "{#each visibleNoteIds as noteId (noteId)}\n  <FeedRow\n    {noteId}\n    body=\"\"\n    createdAt={0}\n    updatedAt={0}\n    tags={[]}\n    viewState={currentViewState}\n    {adapter}\n  />\n{/each}"
+  },
+  "recommendation": "Either (a) extend FeedDomainSnapshot to carry per-noteId metadata (frontmatter + body) and pass real values in FeedList, or (b) add a feature-scoped projection store that resolves noteId -> { body, createdAt, updatedAt, tags } before render. Then add DOM assertions in FeedList.dom.vitest.ts that verify [data-testid=row-created-at], [data-testid=row-body-preview], and [data-testid=tag-chip] reflect the snapshot data, not zero/empty placeholders.",
+  "routeToPhase": "2b"
+}

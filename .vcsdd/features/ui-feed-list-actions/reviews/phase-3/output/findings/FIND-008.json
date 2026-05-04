@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "implementation_correctness",
+  "category": "spec_gap",
+  "severity": "medium",
+  "reqRefs": ["REQ-FEED-005", "REQ-FEED-011", "REQ-FEED-012"],
+  "description": "verification-architecture.md §9 + §9b establish a reducer→shell command bus: feedReducer emits FeedCommand variants ('select-past-note', 'request-note-deletion', 'confirm-note-deletion', 'cancel-note-deletion', 'open-delete-modal', 'close-delete-modal') intended to be consumed by the impure shell. In the actual implementation the shell never reads reducer.commands for any of these variants — components call adapter.dispatchSelectPastNote / dispatchRequestNoteDeletion / dispatchConfirmNoteDeletion / dispatchCancelNoteDeletion directly inside their own click handlers (FeedRow.svelte:50-58, DeleteConfirmModal.svelte:27-35, DeletionFailureBanner.svelte:28-30). The reducer is exercised only for state mirroring on DomainSnapshotReceived (FeedList.svelte:43-47). Consequence: the FeedRowClicked / DeleteButtonClicked / DeleteConfirmed / DeleteCancelled / DeletionRetryClicked / DeletionBannerDismissed branches inside feedReducer.ts:50-97 are dead code at runtime, and PROP-FEED-005/006/035 'totality + biconditional' tests are proving correctness of unwired logic. The shell guard duplicates the reducer guard (isFeedRowClickBlocked) but since they are not reused via a single dispatch path, future drift between guard implementations is unprotected.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/feedReducer.ts",
+    "lineRange": "50-97",
+    "snippet": "case 'FeedRowClicked': {\n  if (isFeedRowClickBlocked(state.editingStatus, state.loadingStatus)) {\n    return { state, commands: [] };\n  }\n  const commands: FeedCommand[] = [\n    { kind: 'select-past-note', payload: { noteId: action.noteId, issuedAt: '' } },\n  ];\n  return { state, commands };\n}\ncase 'DeleteButtonClicked': { /* … emits request-note-deletion + open-delete-modal … */ }\ncase 'DeleteConfirmed': { /* … emits confirm-note-deletion … */ }\n…"
+  },
+  "recommendation": "Either (a) wire the components to dispatch through feedReducer (collect commands and translate to adapter calls), making the reducer the single source of truth for guards; or (b) remove the dead branches from feedReducer and from PROP-FEED-005/035 arbitraries to honestly reflect what the shell actually drives. Option (a) is preferable because it preserves the v-arch §9 contract.",
+  "routeToPhase": "2c"
+}
