@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-S2-11",
+  "sprint": 2,
+  "iteration": 2,
+  "dimension": "implementation_correctness",
+  "category": "spec_gap",
+  "severity": "low",
+  "description": "scan_vault_feed is called synchronously on every select_past_note and confirm_note_deletion invocation. For a vault with N large .md files, this performs N file reads plus 1 directory scan on the Tauri command thread for every note selection by the user. The Tauri command handler thread is blocked for the duration of the scan. There is no size limit, timeout, or async offload. For vaults with hundreds of notes or large files this will produce perceptible latency on every row click. While no NFR specifying command latency exists in behavioral-spec.md, the original design intent (feed.rs comment at line 14-16: 'The Rust side is responsible only for: 1. OS-level I/O 2. Emitting events') implies the handler should be a thin shell, not a full-vault scanner on every interaction. The existing feed_initial_state does one scan at startup, which is appropriate. The new pattern of per-event scanning is a cost-model change not assessed in the spec or verification architecture.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "249-253",
+    "snippet": "pub fn select_past_note(...) {\n    let _ = issued_at;\n    let snapshot = make_editing_state_changed_snapshot(&note_id, &vault_path); // calls scan_vault_feed\n    app.emit(\"feed_state_changed\", snapshot)"
+  },
+  "crossReference": [
+    "promptnotes/src-tauri/src/feed.rs:140-159 — make_editing_state_changed_snapshot calls scan_vault_feed unconditionally",
+    "promptnotes/src-tauri/src/feed.rs:166-180 — make_note_deleted_snapshot calls scan_vault_feed unconditionally",
+    ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md — no NFR for command latency"
+  ],
+  "routeToPhase": "1a",
+  "resolution": "Either: (a) add an NFR to behavioral-spec.md bounding acceptable command latency and document the per-event scan cost as accepted; or (b) consider an alternative design where the TS client maintains visibleNoteIds state locally and only requests a re-scan on explicit refresh triggers (NoteFileSaved, NoteFileDeleted). This is an architectural tradeoff that belongs in a spec discussion, not a silent implementation choice."
+}

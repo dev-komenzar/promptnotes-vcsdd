@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-S2-10",
+  "sprint": 2,
+  "iteration": 2,
+  "dimension": "edge_case_coverage",
+  "category": "spec_gap",
+  "severity": "low",
+  "description": "scan_vault_feed (feed.rs:323-358) uses std::fs::read_dir which returns directory entries in arbitrary filesystem-dependent order (not sorted). This means visible_note_ids is populated in non-deterministic order between different invocations. When select_past_note or confirm_note_deletion triggers a re-scan, the emitted snapshot may present notes in a different order than the previous snapshot, causing the TS client's feed list to visually reorder on every note click or deletion. REQ-FEED-022 does not mandate a sort order for feed_initial_state, but REQ-FEED-017 requires the feed to 'ソート順を再計算' (recalculate sort order) after save events — implying the Rust side is expected to provide a consistent ordering. scan_vault_feed provides no sort guarantee. The unit test make_note_deleted_snapshot_populates_remaining_feed_after_deletion (feed.rs:715-740) uses iter().any() which is order-agnostic, so this defect is not caught. No test verifies that successive scan_vault_feed calls on the same vault return the same note order.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "330-355",
+    "snippet": "for entry in read_dir.flatten() {\n    // No sort applied — filesystem-dependent order"
+  },
+  "crossReference": [
+    ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md REQ-FEED-017 — 'ソート順を再計算'",
+    "promptnotes/src-tauri/src/feed.rs:714-740 — test uses any() not ordered assertion"
+  ],
+  "routeToPhase": "2b",
+  "resolution": "Sort visible_note_ids before returning from scan_vault_feed, using a deterministic key (e.g., note_id string sort or updatedAt descending from metadata). Add a test asserting that scan_vault_feed on a multi-file vault returns a consistent, sorted order across multiple calls."
+}

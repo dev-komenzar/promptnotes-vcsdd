@@ -1,106 +1,142 @@
 {
   "sprintNumber": 2,
   "feature": "ui-feed-list-actions",
-  "overallVerdict": "FAIL",
-  "timestamp": "2026-05-04T00:00:00Z",
-  "iteration": 1,
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-04T05:00:00Z",
+  "iteration": 2,
   "dimensions": [
     {
       "name": "spec_fidelity",
       "verdict": "FAIL",
-      "findings": ["FIND-S2-01", "FIND-S2-05", "FIND-S2-06"],
+      "findings": ["FIND-S2-08", "FIND-S2-09"],
       "evidence": [
         {
           "type": "file",
-          "location": "promptnotes/src-tauri/src/feed.rs:148-194",
-          "description": "All three snapshot constructors use empty_feed() for visibleNoteIds, violating REQ-FEED-021 (current state must be carried) and REQ-FEED-013 (only deleted row removed)"
+          "location": "promptnotes/src/routes/+page.svelte:104",
+          "description": "EditorPane now wrapped in <div class='editor-main'> but spec REQ-FEED-023:529 still requires <main class='editor-main'>. Spec not updated to reflect fix for FIND-S2-02."
         },
         {
           "type": "file",
-          "location": "promptnotes/src-tauri/src/feed.rs:249-270",
-          "description": "confirm_note_deletion uses note_id as file path argument to fs_trash_file_impl without spec-documented identity assumption"
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:466-469",
+          "description": "REQ-FEED-020 handler parameter table still shows old 3-argument signatures for select_past_note and confirm_note_deletion; implementation now has vault_path and file_path added."
         }
       ]
     },
     {
       "name": "edge_case_coverage",
-      "verdict": "FAIL",
-      "findings": ["FIND-S2-03", "FIND-S2-07"],
+      "verdict": "PASS",
+      "findings": ["FIND-S2-10"],
       "evidence": [
         {
           "type": "file",
-          "location": "promptnotes/src-tauri/src/feed.rs:389-396",
-          "description": "Multi-line YAML tags parser collects all '- ' items in frontmatter regardless of key context; no test for multi-field frontmatter or CRLF line endings"
+          "location": "promptnotes/src-tauri/src/feed.rs:580-656",
+          "description": "FIND-S2-03 resolved: YamlKey state-machine tests added for aliases-before-tags, references-before-tags, aliases-after-tags. All three multi-key scenarios correctly prevent cross-contamination."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs:619-657",
+          "description": "FIND-S2-07 resolved: CRLF body extraction test parse_frontmatter_metadata_crlf_body_has_no_leading_cr confirms body_skip=6 for CRLF delimiter. Combined CRLF+multiline tags test also passes."
         }
       ]
     },
     {
       "name": "implementation_correctness",
-      "verdict": "FAIL",
-      "findings": ["FIND-S2-01", "FIND-S2-05", "FIND-S2-06"],
+      "verdict": "PASS",
+      "findings": ["FIND-S2-11"],
       "evidence": [
         {
           "type": "file",
-          "location": "promptnotes/src-tauri/src/feed.rs:133-194",
-          "description": "empty_feed() used in all event snapshot constructors; select_past_note wipes visibleNoteIds to [] on every note selection; confirm_note_deletion wipes visibleNoteIds to [] on success and failure"
+          "location": "promptnotes/src-tauri/src/feed.rs:144-159",
+          "description": "FIND-S2-05 resolved: make_editing_state_changed_snapshot now calls scan_vault_feed(vault_path). Test make_editing_state_changed_snapshot_populates_feed_from_vault confirms non-empty visibleNoteIds when vault has .md files."
         },
         {
           "type": "file",
-          "location": "promptnotes/src/lib/feed/feedReducer.ts:30-43",
-          "description": "feedReducer.DomainSnapshotReceived overwrites visibleNoteIds from snapshot.feed.visibleNoteIds — receives [] from Rust, clears feed list"
+          "location": "promptnotes/src-tauri/src/feed.rs:166-208",
+          "description": "FIND-S2-06 resolved: make_note_deleted_snapshot and make_deletion_failed_snapshot both call scan_vault_feed. Test make_note_deleted_snapshot_populates_remaining_feed_after_deletion confirms remaining notes appear in snapshot."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs:276-299",
+          "description": "FIND-S2-01 resolved: confirm_note_deletion now accepts distinct file_path and note_id parameters. fs_trash_file_impl called with &file_path, not &note_id. fs_trash_file_impl_uses_file_path_not_note_id test confirms the separation."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedList.svelte:80-94",
+          "description": "Shell correctly fills vault_path and file_path placeholders before calling adapter. resolvedFilePath falls back to cmd.payload.noteId for backward compat (identity assumption now explicit and documented)."
         }
       ]
     },
     {
       "name": "structural_integrity",
-      "verdict": "FAIL",
-      "findings": ["FIND-S2-02"],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {
           "type": "file",
-          "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:94-109",
-          "description": "AppShell wraps slot in <main>; +page.svelte places another <main class='editor-main'> inside that slot, producing nested <main> in the DOM"
+          "location": "promptnotes/src/routes/+page.svelte:93-113",
+          "description": "FIND-S2-02 resolved: +page.svelte no longer emits <main> inside AppShell slot. Layout uses <div class='layout'> + <aside class='feed-sidebar'> + <div class='editor-main'>. No nested <main> in the DOM."
         },
         {
           "type": "file",
-          "location": "promptnotes/src/routes/+page.svelte:98",
-          "description": "<main class='editor-main'> is a direct child of AppShell slot which already renders inside <main>"
+          "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:94-109",
+          "description": "AppShell.svelte:95 still renders <main> in Configured state; +page.svelte slot content is now all divs. HTML5 single-<main> invariant is satisfied."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/lib.rs:285-291",
+          "description": "All 6 feed commands registered in invoke_handler: select_past_note, request_note_deletion, confirm_note_deletion, cancel_note_deletion, fs_trash_file, feed_initial_state."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/tauriFeedAdapter.ts:17-48",
+          "description": "TS adapter interface and implementation correctly updated to match Rust command signatures with vault_path and file_path arguments."
         }
       ]
     },
     {
       "name": "verification_readiness",
-      "verdict": "FAIL",
-      "findings": ["FIND-S2-04"],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {
           "type": "file",
-          "location": "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts:82-154",
-          "description": "PROP-FEED-S2-005 test manually constructs expected DOM without mounting +page.svelte; PROP-FEED-S2-006 and PROP-FEED-S2-007 are expect(true).toBe(true) placeholders with zero verification value"
+          "location": "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts:85-218",
+          "description": "FIND-S2-04 resolved: Tests now mount actual FeedList component (not manually constructed DOM). Three real behavioral assertions: empty-state render, note-row render with populated viewState, vaultPath prop wiring. Two source-read tests verify grid-template-columns and #e9e9e7 presence in +page.svelte."
         },
         {
           "type": "file",
-          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
-          "description": "No test for confirm_note_deletion behavioral correctness (file path deletion, event payload shape); PROP-FEED-S2-003 and PROP-FEED-S2-004 are proved by cargo-check only (Tier 0), not behavioral tests"
+          "location": "promptnotes/src-tauri/src/feed.rs:659-740",
+          "description": "FIND-S2-01/05/06 Rust behavioral tests added: fs_trash_file_impl_uses_file_path_not_note_id (file path vs note_id separation), make_editing_state_changed_snapshot_populates_feed_from_vault (non-empty visibleNoteIds), make_note_deleted_snapshot_populates_remaining_feed_after_deletion (remaining notes present)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs:580-657",
+          "description": "5 new unit tests for FIND-S2-03 and FIND-S2-07: three YamlKey state-machine tests plus two CRLF tests. All are behavioral, not tautological."
         }
       ]
     }
   ],
+  "iter1ResolutionSummary": {
+    "FIND-S2-01": "RESOLVED — confirm_note_deletion has explicit file_path parameter; fs_trash_file_impl called with &file_path; TS adapter updated; behavioral test added",
+    "FIND-S2-02": "RESOLVED — +page.svelte uses <div class='editor-main'>, double-<main> eliminated; NOTE: spec REQ-FEED-023 text not updated (see FIND-S2-08)",
+    "FIND-S2-03": "RESOLVED — YamlKey state machine correctly scopes list items to tags key; 3 cross-contamination tests added",
+    "FIND-S2-04": "RESOLVED — Tests mount actual FeedList; source-read assertions replace tautological expect(true)",
+    "FIND-S2-05": "RESOLVED — make_editing_state_changed_snapshot calls scan_vault_feed; vault_path added to select_past_note; NOTE: spec REQ-FEED-020 table not updated (see FIND-S2-09)",
+    "FIND-S2-06": "RESOLVED — all three snapshot constructors call scan_vault_feed; test confirms remaining notes visible after deletion",
+    "FIND-S2-07": "RESOLVED — body_skip variable is 5 for LF, 6 for CRLF; CRLF test confirms no leading CR in body"
+  },
   "convergenceSignals": {
-    "findingCount": 7,
-    "criticalCount": 1,
-    "highCount": 2,
-    "mediumCount": 4,
-    "lowCount": 0,
+    "findingCount": 4,
+    "criticalCount": 0,
+    "highCount": 0,
+    "mediumCount": 2,
+    "lowCount": 2,
+    "iter1FindingsResolved": 7,
+    "iter1FindingsTotal": 7,
     "allCriteriaEvaluated": true,
     "evaluatedCriteria": [],
     "duplicateFindings": [],
-    "sprint1RegressionDetected": false
-  },
-  "builderPointsAssessment": {
-    "confirmOkReturnsOk": "PASS — confirm_note_deletion returns Ok(()) on both success and failure paths (feed.rs:265-270); error communicated via event",
-    "selectPastNoteEventPayloadThin": "FAIL — payload carries EditingStateChanged cause correctly, but feed.visibleNoteIds is hardcoded [] (empty_feed), which resets client state on every note selection (FIND-S2-05)",
-    "doubleMainDetected": "FAIL — AppShell.svelte:95 renders <main> around <slot/> and +page.svelte:98 renders <main class='editor-main'> inside that slot; nested <main> confirmed (FIND-S2-02)",
-    "frontmatterHeuristicReview": "FAIL — multi-line tag parser collects ALL '- ' prefixed items regardless of YAML key context (FIND-S2-03); CRLF off-by-one in body extraction (FIND-S2-07)"
+    "sprint1RegressionDetected": false,
+    "passThreshold": "critical=0, high=0, medium<=2 — THRESHOLD MET"
   }
 }

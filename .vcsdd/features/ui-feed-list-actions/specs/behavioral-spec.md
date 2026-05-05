@@ -463,9 +463,9 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 
 | Handler | Parameters | Side-effect | Returns |
 |---------|-----------|-------------|---------|
-| `select_past_note` | `app: AppHandle, note_id: String, issued_at: String` | Emits `feed_state_changed` with `EditingStateChanged` cause | `Ok(())` or `Err(String)` |
+| `select_past_note` | `app: AppHandle, note_id: String, vault_path: String, issued_at: String` | Calls `scan_vault_feed(&vault_path)` (FIND-S2-05) and emits `feed_state_changed` with `EditingStateChanged` cause + populated `visibleNoteIds`/`noteMetadata` | `Ok(())` or `Err(String)` |
 | `request_note_deletion` | `note_id: String, issued_at: String` | None (modal state is client-side only) | `Ok(())` |
-| `confirm_note_deletion` | `app: AppHandle, note_id: String, issued_at: String` | Calls `fs_trash_file_impl(&note_id)`, then emits `feed_state_changed` with `NoteFileDeleted` cause on success or `NoteDeletionFailed` cause on failure | `Ok(())` or `Err(String)` |
+| `confirm_note_deletion` | `app: AppHandle, note_id: String, file_path: String, vault_path: String, issued_at: String` | Calls `fs_trash_file_impl(&file_path)` (FIND-S2-01: file_path is the OS-level path; note_id is the logical id used in the snapshot), then calls `scan_vault_feed(&vault_path)` (FIND-S2-06) and emits `feed_state_changed` with `NoteFileDeleted` cause on success or `NoteDeletionFailed` cause on failure, both with re-scanned visibleNoteIds | `Ok(())` or `Err(String)` |
 | `cancel_note_deletion` | `note_id: String, issued_at: String` | None | `Ok(())` |
 
 **Emit invariant**: `feed_state_changed` MUST be emitted after every state-mutating operation (`select_past_note`, `confirm_note_deletion`). The payload MUST conform to `FeedDomainSnapshot` structure (camelCase via serde).
@@ -509,6 +509,10 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 - `feed_initial_state` with an empty vault directory returns `Ok(FeedDomainSnapshotDto)` with `feed.visibleNoteIds = []`.
 - `feed_initial_state` with a non-existent vault path returns `Err(String)`.
 
+**Known tradeoffs (Phase 6 acknowledged)**:
+- **FIND-S2-10** (low): `scan_vault_feed` returns entries in non-deterministic filesystem order. This may cause UI row reordering between re-scans. Acceptable for MVP; can be addressed by sorting by `updatedAt` desc before emit (deferred to a future sprint or user-visible bug report).
+- **FIND-S2-11** (low): `scan_vault_feed` is invoked synchronously on every `select_past_note` and `confirm_note_deletion`. For vault sizes ≤ a few hundred markdown files this is acceptable. Latency NFR is not specified at the MVP level. If vault size grows, options include (a) caching with invalidation, (b) Mutex-guarded Rust-side state, (c) incremental fs watcher events. Deferred.
+
 ---
 
 ### REQ-FEED-023: `+page.svelte` — FeedList mounted in AppShell main route
@@ -525,7 +529,7 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 **Acceptance Criteria**:
 - `+page.svelte` imports and mounts both `FeedList` and `EditorPane`.
 - `FeedList` is wrapped in an `<aside>` with class `feed-sidebar`.
-- `EditorPane` is wrapped in a `<main>` with class `editor-main`.
+- `EditorPane` is wrapped in a `<div>` with class `editor-main` (FIND-S2-02: AppShell already provides the single `<main>` ancestor; nesting `<main>` inside `<main>` violates HTML5).
 - The layout container uses `display: grid` with `grid-template-columns: 320px 1fr`.
 - Sidebar border color matches DESIGN.md whisper border `#e9e9e7`.
 - Configured state renders the two-column layout (DOM integration test).
