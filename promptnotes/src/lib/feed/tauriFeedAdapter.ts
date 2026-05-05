@@ -58,7 +58,7 @@ export function createTauriFeedAdapter(): TauriFeedAdapter {
       updatedAt: number,
       issuedAt: string,
     ): Promise<void> {
-      const newTags = [...existingTags, tag];
+      const newTags = existingTags.includes(tag) ? [...existingTags] : [...existingTags, tag];
       return tagSaveToFile(noteId, body, newTags, createdAt, updatedAt);
     },
     dispatchRemoveTagViaChip(

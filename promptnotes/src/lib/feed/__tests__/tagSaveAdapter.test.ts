@@ -84,7 +84,7 @@ describe('tagSaveAdapter: dispatchAddTagViaChip writes tag via write_file_atomic
     expect(contents).toContain('body');
   });
 
-  test('dispatchAddTagViaChip with duplicate existing tag does not duplicate in markdown', async () => {
+  test('dispatchAddTagViaChip with duplicate existing tag deduplicates in markdown', async () => {
     const adapter = createTauriFeedAdapter();
 
     await adapter.dispatchAddTagViaChip?.(
@@ -99,7 +99,9 @@ describe('tagSaveAdapter: dispatchAddTagViaChip writes tag via write_file_atomic
 
     const callArgs = mockedInvoke.mock.calls[0];
     const contents = callArgs[1].contents as string;
-    expect(contents).toContain('  - draft');
+    // Should contain 'draft' and 'typescript' but NOT duplicate 'draft'
+    const draftMatches = [...contents.matchAll(/draft/g)];
+    expect(draftMatches.length).toBe(1);
     expect(contents).toContain('  - typescript');
   });
 });
