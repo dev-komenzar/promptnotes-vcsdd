@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-S2-02",
+  "sprint": 2,
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "AppShell.svelte emits a <main> element (line 95) when state === 'Configured', and +page.svelte emits its own <main class='editor-main'> (line 98) inside the AppShell slot. This produces a nested <main> within <main> in the final DOM, violating the HTML5 spec which states the <main> element must not be nested (a document must not have more than one visible <main> element). REQ-FEED-023 specifies 'EditorPane is wrapped in a <main> with class editor-main' — but the spec did not account for the AppShell already supplying a <main>. The +page.svelte content is placed in AppShell's <slot /> which is itself inside <main> at AppShell.svelte:109. The PROP-FEED-S2-005 DOM test does not mount AppShell; it only tests a manually constructed DOM scaffold, so this nested-main issue is never caught by the test suite.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/ui/app-shell/AppShell.svelte",
+    "lineRange": "94-109",
+    "snippet": "{#if state === 'Configured'}\n    <main>\n      ...\n      <slot />\n    </main>"
+  },
+  "crossReference": [
+    "promptnotes/src/routes/+page.svelte:98 — <main class='editor-main'>",
+    "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts:82-111 — test does not mount AppShell, tests manually constructed DOM only"
+  ],
+  "routeToPhase": "2b"
+}

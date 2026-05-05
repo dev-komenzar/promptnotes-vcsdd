@@ -54,7 +54,9 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       }
 
       const commands: FeedCommand[] = [
-        { kind: 'select-past-note', payload: { noteId: action.noteId, issuedAt: '' } },
+        // FIND-S2-05: vaultPath is filled by the effectful shell (FeedList.svelte)
+        // before calling the adapter. The pure reducer emits '' as a placeholder.
+        { kind: 'select-past-note', payload: { noteId: action.noteId, vaultPath: '', issuedAt: '' } },
       ];
       return { state, commands };
     }
@@ -77,7 +79,10 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
         activeDeleteModalNoteId: null,
       };
       const commands: FeedCommand[] = [
-        { kind: 'confirm-note-deletion', payload: { noteId: action.noteId, issuedAt: '' } },
+        // FIND-S2-01 / FIND-S2-06: filePath and vaultPath are filled by the
+        // effectful shell (FeedList.svelte) before calling the adapter.
+        // The pure reducer emits '' placeholders.
+        { kind: 'confirm-note-deletion', payload: { noteId: action.noteId, filePath: '', vaultPath: '', issuedAt: '' } },
         { kind: 'close-delete-modal' },
       ];
       return { state: nextState, commands };
@@ -100,7 +105,8 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
 
     case 'DeletionRetryClicked': {
       const commands: FeedCommand[] = [
-        { kind: 'confirm-note-deletion', payload: { noteId: action.noteId, issuedAt: '' } },
+        // FIND-S2-01 / FIND-S2-06: filePath and vaultPath filled by shell.
+        { kind: 'confirm-note-deletion', payload: { noteId: action.noteId, filePath: '', vaultPath: '', issuedAt: '' } },
       ];
       return { state, commands };
     }

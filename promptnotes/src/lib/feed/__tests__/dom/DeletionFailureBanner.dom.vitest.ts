@@ -96,7 +96,9 @@ describe('PROP-FEED-019 / REQ-FEED-014: retry button dispatches ConfirmNoteDelet
     flushSync();
 
     expect(adapter.dispatchConfirmNoteDeletion).toHaveBeenCalledTimes(1);
-    expect(adapter.dispatchConfirmNoteDeletion).toHaveBeenCalledWith('note-001', expect.any(String));
+    // FIND-S2-01: adapter now takes (noteId, filePath, vaultPath, issuedAt).
+    // DeletionFailureBanner fallback path uses noteId as filePath, '' for vaultPath.
+    expect(adapter.dispatchConfirmNoteDeletion).toHaveBeenCalledWith('note-001', 'note-001', '', expect.any(String));
 
     unmount(app);
   });

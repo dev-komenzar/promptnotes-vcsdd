@@ -47,6 +47,10 @@
     noteMetadata: {},
   });
 
+  // FIND-S2-01/05/06: Current vault path, resolved once on mount and passed to
+  // FeedList so it can forward it to Rust commands that need to emit feed snapshots.
+  let currentVaultPath = $state<string>('');
+
   // REQ-FEED-022: Load initial state from Rust after mount.
   // We use $effect to trigger after the component is attached to the DOM.
   $effect(() => {
@@ -55,6 +59,7 @@
         // settings_load provides the vault path (configured by ui-app-shell).
         const vaultPath = await invoke<string | null>("settings_load");
         if (vaultPath) {
+          currentVaultPath = vaultPath;
           const snapshot = await invoke<{
             editing: { status: string; currentNoteId: string | null; pendingNextNoteId: string | null };
             feed: { visibleNoteIds: string[]; filterApplied: boolean };
@@ -93,9 +98,10 @@
         viewState={feedViewState}
         adapter={feedAdapter}
         stateChannel={feedStateChannel}
+        vaultPath={currentVaultPath}
       />
     </aside>
-    <main class="editor-main">
+    <div class="editor-main">
       <EditorPane
         {adapter}
         {stateChannel}
@@ -103,7 +109,7 @@
         {clipboard}
         {clock}
       />
-    </main>
+    </div>
   </div>
 </AppShell>
 

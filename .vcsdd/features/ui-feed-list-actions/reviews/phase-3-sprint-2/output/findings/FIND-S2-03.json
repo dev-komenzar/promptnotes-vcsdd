@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-S2-03",
+  "sprint": 2,
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "high",
+  "description": "The frontmatter multi-line tags parser in parse_frontmatter_metadata has a context-free design flaw: it collects ALL '- ' prefixed lines in the frontmatter as tags, regardless of whether they belong to the 'tags:' key. If a frontmatter has other YAML list fields (e.g., 'aliases:', 'references:'), their list items will be included in the tags array. The parser does not track which key the current '- ' items belong to (feed.rs:390-395). No unit test in feed_handlers.rs or the inline #[cfg(test)] block tests a frontmatter with multiple list fields. The only test (parse_frontmatter_metadata_extracts_fields) uses only the inline [tag1, tag2] format — not the multi-line '- item' format at all. REQ-FEED-022 requires parsing tags from frontmatter; the heuristic is underdocumented and untested for the case it was designed to handle.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "389-396",
+    "snippet": "} else if line.starts_with(\"- \") {\n    // Multi-line list item under tags:\n    // Only collect if we're in a tags context (simplified: collect all - items)\n    let tag = line[2..].trim()..."
+  },
+  "crossReference": [
+    "promptnotes/src-tauri/src/feed.rs:492-499 — test only covers inline [tag1, tag2] format, no multi-line test",
+    "promptnotes/src-tauri/tests/feed_handlers.rs — no frontmatter parsing tests at all"
+  ],
+  "routeToPhase": "2b"
+}

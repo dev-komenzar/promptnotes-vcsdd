@@ -126,9 +126,17 @@ export type FeedAction =
  * Source: verification-architecture.md §9 FeedCommand
  */
 export type FeedCommand =
-  | { kind: 'select-past-note';        payload: { noteId: string; issuedAt: string } }
+  /**
+   * FIND-S2-05: vaultPath is required so the Rust handler can populate
+   * visibleNoteIds in the emitted snapshot.
+   */
+  | { kind: 'select-past-note';        payload: { noteId: string; vaultPath: string; issuedAt: string } }
   | { kind: 'request-note-deletion';   payload: { noteId: string; issuedAt: string } }
-  | { kind: 'confirm-note-deletion';   payload: { noteId: string; issuedAt: string } }
+  /**
+   * FIND-S2-01 / FIND-S2-06: filePath is the OS path to delete (may differ from noteId).
+   * vaultPath lets Rust populate the post-deletion feed snapshot.
+   */
+  | { kind: 'confirm-note-deletion';   payload: { noteId: string; filePath: string; vaultPath: string; issuedAt: string } }
   | { kind: 'cancel-note-deletion';    payload: { noteId: string; issuedAt: string } }
   | { kind: 'refresh-feed' }
   | { kind: 'open-delete-modal';       payload: { noteId: string } }

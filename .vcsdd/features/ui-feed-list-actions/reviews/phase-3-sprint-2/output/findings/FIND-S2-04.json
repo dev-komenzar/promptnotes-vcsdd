@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-S2-04",
+  "sprint": 2,
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "medium",
+  "description": "PROP-FEED-S2-005 (main-route.dom.vitest.ts) is a tautological test. The test for 'layout container has .feed-sidebar and .editor-main elements' (line 82-111) manually constructs the expected DOM elements itself rather than mounting +page.svelte. The test comment at line 85-88 explicitly acknowledges this: 'We build the expected DOM structure here and verify our assertions work.' Asserting that a manually-created DOM element exists in a manually-populated container does not verify that +page.svelte renders that structure. PROP-FEED-S2-006 and PROP-FEED-S2-007 (lines 142-154) are literally `expect(true).toBe(true)` placeholder tests — they register proof obligations but provide zero verification value and cannot fail under any implementation defect. These three tests inflate the vitest pass count without providing behavioral assurance, and they mask the double-<main> structural defect (FIND-S2-02).",
+  "evidence": {
+    "filePath": "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts",
+    "lineRange": "85-154",
+    "snippet": "// We build the 'expected' DOM structure here and verify our assertions work.\n// ...\nexpect(true).toBe(true); // PROP-FEED-S2-006 placeholder\nexpect(true).toBe(true); // PROP-FEED-S2-007 placeholder"
+  },
+  "crossReference": [
+    "state.json:proofObligations PROP-104 — claims 'proved' for PROP-FEED-S2-005 via this tautological test",
+    "state.json:proofObligations PROP-105, PROP-106 — claims 'proved' via grep but test says 'verified by Phase 5 grep' while Phase 5 is not yet executed"
+  ],
+  "routeToPhase": "2b"
+}

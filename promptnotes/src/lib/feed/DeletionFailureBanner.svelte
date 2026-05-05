@@ -31,7 +31,9 @@
     if (onRetry) {
       onRetry(noteId);
     } else {
-      adapter.dispatchConfirmNoteDeletion(noteId, nowIso());
+      // Fallback direct call: noteId is used as filePath and vaultPath is unknown here.
+      // In practice this branch is not reached when FeedList uses the FIND-008 command bus.
+      adapter.dispatchConfirmNoteDeletion(noteId, noteId, '', nowIso());
     }
   }
 </script>

@@ -75,7 +75,9 @@
     if (onRowClick) {
       onRowClick(noteId);
     } else {
-      adapter.dispatchSelectPastNote(noteId, nowIso());
+      // Fallback direct call: vaultPath is unknown here.
+      // In practice this branch is not reached when FeedList uses the FIND-008 command bus.
+      adapter.dispatchSelectPastNote(noteId, '', nowIso());
     }
   }
 

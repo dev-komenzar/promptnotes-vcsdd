@@ -6,6 +6,8 @@
    *   viewState    — FeedViewState (the full view state)
    *   adapter      — TauriFeedAdapter for IPC dispatch
    *   stateChannel — FeedStateChannel for inbound snapshots
+   *   vaultPath    — Current vault directory path (FIND-S2-01/05/06: passed to
+   *                  Rust handlers so post-action snapshots carry correct feed state)
    *
    * Handles:
    *   - Subscribing to FeedStateChannel and updating viewState via feedReducer
@@ -32,9 +34,11 @@
     viewState: FeedListViewState;
     adapter: TauriFeedAdapter;
     stateChannel: FeedStateChannel;
+    /** FIND-S2-01/05/06: vault directory path, forwarded to Rust commands. */
+    vaultPath?: string;
   }
 
-  const { viewState: initialViewState, adapter, stateChannel }: Props = $props();
+  const { viewState: initialViewState, adapter, stateChannel, vaultPath = '' }: Props = $props();
 
   const _initial = untrack(() => initialViewState);
   let currentViewState = $state<FeedViewState>({ ..._initial });
@@ -55,18 +59,39 @@
   /**
    * Translates FeedCommand variants to adapter calls (FIND-008: command bus).
    * This makes feedReducer the single source of truth for guards.
+   *
+   * FIND-S2-01 / FIND-S2-05 / FIND-S2-06: The pure reducer emits '' placeholders
+   * for vaultPath and filePath. This effectful shell fills in the actual values
+   * before forwarding to the adapter.
    */
   function dispatchCommand(cmd: ReturnType<typeof feedReducer>['commands'][number]): void {
     switch (cmd.kind) {
       case 'select-past-note':
-        adapter.dispatchSelectPastNote(cmd.payload.noteId, cmd.payload.issuedAt || nowIso());
+        // FIND-S2-05: fill in vaultPath so Rust emits a snapshot with real visibleNoteIds.
+        adapter.dispatchSelectPastNote(
+          cmd.payload.noteId,
+          cmd.payload.vaultPath || vaultPath,
+          cmd.payload.issuedAt || nowIso(),
+        );
         break;
       case 'request-note-deletion':
         adapter.dispatchRequestNoteDeletion(cmd.payload.noteId, cmd.payload.issuedAt || nowIso());
         break;
-      case 'confirm-note-deletion':
-        adapter.dispatchConfirmNoteDeletion(cmd.payload.noteId, cmd.payload.issuedAt || nowIso());
+      case 'confirm-note-deletion': {
+        // FIND-S2-01: noteId === filePath in current vault contract (vault uses absolute paths
+        // as noteIds). We use noteId as the filePath when the command's filePath placeholder
+        // is empty, making the identity assumption explicit and testable.
+        // FIND-S2-06: fill in vaultPath so Rust emits a snapshot with remaining notes.
+        const resolvedFilePath = cmd.payload.filePath || cmd.payload.noteId;
+        const resolvedVaultPath = cmd.payload.vaultPath || vaultPath;
+        adapter.dispatchConfirmNoteDeletion(
+          cmd.payload.noteId,
+          resolvedFilePath,
+          resolvedVaultPath,
+          cmd.payload.issuedAt || nowIso(),
+        );
         break;
+      }
       case 'cancel-note-deletion':
         adapter.dispatchCancelNoteDeletion(cmd.payload.noteId, cmd.payload.issuedAt || nowIso());
         break;

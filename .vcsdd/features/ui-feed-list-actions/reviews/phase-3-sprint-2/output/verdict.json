@@ -1,0 +1,106 @@
+{
+  "sprintNumber": 2,
+  "feature": "ui-feed-list-actions",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-05-04T00:00:00Z",
+  "iteration": 1,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S2-01", "FIND-S2-05", "FIND-S2-06"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs:148-194",
+          "description": "All three snapshot constructors use empty_feed() for visibleNoteIds, violating REQ-FEED-021 (current state must be carried) and REQ-FEED-013 (only deleted row removed)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs:249-270",
+          "description": "confirm_note_deletion uses note_id as file path argument to fs_trash_file_impl without spec-documented identity assumption"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-S2-03", "FIND-S2-07"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs:389-396",
+          "description": "Multi-line YAML tags parser collects all '- ' items in frontmatter regardless of key context; no test for multi-field frontmatter or CRLF line endings"
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S2-01", "FIND-S2-05", "FIND-S2-06"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs:133-194",
+          "description": "empty_feed() used in all event snapshot constructors; select_past_note wipes visibleNoteIds to [] on every note selection; confirm_note_deletion wipes visibleNoteIds to [] on success and failure"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/feedReducer.ts:30-43",
+          "description": "feedReducer.DomainSnapshotReceived overwrites visibleNoteIds from snapshot.feed.visibleNoteIds — receives [] from Rust, clears feed list"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S2-02"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/ui/app-shell/AppShell.svelte:94-109",
+          "description": "AppShell wraps slot in <main>; +page.svelte places another <main class='editor-main'> inside that slot, producing nested <main> in the DOM"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/+page.svelte:98",
+          "description": "<main class='editor-main'> is a direct child of AppShell slot which already renders inside <main>"
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S2-04"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts:82-154",
+          "description": "PROP-FEED-S2-005 test manually constructs expected DOM without mounting +page.svelte; PROP-FEED-S2-006 and PROP-FEED-S2-007 are expect(true).toBe(true) placeholders with zero verification value"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
+          "description": "No test for confirm_note_deletion behavioral correctness (file path deletion, event payload shape); PROP-FEED-S2-003 and PROP-FEED-S2-004 are proved by cargo-check only (Tier 0), not behavioral tests"
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 7,
+    "criticalCount": 1,
+    "highCount": 2,
+    "mediumCount": 4,
+    "lowCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [],
+    "duplicateFindings": [],
+    "sprint1RegressionDetected": false
+  },
+  "builderPointsAssessment": {
+    "confirmOkReturnsOk": "PASS — confirm_note_deletion returns Ok(()) on both success and failure paths (feed.rs:265-270); error communicated via event",
+    "selectPastNoteEventPayloadThin": "FAIL — payload carries EditingStateChanged cause correctly, but feed.visibleNoteIds is hardcoded [] (empty_feed), which resets client state on every note selection (FIND-S2-05)",
+    "doubleMainDetected": "FAIL — AppShell.svelte:95 renders <main> around <slot/> and +page.svelte:98 renders <main class='editor-main'> inside that slot; nested <main> confirmed (FIND-S2-02)",
+    "frontmatterHeuristicReview": "FAIL — multi-line tag parser collects ALL '- ' prefixed items regardless of YAML key context (FIND-S2-03); CRLF off-by-one in body extraction (FIND-S2-07)"
+  }
+}

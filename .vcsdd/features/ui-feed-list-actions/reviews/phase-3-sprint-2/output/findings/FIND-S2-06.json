@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-S2-06",
+  "sprint": 2,
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "confirm_note_deletion on success emits make_note_deleted_snapshot which also uses empty_feed() (visibleNoteIds: []). After a successful deletion, the TS feedReducer receives a NoteFileDeleted snapshot with visibleNoteIds=[], which per PROP-FEED-007b sets state.visibleNoteIds = []. This means the entire feed list is cleared after every note deletion — remaining notes disappear from the UI. REQ-FEED-013 requires 'only the deleted note row is removed'; instead the implementation removes all rows. The same structural defect applies to make_deletion_failed_snapshot (feed.rs:183), which also uses empty_feed(), potentially clearing the feed on deletion failure. All three snapshot constructors (make_editing_state_changed_snapshot, make_note_deleted_snapshot, make_deletion_failed_snapshot) have this problem.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "163-194",
+    "snippet": "fn make_note_deleted_snapshot(note_id: &str) -> FeedDomainSnapshotDto {\n    FeedDomainSnapshotDto {\n        feed: empty_feed(),  // visibleNoteIds: vec![] — clears entire feed\n        ...\n    }\n}\n\nfn make_deletion_failed_snapshot(note_id: &str, ...) -> FeedDomainSnapshotDto {\n    FeedDomainSnapshotDto {\n        feed: empty_feed(),  // same defect\n        ..."
+  },
+  "crossReference": [
+    "specs/behavioral-spec.md REQ-FEED-013 — 'feed list removes only the deleted note's row'",
+    "specs/behavioral-spec.md REQ-FEED-021 — 'feed.visibleNoteIds carries the current application state at emit time'",
+    "promptnotes/src-tauri/src/feed.rs:133-138 — empty_feed() always returns vec![]"
+  ],
+  "routeToPhase": "2b"
+}

@@ -219,7 +219,9 @@ describe('PROP-FEED-029 / REQ-FEED-012: confirm button click dispatches ConfirmN
     flushSync();
 
     expect(adapter.dispatchConfirmNoteDeletion).toHaveBeenCalledTimes(1);
-    expect(adapter.dispatchConfirmNoteDeletion).toHaveBeenCalledWith('note-001', expect.any(String));
+    // FIND-S2-01: adapter now takes (noteId, filePath, vaultPath, issuedAt).
+    // DeleteConfirmModal fallback path uses noteId as filePath, '' for vaultPath.
+    expect(adapter.dispatchConfirmNoteDeletion).toHaveBeenCalledWith('note-001', 'note-001', '', expect.any(String));
 
     unmount(app);
   });

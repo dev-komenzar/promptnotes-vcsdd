@@ -88,7 +88,9 @@ describe('PROP-FEED-013 / REQ-FEED-005: row click dispatches SelectPastNote', ()
     flushSync();
 
     expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(1);
-    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledWith('note-001', expect.any(String));
+    // FIND-S2-05: adapter now takes (noteId, vaultPath, issuedAt).
+    // FeedRow fallback path passes '' for vaultPath (unknown at this level).
+    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledWith('note-001', '', expect.any(String));
 
     unmount(app);
   });
