@@ -378,6 +378,8 @@
 | EC-FEED-013 | `pendingNextNoteId` 非 null + `editingStatus ∈ {'switching', 'save-failed'}` | pending 行に視覚的キュー表示 |
 | EC-FEED-014 | 削除後に残り 0 件になる | 空状態表示 |
 | EC-FEED-015 | ローディング中の行クリック | クリック抑止 (REQ-FEED-008) |
+| EC-FEED-016 | `select_past_note` で `note_id` が `note_metadata` に存在しない | `body: ""` で emit (REQ-FEED-024) |
+| EC-FEED-017 | `editing_session_state_changed` emit 順序 | `feed_state_changed` より先に emit (REQ-FEED-024) |
 
 > **Note on EC-FEED-010 removal**: `fs.trashFile` が `not-found` を返す場合、`delete-note` フィーチャ (REQ-DLN-005) により `NoteDeletionFailed` は発行されず `NoteFileDeleted` が発行される。UI 側では `'not-found'` reason は到達不能 (dead code) であるため、EC-FEED-010 を削除した。
 
@@ -426,6 +428,7 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 | REQ-FEED-017–018 | `aggregates.md` §Feed.refreshSort, `workflows.md` Workflow 5 Step 4 |
 | REQ-FEED-019–022 | `implement.md` L82-86 (feature 3 scope), `implement.md` L248-252 (Phase 2b wiring layer) |
 | REQ-FEED-023 | `implement.md` L47 (vertical slice principle), `DESIGN.md` sidebar/main layout |
+| REQ-FEED-024 | `implement.md` L84 (ui-feed-list-actions responsibility), `editor.rs` make_editing_state_changed_payload, `docs/tasks/sprint-ui-feed-list-actions-s3.md` |
 
 ---
 
@@ -533,3 +536,30 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 - The layout container uses `display: grid` with `grid-template-columns: 320px 1fr`.
 - Sidebar border color matches DESIGN.md whisper border `#e9e9e7`.
 - Configured state renders the two-column layout (DOM integration test).
+
+---
+
+## Sprint 3 Extensions
+
+> **Sprint**: 3
+> **Rationale**: `select_past_note` emits only `feed_state_changed` but not `editing_session_state_changed`. EditorPane subscribes to `editing_session_state_changed`, so clicking a past note row does not update the editor with the note's body. Sprint 3 adds the missing emit and verifies it with Rust integration tests.
+
+---
+
+### REQ-FEED-024: `select_past_note` — `editing_session_state_changed` emit
+
+**EARS**: WHEN `select_past_note` is invoked THEN the system SHALL ALSO emit `editing_session_state_changed` with payload `{ state: { status: "editing", isDirty: false, currentNoteId: note_id, pendingNextNoteId: null, lastError: null, body: <note body from file> } }`.
+
+> **Payload shape**: The `{ state: ... }` wrapper matches the wire format produced by `editor::make_editing_state_changed_payload` (`editor.rs:161-178`) and consumed by `editorStateChannel.ts:29` (`event.payload.state`). This is the existing contract established by REQ-EDIT-036 and shared across all `editing_session_state_changed` emitters.
+
+**Body extraction**: extract `body` from `note_metadata.get(note_id).body` (already populated by `scan_vault_feed`). If note_id is not found in note_metadata, emit with `body: ""`.
+
+**Acceptance Criteria**:
+- `select_past_note` emits exactly 2 events: `feed_state_changed` + `editing_session_state_changed`.
+- `editing_session_state_changed` payload (`event.payload.state`) contains all 6 fields: `status: "editing"`, `isDirty: false`, `currentNoteId: note_id`, `pendingNextNoteId: null`, `lastError: null`, `body: <note body>`.
+- `editing_session_state_changed` payload contains the note body from the file system.
+- Note not found in vault → emit with `body: ""`.
+
+**Edge Cases**:
+- EC-FEED-016: `note_id` not found in `note_metadata` (e.g., file was deleted between scan and emit): emit with `body: ""`, other fields unchanged.
+- EC-FEED-017: `editing_session_state_changed` emit order: always emitted before `feed_state_changed` to ensure EditorPane receives state before feed list re-renders.

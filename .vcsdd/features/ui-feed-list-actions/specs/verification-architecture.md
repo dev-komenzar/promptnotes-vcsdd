@@ -510,3 +510,33 @@ Tests (PROP-FEED-S2-005):
 - Assert grid layout styles are applied to the container.
 
 > **Note**: Full `+page.svelte` mount requires SvelteKit route context. The test mounts the layout structure directly (same pattern as existing DOM tests in `src/lib/feed/__tests__/dom/`). The test imports the layout components directly rather than routing through SvelteKit.
+
+---
+
+## 12. Sprint 3 Verification Extensions
+
+> **Sprint**: 3
+> **Scope**: Fix `select_past_note` — add `editing_session_state_changed` emit so that clicking a past note row updates EditorPane with the note body.
+
+### Sprint 3 Proof Obligations
+
+| PROP-ID | REQ-ID | Description | Tier | Tool | Required |
+|---------|--------|-------------|------|------|----------|
+| PROP-FEED-S2-008 | REQ-FEED-024 | `select_past_note` emits both `feed_state_changed` AND `editing_session_state_changed` with correct payload: `{ state: { status: "editing", isDirty: false, currentNoteId: note_id, pendingNextNoteId: null, lastError: null, body } }`. Rust integration test. | Rust integration | cargo test | true |
+
+### Sprint 3 Rust Test Additions
+
+File: `promptnotes/src-tauri/tests/feed_handlers.rs`
+
+Three new tests:
+1. `test_select_past_note_emits_editing_session_state_changed` — verifies both events are emitted AND `editing_session_state_changed` fires before `feed_state_changed`
+2. `test_select_past_note_editing_payload_contains_body` — verifies all 6 payload fields, body matches file content
+3. `test_select_past_note_nonexistent_body_is_empty` — verifies empty body for non-existent note_id
+
+### Sprint 3 Implementation Change
+
+File: `promptnotes/src-tauri/src/feed.rs`
+
+`select_past_note` function: after constructing snapshot, extract `body` from `note_metadata`, construct `editing_session_state_changed` payload via `editor::make_editing_state_changed_payload`, and emit it before the existing `feed_state_changed` emit.
+
+> **Known limitation** (FIND-S3-005): If `editing_session_state_changed` emit succeeds but `feed_state_changed` emit fails, the function returns `Err` but the first event has already been published. This is an existing pattern in the codebase (all multi-emit handlers share this limitation) and is not addressed in Sprint 3. A future generalized solution (e.g., transactional emit or compensation logic) would apply to all handlers.

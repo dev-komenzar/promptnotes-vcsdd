@@ -1,0 +1,12 @@
+{
+  "reviewType": "implementation",
+  "featureName": "ui-feed-list-actions",
+  "sprintNumber": 3,
+  "artifactsToReview": {
+    "spec": ["specs/behavioral-spec.md", "specs/verification-architecture.md"],
+    "tests": ["tests/feed_handlers.rs"],
+    "source": ["src/feed.rs", "src/editor.rs"]
+  },
+  "reviewDimensions": ["spec_fidelity", "implementation_correctness"],
+  "scopeNote": "Sprint 3 is a focused bug fix: select_past_note must emit editing_session_state_changed (REQ-FEED-024). Only the Sprint 3 change (lines in select_past_note that were modified) + the 3 new tests in feed_handlers.rs should be reviewed. The rest of feed.rs has already passed Phase 3 in Sprint 1 and Sprint 2.\n\nSource change location: feed.rs:242-269 (select_past_note function)\nTest additions: feed_handlers.rs (3 new tests at end of file, after Sprint 2 tests)"
+}

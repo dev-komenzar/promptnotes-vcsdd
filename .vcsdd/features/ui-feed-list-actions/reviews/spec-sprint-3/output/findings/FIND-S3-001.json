@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-S3-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "REQ-FEED-024 EARS clause describes the emit payload as a flat object `{ status: \"editing\", isDirty: false, currentNoteId: note_id, pendingNextNoteId: null, lastError: null, body: <note body from file> }`, but the actual wire format produced by `editor::make_editing_state_changed_payload` at editor.rs:161-178 wraps this inside `{ state: EditingSessionStateDto }`. `editorStateChannel.ts:29` then extracts `event.payload.state`. A developer reading only REQ-FEED-024 would emit a flat object without the `{ state: ... }` wrapper, causing EditorPane to receive `undefined` at `event.payload.state` and fail silently.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "549-551",
+    "snippet": "THEN the system SHALL ALSO emit `editing_session_state_changed` with `{ status: \"editing\", isDirty: false, currentNoteId: note_id, pendingNextNoteId: null, lastError: null, body: <note body from file> }`."
+  },
+  "remediationSuggestion": "Either (a) add a cross-reference to REQ-EDIT-036 clarifying that `editing_session_state_changed` payload conforms to the `{ state: EditingSessionStateDto }` wrapper contract, or (b) describe the full payload shape including the `{ state: ... }` wrapping in the EARS clause. The traceability table at line 429 already references `editor.rs make_editing_state_changed_payload` but this is not sufficient — the EARS clause itself must be accurate.",
+  "routeToPhase": "1a"
+}

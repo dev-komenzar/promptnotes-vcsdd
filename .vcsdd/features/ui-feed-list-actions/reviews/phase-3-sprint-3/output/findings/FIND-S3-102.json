@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-S3-102",
+  "dimension": "implementation_correctness",
+  "category": "test_coverage",
+  "severity": "low",
+  "description": "EC-FEED-017 (editing_session_state_changed must be emitted BEFORE feed_state_changed) has zero automated test coverage. The test explicitly acknowledges this gap with a code comment: 'Emit-order verification note (FIND-S3-006): The editing_session_state_changed emit must occur BEFORE feed_state_changed. This ordering is verified via code review + emit call ordering in feed.rs.' The code IS correctly ordered (feed.rs:263 before :267), but no test would fail if someone reversed the two emit calls.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/feed_handlers.rs",
+    "lineRange": "160-163",
+    "snippet": "    // Emit-order verification note (FIND-S3-006):\n    // The editing_session_state_changed emit must occur BEFORE feed_state_changed.\n    // This ordering is verified via code review + emit call ordering in feed.rs."
+  },
+  "routeToPhase": "2a"
+}

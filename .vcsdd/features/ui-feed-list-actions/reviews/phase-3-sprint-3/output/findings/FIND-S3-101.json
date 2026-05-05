@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-S3-101",
+  "dimension": "implementation_correctness",
+  "category": "test_quality",
+  "severity": "medium",
+  "description": "The 3 Sprint 3 tests never invoke select_past_note — the function under review. Instead, they manually replicate the internal body-extraction logic, call scan_vault_feed and make_editing_state_changed_payload directly, and assert on the helper output. Because they do not exercise the actual handler, the tests would pass even if select_past_note were refactored to remove the editing_session_state_changed emit entirely. The only 'test' of the handler itself is Rust compilation (the handler must type-check against the function signature).",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/feed_handlers.rs",
+    "lineRange": "106-166",
+    "snippet": "fn test_select_past_note_emits_editing_session_state_changed() {\n    // ... calls scan_vault_feed() and make_editing_state_changed_payload() directly,\n    // never calls select_past_note()\n    let (_visible_ids, note_metadata) =\n        promptnotes_lib::feed::scan_vault_feed(tmp_dir);\n    // ...\n    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(\n        \"editing\", false, Some(note_path.clone()), None, None, body,\n    );"
+  },
+  "routeToPhase": "2a"
+}

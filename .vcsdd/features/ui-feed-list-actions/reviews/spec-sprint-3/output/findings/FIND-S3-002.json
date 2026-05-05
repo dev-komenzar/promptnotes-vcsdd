@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-S3-002",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "low",
+  "description": "The Sprint 3 Edge Case Catalog section is empty — the Edge Case Catalog table (lines 365-383, EC-FEED-001 through EC-FEED-015) has no new entries for Sprint 3. REQ-FEED-024 documents body extraction edge cases in prose (\"If note_id is not found in note_metadata, emit with body: ''\") but this is not indexed in the catalog. Additionally, the `editing_session_state_changed` emit-before-`feed_state_changed` ordering described in verification-architecture.md §12 line 540 is not captured as an edge case.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "551-556",
+    "snippet": "If note_id is not found in note_metadata, emit with `body: \"\"`."
+  },
+  "remediationSuggestion": "Add two new EC entries: (1) EC-FEED-016: note_id not found in note_metadata during select_past_note → emit editing_session_state_changed with body: ''; (2) EC-FEED-017: editing_session_state_changed emitted before feed_state_changed → EditorPane receives state update before feed list re-renders.",
+  "routeToPhase": "1a"
+}

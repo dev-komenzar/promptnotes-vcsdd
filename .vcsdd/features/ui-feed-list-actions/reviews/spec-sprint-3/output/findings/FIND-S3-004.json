@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-S3-004",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "medium",
+  "description": "PROP-FEED-S2-008 description (line 525) specifies verification of \"correct body content\" but REQ-FEED-024 requires all 6 payload fields: `status: \"editing\"`, `isDirty: false`, `currentNoteId: note_id`, `pendingNextNoteId: null`, `lastError: null`, and `body: <note body>\". The proof obligation is under-specified — it only calls out the body field. If a developer writes tests matching only this description, they would verify body correctness but miss regressions in status, isDirty, currentNoteId, and other fields that EditorPane depends on to function correctly. The three test descriptions at lines 532-534 similarly focus on \"both events emitted\" and \"body\" without enumerating all payload fields.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "523-534",
+    "snippet": "| PROP-FEED-S2-008 | REQ-FEED-024 | `select_past_note` emits both `feed_state_changed` AND `editing_session_state_changed` with correct body content. Rust integration test. | 1 | cargo test | true |"
+  },
+  "remediationSuggestion": "Expand PROP-FEED-S2-008 description to enumerate all fields that must be verified: status === 'editing', isDirty === false, currentNoteId === note_id, pendingNextNoteId === null, lastError === null, AND body matches file content. Alternatively, add separate PROP-FEED-S2-008a (payload field verification) and PROP-FEED-S2-008b (body content verification) proofs. Also add a test description in the Sprint 3 Rust Test Additions section that explicitly checks all 6 fields.",
+  "routeToPhase": "1b"
+}
