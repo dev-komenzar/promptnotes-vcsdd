@@ -1,1 +1,1 @@
-ui-feed-list-actions
+ui-tag-chip

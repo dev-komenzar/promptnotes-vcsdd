@@ -1,0 +1,299 @@
+# Behavioral Specification — ui-tag-chip
+
+Feature: `ui-tag-chip`
+Mode: strict
+Language: typescript
+Phase: 1a
+
+## 1. Feature Overview
+
+This feature makes tag chips interactive on feed rows and adds a tag filter sidebar to the left panel. Users can add/remove tags directly on feed rows without opening the editor, and filter the feed by selecting tags in the sidebar.
+
+### 1.1 Scope
+
+**Included:**
+- Interactive tag chips on feed rows: "×" to remove, "+" to add
+- Autocomplete suggest from `TagInventory.entries` when adding tags
+- `tryNewTag` normalization with `TagError` UI feedback
+- Left sidebar tag filter list (usageCount descending, `#tag (count)` format)
+- `ApplyTagFilter` / `RemoveTagFilter` / `ClearFilter` actions
+- Multi-select OR semantics within tags
+- Unused tag auto-hide (usageCount > 0 invariant)
+- DESIGN.md token compliance
+
+**Excluded:**
+- Free-text search (feature 5: `ui-filter-search`)
+- Sort toggle (feature 5)
+- Frontmatter field filters (MVP scope)
+- Tag management in editor (feature 2: `ui-editor`)
+
+### 1.2 Dependencies (already completed)
+
+| Dependency | Status | Used for |
+|-----------|--------|---------|
+| `tag-chip-update` domain pipeline | complete | `AddTagViaChip` / `RemoveTagViaChip` command handling |
+| `apply-filter-or-search` domain pipeline | complete | `parseFilterInput` + `applyFilterOrSearch` for filter |
+| `ui-feed-list-actions` (feature 3) | complete | FeedList, FeedRow, feedReducer, FeedViewState |
+
+### 1.3 Integration Boundaries
+
+- **Domain pipelines**: Import from `$lib/domain/tag-chip-update/` and `$lib/domain/apply-filter-or-search/` — do NOT reimplement
+- **Tag normalization**: Use `tryNewTag` from `domain/apply-filter-or-search/try-new-tag.ts`
+- **Feed reducer**: Extend `feedReducer` in `$lib/feed/` with new actions
+- **Feed state channel**: Extend `FeedDomainSnapshot` with `tagInventory` data
+- **Tauri commands**: No new Tauri commands needed (reuses existing `writeFileAtomic` via domain pipeline)
+
+---
+
+## 2. EARS Requirements
+
+### REQ-TAG-001 — Tag chip display on feed rows
+
+**Ubiquitous**: THE SYSTEM SHALL render each note's tags as interactive pill badges (`<span class="tag-chip">`) within the feed row, following the existing DESIGN.md pill badge styling (bg `#f2f9ff`, text `#097fe8`, border-radius `9999px`, padding `4px 8px`, font-size `12px`, font-weight `600`).
+
+### REQ-TAG-002 — Remove tag button on each chip
+
+**Ubiquitous**: THE SYSTEM SHALL display a remove button ("×") on the right side of each tag chip in feed rows.
+
+**Event-driven**: WHEN the remove button ("×") on a tag chip is clicked, THE SYSTEM SHALL dispatch `RemoveTagViaChip { noteId, tag }` through the tag-chip-update domain pipeline.
+
+### REQ-TAG-003 — Idempotent tag removal
+
+**Conditional**: IF a remove request targets a tag not present on the note, THEN THE SYSTEM SHALL silently succeed (idempotent; the domain pipeline short-circuits before I/O).
+
+### REQ-TAG-004 — Add tag button on feed row
+
+**Ubiquitous**: THE SYSTEM SHALL display an add tag button ("+") at the end of the tag list on each feed row.
+
+**Event-driven**: WHEN the "+" button is clicked, THE SYSTEM SHALL display an inline tag input field with autocomplete suggestions sourced from `TagInventory.entries`.
+
+### REQ-TAG-005 — Tag input with autocomplete
+
+**State-driven**: WHILE the tag input is focused, THE SYSTEM SHALL show a dropdown list of matching `TagInventory.entries` (filtered by user-typed prefix, case-insensitive), ordered by `usageCount` descending.
+
+**Event-driven**: WHEN the user selects a suggestion from the autocomplete list or presses Enter with valid input, THE SYSTEM SHALL:
+1. Normalize the raw string via `tryNewTag(raw)`
+2. If normalization fails, display the appropriate `TagError` message adjacent to the input
+3. If normalization succeeds, dispatch `AddTagViaChip { noteId, tag }` through the tag-chip-update domain pipeline
+
+### REQ-TAG-006 — TagError UI feedback
+
+**Conditional**: IF `tryNewTag` returns `TagError` with `kind: "empty"` or `kind: "only-whitespace"`, THEN THE SYSTEM SHALL display "タグは空にできません" near the tag input and NOT dispatch the command.
+
+### REQ-TAG-007 — Tag input escape
+
+**Event-driven**: WHEN the user presses the Escape key while the tag input is focused, THE SYSTEM SHALL close the input without dispatching any command.
+
+**Event-driven**: WHEN the user clicks outside the tag input area (blur event), THE SYSTEM SHALL close the input. IF the input contains non-empty text that passes `tryNewTag` validation, THEN THE SYSTEM SHALL dispatch the add command with the normalized tag.
+
+### REQ-TAG-008 — Idempotent tag addition
+
+**Conditional**: IF an add request targets a tag already present on the note, THEN THE SYSTEM SHALL silently succeed (idempotent; the domain pipeline short-circuits before I/O).
+
+### REQ-TAG-009 — Left sidebar tag filter list
+
+**Ubiquitous**: THE SYSTEM SHALL render a tag filter list in the left sidebar (above or integrated with the feed list), displaying each `TagEntry` from `TagInventory.entries` as `#tagname (usageCount)`.
+
+**State-driven**: WHILE `TagInventory.entries` is populated, THE SYSTEM SHALL display entries sorted by `usageCount` descending.
+
+**Conditional**: IF `TagInventory.entries` is empty (no notes have tags), THEN THE SYSTEM SHALL NOT display the tag filter section.
+
+### REQ-TAG-010 — Apply tag filter
+
+**Event-driven**: WHEN the user clicks a tag in the sidebar tag filter list, THE SYSTEM SHALL:
+1. Add the clicked tag to the active filter set (multi-select)
+2. Call `applyFilterOrSearch(feed, applied, snapshots)` to compute new `visibleNoteIds`
+3. Emit `FilterApplied` action to update the feed view
+4. Visually highlight the selected tag(s) in the sidebar
+
+### REQ-TAG-011 — Remove tag filter
+
+**Event-driven**: WHEN the user clicks an already-selected tag in the sidebar, THE SYSTEM SHALL remove it from the active filter set and recalculate visible notes.
+
+### REQ-TAG-012 — Clear all filters
+
+**Ubiquitous**: THE SYSTEM SHALL display a "すべて解除" (Clear All) link button in the tag filter sidebar.
+
+**Event-driven**: WHEN the "すべて解除" button is clicked, THE SYSTEM SHALL clear all active tag filters and show all notes.
+
+### REQ-TAG-013 — Multi-select OR semantics
+
+**Conditional**: IF multiple tags are selected in the filter sidebar, THEN THE SYSTEM SHALL show notes that match ANY of the selected tags (OR semantics within the tags dimension). This behavior is inherited from the domain `FilterCriteria.tags` OR semantics (see aggregates.md §2 invariant 3).
+
+### REQ-TAG-014 — Unused tag auto-hide
+
+**State-driven**: WHILE a tag's `usageCount` is greater than 0, THE SYSTEM SHALL display it in the sidebar.
+
+**Event-driven**: WHEN the last note with a given tag is deleted or has the tag removed (usageCount reaches 0), THE SYSTEM SHALL automatically remove that tag from the sidebar display.
+
+This invariant is already guaranteed by `TagInventory` (aggregates.md §3 invariant 1: usageCount > 0). The UI layer simply reflects the domain state.
+
+### REQ-TAG-015 — DESIGN.md token compliance
+
+**Ubiquitous**: THE SYSTEM SHALL use DESIGN.md tokens for all styling:
+- Tag chips: pill badge pattern (bg `#f2f9ff`, text `#097fe8`, radius `9999px`)
+- Interactive buttons: Notion Blue (`#0075de`) for default, Active Blue (`#005bab`) for hover/pressed
+- Focus rings: `2px solid #097fe8` with `outline-offset: 2px`
+- Tag filter sidebar: Warm White (`#f6f5f4`) for selected state, Warm Gray 300 (`#a39e98`) for secondary text
+- Borders: `1px solid rgba(0,0,0,0.1)` (whisper border)
+- Spacing: use permitted spacing values (2, 4, 6, 8, 12, 16, 24, 32 px)
+- Typography: font-size 12px for tags, 14px for sidebar text
+
+### REQ-TAG-016 — Accessibility
+
+**Ubiquitous**: THE SYSTEM SHALL ensure:
+- Tag chip remove buttons have `aria-label="タグ '{tag}' を削除"` 
+- Add tag buttons have `aria-label="タグを追加"`
+- Tag filter sidebar items have `role="checkbox"` with `aria-checked` reflecting selection state
+- All interactive elements are keyboard-focusable with visible focus rings
+- Tag input field supports Enter to confirm and Escape to cancel
+
+### REQ-TAG-017 — Integration: use domain pipelines
+
+**Ubiquitous**: THE SYSTEM SHALL import and call the existing domain pipelines without reimplementing them:
+- `tagChipUpdate` from `$lib/domain/tag-chip-update/pipeline.js`
+- `applyFilterOrSearch` from `$lib/domain/apply-filter-or-search/apply-filter-or-search.js`
+- `parseFilterInput` from `$lib/domain/apply-filter-or-search/parse-filter-input.js`
+- `tryNewTag` from `$lib/domain/apply-filter-or-search/try-new-tag.js`
+
+**Ubiquitous**: THE SYSTEM SHALL extend `FeedViewState` with `tagInventory` (TagEntry[]) and `activeFilterTags` (string[]) fields.
+
+**Ubiquitous**: THE SYSTEM SHALL extend `FeedAction` and `FeedCommand` discriminated unions with new variants for tag chip operations and filter operations.
+
+### REQ-TAG-018 — Extension of FeedDomainSnapshot
+
+**Ubiquitous**: THE SYSTEM SHALL extend `FeedDomainSnapshot` with a `tagInventory` field carrying `readonly TagEntry[]` (matching `TagInventory.entries` shape) so that the feed reducer can mirror it into `FeedViewState`.
+
+### REQ-TAG-019 — Zero-filter state
+
+**Conditional**: IF `activeFilterTags` is empty (no tags selected), THEN all notes SHALL be visible (no filter applied), and no tags in the sidebar SHALL be highlighted.
+
+---
+
+## 3. Edge Case Catalog
+
+### 3.1 Input Edge Cases
+
+| ID | Edge Case | Expected Behavior |
+|----|----------|-------------------|
+| EC-001 | Empty string submitted as tag | `tryNewTag` returns `{ kind: "empty" }`. Display "タグは空にできません". Do NOT dispatch. |
+| EC-002 | Whitespace-only string submitted | `tryNewTag` returns `{ kind: "only-whitespace" }`. Display "タグは空にできません". Do NOT dispatch. |
+| EC-003 | String with only "#" submitted | `tryNewTag` normalizes to empty → "only-whitespace" error. |
+| EC-004 | Tag with leading "#" | `tryNewTag` strips it. e.g. "#draft" → "draft". |
+| EC-005 | Tag with mixed case | `tryNewTag` lowercases. e.g. "Draft" → "draft". |
+| EC-006 | Tag with leading/trailing whitespace | `tryNewTag` trims. |
+| EC-007 | Tag input closed via blur with valid text | Submit the normalized tag. |
+
+### 3.2 State Edge Cases
+
+| ID | Edge Case | Expected Behavior |
+|----|----------|-------------------|
+| EC-008 | Adding a duplicate tag (already on note) | Domain pipeline short-circuits (idempotent). No I/O, no UI change needed. Chip already displayed. |
+| EC-009 | Removing a tag not on the note | Domain pipeline short-circuits (idempotent). No error. |
+| EC-010 | TagInventory is empty (no notes have tags) | Sidebar section hidden. "+" button on rows still functional (free-text input, no autocomplete). |
+| EC-011 | All notes have zero tags | Sidebar hidden. Rows show no tag chips, only "+" button. |
+| EC-012 | Rapid add/remove clicks on same row | Domain pipeline handles sequentially. Each operation awaits previous if same noteId is involved. UI does not need debounce (domain pipeline is lightweight). |
+| EC-013 | Feed row with many tags (overflow) | Tag chips wrap to multiple lines (`flex-wrap: wrap`). Individual chips truncated at max-width 160px with ellipsis. |
+| EC-014 | Last note with tag X has tag removed | TagInventory updates via domain event → usageCount drops to 0 → tag disappears from sidebar. |
+| EC-015 | All tags filtered → no visible notes | "フィルター条件に一致するノートがありません" message displayed (already handled by existing `isFilteredEmpty` logic in FeedList). |
+| EC-016 | Filter active, then new note saved matching filter | Note appears in filtered view after save snapshot arrives. |
+| EC-017 | Active filter tags persist across note switches | Filter state is separate from editing state. Filtering persists when switching between notes. |
+
+### 3.3 Interaction Edge Cases
+
+| ID | Edge Case | Expected Behavior |
+|----|----------|-------------------|
+| EC-018 | Click "×" on chip while tag input is open on same row | Close the input first, then process the remove. |
+| EC-019 | Autocomplete dropdown shows 0 results | Display "一致するタグがありません" message if input is non-empty. |
+| EC-020 | Autocomplete with many matches (e.g., 50 tags) | Scrollable dropdown, max-height ~200px. |
+| EC-021 | Keyboard navigation in autocomplete | Arrow Up/Down to move through suggestions, Enter to select, Escape to close. |
+| EC-022 | Tag normalization produces same tag as existing selected filter tag | No special handling needed; domain handles dedup. |
+
+---
+
+## 4. Purity Boundary Analysis
+
+### 4.1 Pure Core
+
+| Component | Purity | Reason |
+|-----------|--------|--------|
+| `tryNewTag(raw)` | Pure | String normalization, no I/O, deterministic |
+| `parseFilterInput(raw)` | Pure | Delegates to `tryNewTag`, constructs `AppliedFilter` |
+| `applyFilterOrSearch(feed, applied, snapshots)` | Pure | Deterministic filtering/sorting |
+| Rendering logic (derived values) | Pure | Svelte `$derived()` computations |
+| `feedReducer` (extended) | Pure | Pattern-matched state transitions, no I/O |
+
+### 4.2 Effectful Shell
+
+| Component | Effect | Boundary Strategy |
+|-----------|--------|-------------------|
+| `tagChipUpdate` pipeline dispatch | Write I/O (file save), event publish | Call through adapter/WRITE_MARKDOWN port |
+| IPC dispatch (Tauri invoke) | Cross-process communication | Through `TauriFeedAdapter` |
+| Clipboard write (if any) | OS clipboard | Not in scope for this feature |
+| TagInventory snapshot retrieval | In-memory read from Curate state | Via `FeedDomainSnapshot` channel |
+
+### 4.3 Architecture Conformance
+
+The feature follows the existing FeedReducer pattern established by `ui-feed-list-actions`:
+1. **Pure reducer** (`feedReducer.ts`): Accepts `FeedAction`, returns `{ state, commands }`. Never performs I/O.
+2. **Effectful shell** (`FeedList.svelte`): Subscribes to state channel, dispatches commands to adapter.
+3. **Domain pipeline calls**: Happen in the effectful shell, not in the reducer.
+
+---
+
+## 5. Non-Functional Constraints
+
+### 5.1 Performance
+- Tag chip add/remove operations must complete within 500ms (domain pipeline is lightweight, sync write)
+- Autocomplete filtering must respond within 16ms (60fps) on up to 100 tags
+- Filter recalculation must complete within 50ms on up to 500 notes
+
+### 5.2 Accessibility
+- WCAG 2.1 Level AA compliance for all interactive elements
+- Minimum contrast ratio 4.5:1 for text
+- Keyboard-navigable autocomplete with ARIA listbox pattern
+
+### 5.3 Design System
+- All colors, spacing, fonts from DESIGN.md tokens
+- No hardcoded values outside DESIGN.md palette
+
+---
+
+## 6. Type Contracts (extensions to existing types)
+
+### 6.1 FeedViewState extensions
+
+```ts
+// Added fields:
+tagInventory: readonly TagEntry[];       // mirrored from FeedDomainSnapshot
+activeFilterTags: readonly string[];      // currently selected filter tags
+tagAutocompleteVisibleFor: string | null; // noteId with open tag input, or null
+```
+
+### 6.2 FeedAction extensions
+
+```ts
+| { kind: 'TagAddClicked'; noteId: string }
+| { kind: 'TagRemoveClicked'; noteId: string; tag: string }
+| { kind: 'TagInputCommitted'; noteId: string; rawTag: string }
+| { kind: 'TagInputCancelled' }
+| { kind: 'TagFilterToggled'; tag: string }
+| { kind: 'TagFilterCleared' }
+```
+
+### 6.3 FeedCommand extensions
+
+```ts
+| { kind: 'add-tag-via-chip'; payload: { noteId: string; tag: string; issuedAt: string } }
+| { kind: 'remove-tag-via-chip'; payload: { noteId: string; tag: string; issuedAt: string } }
+| { kind: 'apply-tag-filter'; payload: { tag: string } }
+| { kind: 'remove-tag-filter'; payload: { tag: string } }
+| { kind: 'clear-filter' }
+```
+
+### 6.4 FeedDomainSnapshot extensions
+
+```ts
+// Added field:
+readonly tagInventory: ReadonlyArray<{ readonly name: string; readonly usageCount: number }>;
+```

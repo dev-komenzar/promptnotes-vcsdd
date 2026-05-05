@@ -96,7 +96,15 @@
       "language": "typescript",
       "currentPhase": "complete",
       "updatedAt": "2026-05-05T01:19:54.916Z"
+    },
+    "ui-tag-chip": {
+      "status": "active",
+      "createdAt": "2026-05-05T08:02:00.853Z",
+      "mode": "strict",
+      "language": "typescript",
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-05T08:54:21.470Z"
     }
   },
-  "activeFeature": "ui-feed-list-actions"
+  "activeFeature": "ui-tag-chip"
 }
