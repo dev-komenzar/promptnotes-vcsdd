@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "The spec defines activeFilterTags as a FeedViewState field (section 6.1) and expects filter state to persist across operations (EC-017: 'Active filter tags persist across note switches'). However, the existing feedReducer.ts pattern (line 26-49) replaces the entire FeedViewState on each DomainSnapshotReceived action — it destructures snapshot fields into a brand-new state object without preserving any local-only UI state like activeFilterTags. The spec does not address how activeFilterTags survives the snapshot-replacement architecture. If the reducer overwrites activeFilterTags on every snapshot, the filter state would be lost on any domain event (save, delete, edit).",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/feedReducer.ts",
+    "lineRange": "26-49",
+    "snippet": "case 'DomainSnapshotReceived': {\n  const { snapshot } = action;\n  const nextState: FeedViewState = {\n    editingStatus: snapshot.editing.status,\n    editingNoteId: snapshot.editing.currentNoteId,\n    pendingNextNoteId: snapshot.editing.pendingNextNoteId,\n    visibleNoteIds: snapshot.feed.visibleNoteIds,\n    loadingStatus: state.loadingStatus,\n    activeDeleteModalNoteId: snapshot.delete.activeDeleteModalNoteId,\n    lastDeletionError: ...,\n    noteMetadata: snapshot.noteMetadata,\n  };\n  // NOTE: activeFilterTags is NOT preserved here\n}"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "268-269",
+    "snippet": "activeFilterTags: readonly string[];      // currently selected filter tags"
+  },
+  "routeToPhase": "1a"
+}

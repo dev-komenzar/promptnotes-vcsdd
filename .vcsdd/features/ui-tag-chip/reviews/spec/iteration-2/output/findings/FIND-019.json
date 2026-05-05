@@ -1,0 +1,12 @@
+{
+  "findingId": "FIND-019",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "low",
+  "description": "No PROP covers preservation of tag input internal state (typed text, suggestion list) across DomainSnapshotReceived events. PROP-TAG-024 covers activeFilterTags preservation and PROP-TAG-033 covers clearing tagAutocompleteVisibleFor on note deletion, but no property verifies that the typed text and autocomplete suggestion state survive a snapshot event when the input remains open. If a DomainSnapshotReceived arrives while the user is typing in an open tag input (tagAutocompleteVisibleFor is non-null), the component's internal text state could be reset by re-render. This is the verification-architecture counterpart to FIND-015.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/verification-architecture.md",
+    "lineRange": "189-192",
+    "snippet": "### PROP-TAG-024 — activeFilterTags preservation across DomainSnapshotReceived\n**Maps to**: REQ-TAG-017 (FIND-003 resolution)\n**Tier**: 1 (reducer unit test)\n**Assertion**: When DomainSnapshotReceived action is dispatched, feedReducer produces a state where activeFilterTags equals the previous state's activeFilterTags"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-016",
+  "dimension": "verification_readiness",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "The filter application data flow is underspecified and has no corresponding PROP. REQ-TAG-010 says to 'Call applyFilterOrSearch(feed, applied, snapshots) to compute new visibleNoteIds' and 'Emit the existing FilterApplied action,' but the spec does not specify: (a) where the Feed and NoteSnapshot[] parameters originate from in the UI layer (the Feed aggregate instance and snapshots are not stored in FeedViewState per the existing architecture), (b) whether this call happens in the pure reducer or the effectful shell, and (c) the round-trip pattern: reducer emits apply-tag-filter command → effectful shell calls applyFilterOrSearch → dispatches FilterApplied action back into the reducer. Section 4.3 says 'Domain pipeline calls happen in the effectful shell, not in the reducer,' but applyFilterOrSearch is a pure function listed in §4.1 as part of the pure core. This ambiguity could lead to incorrect placement of the filter computation logic. No PROP-TAG-XXX explicitly covers this data flow.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "116-120",
+    "snippet": "WHEN the user clicks a tag in the sidebar tag filter list, THE SYSTEM SHALL: 1. Add the clicked tag to the active filter set (multi-select) 2. Call applyFilterOrSearch(feed, applied, snapshots) to compute new visibleNoteIds 3. Emit the existing FilterApplied action"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "260-264",
+    "snippet": "The feature follows the existing FeedReducer pattern: 1. Pure reducer (feedReducer.ts): Accepts FeedAction, returns { state, commands }. Never performs I/O. 2. Effectful shell (FeedList.svelte + TagFilterSidebar.svelte): Subscribes to state channel, dispatches commands to adapter. 3. Domain pipeline calls: Happen in the effectful shell, not in the reducer."
+  },
+  "routeToPhase": "1a"
+}

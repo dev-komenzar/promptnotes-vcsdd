@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-010",
+  "dimension": "edge_case_coverage",
+  "category": "missing_edge_case",
+  "severity": "medium",
+  "description": "No edge case defines a maximum tag string length. The tryNewTag function (try-new-tag.ts) applies only semantic validation (empty check, whitespace check, normalization) but no length constraint. A malicious or accidental input of 10,000 characters would pass validation, be stored as a Tag, and potentially cause layout overflow in tag chips (which are capped at max-width 160px with ellipsis in EC-013) and storage bloat. The spec should either define a length limit or explicitly accept unbounded length and handle it in the UI.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+    "lineRange": "29-51",
+    "snippet": "export function tryNewTag(raw: string): Result<Tag, TagError> {\n  if (raw.length === 0) { return err({ kind: \"empty\" }); }\n  // No max length check anywhere"
+  },
+  "routeToPhase": "1a"
+}

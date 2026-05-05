@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-017",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "low",
+  "description": "Section 1.1 (line 17) says 'Tag normalization via parseFilterInput (which wraps tryNewTag) with TagError UI feedback' but all REQs use tryNewTag directly. REQ-TAG-005 step 1 calls tryNewTag(raw) for normalization. REQ-TAG-017 imports parseFilterInput from the domain module (line 169) but no REQ actually uses it — the tag input uses tryNewTag for distinct TagError kinds, and the filter sidebar handles pre-validated Tag values directly. This inconsistency (overview claims parseFilterInput is used for normalization, but REQs use tryNewTag) creates confusion about which function is authoritative. The parseFilterInput import and overview mention should be reconciled with the actual requirement usage, or parseFilterInput should be removed from the import list if it is not needed by any REQ.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "17-17",
+    "snippet": "Tag normalization via parseFilterInput (which wraps tryNewTag) with TagError UI feedback"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "80-80",
+    "snippet": "Normalize the raw string via tryNewTag(raw)"
+  },
+  "routeToPhase": "1a"
+}

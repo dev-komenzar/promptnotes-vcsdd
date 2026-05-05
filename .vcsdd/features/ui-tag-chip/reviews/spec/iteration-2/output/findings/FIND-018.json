@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-018",
+  "dimension": "edge_case_coverage",
+  "category": "spec_ambiguity",
+  "severity": "low",
+  "description": "REQ-TAG-007 step 3 says 'IF the input contains non-empty text that FAILS tryNewTag validation: display the appropriate TagError message and keep the input open (do NOT discard user input).' However, this behavior is triggered by a blur event, meaning focus has already left the input element. The phrase 'keep the input open' is ambiguous on blur — does the input regain programmatic focus so the user can continue editing, or does it remain rendered but unfocused (forcing the user to click back into it)? The edge case catalog EC-007a similarly says 'keep input open' without addressing focus state. This ambiguity could lead to inconsistent UX implementations where some developers refocus the input and others leave it unfocused with an error displayed.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "95-98",
+    "snippet": "WHEN the user clicks outside the tag input area (blur event), THE SYSTEM SHALL: ... 3. IF the input contains non-empty text that FAILS tryNewTag validation: display the appropriate TagError message and keep the input open (do NOT discard user input)"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "203-203",
+    "snippet": "EC-007a | Tag input blurred with invalid text (non-empty, fails tryNewTag) | Display TagError message, keep input open (do NOT discard user input). Added per FIND-002."
+  },
+  "routeToPhase": "1a"
+}

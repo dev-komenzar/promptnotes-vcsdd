@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "medium",
+  "description": "Edge case EC-018 specifies: 'Click \"×\" on chip while tag input is open on same row → Close the input first, then process the remove.' This interaction conflict between the remove button and an open tag input has no corresponding PROP in verification-architecture.md. Without a proof obligation, this UI state conflict could regress silently (e.g., remove button dispatches while input remains open, or input closes without processing the remove).",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "206-207",
+    "snippet": "EC-018 | Click \"×\" on chip while tag input is open on same row | Close the input first, then process the remove."
+  },
+  "routeToPhase": "1a"
+}

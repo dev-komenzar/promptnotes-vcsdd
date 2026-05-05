@@ -1,0 +1,21 @@
+{
+  "reviewType": "spec",
+  "feature": "ui-tag-chip",
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": [
+    "spec_fidelity",
+    "verification_readiness",
+    "edge_case_coverage",
+    "scope_clarity",
+    "traceability_completeness"
+  ],
+  "severityRules": {
+    "critical": "Spec contradicts domain docs or design invariants",
+    "high": "Missing requirement or proof obligation for core functionality",
+    "medium": "Ambiguous wording or insufficient detail",
+    "low": "Minor formatting or naming issues"
+  }
+}

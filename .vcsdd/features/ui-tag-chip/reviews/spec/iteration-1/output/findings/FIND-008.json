@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "edge_case_coverage",
+  "category": "missing_edge_case",
+  "severity": "medium",
+  "description": "The spec defines tagAutocompleteVisibleFor as string | null (section 6.1), which implies only one tag input can be open at a time. However, no edge case addresses what happens when the user clicks the '+' button on FeedRow A, then clicks the '+' button on FeedRow B before closing A's input. Should A's input close automatically? Should B's input be prevented from opening? The current single-value design for tagAutocompleteVisibleFor implies mutual exclusion, but the behavior upon conflict is undefined.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "270-272",
+    "snippet": "tagAutocompleteVisibleFor: string | null; // noteId with open tag input, or null"
+  },
+  "routeToPhase": "1a"
+}

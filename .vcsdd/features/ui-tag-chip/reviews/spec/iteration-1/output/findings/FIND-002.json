@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "REQ-TAG-007 defines behavior on blur: 'IF the input contains non-empty text that passes tryNewTag validation, THEN THE SYSTEM SHALL dispatch the add command with the normalized tag.' The spec does NOT specify what happens when the input contains non-empty text that FAILS tryNewTag validation on blur. Should the error be displayed? Should the input close silently (losing the user's input)? This undefined behavior path could result in silent data loss or inconsistent UX. The corresponding edge case catalog (EC-001 through EC-007) covers input validation for explicit submission but EC-007 only addresses blur-with-valid-text — no edge case covers blur-with-invalid-text.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "87-89",
+    "snippet": "WHEN the user clicks outside the tag input area (blur event), THE SYSTEM SHALL close the input. IF the input contains non-empty text that passes `tryNewTag` validation, THEN THE SYSTEM SHALL dispatch the add command with the normalized tag."
+  },
+  "routeToPhase": "1a"
+}

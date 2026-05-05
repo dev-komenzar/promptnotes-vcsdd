@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-011",
+  "dimension": "edge_case_coverage",
+  "category": "missing_edge_case",
+  "severity": "medium",
+  "description": "No edge case addresses what happens when a note is deleted while its tag input is open. The tagAutocompleteVisibleFor field tracks which noteId has an open input. If that note is deleted (via the delete confirmation modal or an external edit), the tag input should close. Without this specification, the UI could be left in an invalid state where a tag input is visible for a non-existent note.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "174-221",
+    "snippet": "The edge case catalog ($3.1-3.3) contains no entry for note-deletion-while-input-open."
+  },
+  "routeToPhase": "1a"
+}
