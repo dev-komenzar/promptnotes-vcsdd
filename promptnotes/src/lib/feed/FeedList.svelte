@@ -120,7 +120,8 @@
         // Update local noteMetadata so feed re-renders immediately
         const noteId = cmd.payload.noteId;
         const existing = currentViewState.noteMetadata[noteId];
-        const newTags = [...(existing?.tags ?? []), cmd.payload.tag];
+        const currentTags = existing?.tags ?? [];
+        const newTags = currentTags.includes(cmd.payload.tag) ? currentTags : [...currentTags, cmd.payload.tag];
         currentViewState = {
           ...currentViewState,
           noteMetadata: {
