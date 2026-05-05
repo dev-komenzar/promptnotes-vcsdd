@@ -165,10 +165,19 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
 
     // ── ui-tag-chip: TagRemoveClicked ────────────────────────────────────
     case 'TagRemoveClicked': {
+      const meta = state.noteMetadata[action.noteId];
       const commands: FeedCommand[] = [
         {
           kind: 'remove-tag-via-chip',
-          payload: { noteId: action.noteId, tag: action.tag, issuedAt: '' },
+          payload: {
+            noteId: action.noteId,
+            tag: action.tag,
+            body: meta?.body ?? '',
+            existingTags: meta?.tags ?? [],
+            createdAt: meta?.createdAt ?? 0,
+            updatedAt: meta?.updatedAt ?? 0,
+            issuedAt: '',
+          },
         },
       ];
       // Close input on the same row first (REQ-TAG-002 step 1)
@@ -191,10 +200,19 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       if ((normalized as string).length > MAX_TAG_LENGTH) {
         return { state, commands: [] };
       }
+      const meta = state.noteMetadata[action.noteId];
       const commands: FeedCommand[] = [
         {
           kind: 'add-tag-via-chip',
-          payload: { noteId: action.noteId, tag: normalized as string, issuedAt: '' },
+          payload: {
+            noteId: action.noteId,
+            tag: normalized as string,
+            body: meta?.body ?? '',
+            existingTags: meta?.tags ?? [],
+            createdAt: meta?.createdAt ?? 0,
+            updatedAt: meta?.updatedAt ?? 0,
+            issuedAt: '',
+          },
         },
       ];
       const nextState: FeedViewState = {

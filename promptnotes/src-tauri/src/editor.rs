@@ -234,6 +234,13 @@ pub fn edit_note_body(
     Ok(())
 }
 
+/// ui-tag-chip: Exposes fs_write_file_atomic as a Tauri command for tag chip saves.
+/// Accepts a file path and the complete markdown content (frontmatter + body).
+#[tauri::command]
+pub fn write_file_atomic(path: String, contents: String) -> Result<(), FsErrorDto> {
+    fs_write_file_atomic(&path, &contents)
+}
+
 /// REQ-EDIT-029: trigger_idle_save — atomic write + emit state.
 #[tauri::command]
 pub fn trigger_idle_save(

@@ -108,10 +108,26 @@
         break;
       // ── ui-tag-chip commands ───────────────────────────────
       case 'add-tag-via-chip':
-        adapter.dispatchAddTagViaChip?.(cmd.payload.noteId, cmd.payload.tag, cmd.payload.issuedAt || nowIso());
+        adapter.dispatchAddTagViaChip?.(
+          cmd.payload.noteId,
+          cmd.payload.tag,
+          cmd.payload.body,
+          cmd.payload.existingTags,
+          cmd.payload.createdAt,
+          cmd.payload.updatedAt,
+          cmd.payload.issuedAt || nowIso(),
+        );
         break;
       case 'remove-tag-via-chip':
-        adapter.dispatchRemoveTagViaChip?.(cmd.payload.noteId, cmd.payload.tag, cmd.payload.issuedAt || nowIso());
+        adapter.dispatchRemoveTagViaChip?.(
+          cmd.payload.noteId,
+          cmd.payload.tag,
+          cmd.payload.body,
+          cmd.payload.existingTags,
+          cmd.payload.createdAt,
+          cmd.payload.updatedAt,
+          cmd.payload.issuedAt || nowIso(),
+        );
         break;
       case 'apply-tag-filter':
         adapter.dispatchApplyFilter?.(cmd.payload.tag);

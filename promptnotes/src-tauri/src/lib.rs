@@ -298,6 +298,8 @@ pub fn run() {
             editor::cancel_switch,
             editor::copy_note_body,
             editor::request_new_note,
+            // ui-tag-chip: tag chip save
+            editor::write_file_atomic,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

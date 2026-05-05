@@ -153,8 +153,8 @@ export type FeedCommand =
   | { kind: 'open-delete-modal';       payload: { noteId: string } }
   | { kind: 'close-delete-modal' }
   // ui-tag-chip extensions:
-  | { kind: 'add-tag-via-chip';        payload: { noteId: string; tag: string; issuedAt: string } }
-  | { kind: 'remove-tag-via-chip';     payload: { noteId: string; tag: string; issuedAt: string } }
+  | { kind: 'add-tag-via-chip';        payload: { noteId: string; tag: string; body: string; existingTags: readonly string[]; createdAt: number; updatedAt: number; issuedAt: string } }
+  | { kind: 'remove-tag-via-chip';     payload: { noteId: string; tag: string; body: string; existingTags: readonly string[]; createdAt: number; updatedAt: number; issuedAt: string } }
   | { kind: 'apply-tag-filter';        payload: { tag: string } }
   | { kind: 'remove-tag-filter';       payload: { tag: string } }
   | { kind: 'clear-filter' };
