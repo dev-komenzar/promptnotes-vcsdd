@@ -41,7 +41,8 @@ This feature makes tag chips interactive on feed rows and adds a tag filter side
 - **Tag normalization**: The domain module's `index.ts` barrel currently does not re-export `tryNewTag` (it is documented as an implementation detail of `parseFilterInput`). This feature requests that **`tryNewTag` be added to the `apply-filter-or-search` barrel export** (`index.ts`) so the UI layer can use it without bypassing encapsulation. The UI needs distinct `TagError.kind` values (`"empty"`, `"only-whitespace"`) to display appropriate error messages, which the `parseFilterInput` wrapper erases to `{ kind: "invalid-tag" }`. Until the barrel is updated, the feature imports directly from `try-new-tag.js` with a `// TODO: use barrel re-export after domain module updated` comment. See FIND-001 resolution.
 - **TagInventory computation**: TagInventory (usageCounts) is computed client-side from the existing `noteMetadata` in `FeedViewState`, rather than requiring a new field in `FeedDomainSnapshot`. This avoids any Rust/Tauri IPC changes. See FIND-004 resolution.
 - **Feed reducer**: Extend `feedReducer` in `$lib/feed/` with new actions. The `DomainSnapshotReceived` handler preserves `activeFilterTags` from the previous state (following the existing `loadingStatus` preservation pattern). See FIND-003 resolution.
-- **Tauri commands**: No new Tauri commands needed (reuses existing `writeFileAtomic` via domain pipeline)
+- **Tauri commands**: One new Rust command added in sprint-2 bugfix: `write_file_atomic(path, contents)` — exports the existing `fs_write_file_atomic` internal function as a `#[tauri::command]` for tag chip saves. The adapter serializes frontmatter YAML + body to markdown and calls this command. See bugfix-tag-save.md.
+- **Post-save UI refresh**: After `write_file_atomic` succeeds, `FeedList.dispatchCommand` updates `currentViewState.noteMetadata` locally (Svelte `$state` reactivity triggers immediate re-render) — no vault re-scan needed.
 - **Max tag length**: Tags longer than **100 characters** (after normalization) shall be rejected with a UI message. This is a UI-layer constraint only (the domain pipeline and storage layers accept unbounded length). Rationale: tag chips have max-width 160px, and 100 chars covers any practical use case while preventing layout abuse. See FIND-010 resolution.
 
 ---
@@ -316,8 +317,17 @@ activeFilterTags: readonly string[];       // currently selected filter tag stri
 
 ```ts
 // New variants added to existing FeedCommand union:
-| { kind: 'add-tag-via-chip'; payload: { noteId: string; tag: string; issuedAt: string } }
-| { kind: 'remove-tag-via-chip'; payload: { noteId: string; tag: string; issuedAt: string } }
+// (sprint-2: payload extended with body, existingTags, timestamps for tag chip save)
+| { kind: 'add-tag-via-chip'; payload: {
+    noteId: string; tag: string; body: string;
+    existingTags: readonly string[]; createdAt: number; updatedAt: number;
+    issuedAt: string;
+  } }
+| { kind: 'remove-tag-via-chip'; payload: {
+    noteId: string; tag: string; body: string;
+    existingTags: readonly string[]; createdAt: number; updatedAt: number;
+    issuedAt: string;
+  } }
 | { kind: 'apply-tag-filter'; payload: { tag: string } }
 | { kind: 'remove-tag-filter'; payload: { tag: string } }
 | { kind: 'clear-filter' }
