@@ -64,6 +64,7 @@
   const isTagInputOpen = $derived(viewState.tagAutocompleteVisibleFor === noteId);
   let tagInputText = $state('');
   let tagErrorText = $state<string | null>(null);
+  let suggestionClicked = false;
 
   const autocompleteSuggestions = $derived.by(() => {
     if (!isTagInputOpen || tagInputText.trim().length === 0) return [];
@@ -125,6 +126,10 @@
   }
 
   function handleTagInputBlur(): void {
+    if (suggestionClicked) {
+      suggestionClicked = false;
+      return;
+    }
     if (tagInputText.trim().length > 0) {
       onTagInputCommit?.(noteId, tagInputText);
     } else {
@@ -135,6 +140,7 @@
   }
 
   function handleSuggestionClick(tagName: string): void {
+    suggestionClicked = true;
     onTagInputCommit?.(noteId, tagName);
     tagInputText = '';
     tagErrorText = null;
@@ -221,8 +227,8 @@
                       class="autocomplete-item"
                       data-testid="autocomplete-item"
                       role="option"
-                      onclick={(e: MouseEvent) => {
-                        e.stopPropagation();
+                      onmousedown={(e: MouseEvent) => {
+                        e.preventDefault();
                         handleSuggestionClick(suggestion.name);
                       }}
                     >
