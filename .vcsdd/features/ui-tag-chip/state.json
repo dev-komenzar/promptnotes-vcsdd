@@ -433,7 +433,9 @@
         "type": "verification-property",
         "artifactPath": "specs/verification-architecture.md",
         "linkedBeads": [
-          "BEAD-053"
+          "BEAD-057",
+          "BEAD-053",
+          "BEAD-017"
         ],
         "status": "proved"
       },
@@ -443,6 +445,7 @@
         "artifactPath": "specs/verification-architecture.md",
         "linkedBeads": [
           "BEAD-053",
+          "BEAD-055",
           "BEAD-055"
         ],
         "status": "proved"
@@ -452,6 +455,7 @@
         "type": "verification-property",
         "artifactPath": "specs/verification-architecture.md",
         "linkedBeads": [
+          "BEAD-053",
           "BEAD-053"
         ],
         "status": "proved"
@@ -570,7 +574,8 @@
         "artifactPath": "src/lib/feed/__tests__/tagSaveAdapter.test.ts",
         "linkedBeads": [
           "BEAD-064",
-          "BEAD-066"
+          "BEAD-066",
+          "BEAD-040"
         ],
         "status": "passing"
       },
@@ -671,7 +676,8 @@
           "BEAD-059",
           "BEAD-064",
           "BEAD-062",
-          "BEAD-066"
+          "BEAD-066",
+          "BEAD-057"
         ],
         "status": "resolved"
       }
