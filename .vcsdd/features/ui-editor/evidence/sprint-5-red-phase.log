@@ -1,0 +1,12 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+=== FAILING TEST OUTPUT ===
+error[E0432]: unresolved import `promptnotes_lib::editor`
+  --> tests/editor_handlers.rs:15:22
+   |
+15 | use promptnotes_lib::editor::{
+   |                      ^^^^^^ could not find `editor` in `promptnotes_lib`
+
+error: could not compile `promptnotes` (test "editor_handlers") due to 1 previous error
+=== END ===

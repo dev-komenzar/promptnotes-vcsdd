@@ -1,0 +1,12 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+=== cargo test ===
+editor_handlers: 18 passed, 0 failed
+feed_handlers: 5 passed, 0 failed (regression)
+=== vitest ===
+24 test files passed, 195 tests passed
+=== cargo check ===
+Finished dev profile (no errors)
+=== cargo clippy ===
+0 new warnings (9 pre-existing in feed.rs)

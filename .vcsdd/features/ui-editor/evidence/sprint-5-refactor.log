@@ -1,0 +1,7 @@
+refactor: PASS
+all-tests-green: true
+
+Changes:
+- Extracted save_note_and_emit() helper to eliminate 3-way code duplication
+  in trigger_idle_save, trigger_blur_save, retry_save
+- Removed unused save_error_from_io() function

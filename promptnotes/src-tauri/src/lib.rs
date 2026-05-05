@@ -26,6 +26,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 pub mod domain;
+pub mod editor;
 pub mod feed;
 
 // ── VaultPathError shape ──────────────────────────────────────────────
@@ -108,7 +109,7 @@ fn settings_save_impl(vault_path: &str) -> Result<(), VaultConfigErrorDto> {
 
 /// FIND-401: Read vault path from settings.json.
 /// Returns Ok(Some(path)) if configured, Ok(None) if unconfigured.
-fn settings_load_impl() -> Result<Option<String>, VaultConfigErrorDto> {
+pub(crate) fn settings_load_impl() -> Result<Option<String>, VaultConfigErrorDto> {
     let settings_path = settings_file_path();
 
     if !settings_path.exists() {
@@ -288,6 +289,15 @@ pub fn run() {
             feed::cancel_note_deletion,
             feed::fs_trash_file,
             feed::feed_initial_state,
+            // Sprint 2: ui-editor Rust handlers (REQ-EDIT-028..035)
+            editor::edit_note_body,
+            editor::trigger_idle_save,
+            editor::trigger_blur_save,
+            editor::retry_save,
+            editor::discard_current_session,
+            editor::cancel_switch,
+            editor::copy_note_body,
+            editor::request_new_note,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-019",
+  "dimension": "structural_integrity",
+  "category": "code_structure",
+  "severity": "low",
+  "description": "editor.rs:23 emits a clippy warning 'empty_line_after_doc_comments' — an empty doc-comment line between the module-level doc comment and the use statement. Also line 86 doc comment says 'No unsafe, no unwrap()' but line 91 uses unwrap_or_else on Option, contradicting the doc comment's spirit.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "23-91",
+    "snippet": "empty_line_after_doc_comments at line 23; unwrap_or_else at line 91"
+  },
+  "routeToPhase": "2c"
+}

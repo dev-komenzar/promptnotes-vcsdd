@@ -1,0 +1,4 @@
+target-feature-tests: PASS (23/23 cargo tests, 195/195 vitest tests)
+regression-baseline: PASS
+cargo-check: PASS
+cargo-clippy-editor.rs: ZERO warnings

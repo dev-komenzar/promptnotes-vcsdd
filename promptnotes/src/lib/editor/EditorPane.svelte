@@ -106,7 +106,18 @@
         clipboard.write(cmd.payload.body);
         break;
       case 'request-new-note':
-        adapter.dispatchRequestNewNote(cmd.payload);
+        adapter.dispatchRequestNewNote(cmd.payload).catch((err) => {
+          console.error('[EditorPane] request_new_note failed:', err);
+          // Dispatch failure to reducer so UI can surface the error
+          const currentNote = viewState.currentNoteId ?? '';
+          dispatch({
+            kind: 'NoteSaveFailed',
+            payload: {
+              noteId: currentNote,
+              error: { kind: 'fs', reason: { kind: 'unknown' } },
+            },
+          });
+        });
         break;
       default: {
         const _exhaustive: never = cmd;

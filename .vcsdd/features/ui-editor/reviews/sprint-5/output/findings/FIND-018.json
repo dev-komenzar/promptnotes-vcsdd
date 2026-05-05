@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-018",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-EDIT-034 specifies copy_note_body receives { noteId, body } — two fields only. The Rust implementation at editor.rs:302-308 declares an additional issued_at: String parameter that is NOT in the specification. Tauri renames issued_at to issuedAt via camelCase. The TS adapter (tauriEditorAdapter.ts:71) sends only { noteId, body } without issuedAt. This causes Tauri IPC to fail at runtime with a deserialization error because issuedAt is a required String field missing from the invoke payload.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "302-308",
+    "snippet": "pub fn copy_note_body(note_id: String, body: String, issued_at: String)"
+  },
+  "routeToPhase": "2b"
+}

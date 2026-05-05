@@ -117,20 +117,121 @@
       "timestamp": "2026-05-04T09:21:45.782Z",
       "reason": "4-dimensional convergence achieved; Phase 6 gate PASS",
       "sprint": 4
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-05T03:19:07.707Z",
+      "reason": "Sprint 2: vertical slice (Rust backend + AppShell mount per implement.md L65-74 and docs/ui-editor-sprint-2-handoff.md)",
+      "sprint": 4,
+      "nextSprintHint": 5
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-05T03:27:28.677Z",
+      "sprint": 4
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-05T03:27:28.684Z",
+      "sprint": 4
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-05T03:27:28.696Z",
+      "sprint": 5
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-05T03:41:16.908Z",
+      "sprint": 5
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-05T03:41:31.122Z",
+      "sprint": 5
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-05T03:46:31.688Z",
+      "reason": "Sprint 5 adversary review — Rust backend commands + event emit",
+      "sprint": 5
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-05-05T04:04:07.546Z",
+      "reason": "Sprint 5 — route 6 adversary findings",
+      "sprint": 5
+    },
+    {
+      "from": "4",
+      "to": "2a",
+      "timestamp": "2026-05-05T04:04:27.114Z",
+      "reason": "Sprint 5 iter-2 — fix 6 adversary findings (FIND-001..006)",
+      "sprint": 6
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-05T04:07:48.899Z",
+      "reason": "Sprint 6 iter-2 — fix 6 adversary findings",
+      "sprint": 6
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-05T04:08:25.869Z",
+      "reason": "Sprint 6 iter-2 — refactor after finding fixes",
+      "sprint": 6
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-05T04:09:30.442Z",
+      "reason": "Sprint 6 iter-2 — adversary re-review after finding fixes",
+      "sprint": 6
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-05T04:09:30.452Z",
+      "reason": "Sprint 6 — formal hardening after adversary PASS",
+      "sprint": 6
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-05T04:12:52.378Z",
+      "reason": "Sprint 6 — convergence check",
+      "sprint": 6
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-05T04:15:48.699Z",
+      "reason": "Sprint 6 convergence",
+      "sprint": 6
     }
   ],
   "iterations": {
-    "3": 3,
-    "4": 2,
-    "5": 1,
-    "6": 1,
-    "1a": 1,
-    "1b": 1,
-    "1c": 1,
-    "2a": 2,
-    "2b": 3,
-    "2c": 3,
-    "complete": 1
+    "3": 5,
+    "4": 3,
+    "5": 2,
+    "6": 2,
+    "1a": 2,
+    "1b": 2,
+    "1c": 2,
+    "2a": 4,
+    "2b": 5,
+    "2c": 5,
+    "complete": 2
   },
   "proofObligations": [
     {
@@ -236,6 +337,55 @@
       "required": true,
       "status": "proved",
       "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts"
+    },
+    {
+      "id": "PROP-100",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "[PROP-EDIT-S2-001 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_editing_session_state_dto_serializes_camel_case"
+    },
+    {
+      "id": "PROP-101",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "[PROP-EDIT-S2-002 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_fs_write_file_atomic_atomicity"
+    },
+    {
+      "id": "PROP-102",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "[PROP-EDIT-S2-003 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_fs_error_mapping_totality"
+    },
+    {
+      "id": "PROP-103",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "[PROP-EDIT-S2-004 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_request_new_note_generates_valid_frontmatter"
+    },
+    {
+      "id": "PROP-104",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "[PROP-EDIT-S2-005 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_save_handlers_emit_state_changed"
+    },
+    {
+      "id": "PROP-105",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "[PROP-EDIT-S2-006 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_session_handlers_emit_correct_state"
+    },
+    {
+      "id": "PROP-106",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "[PROP-EDIT-S2-007 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_ack_handlers_no_side_effects"
     }
   ],
   "traceability": {
@@ -1170,6 +1320,66 @@
         "createdAt": "2026-05-04T09:16:45.639Z",
         "createdInPhase": "3",
         "externalId": "FIND-017"
+      },
+      {
+        "beadId": "BEAD-094",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/sprint-5/output/findings/FIND-018.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-05T04:15:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-018"
+      },
+      {
+        "beadId": "BEAD-095",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/sprint-5/output/findings/FIND-019.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-05T04:15:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-019"
+      },
+      {
+        "beadId": "BEAD-096",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/sprint-5/output/findings/FIND-020.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-05T04:15:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-020"
+      },
+      {
+        "beadId": "BEAD-097",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/sprint-5/output/findings/FIND-021.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-05T04:15:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-021"
+      },
+      {
+        "beadId": "BEAD-098",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/sprint-5/output/findings/FIND-022.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-05T04:15:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-022"
+      },
+      {
+        "beadId": "BEAD-099",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/sprint-5/output/findings/FIND-023.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-05T04:15:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-023"
       }
     ]
   },
@@ -1214,9 +1424,56 @@
         "sprint": 2,
         "iteration": 2
       }
+    },
+    "1c-sprint-2": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T03:27:28.691Z",
+      "reviewedBy": "human",
+      "details": {
+        "iteration": 1,
+        "sprint": 2,
+        "approved": "pre-approved by architect for sprint 2 scope extension"
+      }
+    },
+    "3-sprint-5": {
+      "verdict": "FAIL",
+      "timestamp": "2026-05-05T04:04:07.540Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 1,
+        "sprint": 5,
+        "findingsCount": 6,
+        "critical": 1,
+        "major": 2,
+        "minor": 3
+      }
+    },
+    "3-sprint-6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T04:09:30.449Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 2,
+        "sprint": 6,
+        "findingsCount": 0,
+        "critical": 0,
+        "major": 0,
+        "minor": 0
+      }
+    },
+    "6-sprint-6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T04:13:04.551Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 1,
+        "sprint": 6,
+        "findingsCount": 0,
+        "details": "All 4 convergence dimensions PASS: findings 6→0, all specs covered, tests 23+195 pass, no duplicates"
+      }
     }
   },
-  "sprintCount": 4,
+  "sprintCount": 6,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-04T09:21:45.782Z"
+  "updatedAt": "2026-05-05T04:15:48.699Z"
 }

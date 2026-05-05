@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-023",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "low",
+  "description": "REQ-EDIT-030 states trigger_blur_save differs from trigger_idle_save 'only in the source discriminator (logged/audited but not used for branching).' The save_note_and_emit helper discards both issued_at and source silently. The implied observability (logging) from the spec is absent.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "199-259",
+    "snippet": "let _ = (issued_at, source); save_note_and_emit(&app, note_id, body)"
+  },
+  "routeToPhase": "2b"
+}
