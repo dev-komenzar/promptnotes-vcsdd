@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-S3-103",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "low",
+  "description": "The ? operator at feed.rs:264 couples the success path of the new editing_session_state_changed emit to the pre-existing feed_state_changed emit. If editing_session_state_changed emit fails (e.g., serialization or IPC channel error), the function returns Err and feed_state_changed is never emitted — the feed UI receives no update. Before Sprint 3, feed_state_changed was always emitted on the success path. The spec (REQ-FEED-024) says select_past_note 'SHALL ALSO emit' but is silent on error handling. A more defensive approach would log the editing_session_state_changed error and unconditionally emit feed_state_changed, or document the all-or-nothing semantics explicitly in the spec.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "263-269",
+    "snippet": "    app.emit(\"editing_session_state_changed\", editor_payload)\n        .map_err(|e| e.to_string())?;\n\n    // REQ-FEED-020: Emit feed_state_changed (existing)\n    app.emit(\"feed_state_changed\", snapshot)\n        .map_err(|e| e.to_string())"
+  },
+  "routeToPhase": "2b"
+}
