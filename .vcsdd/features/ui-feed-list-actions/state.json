@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -207,6 +207,13 @@
       "to": "2a",
       "timestamp": "2026-05-05T05:05:01.000Z",
       "reason": "Phase 1c PASS at iter-2. All 5 iter-1 findings resolved + FIND-S3-006 (low) resolved. spec_fidelity PASS, verification_readiness PASS.",
+      "sprint": 3
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-05T05:10:00.000Z",
+      "reason": "Red phase: 3 new Rust tests added (test_select_past_note_*). Tests verify body extraction + payload construction. Integration wiring (select_past_note → editing_session_state_changed emit) still missing — Green phase fix needed.",
       "sprint": 3
     }
   ],
