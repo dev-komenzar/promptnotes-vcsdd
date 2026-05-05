@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1a",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -418,60 +418,53 @@
       "artifact": "promptnotes/src/lib/feed/__tests__/refreshFeedEmission.test.ts"
     },
     {
-      "id": "PROP-FEED-S2-001",
+      "id": "PROP-100",
       "tier": 1,
       "required": true,
       "status": "proved",
-      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::fs_trash_file_impl_nonexistent_returns_ok",
-      "sprint": 2
+      "artifact": "[PROP-FEED-S2-001 sprint-2] promptnotes/src-tauri/tests/feed_handlers.rs::fs_trash_file_impl_nonexistent_returns_ok"
     },
     {
-      "id": "PROP-FEED-S2-002",
+      "id": "PROP-101",
       "tier": 1,
       "required": true,
       "status": "proved",
-      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::trash_error_dto_serializes_*",
-      "sprint": 2
+      "artifact": "[PROP-FEED-S2-002 sprint-2] promptnotes/src-tauri/tests/feed_handlers.rs::trash_error_dto_serializes_*"
     },
     {
-      "id": "PROP-FEED-S2-003",
+      "id": "PROP-102",
       "tier": 0,
       "required": true,
       "status": "proved",
-      "artifact": "promptnotes/src-tauri/src/feed.rs::select_past_note — cargo check passes",
-      "sprint": 2
+      "artifact": "[PROP-FEED-S2-003 sprint-2] promptnotes/src-tauri/src/feed.rs::select_past_note — cargo check passes"
     },
     {
-      "id": "PROP-FEED-S2-004",
+      "id": "PROP-103",
       "tier": 0,
       "required": true,
       "status": "proved",
-      "artifact": "promptnotes/src-tauri/src/feed.rs::confirm_note_deletion — cargo check passes",
-      "sprint": 2
+      "artifact": "[PROP-FEED-S2-004 sprint-2] promptnotes/src-tauri/src/feed.rs::confirm_note_deletion — cargo check passes"
     },
     {
-      "id": "PROP-FEED-S2-005",
+      "id": "PROP-104",
       "tier": 3,
       "required": true,
       "status": "proved",
-      "artifact": "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts",
-      "sprint": 2
+      "artifact": "[PROP-FEED-S2-005 sprint-2] promptnotes/src/routes/__tests__/main-route.dom.vitest.ts"
     },
     {
-      "id": "PROP-FEED-S2-006",
+      "id": "PROP-105",
       "tier": 0,
       "required": true,
       "status": "proved",
-      "artifact": "grep: +page.svelte contains 'grid-template-columns: 320px 1fr'",
-      "sprint": 2
+      "artifact": "[PROP-FEED-S2-006 sprint-2] grep: +page.svelte contains 'grid-template-columns: 320px 1fr'"
     },
     {
-      "id": "PROP-FEED-S2-007",
+      "id": "PROP-106",
       "tier": 0,
       "required": true,
       "status": "proved",
-      "artifact": "grep: +page.svelte contains '#e9e9e7'",
-      "sprint": 2
+      "artifact": "[PROP-FEED-S2-007 sprint-2] grep: +page.svelte contains '#e9e9e7'"
     }
   ],
   "traceability": {
@@ -638,7 +631,6 @@
     }
   },
   "sprintCount": 2,
-  "currentPhase": "3",
   "createdAt": "2026-05-04T09:45:13.224Z",
   "updatedAt": "2026-05-05T02:10:00.000Z"
 }
