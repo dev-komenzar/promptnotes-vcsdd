@@ -153,8 +153,6 @@
         };
         break;
       }
-        );
-        break;
       case 'apply-tag-filter':
         adapter.dispatchApplyFilter?.(cmd.payload.tag);
         break;
