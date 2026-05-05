@@ -1,0 +1,71 @@
+{
+  "profiles": {
+    "minimal": {
+      "description": "Core VCSDD commands, rules, and runtime libraries. No hooks, no agents.",
+      "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-schemas", "vcsdd-manifests", "vcsdd-docs", "vcsdd-commands"],
+      "hookProfile": "minimal"
+    },
+    "standard": {
+      "description": "Full VCSDD workflow: rules, commands, agents, skills, and standard hooks.",
+      "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-schemas", "vcsdd-manifests", "vcsdd-docs", "vcsdd-contexts", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-coherence"],
+      "hookProfile": "standard"
+    },
+    "strict": {
+      "description": "Full VCSDD with gate enforcement and auto-commit. For high-assurance work.",
+      "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-schemas", "vcsdd-manifests", "vcsdd-docs", "vcsdd-contexts", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-coherence"],
+      "hookProfile": "strict"
+    }
+  },
+  "languageProfiles": {
+    "rust": {
+      "modules": ["vcsdd-rules", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-language-rust"],
+      "verificationToolset": {
+        "formalVerification": ["kani", "cbmc"],
+        "propertyTesting": ["proptest"],
+        "fuzzing": ["cargo-fuzz"],
+        "mutationTesting": ["cargo-mutants"],
+        "staticAnalysis": ["clippy", "semgrep"]
+      }
+    },
+    "python": {
+      "modules": ["vcsdd-rules", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-language-python"],
+      "verificationToolset": {
+        "formalVerification": [],
+        "propertyTesting": ["hypothesis"],
+        "fuzzing": [],
+        "mutationTesting": ["mutmut"],
+        "staticAnalysis": ["mypy", "ruff", "semgrep"]
+      }
+    },
+    "typescript": {
+      "modules": ["vcsdd-rules", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-language-typescript"],
+      "verificationToolset": {
+        "formalVerification": [],
+        "propertyTesting": ["fast-check"],
+        "fuzzing": [],
+        "mutationTesting": ["@stryker-mutator/core"],
+        "staticAnalysis": ["typescript", "eslint", "semgrep"]
+      }
+    },
+    "go": {
+      "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-language-go-profile"],
+      "verificationToolset": {
+        "formalVerification": [],
+        "propertyTesting": ["rapid"],
+        "fuzzing": ["go-fuzz"],
+        "mutationTesting": [],
+        "staticAnalysis": ["staticcheck", "vet"]
+      }
+    },
+    "cpp": {
+      "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-language-cpp-profile"],
+      "verificationToolset": {
+        "formalVerification": ["cbmc"],
+        "propertyTesting": [],
+        "fuzzing": ["libfuzzer"],
+        "mutationTesting": [],
+        "staticAnalysis": ["clang-tidy", "cppcheck"]
+      }
+    }
+  }
+}

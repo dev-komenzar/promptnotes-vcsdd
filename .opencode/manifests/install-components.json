@@ -1,0 +1,34 @@
+{
+  "components": {
+    "baseline": [
+      {"id": "vcsdd-core", "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-schemas", "vcsdd-manifests", "vcsdd-docs", "vcsdd-commands"]},
+      {"id": "vcsdd-full", "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-schemas", "vcsdd-manifests", "vcsdd-docs", "vcsdd-contexts", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-coherence"]},
+      {"id": "vcsdd-strict", "modules": ["vcsdd-rules", "vcsdd-runtime", "vcsdd-schemas", "vcsdd-manifests", "vcsdd-docs", "vcsdd-contexts", "vcsdd-commands", "vcsdd-agents", "vcsdd-skills", "vcsdd-hooks", "vcsdd-coherence"]}
+    ],
+    "language": [
+      {"id": "lang:rust", "modules": ["vcsdd-language-rust"]},
+      {"id": "lang:python", "modules": ["vcsdd-language-python"]},
+      {"id": "lang:typescript", "modules": ["vcsdd-language-typescript"]},
+      {"id": "lang:go", "modules": ["vcsdd-language-go-profile"]},
+      {"id": "lang:cpp", "modules": ["vcsdd-language-cpp-profile"]}
+    ],
+    "agent": [
+      {"id": "agent:orchestrator", "modules": ["vcsdd-agents"], "path": "agents/vcsdd-orchestrator.md"},
+      {"id": "agent:builder", "modules": ["vcsdd-agents"], "path": "agents/vcsdd-builder.md"},
+      {"id": "agent:adversary", "modules": ["vcsdd-agents"], "path": "agents/vcsdd-adversary.md"},
+      {"id": "agent:verifier", "modules": ["vcsdd-agents"], "path": "agents/vcsdd-verifier.md"}
+    ],
+    "skill": [
+      {"id": "skill:spec-crystallization", "modules": ["vcsdd-skills"]},
+      {"id": "skill:sprint-contracts", "modules": ["vcsdd-skills"]},
+      {"id": "skill:adversarial-refinement", "modules": ["vcsdd-skills"]},
+      {"id": "skill:grading-criteria", "modules": ["vcsdd-skills"]},
+      {"id": "skill:feedback-routing", "modules": ["vcsdd-skills"]},
+      {"id": "skill:convergence-detection", "modules": ["vcsdd-skills"]},
+      {"id": "skill:formal-hardening", "modules": ["vcsdd-skills"]},
+      {"id": "skill:verification-architecture", "modules": ["vcsdd-skills"]},
+      {"id": "skill:traceability", "modules": ["vcsdd-skills"]},
+      {"id": "skill:git-integration", "modules": ["vcsdd-skills"]}
+    ]
+  }
+}
