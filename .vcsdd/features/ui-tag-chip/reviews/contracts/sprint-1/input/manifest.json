@@ -1,0 +1,7 @@
+{
+  "reviewType": "contract",
+  "feature": "ui-tag-chip",
+  "sprintNumber": 1,
+  "contractPath": "contracts/sprint-1.md",
+  "reviewDimensions": ["spec_fidelity", "implementation_correctness", "structural_integrity", "verification_readiness", "edge_case_coverage"]
+}

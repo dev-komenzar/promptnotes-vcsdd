@@ -21,8 +21,7 @@ import { flushSync, mount, unmount } from 'svelte';
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 
-// ── RED PHASE: import will fail — component does not exist ────────────────────
-// @ts-expect-error — RED PHASE: TagFilterSidebar.svelte is not yet implemented
+// ── GREEN PHASE: component now exists ────────────────────────────────────
 import TagFilterSidebar from '../../TagFilterSidebar.svelte';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -35,7 +34,7 @@ export interface TagEntry {
 
 /** Props for TagFilterSidebar component */
 interface TagFilterSidebarProps {
-  tags: TagEntry[];
+  entries: readonly TagEntry[];
   activeFilterTags: readonly string[];
   onToggle: (tag: string) => void;
   onClear: () => void;
@@ -78,13 +77,13 @@ function mountSidebar(props: TagFilterSidebarProps): Record<string, unknown> {
 
 describe('REQ-TAG-009: TagFilterSidebar renders tags sorted by usageCount descending', () => {
   test('Renders each tag as "#name (count)" (RED: FAILS)', () => {
-    const tags = makeTags([
+    const entries = makeTags([
       ['typescript', 5],
       ['svelte', 3],
       ['draft', 1],
     ]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -105,13 +104,13 @@ describe('REQ-TAG-009: TagFilterSidebar renders tags sorted by usageCount descen
   });
 
   test('Tags are rendered in usageCount descending order (RED: FAILS)', () => {
-    const tags = makeTags([
+    const entries = makeTags([
       ['rare', 1],
       ['common', 10],
       ['medium', 5],
     ]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -135,13 +134,13 @@ describe('REQ-TAG-009: TagFilterSidebar renders tags sorted by usageCount descen
   });
 
   test('Tags with equal usageCount are all rendered (RED: FAILS)', () => {
-    const tags = makeTags([
+    const entries = makeTags([
       ['alpha', 3],
       ['beta', 3],
       ['gamma', 3],
     ]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -157,7 +156,7 @@ describe('REQ-TAG-009: TagFilterSidebar renders tags sorted by usageCount descen
 describe('REQ-TAG-009: TagFilterSidebar — empty tag inventory', () => {
   test('Empty tag list renders nothing (RED: FAILS)', () => {
     mountSidebar({
-      tags: [],
+      entries: [],
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -170,7 +169,7 @@ describe('REQ-TAG-009: TagFilterSidebar — empty tag inventory', () => {
 
   test('Empty tag list does not render individual tag items (RED: FAILS)', () => {
     mountSidebar({
-      tags: [],
+      entries: [],
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -186,9 +185,9 @@ describe('REQ-TAG-009: TagFilterSidebar — empty tag inventory', () => {
 describe('REQ-TAG-010: Clicking a tag calls onToggle with the tag name', () => {
   test('Clicking a non-selected tag calls onToggle (RED: FAILS)', () => {
     const onToggle = vi.fn();
-    const tags = makeTags([['typescript', 3]]);
+    const entries = makeTags([['typescript', 3]]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: [],
       onToggle,
       onClear: vi.fn(),
@@ -204,9 +203,9 @@ describe('REQ-TAG-010: Clicking a tag calls onToggle with the tag name', () => {
 
   test('Clicking an already-selected tag also calls onToggle (toggle off) (RED: FAILS)', () => {
     const onToggle = vi.fn();
-    const tags = makeTags([['typescript', 3]]);
+    const entries = makeTags([['typescript', 3]]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: ['typescript'],
       onToggle,
       onClear: vi.fn(),
@@ -223,12 +222,12 @@ describe('REQ-TAG-010: Clicking a tag calls onToggle with the tag name', () => {
 
 describe('REQ-TAG-010/011: TagFilterSidebar — visual highlight of active tags', () => {
   test('Selected tags get aria-checked="true" (PROP-TAG-020) (RED: FAILS)', () => {
-    const tags = makeTags([
+    const entries = makeTags([
       ['typescript', 5],
       ['svelte', 3],
     ]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: ['typescript'],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -244,9 +243,9 @@ describe('REQ-TAG-010/011: TagFilterSidebar — visual highlight of active tags'
   });
 
   test('Tag filter items have role="checkbox" (PROP-TAG-020) (RED: FAILS)', () => {
-    const tags = makeTags([['draft', 1]]);
+    const entries = makeTags([['draft', 1]]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -262,12 +261,12 @@ describe('REQ-TAG-010/011: TagFilterSidebar — visual highlight of active tags'
 describe('REQ-TAG-012: "すべて解除" button calls onClear', () => {
   test('Clicking "すべて解除" calls onClear (RED: FAILS)', () => {
     const onClear = vi.fn();
-    const tags = makeTags([
+    const entries = makeTags([
       ['typescript', 5],
       ['svelte', 3],
     ]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: ['typescript', 'svelte'],
       onToggle: vi.fn(),
       onClear,
@@ -281,9 +280,9 @@ describe('REQ-TAG-012: "すべて解除" button calls onClear', () => {
   });
 
   test('"すべて解除" button is rendered when tags exist (RED: FAILS)', () => {
-    const tags = makeTags([['draft', 1]]);
+    const entries = makeTags([['draft', 1]]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -296,7 +295,7 @@ describe('REQ-TAG-012: "すべて解除" button calls onClear', () => {
 
   test('"すべて解除" button not rendered when tag list is empty (RED: FAILS)', () => {
     mountSidebar({
-      tags: [],
+      entries: [],
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -311,12 +310,12 @@ describe('REQ-TAG-012: "すべて解除" button calls onClear', () => {
 
 describe('REQ-TAG-019: Zero-filter state — no tags highlighted', () => {
   test('When activeFilterTags is empty, no tags are highlighted (RED: FAILS)', () => {
-    const tags = makeTags([
+    const entries = makeTags([
       ['typescript', 5],
       ['svelte', 3],
     ]);
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: [],
       onToggle: vi.fn(),
       onClear: vi.fn(),
@@ -333,14 +332,14 @@ describe('REQ-TAG-019: Zero-filter state — no tags highlighted', () => {
   test('After clearing filters, no tags are highlighted (RED: FAILS)', () => {
     const onToggle = vi.fn();
     const onClear = vi.fn();
-    const tags = makeTags([
+    const entries = makeTags([
       ['typescript', 5],
       ['svelte', 3],
     ]);
 
     // Mount with active filters, then simulate clear
     mountSidebar({
-      tags,
+      entries,
       activeFilterTags: ['typescript', 'svelte'],
       onToggle,
       onClear,
@@ -367,14 +366,14 @@ describe('Integration: multiple toggle + clear interactions', () => {
   test('Toggling multiple tags then clearing resets all (RED: FAILS)', () => {
     const onToggle = vi.fn();
     const onClear = vi.fn();
-    const tags = makeTags([
+    const entries = makeTags([
       ['typescript', 5],
       ['svelte', 3],
       ['draft', 1],
     ]);
 
     mountSidebar({
-      tags,
+      entries: entries,
       activeFilterTags: [],
       onToggle,
       onClear,

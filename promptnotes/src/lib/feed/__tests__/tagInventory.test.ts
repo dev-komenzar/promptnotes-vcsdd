@@ -53,7 +53,7 @@ function makeMetadata(
 describe('REQ-TAG-018: tagInventoryFromMetadata — empty input', () => {
   test('Empty metadata → empty inventory (RED: FAILS)', () => {
     const metadata = makeMetadata({});
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toEqual([]);
   });
 
@@ -69,7 +69,7 @@ describe('REQ-TAG-018: tagInventoryFromMetadata — empty input', () => {
 describe('REQ-TAG-018: tagInventoryFromMetadata — single note with one tag', () => {
   test('Single note with one tag → inventory with usageCount=1 (RED: FAILS)', () => {
     const metadata = makeMetadata({ 'note-1': ['draft'] });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toHaveLength(1);
     expect(inventory[0]).toEqual({ name: 'draft', usageCount: 1 });
   });
@@ -80,7 +80,7 @@ describe('REQ-TAG-018: tagInventoryFromMetadata — single note with one tag', (
 describe('REQ-TAG-018: tagInventoryFromMetadata — single note with multiple tags', () => {
   test('Single note with 3 tags → 3 entries each with usageCount=1 (RED: FAILS)', () => {
     const metadata = makeMetadata({ 'note-1': ['typescript', 'svelte', 'draft'] });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toHaveLength(3);
     const names = inventory.map((e: TagEntry) => e.name).sort();
     expect(names).toEqual(['draft', 'svelte', 'typescript']);
@@ -98,7 +98,7 @@ describe('REQ-TAG-018: tagInventoryFromMetadata — multiple notes with same tag
       'note-1': ['draft'],
       'note-2': ['draft'],
     });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toHaveLength(1);
     expect(inventory[0]).toEqual({ name: 'draft', usageCount: 2 });
   });
@@ -109,7 +109,7 @@ describe('REQ-TAG-018: tagInventoryFromMetadata — multiple notes with same tag
       'note-2': ['bug'],
       'note-3': ['bug'],
     });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toHaveLength(1);
     expect(inventory[0]).toEqual({ name: 'bug', usageCount: 3 });
   });
@@ -126,7 +126,7 @@ describe('REQ-TAG-005/018: tagInventoryFromMetadata — sorted by usageCount des
       'note-4': ['medium'],
     });
     // common=3, medium=2, rare=1
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toHaveLength(3);
     expect(inventory[0]).toEqual({ name: 'common', usageCount: 3 });
     expect(inventory[1]).toEqual({ name: 'medium', usageCount: 2 });
@@ -139,7 +139,7 @@ describe('REQ-TAG-005/018: tagInventoryFromMetadata — sorted by usageCount des
       'note-2': ['gamma', 'delta'],
     });
     // All tags have usageCount=1
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toHaveLength(4);
     for (const entry of inventory) {
       expect(entry.usageCount).toBe(1);
@@ -159,7 +159,7 @@ describe('REQ-TAG-014: tagInventoryFromMetadata — usageCount > 0 invariant', (
       'note-1': [],
       'note-2': [],
     });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toHaveLength(0);
   });
 
@@ -169,7 +169,7 @@ describe('REQ-TAG-014: tagInventoryFromMetadata — usageCount > 0 invariant', (
       'note-2': [],
       'note-3': [],
     });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     expect(inventory).toEqual([]);
   });
 
@@ -181,7 +181,7 @@ describe('REQ-TAG-014: tagInventoryFromMetadata — usageCount > 0 invariant', (
       'note-3': ['svelte'],
     });
     // 'orphan' is not in any note's tags — shouldn't appear
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     const orphanEntry = inventory.find((e: TagEntry) => e.name === 'orphan');
     expect(orphanEntry).toBeUndefined();
   });
@@ -195,7 +195,7 @@ describe('PROP-TAG-030: tagInventoryFromMetadata — structural invariants', () 
       'a': ['x', 'y'],
       'b': ['x'],
     });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     for (const entry of inventory) {
       expect(entry.usageCount).toBeGreaterThan(0);
     }
@@ -207,7 +207,7 @@ describe('PROP-TAG-030: tagInventoryFromMetadata — structural invariants', () 
       'b': ['x', 'z'],
       'c': ['x', 'y', 'z'],
     });
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     const seen = new Set<string>();
     for (const entry of inventory) {
       expect(seen.has(entry.name)).toBe(false);
@@ -222,7 +222,7 @@ describe('PROP-TAG-030: tagInventoryFromMetadata — structural invariants', () 
       'n3': ['tag-b', 'tag-c'],
     });
     // tag-a: 2 notes (n1, n2), tag-b: 2 notes (n1, n3), tag-c: 1 note (n3)
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
     for (const entry of inventory) {
       let actualCount = 0;
       for (const [, meta] of Object.entries(metadata)) {
@@ -257,7 +257,7 @@ describe('REQ-TAG-018: tagInventoryFromMetadata — realistic 10-note scenario',
     // rust: notes 02,04,07,09 = 4
     // draft: notes 03,04,08 = 3
     // design: notes 06,07 = 2
-    const inventory: TagEntry[] = tagInventoryFromMetadata(metadata);
+    const inventory: readonly TagEntry[] = tagInventoryFromMetadata(metadata);
 
     expect(inventory).toHaveLength(5);
 

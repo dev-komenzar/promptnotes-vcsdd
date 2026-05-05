@@ -13,8 +13,11 @@
 
 import type { FeedViewState, FeedAction, FeedReducerResult, FeedCommand } from './types.js';
 import { isFeedRowClickBlocked } from './feedRowPredicates.js';
+import { tryNewTag } from '../domain/apply-filter-or-search/try-new-tag.js';
 
 const REFRESH_TRIGGER_CAUSES: ReadonlySet<string> = new Set(['NoteFileSaved', 'NoteFileDeleted']);
+
+const MAX_TAG_LENGTH = 100;
 
 /**
  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
@@ -39,6 +42,14 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
             ? null
             : snapshot.delete.lastDeletionError,
         noteMetadata: snapshot.noteMetadata,
+        // Preserve tag UI state across snapshots (like loadingStatus)
+        activeFilterTags: state.activeFilterTags,
+        // Close tag input if the note was deleted
+        tagAutocompleteVisibleFor:
+          state.tagAutocompleteVisibleFor !== null &&
+          snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined
+            ? state.tagAutocompleteVisibleFor
+            : null,
       };
 
       if (REFRESH_TRIGGER_CAUSES.has(snapshot.cause.kind)) {
@@ -141,6 +152,98 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
         visibleNoteIds: action.visibleNoteIds,
       };
       return { state: nextState, commands: [{ kind: 'refresh-feed' }] };
+    }
+
+    // ── ui-tag-chip: TagAddClicked ───────────────────────────────────────
+    case 'TagAddClicked': {
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor: action.noteId,
+      };
+      return { state: nextState, commands: [] };
+    }
+
+    // ── ui-tag-chip: TagRemoveClicked ────────────────────────────────────
+    case 'TagRemoveClicked': {
+      const commands: FeedCommand[] = [
+        {
+          kind: 'remove-tag-via-chip',
+          payload: { noteId: action.noteId, tag: action.tag, issuedAt: '' },
+        },
+      ];
+      // Close input on the same row first (REQ-TAG-002 step 1)
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor:
+          state.tagAutocompleteVisibleFor === action.noteId ? null : state.tagAutocompleteVisibleFor,
+      };
+      return { state: nextState, commands };
+    }
+
+    // ── ui-tag-chip: TagInputCommitted ───────────────────────────────────
+    case 'TagInputCommitted': {
+      const validateResult = tryNewTag(action.rawTag);
+      if (!validateResult.ok) {
+        // Invalid tag: keep input open, no command (error displayed in UI)
+        return { state, commands: [] };
+      }
+      const normalized = validateResult.value;
+      if ((normalized as string).length > MAX_TAG_LENGTH) {
+        return { state, commands: [] };
+      }
+      const commands: FeedCommand[] = [
+        {
+          kind: 'add-tag-via-chip',
+          payload: { noteId: action.noteId, tag: normalized as string, issuedAt: '' },
+        },
+      ];
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor: null,
+      };
+      return { state: nextState, commands };
+    }
+
+    // ── ui-tag-chip: TagInputCancelled ───────────────────────────────────
+    case 'TagInputCancelled': {
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor: null,
+      };
+      return { state: nextState, commands: [] };
+    }
+
+    // ── ui-tag-chip: TagFilterToggled ────────────────────────────────────
+    case 'TagFilterToggled': {
+      const tag = action.tag;
+      const currentActive = state.activeFilterTags;
+      const isActive = currentActive.includes(tag);
+
+      let nextActive: readonly string[];
+      let commands: FeedCommand[];
+
+      if (isActive) {
+        nextActive = currentActive.filter((t) => t !== tag);
+        commands = [{ kind: 'remove-tag-filter', payload: { tag } }];
+      } else {
+        nextActive = [...currentActive, tag];
+        commands = [{ kind: 'apply-tag-filter', payload: { tag } }];
+      }
+
+      const nextState: FeedViewState = {
+        ...state,
+        activeFilterTags: nextActive,
+      };
+      return { state: nextState, commands };
+    }
+
+    // ── ui-tag-chip: TagFilterCleared ────────────────────────────────────
+    case 'TagFilterCleared': {
+      const nextState: FeedViewState = {
+        ...state,
+        activeFilterTags: [],
+      };
+      return { state: nextState, commands: [{ kind: 'clear-filter' }] };
     }
 
     default: {

@@ -26,35 +26,36 @@ import type { FeedViewState, FeedAction, FeedCommand } from '$lib/feed/types';
 // ── PROP-TAG-023: FeedViewState extended fields ────────────────────────────
 
 describe('PROP-TAG-023: FeedViewState has tag-related fields', () => {
+  const minimalState: FeedViewState = {
+    editingStatus: 'idle',
+    editingNoteId: null,
+    pendingNextNoteId: null,
+    visibleNoteIds: [],
+    loadingStatus: 'ready',
+    activeDeleteModalNoteId: null,
+    lastDeletionError: null,
+    noteMetadata: {},
+    tagAutocompleteVisibleFor: null,
+    activeFilterTags: [],
+  };
+
   test('FeedViewState accepts tagAutocompleteVisibleFor: string | null', () => {
-    // RED: TS error — Property 'tagAutocompleteVisibleFor' does not exist on type 'FeedViewState'
-    const _assert: string | null = ({} as FeedViewState).tagAutocompleteVisibleFor;
-    // Runtime sanity: the field should be assignable to string | null
-    expect(typeof _assert === 'string' || _assert === null).toBe(true);
+    expect(minimalState.tagAutocompleteVisibleFor).toBe(null);
   });
 
   test('FeedViewState accepts activeFilterTags: readonly string[]', () => {
-    // RED: TS error — Property 'activeFilterTags' does not exist on type 'FeedViewState'
-    const _assert: readonly string[] = ({} as FeedViewState).activeFilterTags;
-    expect(Array.isArray(_assert)).toBe(true);
+    expect(Array.isArray(minimalState.activeFilterTags)).toBe(true);
+    expect(minimalState.activeFilterTags.length).toBe(0);
   });
 
-  test('FeedViewState still has all existing fields (no regression)', () => {
-    // Verify the existing fields are still present
-    const state: FeedViewState = {
-      editingStatus: 'idle',
-      editingNoteId: null,
-      pendingNextNoteId: null,
-      visibleNoteIds: [],
-      loadingStatus: 'ready',
-      activeDeleteModalNoteId: null,
-      lastDeletionError: null,
-      noteMetadata: {},
-      // RED: these fields should be required on FeedViewState but are missing
-      // @ts-expect-error — RED: tagAutocompleteVisibleFor / activeFilterTags not yet required
-      // Actually we want this to fail: the fields should already be here
-    };
-    expect(state.editingStatus).toBe('idle');
+  test('tagAutocompleteVisibleFor can be a string', () => {
+    const state: FeedViewState = { ...minimalState, tagAutocompleteVisibleFor: 'note-001' };
+    expect(state.tagAutocompleteVisibleFor).toBe('note-001');
+  });
+
+  test('activeFilterTags can contain tags', () => {
+    const state: FeedViewState = { ...minimalState, activeFilterTags: ['typescript', 'svelte'] };
+    expect(state.activeFilterTags).toEqual(['typescript', 'svelte']);
   });
 });
 

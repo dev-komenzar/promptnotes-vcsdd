@@ -396,10 +396,13 @@ describe('PROP-TAG-024: DomainSnapshotReceived preserves activeFilterTags and ta
     expect(tags).toEqual(['typescript', 'draft']);
   });
 
-  test('tagAutocompleteVisibleFor is preserved across DomainSnapshotReceived (RED: FAILS)', () => {
+  test('tagAutocompleteVisibleFor is preserved across DomainSnapshotReceived when note still exists', () => {
     const state = makeInitialState({ tagAutocompleteVisibleFor: 'note-002' });
     const snapshot = makeSnapshot({
       cause: { kind: 'NoteFileSaved', savedNoteId: 'note-001' },
+      noteMetadata: {
+        'note-002': { body: 'test', createdAt: 1, updatedAt: 1, tags: [] },
+      },
     });
     const result = feedReducer(state as unknown as FeedViewState, {
       kind: 'DomainSnapshotReceived',
@@ -409,7 +412,7 @@ describe('PROP-TAG-024: DomainSnapshotReceived preserves activeFilterTags and ta
     expect(result.state).toHaveProperty('tagAutocompleteVisibleFor', 'note-002');
   });
 
-  test('loadingStatus preservation pattern still works alongside new fields (RED: FAILS)', () => {
+  test('loadingStatus preservation pattern still works alongside new fields', () => {
     const state = makeInitialState({
       loadingStatus: 'ready',
       activeFilterTags: ['draft'],
@@ -418,6 +421,9 @@ describe('PROP-TAG-024: DomainSnapshotReceived preserves activeFilterTags and ta
     const snapshot = makeSnapshot({
       cause: { kind: 'InitialLoad' },
       editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+      noteMetadata: {
+        'note-001': { body: 'test', createdAt: 1, updatedAt: 1, tags: ['draft'] },
+      },
     });
     const result = feedReducer(state as unknown as FeedViewState, {
       kind: 'DomainSnapshotReceived',

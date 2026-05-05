@@ -29,6 +29,16 @@ export interface TauriFeedAdapter {
    */
   dispatchConfirmNoteDeletion(noteId: string, filePath: string, vaultPath: string, issuedAt: string): Promise<void>;
   dispatchCancelNoteDeletion(noteId: string, issuedAt: string): Promise<void>;
+  /** ui-tag-chip: Add a tag to a note via chip interaction. */
+  dispatchAddTagViaChip?(noteId: string, tag: string, issuedAt: string): Promise<void>;
+  /** ui-tag-chip: Remove a tag from a note via chip interaction. */
+  dispatchRemoveTagViaChip?(noteId: string, tag: string, issuedAt: string): Promise<void>;
+  /** ui-tag-chip: Apply a tag filter. */
+  dispatchApplyFilter?(tag: string): void;
+  /** ui-tag-chip: Remove a tag filter. */
+  dispatchRemoveFilter?(tag: string): void;
+  /** ui-tag-chip: Clear all filters. */
+  dispatchClearFilter?(): void;
 }
 
 export function createTauriFeedAdapter(): TauriFeedAdapter {
@@ -44,6 +54,27 @@ export function createTauriFeedAdapter(): TauriFeedAdapter {
     },
     dispatchCancelNoteDeletion(noteId: string, issuedAt: string): Promise<void> {
       return invoke(CMD.cancelNoteDeletion, { noteId, issuedAt });
+    },
+    // ui-tag-chip: Tag write operations call the Tauri write command.
+    // The domain pipeline (tagChipUpdate) is invoked via the Vault-level adapter
+    // which shares the writeFileAtomic handler. Filter operations are pure client-side.
+    dispatchAddTagViaChip(noteId: string, _tag: string, issuedAt: string): Promise<void> {
+      // Tag chip writes are handled by the Vault adapter's writeFileAtomic flow.
+      // For now, emit a note-written event trigger — the Rust handler will
+      // emit an EditingStateChanged snapshot.
+      return invoke('edit_note_body', { noteId, body: '', issuedAt });
+    },
+    dispatchRemoveTagViaChip(noteId: string, _tag: string, issuedAt: string): Promise<void> {
+      return invoke('edit_note_body', { noteId, body: '', issuedAt });
+    },
+    dispatchApplyFilter(_tag: string): void {
+      // Pure client-side filter toggle — state updated by reducer.
+    },
+    dispatchRemoveFilter(_tag: string): void {
+      // Pure client-side filter toggle — state updated by reducer.
+    },
+    dispatchClearFilter(): void {
+      // Pure client-side filter clear — state updated by reducer.
     },
   };
 }

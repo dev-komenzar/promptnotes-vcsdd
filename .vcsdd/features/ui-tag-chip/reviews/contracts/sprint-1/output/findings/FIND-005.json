@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "REQ-TAG-012 describes the 'すべて解除' (Clear All) button as 'Ubiquitous' — THE SYSTEM SHALL display it. The implementation (TagFilterSidebar.svelte:50-58) only renders the clear button when `hasActive` is true (activeFilterTags.length > 0). This contradicts the spec's ubiquitous requirement. The DOM test (line 283) expects the button when tags exist regardless of active state.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+    "lineRange": "50-58",
+    "snippet": "{#if hasActive}\n      <button class=\"clear-button\" data-testid=\"tag-filter-clear\" onclick={onClear}>\n        すべて解除\n      </button>\n    {/if}"
+  },
+  "routeToPhase": "2b"
+}

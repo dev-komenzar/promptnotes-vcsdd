@@ -24,6 +24,8 @@
   import FeedRow from './FeedRow.svelte';
   import DeleteConfirmModal from './DeleteConfirmModal.svelte';
   import DeletionFailureBanner from './DeletionFailureBanner.svelte';
+  import TagFilterSidebar from './TagFilterSidebar.svelte';
+  import { tagInventoryFromMetadata } from './tagInventory.js';
   import { onDestroy, untrack } from 'svelte';
   import { nowIso } from './clockHelpers.js';
 
@@ -104,6 +106,22 @@
       case 'close-delete-modal':
         // State change handled by reducer; no side-effect needed
         break;
+      // ── ui-tag-chip commands ───────────────────────────────
+      case 'add-tag-via-chip':
+        adapter.dispatchAddTagViaChip?.(cmd.payload.noteId, cmd.payload.tag, cmd.payload.issuedAt || nowIso());
+        break;
+      case 'remove-tag-via-chip':
+        adapter.dispatchRemoveTagViaChip?.(cmd.payload.noteId, cmd.payload.tag, cmd.payload.issuedAt || nowIso());
+        break;
+      case 'apply-tag-filter':
+        adapter.dispatchApplyFilter?.(cmd.payload.tag);
+        break;
+      case 'remove-tag-filter':
+        adapter.dispatchRemoveFilter?.(cmd.payload.tag);
+        break;
+      case 'clear-filter':
+        adapter.dispatchClearFilter?.();
+        break;
       default: {
         const _exhaustive: never = cmd;
         void _exhaustive;
@@ -167,6 +185,56 @@
     }
   }
 
+  // ── ui-tag-chip handlers ────────────────────────────────────────────
+
+  function handleTagAddClick(noteId: string): void {
+    const result = feedReducer(currentViewState, { kind: 'TagAddClicked', noteId });
+    currentViewState = result.state;
+    for (const cmd of result.commands) {
+      dispatchCommand(cmd);
+    }
+  }
+
+  function handleTagRemove(noteId: string, tag: string): void {
+    const result = feedReducer(currentViewState, { kind: 'TagRemoveClicked', noteId, tag });
+    currentViewState = result.state;
+    for (const cmd of result.commands) {
+      dispatchCommand(cmd);
+    }
+  }
+
+  function handleTagInputCommit(noteId: string, rawTag: string): void {
+    const result = feedReducer(currentViewState, { kind: 'TagInputCommitted', noteId, rawTag });
+    currentViewState = result.state;
+    for (const cmd of result.commands) {
+      dispatchCommand(cmd);
+    }
+  }
+
+  function handleTagInputCancel(): void {
+    const result = feedReducer(currentViewState, { kind: 'TagInputCancelled' });
+    currentViewState = result.state;
+    for (const cmd of result.commands) {
+      dispatchCommand(cmd);
+    }
+  }
+
+  function handleTagFilterToggle(tag: string): void {
+    const result = feedReducer(currentViewState, { kind: 'TagFilterToggled', tag });
+    currentViewState = result.state;
+    for (const cmd of result.commands) {
+      dispatchCommand(cmd);
+    }
+  }
+
+  function handleTagFilterClear(): void {
+    const result = feedReducer(currentViewState, { kind: 'TagFilterCleared' });
+    currentViewState = result.state;
+    for (const cmd of result.commands) {
+      dispatchCommand(cmd);
+    }
+  }
+
   onDestroy(() => {
     unsubscribe();
   });
@@ -181,6 +249,8 @@
   const activeDeleteModalNoteId = $derived(currentViewState.activeDeleteModalNoteId);
   const lastDeletionError = $derived(currentViewState.lastDeletionError);
   const noteMetadata = $derived(currentViewState.noteMetadata);
+  const tagInventory = $derived(tagInventoryFromMetadata(currentViewState.noteMetadata));
+  const activeFilterTags = $derived(currentViewState.activeFilterTags);
 
   /** Returns per-row metadata for a given noteId, falling back to empty defaults. */
   function rowMetadata(noteId: string): NoteRowMetadata {
@@ -189,6 +259,14 @@
 </script>
 
 <div class="feed-list">
+  <!-- Tag filter sidebar (ui-tag-chip) -->
+  <TagFilterSidebar
+    entries={tagInventory}
+    {activeFilterTags}
+    onToggle={handleTagFilterToggle}
+    onClear={handleTagFilterClear}
+  />
+
   <!-- Deletion failure banner at top of feed per spec (FIND-012 fix) -->
   {#if lastDeletionError !== null}
     <DeletionFailureBanner
@@ -223,8 +301,13 @@
         tags={meta.tags}
         viewState={currentViewState}
         {adapter}
+        tagInventory={tagInventory}
         onRowClick={handleRowClick}
         onDeleteClick={handleDeleteButtonClick}
+        onTagRemove={handleTagRemove}
+        onTagAddClick={handleTagAddClick}
+        onTagInputCommit={handleTagInputCommit}
+        onTagInputCancel={handleTagInputCancel}
       />
     {/each}
   {/if}

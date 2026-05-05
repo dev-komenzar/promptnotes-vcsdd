@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-TAG-010 step 2-3 requires calling applyFilterOrSearch() to compute new visibleNoteIds and emitting the existing FilterApplied action. The TagFilterToggled handler in feedReducer.ts (lines 217-238) only toggles activeFilterTags and emits raw filter commands (apply-tag-filter / remove-tag-filter). It does NOT call applyFilterOrSearch and does NOT emit FilterApplied with updated visibleNoteIds. The effectful shell (FeedList.svelte:116-121) delegates to adapter.dispatchApplyFilter/RemoveFilter, which are unimplemented (see FIND-002). This means toggling tag filters has no observable effect on the feed display — visibleNoteIds is never recomputed.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/feedReducer.ts",
+    "lineRange": "217-238",
+    "snippet": "case 'TagFilterToggled': {\n      const tag = action.tag;\n      const currentActive = state.activeFilterTags;\n      const isActive = currentActive.includes(tag);\n\n      let nextActive: readonly string[];\n      let commands: FeedCommand[];\n\n      if (isActive) {\n        nextActive = currentActive.filter((t) => t !== tag);\n        commands = [{ kind: 'remove-tag-filter', payload: { tag } }];\n      } else {\n        nextActive = [...currentActive, tag];\n        commands = [{ kind: 'apply-tag-filter', payload: { tag } }];\n      }"
+  },
+  "routeToPhase": "2b"
+}

@@ -47,7 +47,7 @@ function makeViewState(overrides: Partial<FeedViewState> = {}): FeedViewState {
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
-    noteMetadata: {},
+    noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [],
     ...overrides,
   };
 }

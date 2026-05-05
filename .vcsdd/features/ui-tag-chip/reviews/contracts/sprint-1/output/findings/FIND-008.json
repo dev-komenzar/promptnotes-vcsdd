@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "structural_integrity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "REQ-TAG-015 specifies that interactive buttons shall use 'Notion Blue (#0075de) for default' and 'Active Blue (#005bab) for hover/pressed'. The '+' button (FeedRow.svelte:295-319) uses #615d59 (not DESIGN.md token) as default color, only changing to #0075de on hover. Additionally, #005bab (Active Blue) is never used anywhere in the tag-related styling. The tag-remove button also uses #097fe8 (tag chip blue) rather than #0075de (Notion Blue).",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "295-319",
+    "snippet": ".tag-add {\n    background: none;\n    border: 1px dashed rgba(0,0,0,0.15);\n    border-radius: 9999px;\n    padding: 4px 8px;\n    cursor: pointer;\n    color: #615d59;     /* spec says #0075de */\n    font-size: 14px;\n    ...\n  }\n\n  .tag-add:hover {\n    background-color: rgba(0,0,0,0.04);\n    border-color: #0075de;\n    color: #0075de;\n  }"
+  },
+  "routeToPhase": "2b"
+}

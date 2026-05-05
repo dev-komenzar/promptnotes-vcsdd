@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-009",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "high",
+  "description": "EC-011 ('All notes have zero tags → Sidebar hidden. Rows show no tag chips, only '+' button.') cannot be satisfied because the '+' button is rendered inside `{#if tags.length > 0}` (FIND-004). EC-019 through EC-021 (autocomplete dropdown: 0 results, scrollable many matches, keyboard navigation) are not verifiable because no autocomplete UI is rendered (FIND-001). The 15 DOM tests fail entirely (FIND-007), meaning edge cases EC-010 (empty inventory sidebar hidden), tag highlight state (REQ-TAG-019), and filter toggle/clear interactions are not validated by the test suite.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts",
+    "lineRange": "1-397",
+    "description": "All 15 DOM tests fail due to prop name mismatch (tags vs entries)"
+  },
+  "routeToPhase": "2a"
+}

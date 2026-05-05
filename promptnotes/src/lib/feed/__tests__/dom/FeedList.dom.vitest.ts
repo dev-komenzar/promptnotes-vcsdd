@@ -63,7 +63,7 @@ function makeViewState(overrides: Partial<FeedViewState> = {}): FeedViewState {
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
-    noteMetadata: {},
+    noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [],
     ...overrides,
   };
 }
@@ -201,7 +201,7 @@ describe('PROP-FEED-024 / REQ-FEED-013: deleted note row disappears from DOM', (
       editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
       feed: { visibleNoteIds: ['note-001'], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
-      noteMetadata: {},
+      noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [],
       cause: { kind: 'NoteFileDeleted', deletedNoteId: 'note-002' },
     };
 
@@ -242,7 +242,7 @@ describe('PROP-FEED-025 / REQ-FEED-018: filter update changes visible rows', () 
       editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
       feed: { visibleNoteIds: ['note-001'], filterApplied: true },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
-      noteMetadata: {},
+      noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [],
       cause: { kind: 'EditingStateChanged' },
     };
 

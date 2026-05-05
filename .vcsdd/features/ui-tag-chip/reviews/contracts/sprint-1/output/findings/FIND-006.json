@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "FIND-012 of the behavioral spec states: 'TagFilterSidebar is rendered as a separate component in the +page.svelte layout, inside the <aside class=\"feed-sidebar\"> element, before <FeedList>'. The actual implementation renders TagFilterSidebar INSIDE FeedList.svelte's template (line 263), not as a separate component in +page.svelte. While functionally similar, this deviates from the documented architecture and means TagFilterSidebar cannot receive independent props from +page.svelte — it relies on FeedList to compute and pass tag inventory.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedList.svelte",
+    "lineRange": "261-268",
+    "snippet": "<div class=\"feed-list\">\n  <TagFilterSidebar\n    entries={tagInventory}\n    {activeFilterTags}\n    onToggle={handleTagFilterToggle}\n    onClear={handleTagFilterClear}\n  />"
+  },
+  "routeToPhase": "1a"
+}

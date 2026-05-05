@@ -77,6 +77,8 @@ const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   activeDeleteModalNoteId: arbNoteIdOrNull,
   lastDeletionError: arbLastDeletionError,
   noteMetadata: arbNoteMetadata,
+  tagAutocompleteVisibleFor: fc.constant(null),
+  activeFilterTags: fc.constant([] as readonly string[]),
 });
 
 const arbCause: fc.Arbitrary<FeedDomainSnapshot['cause']> = fc.oneof(

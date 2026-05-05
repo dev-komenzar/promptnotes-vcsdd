@@ -45,6 +45,8 @@
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
     noteMetadata: {},
+    tagAutocompleteVisibleFor: null,
+    activeFilterTags: [],
   });
 
   // FIND-S2-01/05/06: Current vault path, resolved once on mount and passed to
@@ -77,6 +79,8 @@
             activeDeleteModalNoteId: snapshot.delete.activeDeleteModalNoteId,
             lastDeletionError: null,
             noteMetadata: snapshot.noteMetadata,
+            tagAutocompleteVisibleFor: feedViewState.tagAutocompleteVisibleFor,
+            activeFilterTags: feedViewState.activeFilterTags,
           };
         } else {
           // Unconfigured: show empty feed as ready (AppShell will redirect to modal)
