@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-022",
+  "dimension": "edge_case_coverage",
+  "category": "missing_edge_case",
+  "severity": "low",
+  "description": "fs_write_file_atomic uses nanos-based timestamp as temp file suffix with no retry loop for collision. Two rapid calls within the same nanosecond would produce the same temp suffix. Also the test fs_write_file_atomic_does_not_partial_write_on_error has a misleading name.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "94-107",
+    "snippet": "let temp_suffix = format!(\".tmp.{}\", ... .as_nanos())"
+  },
+  "routeToPhase": "2b"
+}

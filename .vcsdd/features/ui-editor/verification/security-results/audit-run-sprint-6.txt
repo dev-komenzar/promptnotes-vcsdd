@@ -1,0 +1,1 @@
+cargo test: 23/23 PASS (18 editor + 5 feed)

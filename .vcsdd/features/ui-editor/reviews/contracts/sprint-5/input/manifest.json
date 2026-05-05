@@ -1,0 +1,27 @@
+{
+  "reviewType": "contract",
+  "featureName": "ui-editor",
+  "sprintNumber": 5,
+  "contractPath": "contracts/sprint-5.md",
+  "contractDigest": "22812684739aced47533aa288fd9c7c45bd9f564ede65f70d02e4b188ca6c6cf",
+  "artifactsToReview": {
+    "spec": [
+      "specs/behavioral-spec.md",
+      "specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src-tauri/tests/editor_handlers.rs"
+    ],
+    "source": [
+      "promptnotes/src-tauri/src/editor.rs",
+      "promptnotes/src-tauri/src/lib.rs"
+    ]
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ]
+}

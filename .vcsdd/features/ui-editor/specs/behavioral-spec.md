@@ -850,6 +850,212 @@ For property tests in `debounceSchedule.property.test.ts`, PROP-EDIT-003 and PRO
 | REQ-EDIT-026 | Every save command carries explicit source; 'idle'/'blur'/'switch'/'manual' MUST NOT be used |
 | REQ-EDIT-027 | Body validation errors displayed inline without blocking input; empty-body-on-idle successor state documented |
 
+---
+
+## 14. Sprint 2 Extensions — Rust Backend Handlers + Tauri Event Emitter
+
+This section extends the `ui-editor` specification for **Sprint 2**, which completes the vertical slice by implementing the 8 Rust backend `#[tauri::command]` handlers and the `editing_session_state_changed` Tauri event emitter. Sprint 1 delivered all pure-core TypeScript modules, Svelte components, and the TS IPC adapter (`tauriEditorAdapter.ts`). Sprint 2 fills the Rust side so that `bun run tauri dev` produces working editor commands instead of "command not found" errors.
+
+**Scope**: Rust handlers in `promptnotes/src-tauri/src/editor.rs`, module registration in `lib.rs`, cargo integration tests in `promptnotes/src-tauri/tests/editor_handlers.rs`.
+
+**Out of scope**: Changes to `+page.svelte` (EditorPane already mounted), Svelte component changes, pure-core changes.
+
+### §14.1 Rust Command Handlers
+
+#### REQ-EDIT-028: `edit_note_body` Command
+
+**EARS**: WHEN the TS adapter invokes `edit_note_body` with `{ noteId, newBody, issuedAt, dirty }` THE SYSTEM SHALL acknowledge the body buffer update with `Ok(())` and perform NO side effects. The body buffer update is owned by the TypeScript editorReducer; the Rust side is a thin acknowledgement. The TS timer module controls debounce scheduling independently.
+
+**Acceptance Criteria**:
+- Returns `Ok(())` for any non-panicking input.
+- Does not write to disk, does not emit events.
+- The command is registered in `lib.rs` as `editor::edit_note_body`.
+
+**Edge Cases**:
+- Empty `newBody` string is accepted (body validation is a domain concern in TypeScript).
+- Very long body strings (up to ~5000 chars) must not cause stack overflow.
+
+---
+
+#### REQ-EDIT-029: `trigger_idle_save` Command
+
+**EARS**: WHEN the TS adapter invokes `trigger_idle_save` with `{ noteId, body, issuedAt, source }` where `source === 'capture-idle'` THE SYSTEM SHALL write the body to the note file atomically via `fs_write_file_atomic` (REQ-EDIT-037), then emit an `editing_session_state_changed` event with an `EditingSessionStateDto` payload where `status === 'editing'`, `isDirty === false`, `currentNoteId === noteId`, and `body` matches the written content.
+
+**Acceptance Criteria**:
+- On successful write: emits `editing_session_state_changed` event with payload carrying `status: 'editing'` and `isDirty: false`.
+- On write failure: emits `editing_session_state_changed` event with payload carrying `status: 'save-failed'` and `lastError: { kind: 'fs', reason: { kind: '<mapped-error>' } }`.
+- The command returns `Ok(())` in both success and failure cases (errors are communicated via the event, not the command return).
+- Uses `AppHandle::emit` for event emission.
+
+---
+
+#### REQ-EDIT-030: `trigger_blur_save` Command
+
+**EARS**: WHEN the TS adapter invokes `trigger_blur_save` with `{ noteId, body, issuedAt, source }` where `source === 'capture-blur'` THE SYSTEM SHALL behave identically to `trigger_idle_save` (REQ-EDIT-029): write atomically, then emit `editing_session_state_changed`.
+
+**Acceptance Criteria**:
+- Identical behaviour to REQ-EDIT-029, differing only in the `source` discriminator (logged/audited but not used for branching).
+- The `source` field does not change the write or emit behaviour.
+
+---
+
+#### REQ-EDIT-031: `retry_save` Command
+
+**EARS**: WHEN the TS adapter invokes `retry_save` with `{ noteId, body, issuedAt }` THE SYSTEM SHALL re-attempt an atomic write of the body to the note file, then emit `editing_session_state_changed` with success/failure status (same emit pattern as REQ-EDIT-029).
+
+**Acceptance Criteria**:
+- On write success: emits `status: 'editing'`, `isDirty: false`.
+- On write failure: emits `status: 'save-failed'` with `lastError`.
+- Returns `Ok(())`.
+
+---
+
+#### REQ-EDIT-032: `discard_current_session` Command
+
+**EARS**: WHEN the TS adapter invokes `discard_current_session` with `{ noteId, issuedAt }` THE SYSTEM SHALL discard the current editing session and emit `editing_session_state_changed` with `status: 'idle'`, `isDirty: false`, `currentNoteId: null`, `body: ''`, and `lastError: null`. No file write is performed.
+
+**Acceptance Criteria**:
+- Emits idle-state payload.
+- Does not write to disk.
+- Returns `Ok(())`.
+
+---
+
+#### REQ-EDIT-033: `cancel_switch` Command
+
+**EARS**: WHEN the TS adapter invokes `cancel_switch` with `{ noteId, issuedAt }` THE SYSTEM SHALL return from `switching` state to `editing` by emitting `editing_session_state_changed` with `status: 'editing'`, `isDirty: true`, and `currentNoteId` set to the current note. No file write is performed.
+
+**Acceptance Criteria**:
+- Emits editing-state payload with `isDirty: true` (unsaved changes preserved).
+- Does not write to disk.
+- Returns `Ok(())`.
+
+---
+
+#### REQ-EDIT-034: `copy_note_body` Command
+
+**EARS**: WHEN the TS adapter invokes `copy_note_body` with `{ noteId, body }` THE SYSTEM SHALL acknowledge the request with `Ok(())`. The Rust handler does NOT perform clipboard I/O — the TypeScript `clipboardAdapter.ts` handles `navigator.clipboard.writeText()` on the frontend side. The Rust side is a thin acknowledgement only.
+
+**Acceptance Criteria**:
+- Returns `Ok(())`.
+- Does not access the clipboard.
+- Does not emit events.
+- No OS-level clipboard API calls in Rust.
+
+---
+
+#### REQ-EDIT-035: `request_new_note` Command
+
+**EARS**: WHEN the TS adapter invokes `request_new_note` with `{ source, issuedAt }` THE SYSTEM SHALL:
+1. Generate a new unique note ID using epoch-nanosecond timestamp (format: `{vault_path}/{timestamp_ns}.md`).
+2. Create an empty `.md` file with YAML frontmatter containing `createdAt` (current epoch ms), `updatedAt` (current epoch ms), and `tags: []`.
+3. Write the file atomically via `fs_write_file_atomic` (REQ-EDIT-037).
+4. Emit `editing_session_state_changed` with `status: 'editing'`, `isDirty: false`, `currentNoteId` set to the new note path, and `body: ''`.
+
+**Vault path resolution**: Uses `settings_load_impl()` (from `lib.rs`) to read the configured vault path. If no vault is configured, returns an error string.
+
+**Frontmatter format**:
+```yaml
+---
+createdAt: <epoch_ms>
+updatedAt: <epoch_ms>
+tags: []
+---
+```
+
+**Acceptance Criteria**:
+- Generates a unique file path within the vault directory.
+- Creates the file atomically with valid frontmatter.
+- On success: emits `editing_session_state_changed` with `status: 'editing'`, `currentNoteId` set to the new note's absolute path, `body: ''`.
+- On failure (no vault configured, disk full, permission denied): returns `Err(String)` with a descriptive message.
+- Does NOT use the `uuid` crate — timestamp-based IDs are sufficient.
+- Does NOT call `panic!` or `unwrap()`.
+
+---
+
+### §14.2 Event Emit Rules
+
+#### REQ-EDIT-036: `editing_session_state_changed` Event Payload
+
+**EARS**: WHEN any handler emits the `editing_session_state_changed` event THE SYSTEM SHALL emit a payload of shape `{ state: EditingSessionStateDto }` where `EditingSessionStateDto` matches the TypeScript `EditingSessionState` type field-for-field with `serde(rename_all = "camelCase")`.
+
+**Payload structure**:
+```json
+{
+  "state": {
+    "status": "editing",
+    "isDirty": false,
+    "currentNoteId": "/path/to/vault/1234567890.md",
+    "pendingNextNoteId": null,
+    "lastError": null,
+    "body": ""
+  }
+}
+```
+
+**Acceptance Criteria**:
+- All field names are camelCase in the JSON payload.
+- `currentNoteId` and `pendingNextNoteId` are `null` (not absent, not `""`) when not set.
+- `lastError` is `null` (not absent) when no error.
+- The outer wrapper is `{ state: EditingSessionStateDto }` — matching `editorStateChannel.ts`'s `event.payload.state`.
+- Every emit uses `app.emit("editing_session_state_changed", payload)` with the `{ state: ... }` wrapper.
+
+---
+
+### §14.3 Filesystem
+
+#### REQ-EDIT-037: `fs_write_file_atomic` Implementation
+
+**EARS**: WHEN any save handler needs to persist note body to disk THE SYSTEM SHALL write the content atomically using a tempfile + rename pattern:
+1. Write the full content to a temp file in the same directory as the target (e.g., `{target}.tmp.{random_suffix}`).
+2. `fsync` the temp file data (via `file.sync_all()`).
+3. Rename the temp file to the target path (std::fs::rename is atomic on same filesystem).
+
+**Error mapping** (io::ErrorKind → FsErrorDto `kind`):
+| io::ErrorKind | FsErrorDto.kind |
+|---|---|
+| `PermissionDenied` | `"permission"` |
+| `AlreadyExists` / `AddrInUse` | `"lock"` |
+| `StorageFull` / `WriteZero` / `TimedOut` | `"disk-full"` |
+| Any other | `"unknown"` |
+
+**Acceptance Criteria**:
+- On success, the target file contains exactly the written content.
+- On failure, the target file is NOT partially written (atomicity guarantee from rename).
+- The temp file is cleaned up on error (best-effort; missing cleanup is not a correctness issue).
+- No `unsafe` code.
+- No `unwrap()` or `expect()` — all Results are propagated.
+
+---
+
+### §14.4 Cargo Integration Tests
+
+Sprint 2 adds a new test file: `promptnotes/src-tauri/tests/editor_handlers.rs`
+
+Tests cover:
+- DTO serialization correctness (serde camelCase roundtrip).
+- `fs_write_file_atomic` atomicity: partial write does not corrupt target file.
+- `EditingSessionStateDto` JSON shape matches the TypeScript `EditingSessionState` type.
+- `SaveErrorDto` and `FsErrorDto` tagged enum serialization.
+- Frontmatter generation for new notes.
+
+---
+
+### §14.5 Requirement Index (Sprint 2)
+
+| ID | Summary |
+|---|---|
+| REQ-EDIT-028 | `edit_note_body` command — thin ack, no side effects |
+| REQ-EDIT-029 | `trigger_idle_save` command — atomic write + emit |
+| REQ-EDIT-030 | `trigger_blur_save` command — atomic write + emit |
+| REQ-EDIT-031 | `retry_save` command — re-attempt atomic write + emit |
+| REQ-EDIT-032 | `discard_current_session` command — emit idle state |
+| REQ-EDIT-033 | `cancel_switch` command — emit editing state |
+| REQ-EDIT-034 | `copy_note_body` command — thin ack (clipboard in TS) |
+| REQ-EDIT-035 | `request_new_note` command — generate ID + create file + emit |
+| REQ-EDIT-036 | `editing_session_state_changed` event emit rules |
+| REQ-EDIT-037 | `fs_write_file_atomic` tempfile + rename pattern |
+
 ### Edge Cases (EC-EDIT-XXX)
 
 | ID | Summary |

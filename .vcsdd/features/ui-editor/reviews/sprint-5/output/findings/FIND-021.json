@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-021",
+  "dimension": "verification_readiness",
+  "category": "proof_gap",
+  "severity": "high",
+  "description": "All 18 integration tests in editor_handlers.rs exercise helper functions directly without going through Tauri IPC layer. No test invokes any #[tauri::command] function to verify argument name matching between TS-side invoke() payload shapes and Rust-side parameter names (FIND-001 example: issuedAt field mismatch would go undetected).",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_handlers.rs",
+    "lineRange": "1-338",
+    "snippet": "All 18 tests import crate::editor functions directly, none test IPC layer"
+  },
+  "routeToPhase": "2a"
+}

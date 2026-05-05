@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-020",
+  "dimension": "implementation_correctness",
+  "category": "implementation_bug",
+  "severity": "high",
+  "description": "cancel_switch (REQ-EDIT-033) at editor.rs:293-294 emits editing_session_state_changed with body field set to the hardcoded string 'current-note-body-not-provided'. While a placeholder is necessary because EditingSessionStateDto.body is a required String, the debug-oriented string could leak to the UI.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "287-296",
+    "snippet": "body: 'current-note-body-not-provided'"
+  },
+  "routeToPhase": "2b"
+}

@@ -469,3 +469,51 @@ The following concerns are explicitly out of scope for `ui-editor` verification 
 - **TagInventory and Feed update projections** after save: covered by `curate-*` features.
 - **Ctrl+N / Cmd+N platform disambiguation**: resolved — see behavioral-spec.md §9 RD-004. The listener uses `event.ctrlKey || event.metaKey`; source is always `'ctrl-N'`.
 - **Rust-side `note.isEmpty()` ↔ TypeScript `isEmptyAfterTrim` agreement proof**: this is a Kani obligation on the backend save-handler feature. The TypeScript spec pins `isEmptyAfterTrim = body.trim().length === 0` (ECMAScript `String.prototype.trim`) and notes that Rust must agree. (ref: behavioral-spec.md §9 RD-006)
+
+---
+
+## 11. Sprint 2 Extensions — Rust Backend Verification
+
+This section extends the verification architecture for **Sprint 2**, which adds Rust backend handlers and `cargo test` integration tests.
+
+### Rust Testing Tier
+
+Sprint 2 introduces a new verification tier for Rust integration tests:
+
+| Module | Layer | Test tool | Path |
+|---|---|---|---|
+| `editor.rs` (Rust handlers) | impure | `cargo test` (integration) | `promptnotes/src-tauri/tests/editor_handlers.rs` |
+| `editor.rs` DTOs + `fs_write_file_atomic` | pure-ish | `cargo test` (unit tests via `#[cfg(test)]`) | `promptnotes/src-tauri/src/editor.rs` |
+
+**Run command**: `cd promptnotes/src-tauri && cargo test`
+
+### Additional Proof Obligations (Sprint 2)
+
+| PROP-ID | Requirement | Property Statement | Tier | Tool | Required |
+|---|---|---|---|---|---|
+| PROP-100 | REQ-EDIT-036, REQ-EDIT-028..035 | `EditingSessionStateDto` serializes to camelCase JSON with all fields matching the TypeScript `EditingSessionState` type: `status` (string), `isDirty` (bool), `currentNoteId` (string\|null), `pendingNextNoteId` (string\|null), `lastError` (object\|null), `body` (string). The outer wrapper is `{"state": EditingSessionStateDto}` matching `editorStateChannel.ts`'s `event.payload.state`. Roundtrip JSON parse → serialize is identity. | 1 | cargo test (serde_json) | true |
+| PROP-101 | REQ-EDIT-037 | `fs_write_file_atomic(path, contents)` writes fully or leaves target unchanged. In a concurrent scenario (two processes writing), the final file content is exactly one of the two complete inputs — no interleaving, no truncation to zero length. Verified via tempfile + rename atomicity test. | 1 | cargo test (integration) | true |
+| PROP-102 | REQ-EDIT-037 | Error mapping from `std::io::ErrorKind` to `FsErrorDto.kind`: `PermissionDenied → "permission"`, `AlreadyExists → "lock"`, `StorageFull → "disk-full"`, all others → `"unknown"`. Every `io::ErrorKind` variant maps to a defined `FsErrorDto` (totality). | 1 | cargo test | true |
+| PROP-103 | REQ-EDIT-035 | `request_new_note` generates a valid frontmatter block with `createdAt` and `updatedAt` as epoch ms integers, `tags` as empty array `[]`, and the body is empty after the frontmatter delimiter. The generated file path is within the vault directory and ends with `.md`. | 1 | cargo test | true |
+| PROP-104 | REQ-EDIT-029, REQ-EDIT-030, REQ-EDIT-031 | Save handlers (`trigger_idle_save`, `trigger_blur_save`, `retry_save`) on write success emit `editing_session_state_changed` with `status: "editing"` and `isDirty: false`. On write failure emit with `status: "save-failed"` and `lastError` populated. No handler emits both success and failure for a single invocation. | 1 | cargo test | true |
+| PROP-105 | REQ-EDIT-032, REQ-EDIT-033 | `discard_current_session` emits `status: "idle"` with all fields reset. `cancel_switch` emits `status: "editing"` with `isDirty: true`. Neither handler performs file I/O. | 1 | cargo test | true |
+| PROP-106 | REQ-EDIT-028, REQ-EDIT-034 | `edit_note_body` and `copy_note_body` are pure acknowledgements: return `Ok(())`, perform no file I/O, emit no events. Verified via test that inspects side effects (no temp files created, no event listener registered). | 1 | cargo test | true |
+
+### Sprint 2 Tooling Map
+
+| Tool | Path | Purpose |
+|---|---|---|
+| `cargo test` | `promptnotes/src-tauri/tests/editor_handlers.rs` | Integration tests for Rust handlers, DTO serialization, file atomicity |
+| `cargo test` | `promptnotes/src-tauri/src/editor.rs` (inline `#[cfg(test)]`) | Unit tests for `fs_write_file_atomic`, error mapping, frontmatter generation |
+| `cargo check` | `promptnotes/src-tauri/` | Compile-check without running tests |
+| `vitest` | `promptnotes/` | TypeScript regression baseline (Sprint 1 pure core + component tests) |
+| `bun run check` | `promptnotes/` | SvelteKit type-check (`svelte-kit sync && svelte-check`) |
+
+### Regression Baseline (Sprint 1)
+
+Sprint 1 delivered 6 vitest test files that must remain green after Sprint 2 changes:
+- `debounceSchedule.test.ts` + `debounceSchedule.prop.test.ts`
+- `editorPredicates.test.ts` + `editorPredicates.prop.test.ts`
+- `editorReducer.test.ts` + `editorReducer.prop.test.ts`
+
+Sprint 2 does NOT modify any TypeScript source files in `promptnotes/src/lib/editor/` (except the `tauriEditorAdapter.ts` and `editorStateChannel.ts` which are already written and awaiting Rust side). No regression in these 6 test files.
