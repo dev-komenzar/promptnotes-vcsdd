@@ -1,0 +1,164 @@
+warning: empty line after doc comment
+ --> src/domain/mod.rs:3:1
+  |
+3 | / /// Phase 2a: only test scaffolding exists here; all function bodies are Phase 2b.
+4 | |
+  | |_^
+5 |   pub mod vault;
+  |   ------------- the comment documents this module
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#empty_line_after_doc_comments
+  = note: `#[warn(clippy::empty_line_after_doc_comments)]` on by default
+  = help: if the empty line is unintentional, remove it
+help: if the comment should document the parent module use an inner doc comment
+  |
+1 ~ //! Domain implementation modules.
+2 ~ //!
+3 ~ //! Phase 2a: only test scaffolding exists here; all function bodies are Phase 2b.
+  |
+
+warning: empty line after doc comment
+ --> src/domain/vault/mod.rs:3:1
+  |
+3 | / /// Phase 2a: only tests exist here; implementations are Phase 2b.
+4 | |
+  | |_^
+5 |   pub mod note_id;
+  |   --------------- the comment documents this module
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#empty_line_after_doc_comments
+  = help: if the empty line is unintentional, remove it
+help: if the comment should document the parent module use an inner doc comment
+  |
+1 ~ //! Vault domain module — app-startup implementation target.
+2 ~ //!
+3 ~ //! Phase 2a: only tests exist here; implementations are Phase 2b.
+  |
+
+warning: empty line after doc comment
+  --> src/domain/vault/note_id.rs:10:1
+   |
+10 | / /// will fail until Phase 2b implements the function.
+11 | |
+   | |_^
+12 |   // Re-export the pure helper from the domain crate so tests can target it.
+13 |   pub use promptnotes_domain::vault::ports::next_available_note_id;
+   |   - the comment documents this `use` import
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#empty_line_after_doc_comments
+   = help: if the empty line is unintentional, remove it
+help: if the doc comment should not document the following item then comment it out
+   |
+ 1 ~ // /// note_id.rs — Pure helper: next_available_note_id
+ 2 ~ // ///
+ 3 ~ // /// PROP-003: next_available_note_id(preferred, existingIds) returns NoteId ∉ existingIds
+ 4 ~ // /// PROP-022: next_available_note_id is deterministic — same inputs → same output
+ 5 ~ // ///
+ 6 ~ // /// Covers: REQ-011
+ 7 ~ // ///
+ 8 ~ // /// The actual implementation is in docs/domain/code/rust/src/vault/ports.rs
+ 9 ~ // /// and currently `todo!()`. These tests are Phase 2a Red phase tests — they
+10 ~ // /// will fail until Phase 2b implements the function.
+   |
+
+warning: empty line after doc comment
+  --> src/feed.rs:16:1
+   |
+16 | / ///   2. Emitting `feed_state_changed` events with typed payloads
+17 | |
+   | |_^
+18 |   use serde::{Deserialize, Serialize};
+   |   - the comment documents this `use` import
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#empty_line_after_doc_comments
+   = help: if the empty line is unintentional, remove it
+help: if the comment should document the parent module use an inner doc comment
+   |
+ 1 ~ //! feed.rs — Rust backend handlers for ui-feed-list-actions Sprint 2.
+ 2 ~ //!
+ 3 ~ //! REQ-FEED-019: fs_trash_file command
+ 4 ~ //! REQ-FEED-020: select_past_note, request_note_deletion,
+ 5 ~ //!               confirm_note_deletion, cancel_note_deletion handlers
+ 6 ~ //! REQ-FEED-021: feed_state_changed event emit rules
+ 7 ~ //! REQ-FEED-022: feed_initial_state command
+ 8 ~ //!
+ 9 ~ //! All DTOs use `#[serde(rename_all = "camelCase")]` to match the TypeScript
+10 ~ //! FeedDomainSnapshot type in `src/lib/feed/types.ts`.
+11 ~ //!
+12 ~ //! Design: this module is a thin IPC shell. No domain logic is re-implemented
+13 ~ //! here. State management is client-side (TypeScript feedReducer). The Rust
+14 ~ //! side is responsible only for:
+15 ~ //!   1. Performing OS-level I/O (file deletion, file listing)
+16 ~ //!   2. Emitting `feed_state_changed` events with typed payloads
+   |
+
+warning: this `map_or` can be simplified
+   --> src/feed.rs:335:12
+    |
+335 |         if file_path.extension().map_or(false, |ext| ext == "md") {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#unnecessary_map_or
+    = note: `#[warn(clippy::unnecessary_map_or)]` on by default
+help: use `is_some_and` instead
+    |
+335 -         if file_path.extension().map_or(false, |ext| ext == "md") {
+335 +         if file_path.extension().is_some_and(|ext| ext == "md") {
+    |
+
+warning: stripping a prefix manually
+   --> src/feed.rs:453:35
+    |
+453 |                 let after_colon = line["tags:".len()..].trim();
+    |                                   ^^^^^^^^^^^^^^^^^^^^^
+    |
+note: the prefix was tested here
+   --> src/feed.rs:450:20
+    |
+450 |             } else if line.starts_with("tags:") {
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#manual_strip
+    = note: `#[warn(clippy::manual_strip)]` on by default
+help: try using the `strip_prefix` method
+    |
+450 ~             } else if let Some(<stripped>) = line.strip_prefix("tags:") {
+451 |                 current_key = YamlKey::Tags;
+452 |                 // tags: [tag1, tag2] inline form.
+453 ~                 let after_colon = <stripped>.trim();
+    |
+
+warning: stripping a prefix manually
+   --> src/feed.rs:467:31
+    |
+467 |                     let tag = line[2..].trim().trim_matches('"').trim_matches('\'').to_string();
+    |                               ^^^^^^^^^
+    |
+note: the prefix was tested here
+   --> src/feed.rs:464:20
+    |
+464 |             } else if line.starts_with("- ") {
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#manual_strip
+help: try using the `strip_prefix` method
+    |
+464 ~             } else if let Some(<stripped>) = line.strip_prefix("- ") {
+465 |                 // FIND-S2-03: only collect list items when we are inside the tags key.
+466 |                 if current_key == YamlKey::Tags {
+467 ~                     let tag = <stripped>.trim().trim_matches('"').trim_matches('\'').to_string();
+    |
+
+warning: this `map_or` can be simplified
+   --> src/lib.rs:241:16
+    |
+241 |             if file_path.extension().map_or(false, |ext| ext == "md") {
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#unnecessary_map_or
+help: use `is_some_and` instead
+    |
+241 -             if file_path.extension().map_or(false, |ext| ext == "md") {
+241 +             if file_path.extension().is_some_and(|ext| ext == "md") {
+    |
+
+warning: `promptnotes` (lib) generated 8 warnings (run `cargo clippy --fix --lib -p promptnotes -- ` to apply 2 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s

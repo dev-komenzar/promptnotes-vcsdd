@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -136,11 +136,25 @@
       "timestamp": "2026-05-05T02:10:00.000Z",
       "reason": "Refactor complete: feed.rs well-factored, +page.svelte layout minimal and correct. All tests remain green.",
       "sprint": 2
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-04T05:00:00.000Z",
+      "reason": "Phase 3 Sprint 2 PASS at iter-2: critical=0, high=0, medium=2 (spec text gaps), low=2. All 7 iter-1 findings resolved.",
+      "sprint": 2
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-05T01:09:11.712Z",
+      "reason": "Phase 5 Sprint 2 PASS: 27 cargo tests pass, 1475 bun pass, 195 vitest pass, purity/IPC/security/design-token audits clean",
+      "sprint": 2
     }
   ],
   "iterations": {
     "3": 3,
-    "6": 1,
+    "6": 2,
     "1a": 4,
     "1b": 4,
     "1c": 3,
@@ -515,20 +529,11 @@
     },
     "5": {
       "verdict": "PASS",
-      "timestamp": "2026-05-04T14:57:11.118Z",
+      "timestamp": "2026-05-05T01:06:19.711Z",
       "reviewedBy": "verifier",
       "details": {
-        "proofObligationsRequired": 21,
-        "proofObligationsProved": 21,
-        "proofObligationsFailed": 0,
-        "purityAudit": "zero hits — feedRowPredicates.ts, feedReducer.ts, deleteConfirmPredicates.ts",
-        "ipcBoundaryAudit": "zero hits — tauriFeedAdapter.ts (listen), feedStateChannel.ts (invoke)",
-        "xssAudit": "zero hits — production source only",
-        "svelteStoreAudit": "zero hits",
-        "designTokenAudit": "all tokens present — max-width:160px, #dd5b00, #0075de, #097fe8, focus-visible",
-        "typeCheck": "tsc --strict exit 0 on production feed source (2 test-file errors noUncheckedIndexedAccess — never branches)",
-        "coverageNote": "bun test --coverage: feedRowPredicates.ts 100% lines, feedReducer.ts 94% lines, deleteConfirmPredicates.ts 81.82% lines (exhaustive-never dead code). Vitest DOM-only undercounts pure modules (toolchain split — same as ui-editor Phase 5).",
-        "baselineTests": "1471 bun tests pass, 188 vitest tests pass"
+        "iteration": 1,
+        "sprint": 2
       }
     },
     "6": {
@@ -631,23 +636,44 @@
       }
     },
     "3-sprint-2": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-04T00:00:00.000Z",
+      "verdict": "PASS",
+      "timestamp": "2026-05-04T05:00:00.000Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 1,
+        "iteration": 2,
         "sprint": 2,
         "findings": {
-          "critical": 1,
-          "high": 2,
-          "medium": 4,
-          "low": 0
+          "critical": 0,
+          "high": 0,
+          "medium": 2,
+          "low": 2
         },
+        "iter1": {
+          "verdict": "FAIL",
+          "timestamp": "2026-05-04T00:00:00.000Z",
+          "findings": {
+            "critical": 1,
+            "high": 2,
+            "medium": 4,
+            "low": 0
+          }
+        },
+        "iter2": {
+          "verdict": "PASS",
+          "timestamp": "2026-05-04T05:00:00.000Z",
+          "findings": {
+            "critical": 0,
+            "high": 0,
+            "medium": 2,
+            "low": 2
+          }
+        },
+        "iter1FindingsResolved": "7/7",
         "reviewPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-2/output/verdict.json"
       }
     }
   },
   "sprintCount": 2,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-04T02:30:00.000Z"
+  "updatedAt": "2026-05-05T01:09:11.712Z"
 }
