@@ -66,7 +66,7 @@
    * for vaultPath and filePath. This effectful shell fills in the actual values
    * before forwarding to the adapter.
    */
-  function dispatchCommand(cmd: ReturnType<typeof feedReducer>['commands'][number]): void {
+  async function dispatchCommand(cmd: ReturnType<typeof feedReducer>['commands'][number]): Promise<void> {
     switch (cmd.kind) {
       case 'select-past-note':
         // FIND-S2-05: fill in vaultPath so Rust emits a snapshot with real visibleNoteIds.
@@ -107,8 +107,8 @@
         // State change handled by reducer; no side-effect needed
         break;
       // ── ui-tag-chip commands ───────────────────────────────
-      case 'add-tag-via-chip':
-        adapter.dispatchAddTagViaChip?.(
+      case 'add-tag-via-chip': {
+        await adapter.dispatchAddTagViaChip?.(
           cmd.payload.noteId,
           cmd.payload.tag,
           cmd.payload.body,
@@ -117,9 +117,21 @@
           cmd.payload.updatedAt,
           cmd.payload.issuedAt || nowIso(),
         );
+        // Update local noteMetadata so feed re-renders immediately
+        const noteId = cmd.payload.noteId;
+        const existing = currentViewState.noteMetadata[noteId];
+        const newTags = [...(existing?.tags ?? []), cmd.payload.tag];
+        currentViewState = {
+          ...currentViewState,
+          noteMetadata: {
+            ...currentViewState.noteMetadata,
+            [noteId]: { ...existing ?? { body: '', createdAt: 0, updatedAt: 0, tags: [] }, tags: newTags, updatedAt: Date.now() },
+          },
+        };
         break;
-      case 'remove-tag-via-chip':
-        adapter.dispatchRemoveTagViaChip?.(
+      }
+      case 'remove-tag-via-chip': {
+        await adapter.dispatchRemoveTagViaChip?.(
           cmd.payload.noteId,
           cmd.payload.tag,
           cmd.payload.body,
@@ -127,6 +139,20 @@
           cmd.payload.createdAt,
           cmd.payload.updatedAt,
           cmd.payload.issuedAt || nowIso(),
+        );
+        // Update local noteMetadata so feed re-renders immediately
+        const noteId = cmd.payload.noteId;
+        const existing = currentViewState.noteMetadata[noteId];
+        const newTags = (existing?.tags ?? []).filter((t) => t !== cmd.payload.tag);
+        currentViewState = {
+          ...currentViewState,
+          noteMetadata: {
+            ...currentViewState.noteMetadata,
+            [noteId]: { ...existing ?? { body: '', createdAt: 0, updatedAt: 0, tags: [] }, tags: newTags, updatedAt: Date.now() },
+          },
+        };
+        break;
+      }
         );
         break;
       case 'apply-tag-filter':
@@ -215,7 +241,7 @@
     const result = feedReducer(currentViewState, { kind: 'TagRemoveClicked', noteId, tag });
     currentViewState = result.state;
     for (const cmd of result.commands) {
-      dispatchCommand(cmd);
+      dispatchCommand(cmd);  // fire-and-forget, UI updates after adapter resolves
     }
   }
 
