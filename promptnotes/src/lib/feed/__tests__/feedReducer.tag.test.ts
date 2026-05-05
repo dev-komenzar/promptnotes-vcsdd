@@ -270,6 +270,24 @@ describe('EC-007c: Tag longer than 100 characters after normalization — reject
       payload: { noteId: 'note-001', tag: exact100Tag },
     });
   });
+
+  // ── Bugfix: duplicate tag via chip ───────────────────────────────────
+  test('TagInputCommitted with duplicate tag still emits command (domain handles idempotency; UI dedup in FeedList)', () => {
+    const state = makeInitialState({
+      noteMetadata: {
+        'note-001': { body: 'test', createdAt: 1, updatedAt: 1, tags: ['draft'] },
+      },
+    });
+    const result = callReducer(state, { kind: 'TagInputCommitted', noteId: 'note-001', rawTag: 'draft' });
+    const addCmd = result.commands.find(
+      (c: Record<string, unknown>) => c.kind === 'add-tag-via-chip'
+    );
+    expect(addCmd).toBeDefined();
+    expect(addCmd).toMatchObject({
+      kind: 'add-tag-via-chip',
+      payload: { noteId: 'note-001', tag: 'draft' },
+    });
+  });
 });
 
 // ── REQ-TAG-007: TagInputCancelled ─────────────────────────────────────────

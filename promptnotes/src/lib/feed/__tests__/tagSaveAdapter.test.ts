@@ -83,4 +83,23 @@ describe('tagSaveAdapter: dispatchAddTagViaChip writes tag via write_file_atomic
     expect(contents).toContain('new-tag');
     expect(contents).toContain('body');
   });
+
+  test('dispatchAddTagViaChip with duplicate existing tag does not duplicate in markdown', async () => {
+    const adapter = createTauriFeedAdapter();
+
+    await adapter.dispatchAddTagViaChip?.(
+      '/vault/note-001.md',
+      'draft',
+      'body text',
+      ['draft', 'typescript'],
+      1746000000000,
+      1746100000000,
+      '2026-05-05T00:00:00Z',
+    );
+
+    const callArgs = mockedInvoke.mock.calls[0];
+    const contents = callArgs[1].contents as string;
+    expect(contents).toContain('  - draft');
+    expect(contents).toContain('  - typescript');
+  });
 });
