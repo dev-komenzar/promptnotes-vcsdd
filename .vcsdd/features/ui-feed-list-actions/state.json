@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -214,6 +214,20 @@
       "to": "2b",
       "timestamp": "2026-05-05T05:10:00.000Z",
       "reason": "Red phase: 3 new Rust tests added (test_select_past_note_*). Tests verify body extraction + payload construction. Integration wiring (select_past_note → editing_session_state_changed emit) still missing — Green phase fix needed.",
+      "sprint": 3
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-05T05:11:00.000Z",
+      "reason": "Green phase: select_past_note now emits editing_session_state_changed before feed_state_changed. All 26 Rust tests PASS. Body extraction from note_metadata, payload construction via editor::make_editing_state_changed_payload. EC-FEED-017 emit order verified.",
+      "sprint": 3
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-05T05:12:00.000Z",
+      "reason": "Refactor: no duplication — make_editing_state_changed_payload reused from editor.rs. All 26 tests remain green. cargo check clean.",
       "sprint": 3
     }
   ],

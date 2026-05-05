@@ -248,6 +248,22 @@ pub fn select_past_note(
 ) -> Result<(), String> {
     let _ = issued_at; // timestamp recorded for audit; not used in Rust state
     let snapshot = make_editing_state_changed_snapshot(&note_id, &vault_path);
+
+    // REQ-FEED-024: Extract body from scanned metadata for the editor
+    let body = snapshot
+        .note_metadata
+        .get(&note_id)
+        .map(|m| m.body.as_str())
+        .unwrap_or("");
+
+    // REQ-FEED-024: Emit editing_session_state_changed so EditorPane receives the past note body
+    let editor_payload = crate::editor::make_editing_state_changed_payload(
+        "editing", false, Some(note_id.clone()), None, None, body,
+    );
+    app.emit("editing_session_state_changed", editor_payload)
+        .map_err(|e| e.to_string())?;
+
+    // REQ-FEED-020: Emit feed_state_changed (existing)
     app.emit("feed_state_changed", snapshot)
         .map_err(|e| e.to_string())
 }
