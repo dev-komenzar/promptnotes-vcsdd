@@ -19,7 +19,10 @@ export default defineConfig({
     // bun:test との衝突を避けるため `.vitest.ts` 拡張子のみ vitest で実行する。
     // bun:test は `*.test.ts` / `*.spec.ts` を auto-discover するため、
     // `.vitest.ts` は bun の検索範囲外。
-    include: ["src/lib/**/__tests__/dom/**/*.vitest.ts"],
+    include: [
+      "src/lib/**/__tests__/dom/**/*.vitest.ts",
+      "src/routes/__tests__/**/*.vitest.ts",
+    ],
     setupFiles: ["./src/lib/__tests__/setup/vitest-setup.ts"],
   },
 });

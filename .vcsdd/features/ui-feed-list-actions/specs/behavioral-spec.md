@@ -424,3 +424,108 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 | REQ-FEED-014 | `ui-fields.md` §画面 4 保存失敗バナー類似, `delete-note` spec REQ-DLN-004/REQ-DLN-005, `DESIGN.md` §4 |
 | REQ-FEED-015–016 | `DESIGN.md` §8 Accessibility & States |
 | REQ-FEED-017–018 | `aggregates.md` §Feed.refreshSort, `workflows.md` Workflow 5 Step 4 |
+| REQ-FEED-019–022 | `implement.md` L82-86 (feature 3 scope), `implement.md` L248-252 (Phase 2b wiring layer) |
+| REQ-FEED-023 | `implement.md` L47 (vertical slice principle), `DESIGN.md` sidebar/main layout |
+
+---
+
+## Sprint 2 Extensions
+
+> **Sprint**: 2
+> **Rationale**: Sprint 1 delivered the pure TypeScript core and Svelte components. Sprint 2 completes the vertical slice per `implement.md` L47 by adding the Rust backend handlers, the `feed_state_changed` event emitter, and mounting `FeedList` inside `AppShell` at the main route.
+
+---
+
+### REQ-FEED-019: `fs_trash_file` Tauri command
+
+**EARS**: WHEN `fs_trash_file` is invoked with a `path` argument THEN the system SHALL attempt to move the file at that path to the OS trash and return `Result<(), TrashErrorDto>`.
+
+**Error variants** (`TrashErrorDto` — tagged union with `kind` field):
+- `{ kind: "permission" }`: `std::io::ErrorKind::PermissionDenied` maps to this variant.
+- `{ kind: "lock" }`: Currently mapped as `unknown` (OS-level lock detection is platform-specific); reserved for future platform detection.
+- `{ kind: "unknown", detail: string | null }`: All other errors, including disk-full; `detail` carries the OS error string.
+
+**Special case**: `std::io::ErrorKind::NotFound` is treated as success (`Ok(())`) — per `delete-note` REQ-DLN-005: a missing file is considered already deleted.
+
+**Acceptance Criteria**:
+- `fs_trash_file` with a valid existing file path returns `Ok(())`.
+- `fs_trash_file` with a non-existent path returns `Ok(())` (not-found → already deleted).
+- `fs_trash_file` on a path with insufficient permissions returns `Err({ kind: "permission" })`.
+- Error variant `kind` field is serialized as kebab-case strings matching `NoteDeletionFailureReason`.
+
+---
+
+### REQ-FEED-020: Rust handlers — `select_past_note`, `request_note_deletion`, `confirm_note_deletion`, `cancel_note_deletion`
+
+**EARS**: WHEN any of these `#[tauri::command]` handlers is invoked THEN the system SHALL perform the specified side-effect and return `Result<(), String>`.
+
+**Handler specifications**:
+
+| Handler | Parameters | Side-effect | Returns |
+|---------|-----------|-------------|---------|
+| `select_past_note` | `app: AppHandle, note_id: String, issued_at: String` | Emits `feed_state_changed` with `EditingStateChanged` cause | `Ok(())` or `Err(String)` |
+| `request_note_deletion` | `note_id: String, issued_at: String` | None (modal state is client-side only) | `Ok(())` |
+| `confirm_note_deletion` | `app: AppHandle, note_id: String, issued_at: String` | Calls `fs_trash_file_impl(&note_id)`, then emits `feed_state_changed` with `NoteFileDeleted` cause on success or `NoteDeletionFailed` cause on failure | `Ok(())` or `Err(String)` |
+| `cancel_note_deletion` | `note_id: String, issued_at: String` | None | `Ok(())` |
+
+**Emit invariant**: `feed_state_changed` MUST be emitted after every state-mutating operation (`select_past_note`, `confirm_note_deletion`). The payload MUST conform to `FeedDomainSnapshot` structure (camelCase via serde).
+
+**Acceptance Criteria**:
+- `select_past_note` invocation emits exactly one `feed_state_changed` event.
+- `confirm_note_deletion` invocation calls `fs_trash_file_impl` and then emits `feed_state_changed` with `NoteFileDeleted` cause on success.
+- `confirm_note_deletion` invocation emits `feed_state_changed` with `NoteDeletionFailed` cause when `fs_trash_file_impl` returns an error.
+- `request_note_deletion` and `cancel_note_deletion` return `Ok(())` without emitting events.
+
+---
+
+### REQ-FEED-021: `feed_state_changed` Tauri event emit rules
+
+**EARS**: WHEN any state-mutating Rust handler completes THEN the system SHALL emit the `feed_state_changed` event on the `AppHandle` with a `FeedDomainSnapshot`-shaped payload.
+
+**Emit rules**:
+- Event name: `"feed_state_changed"` (snake_case, matches `feedStateChannel.ts` listener).
+- Payload shape: must be serializable to the `FeedDomainSnapshot` TypeScript type (all fields present, camelCase via `#[serde(rename_all = "camelCase")]`).
+- The `cause` field identifies the upstream event kind (`NoteFileSaved`, `NoteFileDeleted`, `NoteDeletionFailed`, `EditingStateChanged`, `InitialLoad`).
+- The `feed.visibleNoteIds`, `editing.*`, and `delete.*` fields carry the current application state at emit time.
+
+**Acceptance Criteria**:
+- The Rust DTO struct compiles with `#[derive(Serialize)]` and `#[serde(rename_all = "camelCase")]`.
+- A round-trip JSON serialize → TypeScript parse of a minimal `FeedDomainSnapshot` payload succeeds without type errors.
+
+---
+
+### REQ-FEED-022: `feed_initial_state` Tauri command
+
+**EARS**: WHEN `feed_initial_state` is invoked with `vault_path: String` THEN the system SHALL scan the vault directory for `.md` files, parse their frontmatter (if present), and return a `FeedDomainSnapshotDto` representing the initial state.
+
+**Behavior**:
+- Lists all `.md` files in `vault_path` (non-recursive, same as `fs_list_markdown`).
+- For each file, reads the content and extracts `createdAt`, `updatedAt`, `tags` from YAML frontmatter if present; falls back to file modification time / empty values if absent.
+- Returns a snapshot with `cause.kind = "InitialLoad"`, `editing.status = "idle"`, `feed.filterApplied = false`.
+- Errors from unreadable files are skipped (best-effort: partial list is returned).
+
+**Acceptance Criteria**:
+- `feed_initial_state` with a valid vault path containing `.md` files returns `Ok(FeedDomainSnapshotDto)` with `noteMetadata` populated.
+- `feed_initial_state` with an empty vault directory returns `Ok(FeedDomainSnapshotDto)` with `feed.visibleNoteIds = []`.
+- `feed_initial_state` with a non-existent vault path returns `Err(String)`.
+
+---
+
+### REQ-FEED-023: `+page.svelte` — FeedList mounted in AppShell main route
+
+**EARS**: WHEN the application is in `Configured` state THEN the main route SHALL render `FeedList` in the left sidebar alongside `EditorPane` in the central content area, both mounted inside `AppShell`.
+
+**Layout specification**:
+- Layout: CSS Grid with `grid-template-columns: 320px 1fr`.
+- Sidebar: `border-right: 1px solid #e9e9e7` (DESIGN.md whisper border), `background: #f7f7f5` (DESIGN.md warm neutral surface).
+- Main content area: `EditorPane` fills the remaining column.
+- Total height: `100vh`.
+- `FeedList` receives: `viewState` (initial state from `feed_initial_state`), `adapter` (from `createTauriFeedAdapter()`), `stateChannel` (from `createFeedStateChannel()`).
+
+**Acceptance Criteria**:
+- `+page.svelte` imports and mounts both `FeedList` and `EditorPane`.
+- `FeedList` is wrapped in an `<aside>` with class `feed-sidebar`.
+- `EditorPane` is wrapped in a `<main>` with class `editor-main`.
+- The layout container uses `display: grid` with `grid-template-columns: 320px 1fr`.
+- Sidebar border color matches DESIGN.md whisper border `#e9e9e7`.
+- Configured state renders the two-column layout (DOM integration test).

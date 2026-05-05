@@ -467,3 +467,46 @@ shell は `FeedCommand` を処理する switch に `never` default branch を持
 - Vault 設定モーダル: `ui-app-shell` / `configure-vault` フィーチャ管轄。
 - `fs.trashFile` の Rust 実装正当性: `delete-note` フィーチャの Kani 証明義務。
 - `EditPastNoteStart` パイプライン内部 (`flushCurrentSession`, `startNewSession`): `edit-past-note-start` フィーチャ管轄。UI は `SelectPastNote` コマンドを発行するのみ。
+
+---
+
+## 11. Sprint 2 Verification Extensions
+
+> **Sprint**: 2
+> **Scope**: Rust backend handlers (`feed.rs`) + `feed_state_changed` event emitter + `+page.svelte` AppShell mount.
+
+### Sprint 2 Purity Boundary Additions
+
+| Module | Layer | Classification |
+|--------|-------|---------------|
+| `src-tauri/src/feed.rs` | Rust impure | I/O (`std::fs::remove_file`), Tauri `AppHandle.emit`, file system scan |
+| `+page.svelte` (main route) | impure | Svelte 5 component, `$effect`, Tauri `invoke` for initial state |
+
+### Sprint 2 Proof Obligations
+
+| PROP-ID | REQ-ID | Description | Tier | Tool | Required |
+|---------|--------|-------------|------|------|----------|
+| PROP-FEED-S2-001 | REQ-FEED-019 | `fs_trash_file` with non-existent path returns `Ok(())` (not-found = already deleted) | Rust unit | cargo test | true |
+| PROP-FEED-S2-002 | REQ-FEED-019 | `TrashErrorDto` serializes with correct `kind` discriminator (`permission`, `unknown`) | Rust unit | cargo test | true |
+| PROP-FEED-S2-003 | REQ-FEED-020 | `select_past_note` handler emits `feed_state_changed` event | Rust integration | cargo test | true |
+| PROP-FEED-S2-004 | REQ-FEED-020 | `confirm_note_deletion` calls trash impl then emits `feed_state_changed` | Rust integration | cargo test | true |
+| PROP-FEED-S2-005 | REQ-FEED-023 | `+page.svelte` in Configured state mounts both `FeedList` (in `.feed-sidebar`) and `EditorPane` (in `.editor-main`) | vitest + jsdom | vitest | true |
+| PROP-FEED-S2-006 | REQ-FEED-023 | Layout container uses `display: grid` and `grid-template-columns: 320px 1fr` | grep of +page.svelte | grep | true |
+| PROP-FEED-S2-007 | REQ-FEED-023 | Sidebar border uses DESIGN.md whisper border `#e9e9e7` | grep of +page.svelte | grep | true |
+
+### Sprint 2 Rust Testing Tier
+
+- **Tier**: Rust unit tests (`cargo test`) in `promptnotes/src-tauri/tests/feed_handlers.rs` (integration test file).
+- **Pattern**: Direct function-level tests for pure-ish functions (`fs_trash_file_impl`, `TrashErrorDto` serde), plus handler-level tests where feasible without a live Tauri AppHandle.
+- **Limitation**: `AppHandle`-requiring handlers (`select_past_note`, `confirm_note_deletion`) are verified by compilation correctness and by checking the emit call structure in code review. Full integration (with mock AppHandle) is deferred to Phase 5 if needed.
+
+### Sprint 2 TS DOM Integration Test
+
+File: `promptnotes/src/routes/__tests__/main-route.dom.vitest.ts`
+
+Tests (PROP-FEED-S2-005):
+- Mount `+page.svelte` equivalent layout structure in jsdom with mocked adapters.
+- Assert `.feed-sidebar` and `.editor-main` elements are present in DOM.
+- Assert grid layout styles are applied to the container.
+
+> **Note**: Full `+page.svelte` mount requires SvelteKit route context. The test mounts the layout structure directly (same pattern as existing DOM tests in `src/lib/feed/__tests__/dom/`). The test imports the layout components directly rather than routing through SvelteKit.
