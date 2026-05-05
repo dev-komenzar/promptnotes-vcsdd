@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-012",
+  "dimension": "structural_integrity",
+  "category": "requirement_mismatch",
+  "severity": "low",
+  "reqRefs": ["REQ-FEED-014"],
+  "description": "REQ-FEED-014 EARS clause: 'システムはフィード上部 または グローバル位置に削除失敗バナーを表示し'. FeedList.svelte renders the banner at the bottom of the feed-list (after rows, before modal). Visually appears below all rows when feed is short, requiring users to scroll past results to see the failure. Spec wording allows 'グローバル位置' so this is not a hard violation, but 'フィード上部' would be the more aligned interpretation.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedList.svelte",
+    "lineRange": "63-106",
+    "snippet": "<div class=\"feed-list\">\n  {#if isLoading}…{:else if isFilteredEmpty}…{:else}\n    {#each visibleNoteIds as noteId (noteId)} <FeedRow … /> {/each}\n  {/if}\n  {#if lastDeletionError !== null} <DeletionFailureBanner … /> {/if}\n  {#if activeDeleteModalNoteId !== null} <DeleteConfirmModal … /> {/if}\n</div>"
+  },
+  "recommendation": "Move the DeletionFailureBanner block above the rows (or use a portal/global region). At minimum, document the placement choice in the spec and confirm with UX that bottom placement is intentional.",
+  "routeToPhase": "1a"
+}

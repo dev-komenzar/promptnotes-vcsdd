@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-S2-01",
+  "sprint": 2,
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "confirm_note_deletion passes note_id (a logical note identifier / file path string) directly to fs_trash_file_impl as the file path argument. REQ-FEED-019 specifies fs_trash_file receives a 'path' argument, but the confirm_note_deletion handler uses 'note_id' as the path. In feed.rs this works only if note_id IS the full file path. The +page.svelte FeedList passes note_id = file_path (from feed_initial_state) to visibleNoteIds, so in practice note_id === absolute path. However this coupling is never stated in the spec and is never tested in the integration test suite: tests/feed_handlers.rs does not test confirm_note_deletion at all. The verify-by-compilation claim in state.json (PROP-103) is not a behavioral test — it proves cargo check only, not that the correct path is passed. The TS adapter dispatchConfirmNoteDeletion sends { noteId, issuedAt } but the Rust handler calls fs_trash_file_impl(&note_id), treating the noteId as a file path. This hidden identity assumption (noteId === filePath) is an undocumented architectural decision with no test coverage and no spec rationale.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "249-270",
+    "snippet": "pub fn confirm_note_deletion(app: AppHandle, note_id: String, issued_at: String) -> Result<(), String> { ... match fs_trash_file_impl(&note_id) {"
+  },
+  "crossReference": [
+    "promptnotes/src-tauri/tests/feed_handlers.rs — no test for confirm_note_deletion behavior",
+    "promptnotes/src/routes/+page.svelte:308-311 — note_id set to file_path.to_str() in feed_initial_state"
+  ],
+  "routeToPhase": "2b"
+}

@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-014",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "high",
+  "reqRefs": ["REQ-FEED-001", "REQ-FEED-002", "REQ-FEED-003", "REQ-FEED-017"],
+  "description": "FeedList.dom.vitest.ts asserts only row count (querySelectorAll('[data-testid=feed-row-button]').length) — never the actual rendered timestamp / preview / tag content. This omission is what allows FIND-004 (FeedList rendering FeedRow with body=''/0/0/[]) to pass green. Verification readiness is therefore insufficient: the integration suite is structurally incapable of detecting missing-metadata regressions. Even after the FIND-004 fix is applied, regressions reverting to placeholder values would not be caught. Concrete examples of missing assertions: no test asserts that `target.querySelector('[data-testid=row-created-at]').textContent` matches `timestampLabel(snapshotCreatedAt, 'ja-JP')`; no test asserts `[data-testid=row-body-preview]` contains the snapshot body's first line; no test asserts the tag-chip count matches `snapshot.tags.length`.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedList.dom.vitest.ts",
+    "lineRange": "94-217",
+    "snippet": "const initialRows = target.querySelectorAll('[data-testid=\"feed-row-button\"]');\nexpect(initialRows.length).toBe(2); // Only count is checked; no content assertions"
+  },
+  "recommendation": "Add an integration test that mounts FeedList with a snapshot containing real createdAt/updatedAt/body/tags per noteId, then asserts: (1) row-created-at textContent equals `timestampLabel(createdAt, 'ja-JP')`; (2) row-body-preview contains the first 2 lines of body; (3) tag-chip count equals tags.length and order preserved. This single test would simultaneously cover REQ-FEED-001/002/003 wiring + verify FIND-013's missing tag iteration property + catch FIND-004 regression.",
+  "routeToPhase": "2a"
+}

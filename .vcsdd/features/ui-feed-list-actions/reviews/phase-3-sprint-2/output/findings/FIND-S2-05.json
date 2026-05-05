@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-S2-05",
+  "sprint": 2,
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "description": "select_past_note emits a hardcoded snapshot where editing.status = 'editing' and feed.visibleNoteIds = [] (via empty_feed()). REQ-FEED-021 requires the payload to carry 'the current application state at emit time' — specifically 'feed.visibleNoteIds, editing.*, and delete.* carry the current application state'. The Rust handler has no access to the actual Feed aggregate state (visibleNoteIds is always []), so every EditingStateChanged event emitted by select_past_note will reset the TypeScript client's feed.visibleNoteIds to an empty array. The feedReducer in TS will apply DomainSnapshotReceived with visibleNoteIds=[] wiping out the populated feed list. This is a state-management correctness defect: the TS client's feed list will be cleared every time a note is selected. REQ-FEED-021 acceptance criterion 'The payload MUST conform to FeedDomainSnapshot structure' is satisfied syntactically but violated semantically because of the hardcoded empty visibleNoteIds.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "148-160",
+    "snippet": "fn make_editing_state_changed_snapshot(note_id: &str) -> FeedDomainSnapshotDto {\n    FeedDomainSnapshotDto {\n        editing: EditingSubDto { status: \"editing\".to_string(), ... },\n        feed: empty_feed(),  // visibleNoteIds: vec![] — always empties the feed\n        ..."
+  },
+  "crossReference": [
+    "promptnotes/src-tauri/src/feed.rs:133-138 — empty_feed() returns visible_note_ids: vec![]",
+    "promptnotes/src/lib/feed/feedReducer.ts:30-43 — DomainSnapshotReceived overwrites visibleNoteIds from snapshot",
+    "specs/behavioral-spec.md REQ-FEED-021 — 'feed.visibleNoteIds carries the current application state at emit time'"
+  ],
+  "routeToPhase": "2b"
+}

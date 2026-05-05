@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "reqRefs": ["REQ-FEED-012"],
+  "description": "REQ-FEED-012 mandates that the delete-confirm modal body show 'このノートを OS のゴミ箱 に送ります。後で復元できます。'. The implementation renders 'このノートを OS のゴミ箱に移動します。この操作は取り消せません。' — the second sentence has the opposite meaning ('cannot be undone' vs 'can be restored later'). The behavioral contract with users is reversed. The DOM test at DeleteConfirmModal.dom.vitest.ts:60 only asserts that the substring 'OS のゴミ箱' is present, so the test passes despite the contradiction.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
+    "lineRange": "74-76",
+    "snippet": "<p class=\"modal-body\">\n  このノートを OS のゴミ箱に移動します。この操作は取り消せません。\n</p>"
+  },
+  "recommendation": "Replace body copy with the spec-mandated wording 'このノートを OS のゴミ箱に送ります。後で復元できます。' and add a DOM assertion that pins the full sentence (or at minimum the '後で復元' substring).",
+  "routeToPhase": "2b"
+}

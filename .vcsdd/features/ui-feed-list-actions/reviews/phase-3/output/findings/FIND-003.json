@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "reqRefs": ["REQ-FEED-014", "NFR-FEED-003"],
+  "description": "REQ-FEED-014 DESIGN.md token requirement explicitly states '再試行 ボタン: Primary Blue #0075de, 8px 16px padding, 4px radius, 15px weight-600'. Implementation paints the retry button background #dd5b00 (Orange/Warn token), the same color used for the destructive confirm button in REQ-FEED-012. This collapses the visual distinction between dangerous actions and recovery actions, and violates DESIGN.md §4 token allow-list (NFR-FEED-003).",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
+    "lineRange": "67-77",
+    "snippet": ".retry-button {\n  background: #dd5b00;\n  color: #ffffff;\n  border: none;\n  border-radius: 4px;\n  padding: 6px 12px;\n  font-size: 13px;\n  ...\n}"
+  },
+  "recommendation": "Change retry-button background to #0075de, set padding to 8px 16px, font-size 15px, font-weight 600 to match REQ-FEED-014 + DESIGN.md §10. Reserve #dd5b00 for destructive primary CTA only.",
+  "routeToPhase": "2b"
+}

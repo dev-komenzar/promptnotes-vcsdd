@@ -1,0 +1,39 @@
+phase-3-iter-3-fix: PASS
+regression-baseline: PASS
+
+## FIND-I2-001 Fix Summary
+
+### Change: feedReducer.ts DeleteCancelled case
+- Added `cancel-note-deletion` command emission before `close-delete-modal`
+- noteId sourced from `state.activeDeleteModalNoteId ?? ''` (defensive fallback)
+- issuedAt set to `''` (shell re-generates via `nowIso()` in dispatchCommand)
+- Commands array now: [{ kind: 'cancel-note-deletion', payload: { noteId, issuedAt: '' } }, { kind: 'close-delete-modal' }]
+
+### New tests added: 6
+
+feedReducer.test.ts (5 new tests in REQ-FEED-012 describe block):
+  1. DeleteCancelled with activeDeleteModalNoteId emits cancel-note-deletion first
+  2. DeleteCancelled emits close-delete-modal
+  3. DeleteCancelled emits exactly 2 commands in correct order
+  4. DeleteCancelled with null activeDeleteModalNoteId uses empty noteId fallback
+  5. DeleteCancelled sets activeDeleteModalNoteId to null in next state
+
+FeedList.dom.vitest.ts (1 new test in REQ-FEED-012 / FIND-I2-001 describe block):
+  1. cancel button in DeleteConfirmModal calls dispatchCancelNoteDeletion exactly 1× through FeedList production wiring
+
+### Consistency audit
+- DeleteConfirmed: emits confirm-note-deletion + noteId from action.noteId — PASS (was never broken)
+- FeedRowClicked: emits select-past-note + noteId from action.noteId — PASS (was never broken)
+- DeleteButtonClicked: emits request-note-deletion + open-delete-modal — PASS (was never broken)
+- dispatchCommand shell: cancel-note-deletion → adapter.dispatchCancelNoteDeletion(noteId, issuedAt || nowIso()) — already wired at FeedList.svelte:71 — PASS
+
+### Test results
+bun test: 1471 pass, 0 fail (130 files)
+vitest:   188 pass, 0 fail (23 files)
+type errors: 3 pre-existing in domain/__tests__ (unrelated to feed module), 0 new errors
+
+### Purity / IPC boundary
+PROP-FEED-031: feedReducer.ts contains no Date.now, new Date, @tauri-apps/api, window., document., setTimeout, setInterval, $state, $effect, $derived, invoke( — PASS
+PROP-FEED-032: IPC boundary maintained — PASS
+
+iter count: 3/5

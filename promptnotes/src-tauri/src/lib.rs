@@ -26,6 +26,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 pub mod domain;
+pub mod feed;
 
 // ── VaultPathError shape ──────────────────────────────────────────────
 
@@ -280,6 +281,13 @@ pub fn run() {
             fs_stat_dir,
             fs_list_markdown,
             fs_read_file,
+            // Sprint 2: ui-feed-list-actions Rust handlers (REQ-FEED-019..022)
+            feed::select_past_note,
+            feed::request_note_deletion,
+            feed::confirm_note_deletion,
+            feed::cancel_note_deletion,
+            feed::fs_trash_file,
+            feed::feed_initial_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

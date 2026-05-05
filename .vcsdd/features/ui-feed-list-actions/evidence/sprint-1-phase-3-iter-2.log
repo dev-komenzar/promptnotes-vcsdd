@@ -1,0 +1,109 @@
+Phase 3 iter-2 evidence — ui-feed-list-actions Sprint 1
+Generated: 2026-05-04
+
+=== BEFORE (iter-1 baseline) ===
+bun test: 1463 pass, 0 fail
+vitest:   174 pass, 0 fail
+
+=== FIXES APPLIED ===
+
+FIND-001 (HIGH): DeleteConfirmModal.svelte:74-76
+  Body text changed from '取り消せません' → '後で復元できます' per REQ-FEED-012.
+
+FIND-002 (HIGH): DeleteConfirmModal.svelte:86-92
+  Confirm button label changed from '削除する' → '削除（OS ゴミ箱に送る）' per REQ-FEED-012.
+
+FIND-003 / FIND-011 (HIGH): DeletionFailureBanner.svelte:67-77
+  retry-button background: #dd5b00 → #0075de (Primary Blue)
+  retry-button padding: 6px 12px → 8px 16px
+  retry-button font-size: 13px → 15px
+  banner-message color: #dd5b00 → rgba(0,0,0,0.75) (warn-text near-black)
+
+FIND-004 (FATAL / HIGH): FeedList.svelte:78-88
+  Resolution: option (a) — extend FeedDomainSnapshot with per-noteId metadata.
+  Added NoteRowMetadata type { body, createdAt, updatedAt, tags } to types.ts.
+  Added noteMetadata: Readonly<Record<string, NoteRowMetadata>> to FeedDomainSnapshot.
+  Added noteMetadata to FeedViewState (mirrored by feedReducer DomainSnapshotReceived).
+  FeedList now passes meta.body / meta.createdAt / meta.updatedAt / meta.tags to FeedRow.
+  rowMetadata() helper falls back to { body: '', createdAt: 0, updatedAt: 0, tags: [] } for unknown noteIds.
+  v-arch §9b updated with NoteRowMetadata type and noteMetadata field documentation.
+
+FIND-005 / FIND-010 (MEDIUM): DeletionFailureBanner.svelte:49-58
+  border: 1px solid rgba(221,91,0,0.3) → border: none; border-left: 4px solid #dd5b00
+  4-layer box-shadow → 5-layer Deep Shadow (same as DeleteConfirmModal.svelte)
+
+FIND-006 (MEDIUM): FeedRow.svelte:44
+  showPendingSwitch predicate tightened:
+  Before: viewState.pendingNextNoteId === noteId
+  After:  viewState.pendingNextNoteId === noteId &&
+          (viewState.editingStatus === 'switching' || viewState.editingStatus === 'save-failed')
+
+FIND-007 (MEDIUM): FeedRow.svelte:114-123
+  deleteAriaLabel derived: '削除' when enabled, '編集を終了してから削除してください' when disabled.
+  title attribute set to same string when disabled.
+
+FIND-008 (MEDIUM): feedReducer.ts dead command branches
+  Resolution: option (a) — wire shell through feedReducer command bus.
+  FeedList.svelte now dispatches all user actions through feedReducer:
+    handleRowClick → feedReducer(FeedRowClicked) → dispatchCommand
+    handleDeleteButtonClick → feedReducer(DeleteButtonClicked) → dispatchCommand
+    handleDeleteConfirm → feedReducer(DeleteConfirmed) → dispatchCommand
+    handleDeleteCancel → feedReducer(DeleteCancelled) → dispatchCommand
+    handleRetryDeletion → feedReducer(DeletionRetryClicked) → dispatchCommand
+  DomainSnapshotReceived commands also dispatched via dispatchCommand.
+  Components accept onRowClick/onDeleteClick/onConfirm/onRetry callbacks.
+  FeedList passes callbacks to FeedRow/DeleteConfirmModal/DeletionFailureBanner.
+  Reducer branches are no longer dead code.
+
+FIND-009 (LOW): DeleteConfirmModal.svelte:33-35
+  Added isConfirmPending $state flag. handleConfirm() guards: if (isConfirmPending) return.
+  confirm button disabled={isConfirmPending}. Prevents double-dispatch on rapid clicks.
+
+FIND-010 (MEDIUM): Addressed as part of FIND-005 fix above.
+
+FIND-011 (HIGH): Addressed as part of FIND-003 fix above.
+
+FIND-012 (LOW): FeedList.svelte banner placement
+  DeletionFailureBanner moved to top of feed-list (before rows) per spec intent 'フィード上部'.
+
+FIND-013 (MEDIUM): feedRowPredicates.test.ts:237-262
+  PROP-FEED-034 describe block content replaced:
+    Old: bodyPreviewLines tests (wrong — misnamed)
+    New: tagOrderPreserving() helper + 4 tag-specific tests (example + fast-check ≥200 runs)
+  bodyPreviewLines test retained as PROP-FEED-034e (relabeled).
+
+FIND-014 (HIGH): FeedList.dom.vitest.ts
+  Added 5 integration tests in 'REQ-FEED-001/002/003/017 / FIND-014' describe block:
+    1. row-created-at textContent matches timestampLabel(createdAt) (REQ-FEED-001)
+    2. row-body-preview contains first line of body (REQ-FEED-002)
+    3. tag-chip count equals tags.length, order preserved (REQ-FEED-003 / PROP-FEED-034)
+    4. FIND-004 regression guard: epoch-0 NOT rendered when real metadata present
+    5. updatedAt shown when different from createdAt (REQ-FEED-017)
+  Test uses real snapshot with noteMetadata: { body, createdAt, updatedAt, tags }.
+
+Additional test hardening:
+  FeedRow.dom.vitest.ts:
+    FIND-007 test: disabled delete button has aria-label + title = explanation string.
+    FIND-006 tests: editingStatus=editing/idle with pendingNextNoteId=noteId → no indicator.
+  DeleteConfirmModal.dom.vitest.ts:
+    FIND-001 test: body contains '後で復元できます', NOT '取り消せません'.
+    FIND-002 test: confirm button textContent = '削除（OS ゴミ箱に送る）'.
+    FIND-009 test: rapid double-click dispatches only once.
+
+=== AFTER (iter-2 result) ===
+bun test: 1466 pass, 0 fail (net +3 tests)
+vitest:   187 pass, 0 fail (net +13 tests)
+
+=== TYPE ERRORS ===
+0 feed-related errors. 3 pre-existing errors in unrelated features:
+  - apply-filter-or-search/prop-011a-trynew-tag-reuse.harness.test.ts (pre-existing)
+  - edit-past-note-start/pipeline.test.ts (pre-existing)
+  - edit-past-note-start/prop-005-switch-error-exhaustive.harness.test.ts (pre-existing)
+
+=== PURITY AUDIT ===
+canonical grep pattern: 0 hits on feedRowPredicates.ts, feedReducer.ts, deleteConfirmPredicates.ts
+IPC boundary: tauriFeedAdapter.ts has 0 'listen' hits; feedStateChannel.ts has 0 'invoke' hits
+svelte/store audit: 0 'from svelte/store' hits in src/lib/feed/
+
+=== REGRESSION ===
+None. All pre-existing tests remain green.

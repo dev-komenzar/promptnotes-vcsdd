@@ -376,3 +376,11 @@ The permitted spacing values for component source files are the §5 enumerated s
 | 16 | px | §5 Spacing Scale |
 | 24 | px | §5 Spacing Scale |
 | 32 | px | §5 Spacing Scale |
+
+### Component Dimension Tokens
+
+These values are permitted as hardcoded component dimension values (e.g., `max-width`) in component source files.
+
+| Token Name | Value | Unit | Source |
+|-----------|-------|------|--------|
+| Pill Max-Width | `160` | px | §4 Pill Badge — tag chip truncation limit (reusable across feed and filter features) |

@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "edge_case_coverage",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "reqRefs": ["REQ-FEED-010", "EC-FEED-006", "NFR-FEED-002"],
+  "description": "REQ-FEED-010 Edge Cases: 'ツールチップ: 無効化された削除ボタンには title または aria-label として「編集を終了してから削除してください」を設定する'. Implementation hard-codes aria-label='削除' regardless of disabled state and never sets a tooltip (title) attribute. A user who Tab-focuses a disabled delete button hears only '削除' from the screen reader with no explanation of why action is unavailable. Test FeedRow.dom.vitest.ts:322-334 only checks aria-label exists and is non-empty; it does not verify the disabled-state messaging, so coverage is illusory.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "114-123",
+    "snippet": "<button\n  data-testid=\"delete-button\"\n  aria-label=\"削除\"\n  disabled={deleteDisabled}\n  aria-disabled={deleteDisabled ? 'true' : 'false'}\n  onclick={handleDeleteClick}\n  class=\"delete-button\"\n>"
+  },
+  "recommendation": "Make aria-label and/or title dynamic: when `deleteDisabled === true`, set title='編集を終了してから削除してください' (and consider aria-label of same string). Add a DOM assertion verifying the disabled-state message is exposed.",
+  "routeToPhase": "2b"
+}

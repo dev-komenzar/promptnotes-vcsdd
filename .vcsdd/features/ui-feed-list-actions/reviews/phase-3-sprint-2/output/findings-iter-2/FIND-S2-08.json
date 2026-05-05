@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-S2-08",
+  "sprint": 2,
+  "iteration": 2,
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "REQ-FEED-023 acceptance criterion (behavioral-spec.md line 529) explicitly requires 'EditorPane is wrapped in a <main> with class editor-main'. The fix for FIND-S2-02 correctly resolved the HTML5 double-<main> violation by changing +page.svelte line 104 from '<main class=\"editor-main\">' to '<div class=\"editor-main\">'. However, the behavioral spec was never amended to reflect this change. The spec remains authoritative per VCSDD process: it still mandates a <main> element. The implementation now satisfies HTML5 but contradicts the spec's stated acceptance criterion. Because this arose from a necessary architectural correction (AppShell already provides the document-level <main>), the spec must be updated to align with the implementation — but that update has not been made. The test in main-route.dom.vitest.ts line 202-210 verifies that the pattern '<main class=\"editor-main\">' does NOT exist (testing the fix, not the spec criterion), so the test now contradicts the spec's acceptance criterion rather than validating it.",
+  "evidence": {
+    "filePath": "promptnotes/src/routes/+page.svelte",
+    "lineRange": "104",
+    "snippet": "<div class=\"editor-main\">"
+  },
+  "crossReference": [
+    ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:529 — 'EditorPane is wrapped in a <main> with class editor-main'",
+    "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts:202-210 — test asserts <main class=\"editor-main\"> does NOT exist, contradicting spec acceptance criterion"
+  ],
+  "routeToPhase": "1a",
+  "resolution": "Update REQ-FEED-023 acceptance criterion in behavioral-spec.md to replace '<main>' with '<div>' in the EditorPane wrapper requirement. The AppShell already provides the document-level <main>; the inner content wrapper should be <div>. Alternatively, if semantic HTML requirement is preserved, AppShell.svelte must change its <main> to <div> and +page.svelte must restore <main class='editor-main'>."
+}

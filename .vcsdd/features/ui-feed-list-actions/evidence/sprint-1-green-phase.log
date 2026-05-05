@@ -1,0 +1,15 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+bun test v1.3.11 (af24e281)
+[perf] applyFilterOrSearch median: 0.689ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.002ms (advisory bound: 5ms)
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes
+
+
+ Test Files  23 passed (23)
+      Tests  174 passed (174)
+   Start at  20:45:41
+   Duration  3.84s (transform 8.87s, setup 955ms, import 13.38s, tests 2.22s, environment 26.99s)
+

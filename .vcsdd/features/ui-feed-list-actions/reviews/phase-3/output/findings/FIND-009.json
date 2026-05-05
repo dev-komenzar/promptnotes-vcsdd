@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-009",
+  "dimension": "implementation_correctness",
+  "category": "test_quality",
+  "severity": "low",
+  "reqRefs": ["REQ-FEED-012"],
+  "description": "DeleteConfirmModal.handleConfirm dispatches the confirm command but does not set local visible=false and does not call onClose, while handleCancel does both. Modal close on confirm relies entirely on FeedList.svelte:100-105 receiving a follow-up DomainSnapshotReceived snapshot (with NoteFileDeleted cause and activeDeleteModalNoteId=null) to unmount the modal. Between the dispatch and the snapshot arrival, the modal stays interactive — the user can rapid-press the confirm button again before the IPC round-trip completes. There is no in-flight guard. The DOM tests at DeleteConfirmModal.dom.vitest.ts:160-189 only assert that a single click results in a single dispatch call; they do not assert in-flight idempotence.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
+    "lineRange": "33-35",
+    "snippet": "function handleConfirm(): void {\n  adapter.dispatchConfirmNoteDeletion(noteId, nowIso());\n}"
+  },
+  "recommendation": "Add an in-flight guard or set visible=false after dispatch (or disable the button). At minimum, add a DOM assertion that a second rapid click does not produce a second dispatch.",
+  "routeToPhase": "2b"
+}

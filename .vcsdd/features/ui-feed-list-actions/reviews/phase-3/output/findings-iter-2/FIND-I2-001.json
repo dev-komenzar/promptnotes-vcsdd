@@ -1,0 +1,27 @@
+{
+  "findingId": "FIND-I2-001",
+  "iteration": 2,
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "reqRefs": ["REQ-FEED-012"],
+  "propRefs": ["PROP-FEED-017", "PROP-FEED-018"],
+  "description": "feedReducer.ts DeleteCancelled case (line 77–83) emits only { kind: 'close-delete-modal' } — it never emits { kind: 'cancel-note-deletion', payload: { noteId, issuedAt } }. Verification-architecture.md §9b action→command table states: 'DeleteCancelled → { kind: cancel-note-deletion } + { kind: close-delete-modal }'. FeedList wires DeleteConfirmModal with onClose={handleDeleteCancel} (FeedList.svelte:211), so all cancel paths (Esc, backdrop, cancel button) route through feedReducer via the DeleteCancelled action. Because cancel-note-deletion is never emitted, dispatchCancelNoteDeletion (tauriFeedAdapter) is never invoked via the command bus. REQ-FEED-012 requires that 'キャンセル時に dispatchCancelNoteDeletion が 1 回呼ばれる'. The CancelNoteDeletion command is never sent to the Tauri backend during normal production operation. The DOM test at DeleteConfirmModal.dom.vitest.ts:227-240 only catches the fallback path (no onClose prop provided to the component), NOT the production wiring through FeedList. This is a new defect introduced in iter-2 when the command bus wiring (FIND-008 fix) was applied: the DeleteCancelled branch was not updated to also emit cancel-note-deletion.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/feedReducer.ts",
+    "lineRange": "77-83",
+    "snippet": "case 'DeleteCancelled': {\n  const nextState: FeedViewState = {\n    ...state,\n    activeDeleteModalNoteId: null,\n  };\n  return { state: nextState, commands: [{ kind: 'close-delete-modal' }] };\n}"
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedList.svelte",
+    "lineRange": "207-213",
+    "snippet": "<DeleteConfirmModal\n  noteId={activeDeleteModalNoteId}\n  {adapter}\n  onConfirm={handleDeleteConfirm}\n  onClose={handleDeleteCancel}\n/>"
+  },
+  "tertiaryEvidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/DeleteConfirmModal.dom.vitest.ts",
+    "lineRange": "227-240",
+    "snippet": "test('cancel button click calls dispatchCancelNoteDeletion 1×', () => {\n  const adapter = makeMockAdapter();\n  const app = mount(DeleteConfirmModal, { target, props: { noteId: 'note-001', adapter } });\n  // No onClose provided — this tests the FALLBACK path, not the FeedList production wiring\n  cancelBtn!.click();\n  expect(adapter.dispatchCancelNoteDeletion).toHaveBeenCalledTimes(1);\n});"
+  },
+  "recommendation": "Add { kind: 'cancel-note-deletion', payload: { noteId: state.activeDeleteModalNoteId ?? '', issuedAt: '' } } to the DeleteCancelled command array before { kind: 'close-delete-modal' }. Then add a test to feedReducer.test.ts asserting that DeleteCancelled emits both commands. Also add or modify an integration test via FeedList that verifies dispatchCancelNoteDeletion is called when cancel is triggered through the full command bus (with onClose wired).",
+  "routeToPhase": "2b"
+}

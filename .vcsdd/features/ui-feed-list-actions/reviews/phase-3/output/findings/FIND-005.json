@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "medium",
+  "reqRefs": ["REQ-FEED-014", "NFR-FEED-003"],
+  "description": "REQ-FEED-014 'DESIGN.md 準拠要件' explicitly mandates the banner container show 'Deep Shadow 5-layer, #dd5b00 左アクセントボーダー'. Implementation uses (a) a full 1px solid border-around (border: 1px solid rgba(221, 91, 0, 0.3)) instead of a left-accent only border, and (b) a 4-layer box-shadow (4 commas) instead of the required 5-layer. Both DESIGN.md token contracts are unmet for the failure surface, weakening the visual distinction between informational vs error banners.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
+    "lineRange": "49-58",
+    "snippet": ".deletion-failure-banner {\n  background: #fff3f0;\n  border: 1px solid rgba(221, 91, 0, 0.3);\n  border-radius: 8px;\n  padding: 12px 16px;\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  box-shadow: rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2.025px 7.85px, rgba(0,0,0,0.02) 0px 0.8px 2.93px, rgba(0,0,0,0.01) 0px 0.175px 1.04px;\n}"
+  },
+  "recommendation": "Replace the all-around border with 'border-left: 4px solid #dd5b00' (and remove the surrounding border or set it to whisper border rgba(0,0,0,0.1)); replace the 4-layer shadow with the DESIGN.md 5-layer Deep Shadow token used by DeleteConfirmModal.svelte:115. Add a grep audit assertion enforcing 'border-left' presence and a 5-comma box-shadow.",
+  "routeToPhase": "2b"
+}

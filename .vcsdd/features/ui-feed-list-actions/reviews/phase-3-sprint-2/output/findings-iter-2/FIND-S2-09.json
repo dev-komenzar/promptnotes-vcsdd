@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-S2-09",
+  "sprint": 2,
+  "iteration": 2,
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "REQ-FEED-020 handler specification table (behavioral-spec.md lines 466-469) defines 'select_past_note' with parameters 'app: AppHandle, note_id: String, issued_at: String' and 'confirm_note_deletion' with parameters 'app: AppHandle, note_id: String, issued_at: String'. The iter-2 fixes for FIND-S2-01/05/06 correctly added 'vault_path: String' to select_past_note and 'file_path: String, vault_path: String' to confirm_note_deletion, but the spec table was never updated. The behavioral spec at behavioral-spec.md:466-469 still shows the old 3-argument signatures. The TS adapter (tauriFeedAdapter.ts:22-30) now has the correct extended signatures, but callers reading the spec will see mismatched contracts. Additionally, the emit invariant at behavioral-spec.md:471 states 'the feed.visibleNoteIds... fields carry the current application state at emit time' — this is now satisfied by the scan_vault_feed fix, but the spec's handler parameter table contradicts the implementation's actual IPC contract. Any future TS adapter regeneration from the spec would produce the wrong invoke() call shape.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "243-248",
+    "snippet": "pub fn select_past_note(\n    app: AppHandle,\n    note_id: String,\n    vault_path: String,\n    issued_at: String,\n)"
+  },
+  "crossReference": [
+    ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:466-469 — spec table shows old 3-argument signature for select_past_note and confirm_note_deletion",
+    "promptnotes/src/lib/feed/tauriFeedAdapter.ts:22-31 — TS interface has correct 4-argument dispatchSelectPastNote and 4-argument dispatchConfirmNoteDeletion",
+    "promptnotes/src-tauri/src/feed.rs:276-282 — confirm_note_deletion has 5 parameters (app, note_id, file_path, vault_path, issued_at)"
+  ],
+  "routeToPhase": "1a",
+  "resolution": "Update REQ-FEED-020 handler specification table to reflect the actual parameter signatures: select_past_note(app, note_id, vault_path, issued_at) and confirm_note_deletion(app, note_id, file_path, vault_path, issued_at). Document the architectural rationale for each new parameter (vault_path for feed re-scan; file_path for OS path vs logical noteId separation)."
+}

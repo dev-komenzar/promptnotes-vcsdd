@@ -1,0 +1,15 @@
+{
+  "findingId": "FIND-013",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "medium",
+  "reqRefs": ["REQ-FEED-003", "PROP-FEED-034"],
+  "description": "PROP-FEED-034 (verification-architecture.md:171) is defined as 'tag iteration preservation — feedRowPredicates または FeedRow.svelte が受け取った tags: readonly string[] を順序・長さ保存で出力する'. The implementing test (feedRowPredicates.test.ts:237-262) is labelled 'REQ-FEED-003 / PROP-FEED-034: tag array order and length preservation' but its body actually exercises bodyPreviewLines line ordering, not tag arrays. There is no fast-check property over a tags arbitrary, no DOM assertion that tag-chip text content reflects the input array order, and no unit verification that `Array.from(tags).map(t => t)` length equals tag count. The test name is misleading; the property is not actually proven. (Tag rendering correctness is structurally implied by Svelte's `{#each tags as tag}` runtime, but the obligation imposed by PROP-FEED-034 is not discharged.)",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts",
+    "lineRange": "237-262",
+    "snippet": "describe('REQ-FEED-003 / PROP-FEED-034: tag array order and length preservation', () => {\n  test('PROP-FEED-034a: bodyPreviewLines preserves order of lines (example)', () => { … bodyPreviewLines … });\n  test('PROP-FEED-034b: fast-check — order preserved for all bodies (≥200 runs)', () => { … bodyPreviewLines … });\n});"
+  },
+  "recommendation": "Either (a) add a real PROP-FEED-034 fast-check property: arbitrary `readonly string[]` of tags, mount FeedRow with that array, query querySelectorAll('[data-testid=tag-chip]'), and assert their textContent sequence equals input. Or (b) export a pure `tagOrderPreserving(tags)` helper and property-test it directly. Rename the existing describe block to remove the false PROP-FEED-034 label.",
+  "routeToPhase": "2a"
+}

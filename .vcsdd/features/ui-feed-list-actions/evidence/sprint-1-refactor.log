@@ -1,0 +1,79 @@
+## Phase 2c Refactor Evidence — ui-feed-list-actions Sprint 1
+
+### Baseline (before refactor)
+bun: 1463 pass, 0 fail
+vitest: 174 pass (23 files), 0 fail
+type errors in feed/: 0
+
+### Refactor 1 — extract isFeedRowClickBlocked predicate
+
+Files changed:
+- feedRowPredicates.ts: +16 lines (new export isFeedRowClickBlocked)
+- feedReducer.ts: -4 lines (import + replace inline guard)
+- FeedRow.svelte: -2 lines (replace inline rowDisabled ternary)
+
+Motivation: REQ-FEED-005/006 guard logic was duplicated identically in
+feedReducer.ts (FeedRowClicked branch) and FeedRow.svelte ($derived rowDisabled).
+Extracting to feedRowPredicates.ts eliminates the duplication and gives the
+predicate a VCSDD-traceable name (maps to PROP-FEED-005..007 guard semantics).
+Pure core: no side effects introduced.
+
+Post-refactor: bun 1463 pass / vitest 174 pass
+
+### Refactor 2 — document filterApplied prop intent in FeedList.svelte
+
+Files changed:
+- FeedList.svelte: type alias FeedListViewState, rename _filterApplied → filterApplied
+
+Motivation: `FeedViewState & { filterApplied?: boolean }` was an undocumented
+inline intersection on the Props type. Named the intersection type FeedListViewState
+to make intent explicit. Renamed the internal state variable from _filterApplied
+(underscore convention suggests private/hack) to filterApplied (clean name).
+Full prop separation was attempted but reverted because the existing test passes
+filterApplied via the viewState spread — test contract preserved as-is.
+
+Post-refactor: bun 1463 pass / vitest 174 pass
+
+### Refactor 3 — extract nowIso() clock helper
+
+Files changed:
+- clockHelpers.ts: +19 lines (new effectful shell file, nowIso() function)
+- FeedRow.svelte: -3 lines (nowIso() replaces 3× new Date().toISOString())
+- DeleteConfirmModal.svelte: -3 lines (nowIso() replaces 2× new Date().toISOString())
+- DeletionFailureBanner.svelte: -2 lines (nowIso() replaces 1× new Date().toISOString())
+
+Motivation: new Date().toISOString() was scattered across 3 shell components
+(6 call sites total). Centralising into nowIso() in clockHelpers.ts gives a
+single testable entry point and aligns with the editor feature's injected clock
+pattern. clockHelpers.ts is NOT in PURE_MODULES — purity audit is unaffected.
+PROP-FEED-031 confirmed clean via bun test purityAudit.test.ts.
+
+Post-refactor: bun 1463 pass / vitest 174 pass
+
+### Final state
+
+bun: 1463 pass, 0 fail
+vitest: 174 pass (23 files), 0 fail
+feed type errors: 0
+pre-existing domain type errors (unchanged): 3
+
+### Diff summary
+6 source files modified + 1 new file (clockHelpers.ts)
++37 / -24 lines net
+
+### PROP-FEED-030/031/032 audit
+purityAudit.test.ts:  4 pass, 0 fail
+ipcBoundary.test.ts:  3 pass, 0 fail
+new Date / Date( in pure core: 0 hits (confirmed via grep)
+
+### Candidates NOT executed
+
+Candidate 4 (issuedAt: '' placeholder in feedReducer) — FeedCommand type contract
+requires issuedAt: string on the payload variants. Removing the placeholder would
+require changing the FeedCommand type and adapter signatures, which touches the
+domain contract. Deferred to a future sprint with spec change.
+
+Candidate 5 (_channel = untrack(...) lifecycle in FeedList) — the current pattern
+is functionally correct and the subscription is cleaned up in onDestroy. Refactoring
+the $effect subscription lifecycle would require re-testing Svelte 5 reactivity
+edge cases. Low value / higher risk ratio for this sprint.

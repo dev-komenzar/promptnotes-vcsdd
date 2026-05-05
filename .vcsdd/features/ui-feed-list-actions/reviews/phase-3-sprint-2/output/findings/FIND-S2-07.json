@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-S2-07",
+  "sprint": 2,
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "medium",
+  "description": "The frontmatter body extraction has an off-by-one: when '\\n---\\n' is found at position end_pos in rest, the body is set to rest[end_pos + 5..] (feed.rs:364). The delimiter '\\n---\\n' is 5 bytes, so this skips the delimiter correctly. However for the '\\n---\\r\\n' case (Windows line endings), the code OR-chains with find('\\n---\\r\\n') but still advances by +5, which would leave '\\r\\n' at the start of the body. This is an untested edge case. Additionally, the fallback branch content.starts_with('---\\r\\n') at line 360 is handled but the end detection or_else chain at line 362 does not handle '\\r\\n---\\r\\n' — the mixed CRLF terminator case. No test covers CRLF frontmatter. REQ-FEED-022 specifies extracting frontmatter from '.md' files which may have CRLF line endings on Windows targets.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "360-366",
+    "snippet": "if content.starts_with(\"---\\n\") || content.starts_with(\"---\\r\\n\") {\n    let rest = &content[4..];\n    if let Some(end_pos) = rest.find(\"\\n---\\n\").or_else(|| rest.find(\"\\n---\\r\\n\")) {\n        let fm = &rest[..end_pos];\n        body = rest[end_pos + 5..].to_string(); // skips '\\n---\\n' but wrong for '\\n---\\r\\n' (6 bytes)"
+  },
+  "crossReference": [
+    "promptnotes/src-tauri/src/feed.rs:492-499 — no CRLF test cases",
+    "specs/behavioral-spec.md REQ-FEED-022 — requires scanning vault .md files (platform-agnostic)"
+  ],
+  "routeToPhase": "2b"
+}
