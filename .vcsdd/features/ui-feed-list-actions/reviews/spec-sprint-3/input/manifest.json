@@ -1,0 +1,11 @@
+{
+  "reviewType": "spec",
+  "sprint": 3,
+  "iteration": 1,
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "scopeNote": "Sprint 3 is a focused bug fix: select_past_note must emit editing_session_state_changed so EditorPane receives past note body on row click. Review only the Sprint 3 additions (REQ-FEED-024, PROP-FEED-S2-008, §12). The rest of the spec (REQ-FEED-001..023) has already passed Phase 1c in Sprint 1 and Sprint 2."
+}

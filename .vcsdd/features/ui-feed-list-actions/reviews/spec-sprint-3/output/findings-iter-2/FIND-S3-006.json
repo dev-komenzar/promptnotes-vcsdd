@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-S3-006",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "low",
+  "description": "EC-FEED-017 (added in response to FIND-S3-002) requires that `editing_session_state_changed` is emitted before `feed_state_changed` to ensure EditorPane receives state before the feed list re-renders. However, the three Rust test descriptions in verification-architecture.md §12 (lines 531-534) do not explicitly mention emit-order verification. `test_select_past_note_emits_editing_session_state_changed` says 'verifies both events are emitted' without specifying ordering checks. A developer implementing from these test descriptions alone could write a test that confirms both events exist without verifying their relative order, silently degrading the guarantee that EditorPane updates before FeedList re-renders.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "531-534",
+    "snippet": "1. `test_select_past_note_emits_editing_session_state_changed` — verifies both events are emitted\n2. `test_select_past_note_editing_payload_contains_body` — verifies body matches file content\n3. `test_select_past_note_nonexistent_body_is_empty` — verifies empty body for non-existent note_id"
+  },
+  "remediationSuggestion": "Either (a) amend the description of `test_select_past_note_emits_editing_session_state_changed` to explicitly state that it verifies `editing_session_state_changed` is emitted before `feed_state_changed`, or (b) add a fourth test `test_select_past_note_emit_order` that captures the event sequence and asserts the ordering invariant from EC-FEED-017.",
+  "routeToPhase": "1b"
+}

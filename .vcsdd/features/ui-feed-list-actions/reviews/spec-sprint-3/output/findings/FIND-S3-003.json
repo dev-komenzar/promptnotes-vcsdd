@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-S3-003",
+  "dimension": "verification_readiness",
+  "category": "requirement_mismatch",
+  "severity": "low",
+  "description": "PROP-FEED-S2-008 uses Tier label \"1\" in the Sprint 3 proof obligations table (verification-architecture.md line 525), which is inconsistent with the Sprint 2 proof obligations that use descriptive tiers like \"Rust unit\" and \"Rust integration\" (lines 489-495). The Rust testing tier categorization in §5 Tooling Map (line 499) references Tier 1 as \"example-based tests\", and this is the TS-oriented definition. Having a parallel but differently-named tier system for Rust proofs (\"Rust unit\" vs \"1\") creates confusion about what verification rigor is expected.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "523-525, 489-495",
+    "snippet": "| PROP-FEED-S2-008 | REQ-FEED-024 | ... | 1 | cargo test | true |"
+  },
+  "remediationSuggestion": "Use consistent tier labeling. Either rename all Sprint 2 Rust proof tiers to numeric (recommend treating Rust cargo test as a separate tier rather than Tier 1 which is defined for vitest/TypeScript) or use descriptive labels consistently ('Rust integration' for PROP-FEED-S2-008 to match PROP-FEED-S2-003/004).",
+  "routeToPhase": "1b"
+}

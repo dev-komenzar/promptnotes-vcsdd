@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "complete",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -157,6 +157,57 @@
       "timestamp": "2026-05-05T01:19:54.916Z",
       "reason": "Phase 6 Sprint 2 PASS: four-dimensional convergence achieved — Sprint 2 finding diminishment 7->4 (critical+high=0), all CRIT-100..106 evaluated, 26 adversary-finding beads registered + resolved (FIND-S2-08/09/10/11 accepted as deferred tradeoffs), vertical slice complete (6 Rust handlers + AppShell two-column layout + bun run tauri dev confirmed)",
       "sprint": 2
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-05T05:00:00.000Z",
+      "reason": "Sprint 3: bug fix — select_past_note does not emit editing_session_state_changed, so past note selection doesn't reflect in editor. Add REQ-FEED-024 + PROP-FEED-S2-008 + 3 Rust tests + fix feed.rs",
+      "sprint": 2,
+      "nextSprintHint": 3
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-05T05:01:00.000Z",
+      "reason": "Sprint 3 spec patch: REQ-FEED-024 appended",
+      "sprint": 3
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-05T05:02:00.000Z",
+      "reason": "Sprint 3 verification-architecture patch: §12 Sprint 3 extensions appended",
+      "sprint": 3
+    },
+    {
+      "from": "1c",
+      "to": "1a",
+      "timestamp": "2026-05-05T05:03:00.000Z",
+      "reason": "Phase 1c iter-1 FAIL routing: FIND-S3-001 (EARS payload wrapper), FIND-S3-002 (missing EC entries), FIND-S3-003/004 (tier label + PROP under-specification). Both spec_fidelity and verification_readiness FAIL. Return to earliest impacted phase (1a).",
+      "sprint": 3,
+      "iteration": "1c-sprint-3-iter-1"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-05T05:04:00.000Z",
+      "reason": "Sprint 3 spec fix: FIND-S3-001 (EARS payload wrapper { state: ... }), FIND-S3-002 (EC-FEED-016/017 added), FIND-S3-004 (all 6 payload fields enumerated in acceptance criteria)",
+      "sprint": 3
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-05T05:04:01.000Z",
+      "reason": "Sprint 3 verification-architecture fix: FIND-S3-003 (tier label normalized), FIND-S3-004 (PROP expanded), FIND-S3-005 (known limitation documented)",
+      "sprint": 3
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-05T05:05:01.000Z",
+      "reason": "Phase 1c PASS at iter-2. All 5 iter-1 findings resolved + FIND-S3-006 (low) resolved. spec_fidelity PASS, verification_readiness PASS.",
+      "sprint": 3
     }
   ],
   "iterations": {
@@ -170,7 +221,8 @@
     "2c": 2,
     "contract-review": 2,
     "complete": 2,
-    "3-sprint-2": 2
+    "3-sprint-2": 2,
+    "1c-sprint-3": 1
   },
   "proofObligations": [
     {
@@ -903,6 +955,23 @@
         "approved": "pre-approved by architect for sprint 2 scope extension"
       }
     },
+    "1c-sprint-3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T05:05:00.000Z",
+      "reviewedBy": "adversary",
+      "adversaryVerdict": "PASS",
+      "humanVerdict": "PASS",
+      "humanApproved": true,
+      "details": {
+        "iteration": 2,
+        "sprint": 3,
+        "iter1Verdict": "FAIL",
+        "iter1Findings": ["FIND-S3-001", "FIND-S3-002", "FIND-S3-003", "FIND-S3-004", "FIND-S3-005"],
+        "iter2Verdict": "PASS",
+        "iter2Findings": ["FIND-S3-006 (low, resolved)"],
+        "scope": "spec patch only — REQ-FEED-024 appended, no scope reduction"
+      }
+    },
     "3-sprint-2": {
       "verdict": "PASS",
       "timestamp": "2026-05-04T05:00:00.000Z",
@@ -1047,7 +1116,7 @@
       }
     }
   },
-  "sprintCount": 2,
+  "sprintCount": 3,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-05T01:19:54.916Z"
+  "updatedAt": "2026-05-05T05:00:00.000Z"
 }

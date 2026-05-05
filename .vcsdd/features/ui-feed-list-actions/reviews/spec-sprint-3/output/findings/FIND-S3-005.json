@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-S3-005",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "low",
+  "description": "The Sprint 3 verification extensions do not address the partial emit failure scenario: if `app.emit(\"editing_session_state_changed\", ...)` succeeds but `app.emit(\"feed_state_changed\", ...)` fails (or vice versa), the frontend receives an inconsistent state (EditorPane updated but FeedList not refreshed, or FeedList refreshed but editor not updated). The current `select_past_note` uses `app.emit(...).map_err(|e| e.to_string())?` for both emits, so the second emit is guarded by the first's success. However, the verification architecture does not specify a test for this ordering or partial-failure behavior, and the proof obligation does not require verification of error propagation.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "527-534",
+    "snippet": "Three new tests: 1. test_select_past_note_emits_editing_session_state_changed ... 2. test_select_past_note_editing_payload_contains_body ... 3. test_select_past_note_nonexistent_body_is_empty ..."
+  },
+  "remediationSuggestion": "Either (a) add a test verifying that editing_session_state_changed emit failure causes the command to return Err and feed_state_changed is NOT subsequently emitted (partial-failure atomicity), or (b) explicitly document in the verification architecture that partial emit failure is an accepted non-goal for Sprint 3 (deferred to Phase 5/hardening).",
+  "routeToPhase": "1b"
+}
