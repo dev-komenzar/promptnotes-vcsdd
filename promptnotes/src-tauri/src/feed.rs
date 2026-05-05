@@ -122,7 +122,7 @@ pub struct FeedDomainSnapshotDto {
 
 // ── Default / helper constructors ─────────────────────────────────────────────
 
-fn idle_editing() -> EditingSubDto {
+pub fn idle_editing() -> EditingSubDto {
     EditingSubDto {
         status: "idle".to_string(),
         current_note_id: None,
@@ -130,7 +130,7 @@ fn idle_editing() -> EditingSubDto {
     }
 }
 
-fn no_delete() -> DeleteSubDto {
+pub fn no_delete() -> DeleteSubDto {
     DeleteSubDto {
         active_delete_modal_note_id: None,
         last_deletion_error: None,
@@ -320,7 +320,7 @@ pub fn fs_trash_file(path: String) -> Result<(), TrashErrorDto> {
 /// REQ-FEED-021 / FIND-S2-05 / FIND-S2-06: used by event-emitting handlers so that
 /// every snapshot carries the actual, up-to-date feed state rather than empty_feed().
 /// Errors are best-effort ignored (partial scan is better than crashing an event emit).
-fn scan_vault_feed(vault_path: &str) -> (Vec<String>, HashMap<String, NoteRowMetadataDto>) {
+pub fn scan_vault_feed(vault_path: &str) -> (Vec<String>, HashMap<String, NoteRowMetadataDto>) {
     let dir = Path::new(vault_path);
     let read_dir = match std::fs::read_dir(dir) {
         Ok(rd) => rd,

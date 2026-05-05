@@ -344,8 +344,25 @@ pub fn request_new_note(
 
     // Emit editing state for the new note
     emit_state_changed(
-        &app, "editing", false, Some(note_path), None, None, "",
-    )
+        &app, "editing", false, Some(note_path.clone()), None, None, "",
+    )?;
+
+    // Emit feed_state_changed so the feed sidebar refreshes with the new note
+    let (visible_note_ids, note_metadata) = crate::feed::scan_vault_feed(&vault_path);
+    let feed_snapshot = crate::feed::FeedDomainSnapshotDto {
+        editing: crate::feed::idle_editing(),
+        feed: crate::feed::FeedSubDto {
+            visible_note_ids,
+            filter_applied: false,
+        },
+        delete: crate::feed::no_delete(),
+        note_metadata,
+        cause: crate::feed::CauseDto::NoteFileSaved {
+            saved_note_id: note_path,
+        },
+    };
+    app.emit("feed_state_changed", feed_snapshot)
+        .map_err(|e| e.to_string())
 }
 
 // ── Unit tests ────────────────────────────────────────────────────────────────
