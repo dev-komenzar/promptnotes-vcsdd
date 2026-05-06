@@ -100,7 +100,7 @@ Rust 型契約は `vault/` 配下のみで `body` への直接参照はファイ
    7. Curate: `body` 参照箇所を派生プロパティ経由のコメント注記＋必要箇所の型修正
    8. Simulations: `_mock.ts` から順に書き換え／追加
 4. 各論理単位ごとに `tsc --noEmit`（または該当の型検査）を流して整合確認
-5. 影響を受ける VCSDD feature の引き継ぎノートを `.vcsdd/migration/feature-impact.md` に書き出し（後続セッションでの spec 改訂作業の入り口）
+5. 影響を受ける VCSDD feature の引き継ぎノートを `docs/tasks/feature-impact.md` に書き出し（後続セッションでの spec 改訂作業の入り口）
 
 ## 完了基準
 
