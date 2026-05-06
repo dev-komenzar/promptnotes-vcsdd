@@ -47,6 +47,7 @@
     noteMetadata: {},
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
+    allNoteIds: [],
   });
 
   // FIND-S2-01/05/06: Current vault path, resolved once on mount and passed to
@@ -75,6 +76,7 @@
             editingNoteId: snapshot.editing.currentNoteId,
             pendingNextNoteId: snapshot.editing.pendingNextNoteId,
             visibleNoteIds: snapshot.feed.visibleNoteIds,
+            allNoteIds: snapshot.feed.visibleNoteIds,
             loadingStatus: "ready",
             activeDeleteModalNoteId: snapshot.delete.activeDeleteModalNoteId,
             lastDeletionError: null,

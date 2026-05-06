@@ -50,6 +50,8 @@ export type FeedViewState = {
   readonly tagAutocompleteVisibleFor: string | null;
   /** Currently selected filter tag strings. Preserved across snapshots by reducer. */
   readonly activeFilterTags: readonly string[];
+  /** Unfiltered full note ID list from the last DomainSnapshot. Used as source for tag filter computation. */
+  readonly allNoteIds: readonly string[];
 };
 
 // ── NoteRowMetadata ───────────────────────────────────────────────────────────

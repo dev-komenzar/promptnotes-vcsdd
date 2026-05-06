@@ -40,7 +40,8 @@ This feature makes tag chips interactive on feed rows and adds a tag filter side
 - **Domain pipelines**: Import from `$lib/domain/tag-chip-update/` and `$lib/domain/apply-filter-or-search/` — do NOT reimplement
 - **Tag normalization**: The domain module's `index.ts` barrel currently does not re-export `tryNewTag` (it is documented as an implementation detail of `parseFilterInput`). This feature requests that **`tryNewTag` be added to the `apply-filter-or-search` barrel export** (`index.ts`) so the UI layer can use it without bypassing encapsulation. The UI needs distinct `TagError.kind` values (`"empty"`, `"only-whitespace"`) to display appropriate error messages, which the `parseFilterInput` wrapper erases to `{ kind: "invalid-tag" }`. Until the barrel is updated, the feature imports directly from `try-new-tag.js` with a `// TODO: use barrel re-export after domain module updated` comment. See FIND-001 resolution.
 - **TagInventory computation**: TagInventory (usageCounts) is computed client-side from the existing `noteMetadata` in `FeedViewState`, rather than requiring a new field in `FeedDomainSnapshot`. This avoids any Rust/Tauri IPC changes. See FIND-004 resolution.
-- **Feed reducer**: Extend `feedReducer` in `$lib/feed/` with new actions. The `DomainSnapshotReceived` handler preserves `activeFilterTags` from the previous state (following the existing `loadingStatus` preservation pattern). See FIND-003 resolution.
+- **Feed reducer**: Extend `feedReducer` in `$lib/feed/` with new actions. The `DomainSnapshotReceived` handler preserves UI-local state (`activeFilterTags`, `loadingStatus`) from the previous state, stores `allNoteIds` from the snapshot, and re-applies the active tag filter if any tags are selected. See FIND-003 resolution.
+- **Tag filter computation**: Performed in the pure reducer by filtering `allNoteIds` against `noteMetadata` tags using OR semantics. This avoids requiring domain types (`Feed`, `NoteFileSnapshot[]`) at the UI layer while maintaining semantic equivalence with `applyFilterOrSearch`.
 - **Tauri commands**: One new Rust command added in sprint-2 bugfix: `write_file_atomic(path, contents)` — exports the existing `fs_write_file_atomic` internal function as a `#[tauri::command]` for tag chip saves. The adapter serializes frontmatter YAML + body to markdown and calls this command. See bugfix-tag-save.md.
 - **Post-save UI refresh**: After `write_file_atomic` succeeds, `FeedList.dispatchCommand` updates `currentViewState.noteMetadata` locally (Svelte `$state` reactivity triggers immediate re-render) — no vault re-scan needed.
 - **Max tag length**: Tags longer than **100 characters** (after normalization) shall be rejected with a UI message. This is a UI-layer constraint only (the domain pipeline and storage layers accept unbounded length). Rationale: tag chips have max-width 160px, and 100 chars covers any practical use case while preventing layout abuse. See FIND-010 resolution.
@@ -116,19 +117,19 @@ This feature makes tag chips interactive on feed rows and adds a tag filter side
 
 **Event-driven**: WHEN the user clicks a tag in the sidebar tag filter list, THE SYSTEM SHALL:
 1. Add the clicked tag to the active filter set (multi-select)
-2. Call `applyFilterOrSearch(feed, applied, snapshots)` to compute new `visibleNoteIds`
-3. Emit the existing `FilterApplied` action (reusing the existing variant from `FeedAction` without modification) with the new `visibleNoteIds` to update the feed view
+2. Compute new `visibleNoteIds` by filtering `allNoteIds` (the unfiltered full list) against `noteMetadata` tags using OR semantics (see REQ-TAG-013). Any note whose tags intersect with the active filter set is included.
+3. Update `visibleNoteIds` in the view state
 4. Visually highlight the selected tag(s) in the sidebar
 
 ### REQ-TAG-011 — Remove tag filter
 
-**Event-driven**: WHEN the user clicks an already-selected tag in the sidebar, THE SYSTEM SHALL remove it from the active filter set and recalculate visible notes via `FilterApplied` action.
+**Event-driven**: WHEN the user clicks an already-selected tag in the sidebar, THE SYSTEM SHALL remove it from the active filter set and recalculate visible notes.
 
 ### REQ-TAG-012 — Clear all filters
 
 **Ubiquitous**: THE SYSTEM SHALL display a "すべて解除" (Clear All) link button in the tag filter sidebar.
 
-**Event-driven**: WHEN the "すべて解除" button is clicked, THE SYSTEM SHALL clear all active tag filters and emit `FilterCleared` action (reusing the existing variant) to show all notes.
+**Event-driven**: WHEN the "すべて解除" button is clicked, THE SYSTEM SHALL clear all active tag filters and restore `visibleNoteIds` to the full `allNoteIds` list.
 
 ### REQ-TAG-013 — Multi-select OR semantics
 
@@ -166,9 +167,9 @@ The usage count is computed client-side by counting tag occurrences across `note
 
 **Ubiquitous**: THE SYSTEM SHALL import and call the existing domain pipelines without reimplementing them:
 - `tagChipUpdate` from `$lib/domain/tag-chip-update/pipeline.js`
-- `applyFilterOrSearch` from `$lib/domain/apply-filter-or-search/apply-filter-or-search.js`
 - `parseFilterInput` from `$lib/domain/apply-filter-or-search/parse-filter-input.js`
 - `tryNewTag` from `$lib/domain/apply-filter-or-search/try-new-tag.js` (pending barrel re-export per §1.3)
+- Tag filtering uses OR semantics matching `applyFilterOrSearch` domain semantics, computed directly in the pure reducer from `noteMetadata` + `allNoteIds` (the UI layer does not have access to `Feed`/`NoteFileSnapshot` domain types)
 
 **Ubiquitous**: THE SYSTEM SHALL extend `FeedViewState` with `tagAutocompleteVisibleFor: string | null` field (noteId with open tag input, or null; mutually exclusive across all rows).
 
@@ -293,6 +294,7 @@ The feature follows the existing FeedReducer pattern established by `ui-feed-lis
 // Added fields (preserved across DomainSnapshotReceived, like loadingStatus):
 tagAutocompleteVisibleFor: string | null; // noteId with open tag input, or null. Single-input invariant: only one row at a time.
 activeFilterTags: readonly string[];       // currently selected filter tag strings. Preserved by reducer across snapshots.
+allNoteIds: readonly string[];             // unfiltered full note ID list from the last DomainSnapshot. Used as source for tag filter computation. Added in bugfix (tag filter application).
 
 // TagInventory is NOT stored in FeedViewState. It is a $derived value computed
 // from noteMetadata in the component layer. See REQ-TAG-018.

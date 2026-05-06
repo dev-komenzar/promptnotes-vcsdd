@@ -30,11 +30,25 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       const { snapshot } = action;
       const commands: FeedCommand[] = [];
 
+      const unfilteredIds = snapshot.feed.visibleNoteIds;
+
+      // Apply active tag filter on top of domain visibleNoteIds
+      let visibleIds: readonly string[];
+      if (state.activeFilterTags.length > 0) {
+        visibleIds = unfilteredIds.filter(noteId => {
+          const tags = snapshot.noteMetadata[noteId]?.tags ?? [];
+          return tags.some(t => state.activeFilterTags.includes(t));
+        });
+      } else {
+        visibleIds = unfilteredIds;
+      }
+
       const nextState: FeedViewState = {
         editingStatus: snapshot.editing.status,
         editingNoteId: snapshot.editing.currentNoteId,
         pendingNextNoteId: snapshot.editing.pendingNextNoteId,
-        visibleNoteIds: snapshot.feed.visibleNoteIds,
+        visibleNoteIds: visibleIds,
+        allNoteIds: unfilteredIds,
         loadingStatus: state.loadingStatus,
         activeDeleteModalNoteId: snapshot.delete.activeDeleteModalNoteId,
         lastDeletionError:
@@ -248,9 +262,21 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
         commands = [{ kind: 'apply-tag-filter', payload: { tag } }];
       }
 
+      // Compute filtered visibleNoteIds from allNoteIds (OR semantics)
+      let visibleIds: readonly string[];
+      if (nextActive.length > 0) {
+        visibleIds = state.allNoteIds.filter(noteId => {
+          const tags = state.noteMetadata[noteId]?.tags ?? [];
+          return tags.some(t => nextActive.includes(t));
+        });
+      } else {
+        visibleIds = state.allNoteIds;
+      }
+
       const nextState: FeedViewState = {
         ...state,
         activeFilterTags: nextActive,
+        visibleNoteIds: visibleIds,
       };
       return { state: nextState, commands };
     }
@@ -260,6 +286,7 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       const nextState: FeedViewState = {
         ...state,
         activeFilterTags: [],
+        visibleNoteIds: state.allNoteIds,
       };
       return { state: nextState, commands: [{ kind: 'clear-filter' }] };
     }

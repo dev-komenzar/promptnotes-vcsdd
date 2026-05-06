@@ -31,14 +31,17 @@ Language: typescript
 │                    PURE CORE                                 │
 │                                                              │
 │  feedReducer.ts (extended)                                   │
-│  ├── DomainSnapshotReceived: preserves activeFilterTags     │
-│  │   and tagAutocompleteVisibleFor (like loadingStatus)     │
+│  ├── DomainSnapshotReceived: preserves activeFilterTags      │
+│  │   and tagAutocompleteVisibleFor; stores allNoteIds;       │
+│  │   re-applies active filter to visibleNoteIds              │
 │  ├── TagAddClicked → opens input (mutual exclusion)        │
 │  ├── TagRemoveClicked → emits remove-tag-via-chip cmd      │
 │  ├── TagInputCommitted → validates via tryNewTag            │
 │  ├── TagInputCancelled → closes input                      │
-│  ├── TagFilterToggled → toggles activeFilterTags            │
-│  └── TagFilterCleared → resets activeFilterTags             │
+│  ├── TagFilterToggled → toggles activeFilterTags,           │
+│  │   computes filtered visibleNoteIds from allNoteIds       │
+│  └── TagFilterCleared → resets activeFilterTags,            │
+│      restores visibleNoteIds from allNoteIds                │
 │                                                              │
 │  tagInventoryFromMetadata(noteMetadata): TagEntry[]         │
 │  ├── Pure: iterate noteMetadata, count tags                │
@@ -47,10 +50,13 @@ Language: typescript
 │  tryNewTag(raw) — from domain/apply-filter-or-search/       │
 │  parseFilterInput(raw) — from domain/                       │
 │  applyFilterOrSearch(feed, applied, snapshots) — from domain│
+│  (tag filtering computed directly in reducer via             │
+│   noteMetadata+allNoteIds; domain function used for search) │
 │                                                              │
 │  types.ts (extended)                                         │
 │  ├── FeedViewState + tagAutocompleteVisibleFor              │
 │  │   + activeFilterTags (preserved across snapshots)        │
+│  │   + allNoteIds (unfiltered full list from last snapshot) │
 │  ├── FeedAction + tag variants (6 new)                      │
 │  ├── FeedCommand + tag variants (5 new)                     │
 │  └── FeedDomainSnapshot — NO extension (FIND-004)           │
@@ -137,18 +143,18 @@ Language: typescript
 
 ### PROP-TAG-014 — Click tag in sidebar applies filter
 **Maps to**: REQ-TAG-010
-**Tier**: 1 (integration test)
-**Assertion**: Clicking a tag in the sidebar dispatches `apply-tag-filter` command and visually highlights the tag. Uses existing `FilterApplied` action without modification.
+**Tier**: 1 (integration test + reducer unit test)
+**Assertion**: Clicking a tag in the sidebar dispatches `TagFilterToggled`, which toggles `activeFilterTags` and computes filtered `visibleNoteIds` from `allNoteIds` using OR semantics against `noteMetadata`. The tag is visually highlighted.
 
 ### PROP-TAG-015 — Click selected tag removes filter
 **Maps to**: REQ-TAG-011
-**Tier**: 1 (integration test)
-**Assertion**: Clicking an already-selected tag dispatches `remove-tag-filter` and removes visual highlight.
+**Tier**: 1 (integration test + reducer unit test)
+**Assertion**: Clicking an already-selected tag dispatches `TagFilterToggled`, removes the tag from `activeFilterTags`, and recomputes `visibleNoteIds`. Visual highlight is removed.
 
-### PROP-TAG-016 — Clear all resets filters
+### PROP-TAG-016 — Clear all restores full visibleNoteIds
 **Maps to**: REQ-TAG-012
-**Tier**: 1 (integration test)
-**Assertion**: Clicking "すべて解除" dispatches `clear-filter` and removes all highlights. Uses existing `FilterCleared` action.
+**Tier**: 1 (integration test + reducer unit test)
+**Assertion**: Clicking "すべて解除" dispatches `TagFilterCleared`, which resets `activeFilterTags` to `[]` and restores `visibleNoteIds` to `allNoteIds`.
 
 ### PROP-TAG-017 — OR semantics (domain)
 **Maps to**: REQ-TAG-013
@@ -180,15 +186,30 @@ Language: typescript
 **Tier**: 3 (static analysis / import audit)
 **Assertion**: No file in the feature scope reimplements logic from `tag-chip-update` or `apply-filter-or-search` domain modules. Verified via grep for function/type redefinitions.
 
-### PROP-TAG-023 — FeedViewState type extension (activeFilterTags and tagAutocompleteVisibleFor)
+### PROP-TAG-023 — FeedViewState type extension (activeFilterTags, tagAutocompleteVisibleFor, allNoteIds)
 **Maps to**: REQ-TAG-017
 **Tier**: 3 (type-level test)
-**Assertion**: `FeedViewState` includes `activeFilterTags` (readonly string[]) and `tagAutocompleteVisibleFor` (string | null). TypeScript compilation verifies.
+**Assertion**: `FeedViewState` includes `activeFilterTags` (readonly string[]), `tagAutocompleteVisibleFor` (string | null), and `allNoteIds` (readonly string[]). TypeScript compilation verifies.
 
-### PROP-TAG-024 — activeFilterTags preservation across DomainSnapshotReceived
+### PROP-TAG-024 — activeFilterTags and allNoteIds preservation across DomainSnapshotReceived
 **Maps to**: REQ-TAG-017 (FIND-003 resolution)
 **Tier**: 1 (reducer unit test)
-**Assertion**: When `DomainSnapshotReceived` action is dispatched, `feedReducer` produces a state where `activeFilterTags` equals the previous state's `activeFilterTags` (preserved, not overwritten). Same preservation pattern as `loadingStatus`.
+**Assertion**: When `DomainSnapshotReceived` action is dispatched, `feedReducer` produces a state where `activeFilterTags` equals the previous state's `activeFilterTags` (preserved, not overwritten). `allNoteIds` is populated from `snapshot.feed.visibleNoteIds`. If `activeFilterTags` is non-empty, `visibleNoteIds` is filtered from `allNoteIds` using OR semantics against `noteMetadata`.
+
+### PROP-TAG-034 — TagFilterToggled filters visibleNoteIds (OR semantics)
+**Maps to**: REQ-TAG-010, REQ-TAG-013
+**Tier**: 1 (reducer unit test)
+**Assertion**: When `TagFilterToggled` adds a tag to an empty `activeFilterTags`, `visibleNoteIds` is reduced to only noteIds whose tags intersect with the new active set. When the last tag is removed, `visibleNoteIds` is restored to `allNoteIds`.
+
+### PROP-TAG-035 — TagFilterCleared restores full visibleNoteIds
+**Maps to**: REQ-TAG-012, REQ-TAG-019
+**Tier**: 1 (reducer unit test)
+**Assertion**: When `TagFilterCleared` is dispatched, `activeFilterTags` becomes `[]` and `visibleNoteIds` is restored to `allNoteIds`.
+
+### PROP-TAG-036 — isFilteredEmpty considers client-side tag filters
+**Maps to**: REQ-TAG-019 (EC-015)
+**Tier**: 1 (component render test)
+**Assertion**: The `isFilteredEmpty` derived state in `FeedList.svelte` is true when `visibleNoteIds` is empty AND (`filterApplied` is true OR `activeFilterTags.length > 0`). This ensures the filtered-empty message appears for both domain-side and client-side filters.
 
 ### PROP-TAG-025 — feedReducer handles all new FeedAction variants
 **Maps to**: REQ-TAG-017
@@ -244,7 +265,7 @@ Language: typescript
 | Tier | Count | Description |
 |------|-------|-------------|
 | 0 | 3 | Delegated to existing domain feature proofs (no new proofs needed at UI layer) |
-| 1 | 20 | Component render tests, integration tests, accessibility tests, reducer unit tests (vitest + svelte-testing-library) |
+| 1 | 23 | Component render tests, integration tests, accessibility tests, reducer unit tests (vitest + svelte-testing-library) |
 | 2 | 4 | Property tests (fast-check) for autocomplete logic, sorting, inventory computation, reducer totality |
 | 3 | 3 | Type-level tests, static analysis (TypeScript compilation, grep audit) |
 
@@ -311,9 +332,14 @@ The feature must import domain types from `docs/domain/code/ts/src/` or `$lib/do
 
 `feedReducer.ts` must remain pure. A grep check for forbidden APIs (Math.random, Date.now, fetch, setTimeout, localStorage, etc.) across all pure-core files must yield zero matches. The existing PROP-FEED-031 purity audit pattern is extended to new files.
 
-### 5.4 activeFilterTags preservation
+### 5.4 activeFilterTags and allNoteIds preservation
 
-The `DomainSnapshotReceived` handler in feedReducer MUST preserve `activeFilterTags` from the previous state. A unit test (PROP-TAG-024) verifies this explicitly. The preservation follows the same pattern as `loadingStatus` on feedReducer.ts:35.
+The `DomainSnapshotReceived` handler in feedReducer MUST:
+1. Preserve `activeFilterTags` from the previous state
+2. Store `snapshot.feed.visibleNoteIds` as `allNoteIds` (the unfiltered full list)
+3. If `activeFilterTags` is non-empty, compute `visibleNoteIds` by filtering `allNoteIds` against `noteMetadata` tags (OR semantics)
+
+A unit test (PROP-TAG-024) verifies this explicitly. The preservation of UI-local state follows the same pattern as `loadingStatus`.
 
 ## 6. Verification Tooling
 

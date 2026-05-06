@@ -67,6 +67,7 @@ const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   noteMetadata: arbNoteMetadata,
   tagAutocompleteVisibleFor: fc.constant(null),
   activeFilterTags: fc.constant([] as readonly string[]),
+  allNoteIds: arbVisibleNoteIds,
 });
 
 // All 5 cause kinds

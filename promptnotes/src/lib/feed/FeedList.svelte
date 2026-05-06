@@ -284,8 +284,8 @@
   const loadingStatus = $derived(currentViewState.loadingStatus);
   const isLoading = $derived(loadingStatus === 'loading');
   const isEmpty = $derived(visibleNoteIds.length === 0 && !isLoading);
-  const isFilteredEmpty = $derived(isEmpty && filterApplied);
-  const isPlainEmpty = $derived(isEmpty && !filterApplied);
+  const isFilteredEmpty = $derived(isEmpty && (filterApplied || activeFilterTags.length > 0));
+  const isPlainEmpty = $derived(isEmpty && !filterApplied && activeFilterTags.length === 0);
 
   const activeDeleteModalNoteId = $derived(currentViewState.activeDeleteModalNoteId);
   const lastDeletionError = $derived(currentViewState.lastDeletionError);

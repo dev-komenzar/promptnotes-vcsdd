@@ -39,6 +39,7 @@ import { tryNewTag } from '$lib/domain/apply-filter-or-search/try-new-tag.js';
 interface ExtendedFeedViewState extends FeedViewState {
   tagAutocompleteVisibleFor: string | null;
   activeFilterTags: readonly string[];
+  allNoteIds: readonly string[];
 }
 
 function makeInitialState(overrides: Partial<ExtendedFeedViewState> = {}): ExtendedFeedViewState {
@@ -47,6 +48,7 @@ function makeInitialState(overrides: Partial<ExtendedFeedViewState> = {}): Exten
     editingNoteId: null,
     pendingNextNoteId: null,
     visibleNoteIds: ['note-001', 'note-002', 'note-003'],
+    allNoteIds: ['note-001', 'note-002', 'note-003'],
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
@@ -362,6 +364,60 @@ describe('REQ-TAG-010/011: TagFilterToggled — add/remove from activeFilterTags
     const tags2 = (r2.state as unknown as ExtendedFeedViewState).activeFilterTags;
     expect(tags2).not.toContain('draft');
   });
+
+  test('TagFilterToggled filters visibleNoteIds: notes without matching tag are hidden', () => {
+    const state = makeInitialState({
+      allNoteIds: ['note-001', 'note-002', 'note-003'],
+      visibleNoteIds: ['note-001', 'note-002', 'note-003'],
+      noteMetadata: {
+        'note-001': { body: 'a', createdAt: 1, updatedAt: 1, tags: ['draft'] },
+        'note-002': { body: 'b', createdAt: 2, updatedAt: 2, tags: ['review'] },
+        'note-003': { body: 'c', createdAt: 3, updatedAt: 3, tags: ['draft', 'review'] },
+      },
+    });
+    const result = callReducer(state, { kind: 'TagFilterToggled', tag: 'draft' });
+    const ids = result.state.visibleNoteIds;
+    expect(ids).toContain('note-001');
+    expect(ids).not.toContain('note-002');
+    expect(ids).toContain('note-003');
+    expect(ids).toHaveLength(2);
+  });
+
+  test('TagFilterToggled: adding second tag uses OR semantics (notes matching either tag shown)', () => {
+    const state = makeInitialState({
+      allNoteIds: ['note-001', 'note-002', 'note-003'],
+      activeFilterTags: ['draft'],
+      visibleNoteIds: ['note-001', 'note-003'],
+      noteMetadata: {
+        'note-001': { body: 'a', createdAt: 1, updatedAt: 1, tags: ['draft'] },
+        'note-002': { body: 'b', createdAt: 2, updatedAt: 2, tags: ['review'] },
+        'note-003': { body: 'c', createdAt: 3, updatedAt: 3, tags: ['draft', 'review'] },
+      },
+    });
+    const result = callReducer(state, { kind: 'TagFilterToggled', tag: 'review' });
+    const ids = result.state.visibleNoteIds;
+    // OR semantics: notes with 'draft' OR 'review'
+    expect(ids).toContain('note-001'); // has draft
+    expect(ids).toContain('note-002'); // has review
+    expect(ids).toContain('note-003'); // has both
+    expect(ids).toHaveLength(3);
+  });
+
+  test('TagFilterToggled: removing last active tag restores full visibleNoteIds', () => {
+    const state = makeInitialState({
+      allNoteIds: ['note-001', 'note-002', 'note-003'],
+      activeFilterTags: ['draft'],
+      visibleNoteIds: ['note-001', 'note-003'],
+      noteMetadata: {
+        'note-001': { body: 'a', createdAt: 1, updatedAt: 1, tags: ['draft'] },
+        'note-002': { body: 'b', createdAt: 2, updatedAt: 2, tags: ['review'] },
+        'note-003': { body: 'c', createdAt: 3, updatedAt: 3, tags: ['draft'] },
+      },
+    });
+    const result = callReducer(state, { kind: 'TagFilterToggled', tag: 'draft' });
+    const ids = result.state.visibleNoteIds;
+    expect(ids).toEqual(['note-001', 'note-002', 'note-003']);
+  });
 });
 
 // ── REQ-TAG-012: TagFilterCleared ──────────────────────────────────────────
@@ -392,6 +448,21 @@ describe('REQ-TAG-012: TagFilterCleared — clears all active filters', () => {
       (c: Record<string, unknown>) => c.kind === 'clear-filter'
     );
     expect(clearCmd).toBeDefined();
+  });
+
+  test('TagFilterCleared restores full visibleNoteIds from allNoteIds', () => {
+    const state = makeInitialState({
+      allNoteIds: ['note-001', 'note-002', 'note-003'],
+      activeFilterTags: ['draft'],
+      visibleNoteIds: ['note-001', 'note-003'],
+      noteMetadata: {
+        'note-001': { body: 'a', createdAt: 1, updatedAt: 1, tags: ['draft'] },
+        'note-002': { body: 'b', createdAt: 2, updatedAt: 2, tags: ['review'] },
+        'note-003': { body: 'c', createdAt: 3, updatedAt: 3, tags: ['draft'] },
+      },
+    });
+    const result = callReducer(state, { kind: 'TagFilterCleared' });
+    expect(result.state.visibleNoteIds).toEqual(['note-001', 'note-002', 'note-003']);
   });
 });
 

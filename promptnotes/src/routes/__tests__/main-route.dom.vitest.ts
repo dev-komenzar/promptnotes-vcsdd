@@ -60,10 +60,13 @@ const INITIAL_VIEW_STATE: FeedViewState = {
   editingNoteId: null,
   pendingNextNoteId: null,
   visibleNoteIds: [],
+  allNoteIds: [],
   loadingStatus: 'ready',
   activeDeleteModalNoteId: null,
   lastDeletionError: null,
   noteMetadata: {},
+  tagAutocompleteVisibleFor: null,
+  activeFilterTags: [],
 };
 
 // ── Setup / teardown ──────────────────────────────────────────────────────────

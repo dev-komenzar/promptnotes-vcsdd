@@ -37,6 +37,7 @@ describe('PROP-TAG-023: FeedViewState has tag-related fields', () => {
     noteMetadata: {},
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
+    allNoteIds: [],
   };
 
   test('FeedViewState accepts tagAutocompleteVisibleFor: string | null', () => {
