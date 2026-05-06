@@ -4,7 +4,7 @@ Feature: `ui-filter-search`
 Phase: 1b
 Mode: strict
 Language: typescript
-Iteration: 2
+Iteration: 3
 
 ## 1. Purity Boundary Map
 
@@ -60,8 +60,11 @@ Iteration: 2
 │  │   (toLocaleLowerCase() is PROHIBITED)                     │
 │  └── Empty needle → always returns true                      │
 │                                                              │
-│  sortByUpdatedAt(direction, noteMetadata): comparator        │
-│  ├── Primary key: NoteRowMetadata.updatedAt (epoch ms)       │
+│  sortByUpdatedAt(direction: 'asc'|'desc'):                   │
+│    (a: {noteId:string; updatedAt:number},                    │
+│     b: {noteId:string; updatedAt:number}) => number          │
+│  ├── Curried factory — no noteMetadata parameter             │
+│  ├── Primary key: updatedAt (epoch ms)                       │
 │  └── Tiebreak: noteId lexicographic same direction           │
 │                                                              │
 │  types.ts (extended)                                         │
@@ -113,7 +116,7 @@ Iteration: 2
 | PROP-FILTER-019 | Esc key on search input fires `SearchCleared` immediately (no debounce) | REQ-FILTER-003 | 1 | true | DOM test |
 | PROP-FILTER-020 | DESIGN.md token audit: no unlisted hex/rgba in `SearchInput.svelte` and `SortToggle.svelte` | REQ-FILTER-014 | 0 | true | grep audit |
 | PROP-FILTER-021 | TypeScript: new `FeedAction` variants compile; exhaustive switch holds; `SearchInputChanged` is ABSENT from the union | REQ-FILTER-011 | 0 | true | tsc compile |
-| PROP-FILTER-022 | Rapid keystrokes: `SearchApplied` dispatched only after last keystroke + 200ms silence | REQ-FILTER-002 / EC-S-001 | 1 | true | vitest with fake timers |
+| PROP-FILTER-022 | Rapid keystrokes: `SearchApplied` dispatched only after last keystroke + 200ms silence | REQ-FILTER-002 / EC-T-001..EC-T-005 | 1 | true | vitest with fake timers |
 | PROP-FILTER-023 | Whitespace-only query (`"   "`) dispatched as `SearchApplied` does NOT short-circuit to no-search in reducer | REQ-FILTER-016 / EC-S-002 | 1 | true | vitest unit |
 | PROP-FILTER-024 | Esc while debounce pending: timer cancelled, `SearchCleared` fires immediately | EC-S-005 / EC-S-010 | 1 | true | vitest with fake timers |
 | PROP-FILTER-025 | `aria-label="ノート検索"` on search input; `aria-label="ソート方向（新しい順/古い順）"` on sort button; both Tab-reachable | REQ-FILTER-013 | 1 | true | DOM test (vitest + jsdom) |

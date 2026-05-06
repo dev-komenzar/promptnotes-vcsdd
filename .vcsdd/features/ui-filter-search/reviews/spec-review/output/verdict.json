@@ -1,8 +1,8 @@
 {
   "feature": "ui-filter-search",
   "phase": "1c",
-  "iteration": 1,
-  "timestamp": "2026-05-06T04:30:00.000Z",
+  "iteration": 2,
+  "timestamp": "2026-05-06T05:30:00.000Z",
   "reviewType": "spec",
   "overallVerdict": "FAIL",
   "dimensions": [
@@ -10,17 +10,25 @@
       "name": "specification_crystallization",
       "verdict": "FAIL",
       "findings": [
-        "FIND-SPEC-FILTER-001",
-        "FIND-SPEC-FILTER-002",
-        "FIND-SPEC-FILTER-003",
-        "FIND-SPEC-FILTER-005",
-        "FIND-SPEC-FILTER-007"
+        "FIND-SPEC-FILTER-012",
+        "FIND-SPEC-FILTER-013",
+        "FIND-SPEC-FILTER-015"
       ],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:90-94,228-242,56,259",
-          "description": "Multiple internal contradictions about who emits the post-debounce 'apply-search' command and where applyFilterOrSearch is called."
+          "location": "specs/behavioral-spec.md:205-206,449-455",
+          "description": "Edge case IDs EC-S-005 and EC-S-010 are each defined twice with mutually inconsistent meanings between REQ-FILTER-003 inline edge cases and the §4.1 Edge Case Catalog table."
+        },
+        {
+          "type": "file",
+          "location": "specs/behavioral-spec.md:65,149",
+          "description": "sortByUpdatedAt has two contradictory signatures: §1.5 line 65 declares it as (direction, a, b) → number, but §2 pseudocode line 149 calls it as sortByUpdatedAt(sortDir, noteMetadata) — a curried-comparator factory. Both cannot hold."
+        },
+        {
+          "type": "file",
+          "location": "specs/behavioral-spec.md:127-130",
+          "description": "DomainSnapshotReceived pseudocode references an undefined identifier reconstructedState and never spells out how allNoteIds, noteMetadata, editingStatus, etc. are derived from the new snapshot."
         }
       ]
     },
@@ -28,47 +36,38 @@
       "name": "verification_architecture",
       "verdict": "FAIL",
       "findings": [
-        "FIND-SPEC-FILTER-002",
-        "FIND-SPEC-FILTER-004",
-        "FIND-SPEC-FILTER-008"
+        "FIND-SPEC-FILTER-013",
+        "FIND-SPEC-FILTER-014"
       ],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/verification-architecture.md:50-65,73-96",
-          "description": "Pure-core vs effectful-shell boundary for applyFilterOrSearch and searchPredicate is double-claimed; existing FilterApplied/FilterCleared actions in feedReducer.ts not reconciled with the new flow."
+          "location": "specs/verification-architecture.md:63-66,116",
+          "description": "Architecture line 63-66 declares sortByUpdatedAt(direction, noteMetadata): comparator (matches behavioral-spec §2 pseudocode) but contradicts behavioral-spec §1.5 line 65. The architecture also maps PROP-FILTER-022 (rapid keystrokes) to EC-S-001 (empty string dispatched), which is the wrong edge case."
         }
       ]
     },
     {
       "name": "adversarial_refinement",
-      "verdict": "FAIL",
-      "findings": [
-        "FIND-SPEC-FILTER-006",
-        "FIND-SPEC-FILTER-007",
-        "FIND-SPEC-FILTER-009",
-        "FIND-SPEC-FILTER-010"
-      ],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:296-331,308,302,264-271",
-          "description": "Unicode toLowerCase claim is wrong for FULLWIDTH/Turkish/German cases; debounce-vs-snapshot races, malicious / pathological inputs, and a11y are unenumerated."
+          "location": "specs/behavioral-spec.md:240-247,424-436,464-482",
+          "description": "Iteration 2 enumerates Unicode behavior (ASCII fold only, toLocaleLowerCase prohibited), pathological inputs (control chars, 10k length, RTL, regex metacharacters, repeat Esc), and debounce-vs-snapshot race (EC-C-007, EC-T-004) explicitly. Accessibility labels are pinned at REQ-FILTER-013."
         }
       ]
     },
     {
       "name": "formal_hardening_readiness",
-      "verdict": "FAIL",
-      "findings": [
-        "FIND-SPEC-FILTER-006",
-        "FIND-SPEC-FILTER-011"
-      ],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/verification-architecture.md:171-172",
-          "description": "PROP-FILTER-010 (case-insensitive substring property) is under-specified for non-ASCII inputs; spec's claimed search semantics will not survive fast-check generators on Unicode strings."
+          "location": "specs/verification-architecture.md:104,205-211",
+          "description": "PROP-FILTER-010 now explicitly limits the case-insensitive equivalence claim to ASCII printable strings and only requires no-throw for arbitrary Unicode. PROP-FILTER-005 frames feedReducer totality over arbitrary FeedAction including 0..10000-character SearchApplied.query. fast-check generators are pinned to these boundaries."
         }
       ]
     },
@@ -76,20 +75,20 @@
       "name": "convergence_setup",
       "verdict": "FAIL",
       "findings": [
-        "FIND-SPEC-FILTER-007",
-        "FIND-SPEC-FILTER-011"
+        "FIND-SPEC-FILTER-012",
+        "FIND-SPEC-FILTER-015"
       ],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:391-406",
-          "description": "Done definition items 11-12 are circular ('Phase 3 PASS', 'Phase 6 PASS') and not directly verifiable from artefacts. Race-condition edge cases are missing, blocking a stable acceptance criterion."
+          "location": "specs/behavioral-spec.md:543-555",
+          "description": "Done definition items 1-10 are now artifact-verifiable (no Phase 3/Phase 6 self-reference) — that part is resolved. However, items 7 (REQ-FILTER-001..017 ↔ test) and 8 (PROP-FILTER-001..025 ↔ proof) cannot be evaluated when (a) duplicate edge case IDs and (b) underspecified DomainSnapshotReceived state reconstruction leave tests with no canonical target. Convergence target is unstable until those resolve."
         }
       ]
     }
   ],
   "convergenceSignals": {
-    "findingCount": 11,
+    "findingCount": 4,
     "allCriteriaEvaluated": true,
     "evaluatedDimensions": [
       "specification_crystallization",
@@ -111,6 +110,19 @@
       "promptnotes/src/lib/feed/types.ts",
       "docs/domain/ui-fields.md",
       "docs/domain/workflows.md"
-    ]
+    ],
+    "previousIterationFindings": {
+      "FIND-SPEC-FILTER-001": "RESOLVED — operational flow pseudocode in §2 disambiguates dispatch path",
+      "FIND-SPEC-FILTER-002": "RESOLVED — §1.5 places applyFilterOrSearch in effectful shell and explicitly excludes it from this feature",
+      "FIND-SPEC-FILTER-003": "RESOLVED — searchPredicate explicitly placed in pure core; SearchInputChanged removed from FeedAction",
+      "FIND-SPEC-FILTER-004": "RESOLVED — FilterApplied/FilterCleared documented as backward-compatible, unused by this feature",
+      "FIND-SPEC-FILTER-005": "RESOLVED — debounce timer ownership pinned to SearchInput.svelte (§1.5, §2)",
+      "FIND-SPEC-FILTER-006": "RESOLVED — REQ-FILTER-005 explicitly states toLowerCase ASCII-fold only; toLocaleLowerCase prohibited; PROP-FILTER-010 narrows correctness claim to ASCII",
+      "FIND-SPEC-FILTER-007": "RESOLVED — EC-C-007 and EC-T-004 enumerate debounce-vs-snapshot and toggle-vs-debounce races",
+      "FIND-SPEC-FILTER-008": "RESOLVED — see FIND-SPEC-FILTER-004",
+      "FIND-SPEC-FILTER-009": "RESOLVED — REQ-FILTER-017 enumerates pathological inputs (regex metachars, RTL, 10k length, control chars)",
+      "FIND-SPEC-FILTER-010": "RESOLVED — REQ-FILTER-013 pins aria-labels and Tab order; PROP-FILTER-025 covers verification",
+      "FIND-SPEC-FILTER-011": "PARTIALLY RESOLVED — Done items 1-10 are artifact-verifiable, but new defects (FIND-012, 013, 015) keep the convergence target unstable"
+    }
   }
 }

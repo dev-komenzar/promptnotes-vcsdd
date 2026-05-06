@@ -25,11 +25,23 @@
       "to": "1b",
       "timestamp": "2026-05-06T05:05:00.000Z",
       "reason": "spec revision complete (iteration 2); verification architecture updated"
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "timestamp": "2026-05-06T06:00:00.000Z",
+      "reason": "adversary iteration 2 findings FIND-SPEC-FILTER-012..015 — pinpoint spec re-revision required"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-06T06:10:00.000Z",
+      "reason": "spec re-revision complete (iteration 3): EC dedup + reverse-lookup, sortByUpdatedAt unified signature, DomainSnapshotReceived explicit fields, PROP-FILTER-022 cross-ref fixed"
     }
   ],
   "iterations": {
-    "1a": 2,
-    "1b": 2
+    "1a": 3,
+    "1b": 3
   },
   "proofObligations": [
     { "id": "PROP-FILTER-001", "tier": 0, "status": "pending" },
@@ -80,5 +92,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-05-06T03:38:06.107Z",
-  "updatedAt": "2026-05-06T05:05:00.000Z"
+  "updatedAt": "2026-05-06T06:10:00.000Z"
 }

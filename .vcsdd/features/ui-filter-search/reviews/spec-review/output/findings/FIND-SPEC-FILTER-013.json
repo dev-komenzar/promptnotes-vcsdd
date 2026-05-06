@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-SPEC-FILTER-013",
+  "iteration": 2,
+  "dimension": "specification_crystallization",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "title": "sortByUpdatedAt has two contradictory signatures across spec sections",
+  "description": "The pure helper sortByUpdatedAt is declared with two incompatible signatures inside the same spec set:\n\n1. behavioral-spec.md §1.5 line 65 declares:\n   `sortByUpdatedAt(direction: 'asc' | 'desc', a: NoteRowMetadata, b: NoteRowMetadata): number — pure comparator`\n   This is a 3-argument comparator that returns a comparison result.\n\n2. behavioral-spec.md §2 pseudocode line 149 calls it as:\n   `[...searchFiltered].sort(sortByUpdatedAt(sortDir, noteMetadata))`\n   This shape requires a curried factory `(direction, noteMetadataMap) → (a: noteId, b: noteId) => number`, not a 3-arg comparator.\n\n3. verification-architecture.md §1 lines 63-66 sides with the curried-factory shape: `sortByUpdatedAt(direction, noteMetadata): comparator`.\n\nThe behavioral spec therefore declares two mutually unsatisfiable signatures. An implementer cannot satisfy both REQ text (§1.5) and the canonical pseudocode (§2) at compile time; tests written against PROP-FILTER-014 will not compile against the §1.5 signature because computeVisible feeds noteIds (strings), not NoteRowMetadata records, into the sort callback.",
+  "evidence": {
+    "filePath": "specs/behavioral-spec.md",
+    "lineRange": "65, 149",
+    "snippet": "§1.5: sortByUpdatedAt(direction: 'asc' | 'desc', a: NoteRowMetadata, b: NoteRowMetadata): number\n§2 pseudocode: [...searchFiltered].sort(sortByUpdatedAt(sortDir, noteMetadata))"
+  },
+  "remediation": "Pick one shape and rewrite both occurrences. Recommended: keep the curried factory `sortByUpdatedAt(direction, noteMetadata): (aNoteId: string, bNoteId: string) => number` because computeVisible deals in noteIds, and update §1.5 to match. Then update verification-architecture.md §1 to use the same exact signature.",
+  "routeToPhase": "1a"
+}

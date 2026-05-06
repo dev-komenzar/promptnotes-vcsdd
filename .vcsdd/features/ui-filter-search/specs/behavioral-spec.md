@@ -4,7 +4,7 @@ Feature: `ui-filter-search`
 Mode: strict
 Language: typescript
 Phase: 1a
-Iteration: 2
+Iteration: 3
 
 ## 1. Feature Overview
 
@@ -62,7 +62,7 @@ This feature adds free-text search and sort direction toggle to the main feed. U
 **Pure Core**:
 - `feedReducer` (extended with new action variants): deterministic, no I/O
 - `searchPredicate(needle: string, haystack: string): boolean` — case-insensitive substring check. Uses `String.prototype.toLowerCase()` (locale-independent ASCII folding). Non-ASCII characters (Japanese kana/kanji, Turkish i, German ß) pass through without case transformation.
-- `sortByUpdatedAt(direction: 'asc' | 'desc', a: NoteRowMetadata, b: NoteRowMetadata): number` — pure comparator
+- `sortByUpdatedAt(direction: 'asc' | 'desc'): (a: { noteId: string; updatedAt: number }, b: { noteId: string; updatedAt: number }) => number` — curried-comparator factory. Returns a comparator that operates on minimal metadata objects (not raw IDs and not the full `NoteRowMetadata` map). Primary key: `updatedAt` epoch ms. Tiebreak: `noteId` lexicographic in the same direction. `noteMetadata` is NOT a parameter — the call-site in `computeVisible` maps note IDs to `{ noteId, updatedAt }` objects before sorting.
 - `FeedViewState` type extensions
 
 **Effectful Shell**:
@@ -120,14 +120,31 @@ feedReducer (pure):
                       visibleNoteIds: nextVisible }, commands: [] }
 
   case 'DomainSnapshotReceived':
-    // searchQuery and sortDirection carried forward (not reset)
+    // snapshot.feed.visibleNoteIds is the unfiltered domain ID list — used as allNoteIds.
     nextVisible = computeVisible(snapshot.feed.visibleNoteIds, snapshot.noteMetadata,
                                  state.activeFilterTags, state.searchQuery,
                                  state.sortDirection)
-    return { state: { ...reconstructedState,
-                      searchQuery: state.searchQuery,
-                      sortDirection: state.sortDirection,
-                      visibleNoteIds: nextVisible }, commands: [...] }
+    nextState = {
+      // ── from snapshot (replaced on every DomainSnapshotReceived) ──
+      editingStatus:             snapshot.editing.status,
+      editingNoteId:             snapshot.editing.currentNoteId,
+      pendingNextNoteId:         snapshot.editing.pendingNextNoteId,
+      allNoteIds:                snapshot.feed.visibleNoteIds,    // unfiltered domain list
+      noteMetadata:              snapshot.noteMetadata,
+      activeDeleteModalNoteId:   snapshot.delete.activeDeleteModalNoteId,
+      lastDeletionError:         snapshot.cause.kind === 'NoteFileDeleted'
+                                   ? null
+                                   : snapshot.delete.lastDeletionError,
+      // ── preserved from previous state (not overwritten by snapshot) ──
+      loadingStatus:             state.loadingStatus,
+      activeFilterTags:          state.activeFilterTags,
+      tagAutocompleteVisibleFor: state.tagAutocompleteVisibleFor,
+      searchQuery:               state.searchQuery,               // NEW — ui-filter-search
+      sortDirection:             state.sortDirection,             // NEW — ui-filter-search
+      // ── derived ──
+      visibleNoteIds:            nextVisible,
+    }
+    return { state: nextState, commands: [...] }  // commands same as existing DomainSnapshotReceived
 
 computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
   // Step 1: tag filter (OR)
@@ -146,7 +163,14 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
     : tagFiltered
 
   // Step 3: sort by updatedAt (tiebreak: noteId)
-  return [...searchFiltered].sort(sortByUpdatedAt(sortDir, noteMetadata))
+  // sortByUpdatedAt is a curried factory that receives a direction and returns a comparator.
+  // The comparator operates on minimal objects { noteId, updatedAt } — NOT on raw IDs.
+  // noteMetadata is NOT passed to sortByUpdatedAt; it is used here to project IDs before sorting.
+  const cmp = sortByUpdatedAt(sortDir)
+  const sorted = searchFiltered
+    .map(id => ({ noteId: id, updatedAt: noteMetadata[id]?.updatedAt ?? 0 }))
+    .sort(cmp)
+  return sorted.map(r => r.noteId)
 ```
 
 **Key invariants**:
@@ -154,6 +178,25 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
 - Reducer never holds or references a debounce timer.
 - `DomainSnapshotReceived` does NOT cancel the shell's pending timer.
 - `computeVisible` is the single source of truth for `visibleNoteIds`; identical logic used in all four cases above.
+- `snapshot.feed.visibleNoteIds` is the unfiltered domain ID list; it is assigned to `allNoteIds` (NOT to `visibleNoteIds`).
+
+**DomainSnapshotReceived field provenance table**:
+
+| Field | Provenance | Notes |
+|-------|-----------|-------|
+| `editingStatus` | `snapshot.editing.status` | Replaced on every snapshot |
+| `editingNoteId` | `snapshot.editing.currentNoteId` | Replaced on every snapshot |
+| `pendingNextNoteId` | `snapshot.editing.pendingNextNoteId` | Replaced on every snapshot |
+| `allNoteIds` | `snapshot.feed.visibleNoteIds` | Unfiltered domain ID list; renamed to allNoteIds |
+| `noteMetadata` | `snapshot.noteMetadata` | Replaced on every snapshot |
+| `activeDeleteModalNoteId` | `snapshot.delete.activeDeleteModalNoteId` | Replaced on every snapshot |
+| `lastDeletionError` | `null` if cause is `NoteFileDeleted`, else `snapshot.delete.lastDeletionError` | Replaced on every snapshot |
+| `loadingStatus` | `state.loadingStatus` | Preserved from previous state |
+| `activeFilterTags` | `state.activeFilterTags` | Preserved from previous state |
+| `tagAutocompleteVisibleFor` | `state.tagAutocompleteVisibleFor` | Preserved from previous state |
+| `searchQuery` | `state.searchQuery` | Preserved — NEW for ui-filter-search |
+| `sortDirection` | `state.sortDirection` | Preserved — NEW for ui-filter-search |
+| `visibleNoteIds` | `computeVisible(...)` | Derived: re-run on every snapshot |
 
 ---
 
@@ -200,9 +243,9 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
 4. The reducer SHALL set `searchQuery: ''` and recompute `visibleNoteIds` without a search query (tag filter and sort still apply)
 5. The feed SHALL immediately reflect the cleared state without waiting for debounce
 
-**Edge Cases**:
-- EC-S-005: Esc on already-empty input: `SearchCleared` may be dispatched but has no visible effect (already cleared, no-op in reducer)
-- EC-S-010: Esc while debounce timer is pending: timer is cancelled BEFORE `SearchCleared` is dispatched
+**Edge Cases** (see §4.1 for authoritative definitions):
+- EC-S-005 (§4.1): Rapid keystroke followed by Esc before debounce — timer cancelled on Esc; `SearchCleared` fired immediately
+- EC-S-010 (§4.1): Esc key with no pending debounce — timer cancel is no-op; `SearchCleared` dispatched; no visible change if already empty
 
 **Acceptance Criteria**:
 - After typing "hello" and pressing Esc: `searchQuery` becomes `''`, `visibleNoteIds` recomputed without search filter
@@ -480,6 +523,40 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
 | EC-C-005 | No tag filter, search produces 0 results | `feed-search-empty-state` shown (searchQuery is non-empty). |
 | EC-C-006 | Both dimensions produce results, sort varies order | Only sort changes; set of visible notes unchanged. |
 | EC-C-007 | `DomainSnapshotReceived` while debounce mid-flight | Snapshot processes synchronously. Shell's timer continues. When timer fires, `SearchApplied` dispatched with latest pending input. No race. |
+
+### 4.4 EC → REQ Reverse-Lookup Index
+
+Each EC ID appears exactly once in §4.1–§4.3 (the single source of truth). REQ cross-references in individual requirements point here by ID.
+
+| EC ID | Category | Linked REQ(s) |
+|-------|----------|---------------|
+| EC-S-001 | Search input | REQ-FILTER-002, REQ-FILTER-005, REQ-FILTER-016 |
+| EC-S-002 | Search input | REQ-FILTER-016 |
+| EC-S-003 | Search input | REQ-FILTER-017 |
+| EC-S-004 | Search input | REQ-FILTER-017 |
+| EC-S-005 | Search input | REQ-FILTER-003 |
+| EC-S-006 | Search input | REQ-FILTER-012 |
+| EC-S-007 | Search input | REQ-FILTER-012 |
+| EC-S-008 | Search input | REQ-FILTER-005 |
+| EC-S-009 | Search input | REQ-FILTER-005 |
+| EC-S-010 | Search input | REQ-FILTER-003 |
+| EC-S-011 | Search input | REQ-FILTER-017 |
+| EC-S-012 | Search input | REQ-FILTER-017 |
+| EC-S-013 | Search input | REQ-FILTER-017 |
+| EC-S-014 | Search input | REQ-FILTER-017 |
+| EC-S-015 | Search input | REQ-FILTER-017 |
+| EC-T-001 | Sort timing | REQ-FILTER-007, REQ-FILTER-009 |
+| EC-T-002 | Sort timing | REQ-FILTER-007, REQ-FILTER-009 |
+| EC-T-003 | Sort timing | REQ-FILTER-007, REQ-FILTER-008 |
+| EC-T-004 | Sort timing | REQ-FILTER-007, REQ-FILTER-010 |
+| EC-T-005 | Sort timing | REQ-FILTER-007 |
+| EC-C-001 | Composition | REQ-FILTER-008 |
+| EC-C-002 | Composition | REQ-FILTER-008 |
+| EC-C-003 | Composition | REQ-FILTER-008 |
+| EC-C-004 | Composition | REQ-FILTER-004, REQ-FILTER-008 |
+| EC-C-005 | Composition | REQ-FILTER-004 |
+| EC-C-006 | Composition | REQ-FILTER-009 |
+| EC-C-007 | Composition | REQ-FILTER-010, REQ-FILTER-012 |
 
 ---
 

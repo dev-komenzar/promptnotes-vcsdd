@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-SPEC-FILTER-014",
+  "iteration": 2,
+  "dimension": "verification_architecture",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "title": "PROP-FILTER-022 maps to wrong edge case ID (EC-S-001)",
+  "description": "verification-architecture.md line 116 declares:\n  `PROP-FILTER-022 | Rapid keystrokes: SearchApplied dispatched only after last keystroke + 200ms silence | REQ-FILTER-002 / EC-S-001`\n\nbehavioral-spec.md §4.1 row 1 defines EC-S-001 as:\n  `Empty string dispatched via SearchApplied → Reducer sets searchQuery: ''. No search predicate applied. All notes visible (subject to tag filter).`\n\nThe two are unrelated. PROP-FILTER-022 is about debounce coalescing of multiple keystrokes; EC-S-001 is about the empty-string dispatch path. The cross-reference therefore points the future test author at the wrong scenario. This is also a regression risk: a test asserting only EC-S-001 behavior would mark PROP-FILTER-022 'PASS' without ever exercising the rapid-keystroke debounce.",
+  "evidence": {
+    "filePath": "specs/verification-architecture.md",
+    "lineRange": "116",
+    "snippet": "PROP-FILTER-022 | Rapid keystrokes: SearchApplied dispatched only after last keystroke + 200ms silence | REQ-FILTER-002 / EC-S-001 | 1 | true | vitest with fake timers"
+  },
+  "remediation": "Either (a) introduce a new EC ID for 'rapid keystrokes coalesced into single SearchApplied' and reference it, or (b) repoint PROP-FILTER-022 to an existing edge case that genuinely covers rapid keystrokes (none currently does in §4.1; the closest is EC-S-005 in the inline definition, which is itself disputed — see FIND-SPEC-FILTER-012).",
+  "routeToPhase": "1b"
+}
