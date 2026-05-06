@@ -1,3 +1,22 @@
+---
+coherence:
+  node_id: "req:ui-tag-chip-bugfix-tag-save"
+  type: req
+  name: "ui-tag-chip Sprint 2 bugfix — タグチップ入力が保存されない"
+  depends_on:
+    - id: "req:ui-tag-chip"
+      relation: refines
+    - id: "design:ui-tag-chip-verification"
+      relation: depends_on
+    - id: "req:tag-chip-update"
+      relation: depends_on
+  modules:
+    - "ui-tag-chip"
+  source_files:
+    - "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
+---
+
 # Bug Spec — タグチップ入力が保存されない
 
 Feature: `ui-tag-chip`

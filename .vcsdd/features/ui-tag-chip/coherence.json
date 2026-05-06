@@ -1,0 +1,691 @@
+{
+  "version": 1,
+  "nodes": {
+    "req:ui-tag-chip": {
+      "id": "req:ui-tag-chip",
+      "type": "req",
+      "placeholder": false,
+      "path": "specs/behavioral-spec.md",
+      "name": "ui-tag-chip 行動仕様"
+    },
+    "governance:implement-mapping": {
+      "id": "governance:implement-mapping",
+      "type": "governance",
+      "placeholder": true
+    },
+    "design:ui-fields": {
+      "id": "design:ui-fields",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:workflows": {
+      "id": "design:workflows",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:aggregates": {
+      "id": "design:aggregates",
+      "type": "design",
+      "placeholder": true
+    },
+    "governance:glossary": {
+      "id": "governance:glossary",
+      "type": "governance",
+      "placeholder": true
+    },
+    "governance:design-system": {
+      "id": "governance:design-system",
+      "type": "governance",
+      "placeholder": true
+    },
+    "req:ui-feed-list-actions": {
+      "id": "req:ui-feed-list-actions",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "req:tag-chip-update": {
+      "id": "req:tag-chip-update",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "req:apply-filter-or-search": {
+      "id": "req:apply-filter-or-search",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "module:ui-tag-chip": {
+      "id": "module:ui-tag-chip",
+      "type": "module",
+      "placeholder": false,
+      "name": "ui-tag-chip"
+    },
+    "file:promptnotes/src/lib/feed/TagFilterSidebar.svelte": {
+      "id": "file:promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/TagFilterSidebar.svelte"
+    },
+    "file:promptnotes/src/lib/feed/FeedRow.svelte": {
+      "id": "file:promptnotes/src/lib/feed/FeedRow.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/FeedRow.svelte"
+    },
+    "file:promptnotes/src/lib/feed/feedReducer.ts": {
+      "id": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/feedReducer.ts"
+    },
+    "file:promptnotes/src/lib/feed/tagInventory.ts": {
+      "id": "file:promptnotes/src/lib/feed/tagInventory.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/tagInventory.ts"
+    },
+    "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts": {
+      "id": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
+    },
+    "file:promptnotes/src/lib/domain/tag-chip-update": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/tag-chip-update"
+    },
+    "file:promptnotes/src/lib/domain/apply-filter-or-search": {
+      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/apply-filter-or-search"
+    },
+    "req:ui-tag-chip-bugfix-tag-save": {
+      "id": "req:ui-tag-chip-bugfix-tag-save",
+      "type": "req",
+      "placeholder": false,
+      "path": "specs/bugfix-tag-save.md",
+      "name": "ui-tag-chip Sprint 2 bugfix — タグチップ入力が保存されない"
+    },
+    "design:ui-tag-chip-verification": {
+      "id": "design:ui-tag-chip-verification",
+      "type": "design",
+      "placeholder": false,
+      "path": "specs/verification-architecture.md",
+      "name": "ui-tag-chip 検証アーキテクチャ（純粋性境界・証明義務）"
+    },
+    "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
+    },
+    "design:type-contracts": {
+      "id": "design:type-contracts",
+      "type": "design",
+      "placeholder": true
+    },
+    "file:promptnotes/src/lib/feed/__tests__": {
+      "id": "file:promptnotes/src/lib/feed/__tests__",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/__tests__"
+    },
+    "file:promptnotes/src/lib/domain/__tests__/tag-chip-update": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/__tests__/tag-chip-update"
+    },
+    "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
+    }
+  },
+  "edges": [
+    {
+      "id": 1,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "governance:implement-mapping",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "design:ui-fields",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "design:workflows",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "governance:glossary",
+      "relation": "specifies",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "governance:design-system",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "req:ui-feed-list-actions",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "req:tag-chip-update",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "req:apply-filter-or-search",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "module:ui-tag-chip",
+      "targetId": "req:ui-tag-chip",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "file:promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "file:promptnotes/src/lib/feed/tagInventory.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "req:ui-tag-chip",
+      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
+      "targetId": "req:ui-tag-chip",
+      "relation": "refines",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/bugfix-tag-save.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
+      "targetId": "design:ui-tag-chip-verification",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/bugfix-tag-save.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
+      "targetId": "req:tag-chip-update",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/bugfix-tag-save.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "sourceId": "module:ui-tag-chip",
+      "targetId": "req:ui-tag-chip-bugfix-tag-save",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/bugfix-tag-save.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
+      "targetId": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/bugfix-tag-save.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/bugfix-tag-save.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "sourceId": "design:ui-tag-chip-verification",
+      "targetId": "req:ui-tag-chip",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "sourceId": "design:ui-tag-chip-verification",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "sourceId": "design:ui-tag-chip-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "sourceId": "module:ui-tag-chip",
+      "targetId": "design:ui-tag-chip-verification",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "sourceId": "design:ui-tag-chip-verification",
+      "targetId": "file:promptnotes/src/lib/feed/__tests__",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "sourceId": "design:ui-tag-chip-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "sourceId": "design:ui-tag-chip-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    }
+  ],
+  "lastScanAt": "2026-05-06T06:18:14.960Z"
+}

@@ -1,3 +1,23 @@
+---
+coherence:
+  node_id: "design:ui-tag-chip-verification"
+  type: design
+  name: "ui-tag-chip 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:ui-tag-chip"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "ui-tag-chip"
+  source_files:
+    - "promptnotes/src/lib/feed/__tests__"
+    - "promptnotes/src/lib/domain/__tests__/tag-chip-update"
+    - "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
+---
+
 # Verification Architecture — ui-tag-chip
 
 Feature: `ui-tag-chip`

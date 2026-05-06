@@ -1,3 +1,39 @@
+---
+coherence:
+  node_id: "req:ui-tag-chip"
+  type: req
+  name: "ui-tag-chip 行動仕様"
+  depends_on:
+    - id: "governance:implement-mapping"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "governance:glossary"
+      relation: specifies
+    - id: "governance:design-system"
+      relation: depends_on
+    - id: "req:ui-feed-list-actions"
+      relation: depends_on
+    - id: "req:tag-chip-update"
+      relation: depends_on
+    - id: "req:apply-filter-or-search"
+      relation: depends_on
+  modules:
+    - "ui-tag-chip"
+  source_files:
+    - "promptnotes/src/lib/feed/TagFilterSidebar.svelte"
+    - "promptnotes/src/lib/feed/FeedRow.svelte"
+    - "promptnotes/src/lib/feed/feedReducer.ts"
+    - "promptnotes/src/lib/feed/tagInventory.ts"
+    - "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update"
+    - "promptnotes/src/lib/domain/apply-filter-or-search"
+---
+
 # Behavioral Specification — ui-tag-chip
 
 Feature: `ui-tag-chip`

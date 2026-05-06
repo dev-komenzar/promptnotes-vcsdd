@@ -1,3 +1,56 @@
+---
+coherence:
+  node_id: "governance:implement-mapping"
+  type: governance
+  name: "Implement — DDD → VCSDD feature マッピング規約"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "governance:design-system"
+      relation: depends_on
+  depended_by:
+    - id: "req:app-startup"
+    - id: "req:capture-auto-save"
+    - id: "req:edit-past-note-start"
+    - id: "req:tag-chip-update"
+    - id: "req:delete-note"
+    - id: "req:copy-body"
+    - id: "req:apply-filter-or-search"
+    - id: "req:handle-save-failure"
+    - id: "req:configure-vault"
+    - id: "req:ui-app-shell"
+    - id: "req:ui-editor"
+    - id: "req:ui-feed-list-actions"
+    - id: "req:ui-tag-chip"
+    - id: "req:ui-filter-search"
+  conventions:
+    - targets:
+        - "req:ui-app-shell"
+        - "req:ui-editor"
+        - "req:ui-feed-list-actions"
+        - "req:ui-tag-chip"
+        - "req:ui-filter-search"
+      reason: "feature 分割の見直し・mode 変更・Tauri command 所属変更があれば、すべての UI feature spec を再レビューする"
+    - targets:
+        - "req:app-startup"
+        - "req:capture-auto-save"
+        - "req:edit-past-note-start"
+        - "req:tag-chip-update"
+        - "req:delete-note"
+        - "req:copy-body"
+        - "req:apply-filter-or-search"
+        - "req:handle-save-failure"
+        - "req:configure-vault"
+      reason: "ワークフロー feature の境界変更時はすべてのドメイン feature spec を再レビューする"
+  source_files:
+    - "docs/domain/workflows.md"
+    - "docs/domain/ui-fields.md"
+---
+
 # Implement — DDD ドキュメントと VCSDD パイプラインの接続
 
 このドキュメントは、`docs/domain/` 配下の DDD 設計成果物を、VCSDD パイプライン（`.vcsdd/features/<name>/`）でどのように feature として切り出して実装するかを定義する。

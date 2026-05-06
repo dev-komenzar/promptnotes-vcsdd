@@ -1,3 +1,36 @@
+---
+coherence:
+  node_id: "design:ui-fields"
+  type: design
+  name: "UI Fields — 画面項目仕様（DDD Phase 11 成果物）"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "governance:glossary"
+      relation: specifies
+    - id: "design:type-contracts"
+      relation: derives_from
+  depended_by:
+    - id: "req:ui-app-shell"
+    - id: "req:ui-editor"
+    - id: "req:ui-feed-list-actions"
+    - id: "req:ui-tag-chip"
+    - id: "req:ui-filter-search"
+  conventions:
+    - targets:
+        - "req:ui-app-shell"
+        - "req:ui-editor"
+        - "req:ui-feed-list-actions"
+        - "req:ui-tag-chip"
+        - "req:ui-filter-search"
+      reason: "UI フィールド定義・検証エラーマッピング・EditingSessionState 表示対応の変更は全 UI feature spec の再レビューを要する"
+  source_files:
+    - "docs/domain/code/ts/src"
+    - "docs/domain/code/rust/src/value_objects.rs"
+---
+
 # UI Fields — 入力画面項目仕様
 
 Phase 11 で Phase 10 の型から自動抽出。UI 実装者向け。
