@@ -73,10 +73,13 @@ const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   editingNoteId: arbNoteIdOrNull,
   pendingNextNoteId: arbNoteIdOrNull,
   visibleNoteIds: arbVisibleNoteIds,
+  allNoteIds: arbVisibleNoteIds,
   loadingStatus: arbLoadingStatus,
   activeDeleteModalNoteId: arbNoteIdOrNull,
   lastDeletionError: arbLastDeletionError,
   noteMetadata: arbNoteMetadata,
+  tagAutocompleteVisibleFor: fc.constant(null),
+  activeFilterTags: fc.constant([] as readonly string[]),
 });
 
 const arbCause: fc.Arbitrary<FeedDomainSnapshot['cause']> = fc.oneof(
@@ -126,10 +129,13 @@ function makeInitialState(overrides: Partial<FeedViewState> = {}): FeedViewState
     editingNoteId: null,
     pendingNextNoteId: null,
     visibleNoteIds: [],
+    allNoteIds: [],
     loadingStatus: 'loading',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
     noteMetadata: {},
+    tagAutocompleteVisibleFor: null,
+    activeFilterTags: [],
     ...overrides,
   };
 }

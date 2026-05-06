@@ -1,0 +1,28 @@
+{
+  "reviewType": "spec",
+  "feature": "ui-tag-chip",
+  "iteration": 2,
+  "previousFindings": [
+    "FIND-001", "FIND-002", "FIND-003", "FIND-004",
+    "FIND-005", "FIND-006", "FIND-007", "FIND-008",
+    "FIND-009", "FIND-010", "FIND-011", "FIND-012",
+    "FIND-013", "FIND-014"
+  ],
+  "artifactsToReview": [
+    "specs/behavioral-spec.md",
+    "specs/verification-architecture.md"
+  ],
+  "reviewDimensions": [
+    "spec_fidelity",
+    "verification_readiness",
+    "edge_case_coverage",
+    "scope_clarity",
+    "traceability_completeness"
+  ],
+  "severityRules": {
+    "critical": "Spec contradicts domain docs or design invariants",
+    "high": "Missing requirement or proof obligation for core functionality",
+    "medium": "Ambiguous wording or insufficient detail",
+    "low": "Minor formatting or naming issues"
+  }
+}

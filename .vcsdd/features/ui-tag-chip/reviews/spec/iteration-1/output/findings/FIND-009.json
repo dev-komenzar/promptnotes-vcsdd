@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-009",
+  "dimension": "edge_case_coverage",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "EC-012 claims: 'Domain pipeline handles sequentially. Each operation awaits previous if same noteId is involved. UI does not need debounce.' However, inspection of the actual tagChipUpdate pipeline (tag-chip-update/pipeline.ts, line 28-113) shows it is a simple async function that accepts individual commands. There is no built-in serialization or queueing mechanism for concurrent calls targeting the same noteId. The 'await previous' behavior would need to be implemented by the caller (the UI component). The spec delegates sequencing to the domain pipeline without evidence that such sequencing exists.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
+    "lineRange": "28-35",
+    "snippet": "export function tagChipUpdate(\n  deps: TagChipUpdateDeps,\n  feed: Feed,\n  inventory: TagInventory,\n): (command: TagChipCommand) => Promise<Result<IndexedNote, SaveErrorDelta>> {\n  return async (\n    command: TagChipCommand,\n  ): Promise<Result<IndexedNote, SaveErrorDelta>> => {"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "195-196",
+    "snippet": "EC-012 | Rapid add/remove clicks on same row | Domain pipeline handles sequentially."
+  },
+  "routeToPhase": "1a"
+}

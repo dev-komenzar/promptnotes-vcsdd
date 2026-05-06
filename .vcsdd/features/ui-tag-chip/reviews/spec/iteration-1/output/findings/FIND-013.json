@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-013",
+  "dimension": "scope_clarity",
+  "category": "spec_ambiguity",
+  "severity": "low",
+  "description": "The existing FeedAction union in types.ts (line 109-119) already contains FilterApplied and FilterCleared variants that take visibleNoteIds as payload. The spec's REQ-TAG-010 step 3 says 'Emit FilterApplied action to update the feed view' but does not clarify whether this reuses the existing FilterApplied action (which takes pre-computed visibleNoteIds) as-is, or extends it with additional filter state data. The spec should explicitly state whether the existing action variants are sufficient or need modification.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/types.ts",
+    "lineRange": "109-119",
+    "snippet": "| { kind: 'FilterApplied'; visibleNoteIds: readonly string[] }\n| { kind: 'FilterCleared'; visibleNoteIds: readonly string[] }"
+  },
+  "routeToPhase": "1a"
+}

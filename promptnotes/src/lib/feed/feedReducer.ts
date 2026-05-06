@@ -13,8 +13,11 @@
 
 import type { FeedViewState, FeedAction, FeedReducerResult, FeedCommand } from './types.js';
 import { isFeedRowClickBlocked } from './feedRowPredicates.js';
+import { tryNewTag } from '../domain/apply-filter-or-search/try-new-tag.js';
 
 const REFRESH_TRIGGER_CAUSES: ReadonlySet<string> = new Set(['NoteFileSaved', 'NoteFileDeleted']);
+
+const MAX_TAG_LENGTH = 100;
 
 /**
  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
@@ -27,11 +30,25 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       const { snapshot } = action;
       const commands: FeedCommand[] = [];
 
+      const unfilteredIds = snapshot.feed.visibleNoteIds;
+
+      // Apply active tag filter on top of domain visibleNoteIds
+      let visibleIds: readonly string[];
+      if (state.activeFilterTags.length > 0) {
+        visibleIds = unfilteredIds.filter(noteId => {
+          const tags = snapshot.noteMetadata[noteId]?.tags ?? [];
+          return tags.some(t => state.activeFilterTags.includes(t));
+        });
+      } else {
+        visibleIds = unfilteredIds;
+      }
+
       const nextState: FeedViewState = {
         editingStatus: snapshot.editing.status,
         editingNoteId: snapshot.editing.currentNoteId,
         pendingNextNoteId: snapshot.editing.pendingNextNoteId,
-        visibleNoteIds: snapshot.feed.visibleNoteIds,
+        visibleNoteIds: visibleIds,
+        allNoteIds: unfilteredIds,
         loadingStatus: state.loadingStatus,
         activeDeleteModalNoteId: snapshot.delete.activeDeleteModalNoteId,
         lastDeletionError:
@@ -39,6 +56,14 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
             ? null
             : snapshot.delete.lastDeletionError,
         noteMetadata: snapshot.noteMetadata,
+        // Preserve tag UI state across snapshots (like loadingStatus)
+        activeFilterTags: state.activeFilterTags,
+        // Close tag input if the note was deleted
+        tagAutocompleteVisibleFor:
+          state.tagAutocompleteVisibleFor !== null &&
+          snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined
+            ? state.tagAutocompleteVisibleFor
+            : null,
       };
 
       if (REFRESH_TRIGGER_CAUSES.has(snapshot.cause.kind)) {
@@ -141,6 +166,129 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
         visibleNoteIds: action.visibleNoteIds,
       };
       return { state: nextState, commands: [{ kind: 'refresh-feed' }] };
+    }
+
+    // ── ui-tag-chip: TagAddClicked ───────────────────────────────────────
+    case 'TagAddClicked': {
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor: action.noteId,
+      };
+      return { state: nextState, commands: [] };
+    }
+
+    // ── ui-tag-chip: TagRemoveClicked ────────────────────────────────────
+    case 'TagRemoveClicked': {
+      const meta = state.noteMetadata[action.noteId];
+      const commands: FeedCommand[] = [
+        {
+          kind: 'remove-tag-via-chip',
+          payload: {
+            noteId: action.noteId,
+            tag: action.tag,
+            body: meta?.body ?? '',
+            existingTags: meta?.tags ?? [],
+            createdAt: meta?.createdAt ?? 0,
+            updatedAt: meta?.updatedAt ?? 0,
+            issuedAt: '',
+          },
+        },
+      ];
+      // Close input on the same row first (REQ-TAG-002 step 1)
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor:
+          state.tagAutocompleteVisibleFor === action.noteId ? null : state.tagAutocompleteVisibleFor,
+      };
+      return { state: nextState, commands };
+    }
+
+    // ── ui-tag-chip: TagInputCommitted ───────────────────────────────────
+    case 'TagInputCommitted': {
+      const validateResult = tryNewTag(action.rawTag);
+      if (!validateResult.ok) {
+        // Invalid tag: keep input open, no command (error displayed in UI)
+        return { state, commands: [] };
+      }
+      const normalized = validateResult.value;
+      if ((normalized as string).length > MAX_TAG_LENGTH) {
+        return { state, commands: [] };
+      }
+      const meta = state.noteMetadata[action.noteId];
+      const commands: FeedCommand[] = [
+        {
+          kind: 'add-tag-via-chip',
+          payload: {
+            noteId: action.noteId,
+            tag: normalized as string,
+            body: meta?.body ?? '',
+            existingTags: meta?.tags ?? [],
+            createdAt: meta?.createdAt ?? 0,
+            updatedAt: meta?.updatedAt ?? 0,
+            issuedAt: '',
+          },
+        },
+      ];
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor: null,
+      };
+      return { state: nextState, commands };
+    }
+
+    // ── ui-tag-chip: TagInputCancelled ───────────────────────────────────
+    case 'TagInputCancelled': {
+      const nextState: FeedViewState = {
+        ...state,
+        tagAutocompleteVisibleFor: null,
+      };
+      return { state: nextState, commands: [] };
+    }
+
+    // ── ui-tag-chip: TagFilterToggled ────────────────────────────────────
+    case 'TagFilterToggled': {
+      const tag = action.tag;
+      const currentActive = state.activeFilterTags;
+      const isActive = currentActive.includes(tag);
+
+      let nextActive: readonly string[];
+      let commands: FeedCommand[];
+
+      if (isActive) {
+        nextActive = currentActive.filter((t) => t !== tag);
+        commands = [{ kind: 'remove-tag-filter', payload: { tag } }];
+      } else {
+        nextActive = [...currentActive, tag];
+        commands = [{ kind: 'apply-tag-filter', payload: { tag } }];
+      }
+
+      // Compute filtered visibleNoteIds from allNoteIds (OR semantics)
+      let visibleIds: readonly string[];
+      if (nextActive.length > 0) {
+        visibleIds = state.allNoteIds.filter(noteId => {
+          const tags = state.noteMetadata[noteId]?.tags ?? [];
+          return tags.some(t => nextActive.includes(t));
+        });
+      } else {
+        visibleIds = state.allNoteIds;
+      }
+
+      const nextState: FeedViewState = {
+        ...state,
+        activeFilterTags: nextActive,
+        visibleNoteIds: visibleIds,
+      };
+      return { state: nextState, commands };
+    }
+
+    // ── ui-tag-chip: TagFilterCleared ────────────────────────────────────
+    case 'TagFilterCleared': {
+      const nextState: FeedViewState = {
+        ...state,
+        activeFilterTags: [],
+        visibleNoteIds: state.allNoteIds,
+      };
+      return { state: nextState, commands: [{ kind: 'clear-filter' }] };
     }
 
     default: {

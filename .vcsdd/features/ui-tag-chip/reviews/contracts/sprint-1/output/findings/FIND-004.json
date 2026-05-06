@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "REQ-TAG-004 states the '+' add tag button shall display at the end of the tag list on each feed row. The implementation wraps both the tag chip loop AND the '+' button inside `{#if tags.length > 0}` (FeedRow.svelte:133-162). This means rows with zero tags do not show the '+' button, contradicting EC-011 ('Rows show no tag chips, only '+' button') and REQ-TAG-004's requirement that the button appears on each feed row.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "133-162",
+    "snippet": "{#if tags.length > 0}\n        <div class=\"tag-list\">\n          {#each tags as tag} ...\n          <button class=\"tag-add\" ...>+</button>\n        </div>\n      {/if}"
+  },
+  "routeToPhase": "2b"
+}

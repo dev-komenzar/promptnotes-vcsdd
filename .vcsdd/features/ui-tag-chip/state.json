@@ -1,0 +1,776 @@
+{
+  "featureName": "ui-tag-chip",
+  "mode": "strict",
+  "language": "typescript",
+  "currentPhase": "complete",
+  "phaseHistory": [
+    {
+      "from": "init",
+      "to": "1a",
+      "timestamp": "2026-05-05T08:53:51.855Z"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-05T08:54:21.470Z"
+    },
+    {
+      "from": "1b",
+      "to": "1b",
+      "timestamp": "2026-05-05T09:12:22.871Z"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-05T09:22:24.665Z"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-05T09:22:33.339Z",
+      "sprint": 1
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-05T09:37:55.197Z",
+      "sprint": 1
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-05T09:49:02.616Z",
+      "sprint": 1
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-05T10:13:44.369Z",
+      "sprint": 1
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-05T10:13:54.793Z",
+      "sprint": 1
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-05T10:16:18.675Z",
+      "sprint": 1
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-05T10:16:18.682Z",
+      "sprint": 1
+    },
+    {
+      "from": "complete",
+      "to": "3",
+      "timestamp": "2026-05-05T12:55:24.788Z",
+      "sprint": 1,
+      "nextSprintHint": 2
+    },
+    {
+      "from": "complete",
+      "to": "complete",
+      "timestamp": "2026-05-05T12:55:37.830Z"
+    },
+    {
+      "from": "complete",
+      "to": "2a",
+      "timestamp": "2026-05-06T00:00:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-06T00:05:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-06T00:07:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-06T00:20:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-06T00:22:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-06T00:25:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-06T00:28:00.000Z",
+      "sprint": 3
+    }
+  ],
+  "iterations": {
+    "3": 2,
+    "5": 1,
+    "6": 1,
+    "1a": 2,
+    "1b": 2,
+    "1c": 1,
+    "2a": 1,
+    "2b": 1,
+    "2c": 1,
+    "complete": 1,
+    "3-sprint-2": 1
+  },
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-ui-tag-chip-1777968120854",
+    "beads": [
+      {
+        "beadId": "BEAD-001",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-020",
+          "BEAD-021"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-002",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-021",
+          "BEAD-022"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-022"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-004",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-023",
+          "BEAD-024"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-005",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-024",
+          "BEAD-025"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-006",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-026",
+          "BEAD-027"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-007",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-028",
+          "BEAD-029"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-008",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-029"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-009",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-030",
+          "BEAD-031"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-010",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-032",
+          "BEAD-033"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-011",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-033"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-012",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-034"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-013",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-035"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-014",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-036"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-015",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-037",
+          "BEAD-038"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-016",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-038"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-017",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-040",
+          "BEAD-041",
+          "BEAD-042"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-018",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-043"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-019",
+        "type": "spec-requirement",
+        "artifactPath": "specs/behavioral-spec.md",
+        "linkedBeads": [
+          "BEAD-044"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-020",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-021",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-022",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-023",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-024",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-025",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-026",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-027",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-028",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-029",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-030",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-056"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-031",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-056"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-032",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-056"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-033",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-056"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-034",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-056"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-035",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-036",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-037",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-038",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-039",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-040",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-057",
+          "BEAD-053",
+          "BEAD-017"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-041",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-053",
+          "BEAD-055",
+          "BEAD-055"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-042",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-053",
+          "BEAD-053"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-043",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [
+          "BEAD-054"
+        ],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-044",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-045",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-046",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-047",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-048",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-049",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-050",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-051",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-052",
+        "type": "verification-property",
+        "artifactPath": "specs/verification-architecture.md",
+        "linkedBeads": [],
+        "status": "proved"
+      },
+      {
+        "beadId": "BEAD-053",
+        "type": "test-case",
+        "artifactPath": "src/lib/feed/__tests__/feedReducer.tag.test.ts",
+        "linkedBeads": [
+          "BEAD-059"
+        ],
+        "status": "passing"
+      },
+      {
+        "beadId": "BEAD-054",
+        "type": "test-case",
+        "artifactPath": "src/lib/feed/__tests__/tagInventory.test.ts",
+        "linkedBeads": [
+          "BEAD-060"
+        ],
+        "status": "passing"
+      },
+      {
+        "beadId": "BEAD-055",
+        "type": "test-case",
+        "artifactPath": "src/lib/feed/__tests__/types.tag.test.ts",
+        "linkedBeads": [
+          "BEAD-058"
+        ],
+        "status": "passing"
+      },
+      {
+        "beadId": "BEAD-056",
+        "type": "test-case",
+        "artifactPath": "src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts",
+        "linkedBeads": [
+          "BEAD-063"
+        ],
+        "status": "passing"
+      },
+      {
+        "beadId": "BEAD-057",
+        "type": "test-case",
+        "artifactPath": "src/lib/feed/__tests__/tagSaveAdapter.test.ts",
+        "linkedBeads": [
+          "BEAD-064",
+          "BEAD-066",
+          "BEAD-040"
+        ],
+        "status": "passing"
+      },
+      {
+        "beadId": "BEAD-058",
+        "type": "implementation",
+        "artifactPath": "src/lib/feed/types.ts",
+        "linkedBeads": [
+          "BEAD-059",
+          "BEAD-060",
+          "BEAD-064"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-059",
+        "type": "implementation",
+        "artifactPath": "src/lib/feed/feedReducer.ts",
+        "linkedBeads": [
+          "BEAD-064"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-060",
+        "type": "implementation",
+        "artifactPath": "src/lib/feed/tagInventory.ts",
+        "linkedBeads": [
+          "BEAD-062"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-061",
+        "type": "implementation",
+        "artifactPath": "src/lib/feed/FeedRow.svelte",
+        "linkedBeads": [
+          "BEAD-062"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-062",
+        "type": "implementation",
+        "artifactPath": "src/lib/feed/FeedList.svelte",
+        "linkedBeads": [],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-063",
+        "type": "implementation",
+        "artifactPath": "src/lib/feed/TagFilterSidebar.svelte",
+        "linkedBeads": [
+          "BEAD-062"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-064",
+        "type": "implementation",
+        "artifactPath": "src/lib/feed/tauriFeedAdapter.ts",
+        "linkedBeads": [
+          "BEAD-062"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-065",
+        "type": "implementation",
+        "artifactPath": "src/lib/domain/apply-filter-or-search/index.ts",
+        "linkedBeads": [
+          "BEAD-059"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-066",
+        "type": "implementation",
+        "artifactPath": "src-tauri/src/editor.rs",
+        "linkedBeads": [
+          "BEAD-067"
+        ],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-067",
+        "type": "implementation",
+        "artifactPath": "src-tauri/src/lib.rs",
+        "linkedBeads": [],
+        "status": "implemented"
+      },
+      {
+        "beadId": "BEAD-068",
+        "type": "adversary-finding",
+        "artifactPath": "specs/bugfix-tag-save.md",
+        "linkedBeads": [
+          "BEAD-058",
+          "BEAD-059",
+          "BEAD-064",
+          "BEAD-062",
+          "BEAD-066",
+          "BEAD-057"
+        ],
+        "status": "resolved"
+      }
+    ]
+  },
+  "gates": {
+    "3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T10:13:54.790Z",
+      "reviewedBy": "adversary"
+    },
+    "5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T10:13:54.795Z",
+      "reviewedBy": "adversary"
+    },
+    "6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T10:16:18.680Z",
+      "reviewedBy": "adversary"
+    },
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-05T09:22:33.332Z",
+      "reviewedBy": "human",
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-05T09:22:14.866Z",
+      "details": {
+        "approvedBasedOn": "adversary-iter2-85/100"
+      },
+      "humanVerdict": "PASS",
+      "humanApproved": true,
+      "humanApprovedAt": "2026-05-05T09:22:33.332Z"
+    },
+    "3-sprint-3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-06T00:20:00.000Z",
+      "reviewedBy": "adversary"
+    },
+    "5-sprint-3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-06T00:25:00.000Z",
+      "reviewedBy": "adversary"
+    },
+    "6-sprint-3": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-06T00:28:00.000Z",
+      "reviewedBy": "adversary"
+    }
+  },
+  "sprintCount": 3,
+  "createdAt": "2026-05-05T08:02:00.853Z",
+  "updatedAt": "2026-05-06T00:28:00.000Z"
+}

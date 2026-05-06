@@ -12,23 +12,24 @@ const CMD = {
   requestNoteDeletion: 'request_note_deletion',
   confirmNoteDeletion: 'confirm_note_deletion',
   cancelNoteDeletion: 'cancel_note_deletion',
+  writeFileAtomic: 'write_file_atomic',
 } as const;
 
-export interface TauriFeedAdapter {
-  /**
-   * FIND-S2-05: vaultPath is required so the Rust handler can populate
-   * visibleNoteIds in the emitted snapshot (prevents feed going blank on selection).
-   */
-  dispatchSelectPastNote(noteId: string, vaultPath: string, issuedAt: string): Promise<void>;
-  dispatchRequestNoteDeletion(noteId: string, issuedAt: string): Promise<void>;
-  /**
-   * FIND-S2-01: filePath is the OS-level file path to delete.
-   * noteId is the logical identifier used in the emitted snapshot.
-   * FIND-S2-06: vaultPath is required so the Rust handler can populate
-   * remaining visibleNoteIds in the emitted snapshot after deletion.
-   */
-  dispatchConfirmNoteDeletion(noteId: string, filePath: string, vaultPath: string, issuedAt: string): Promise<void>;
-  dispatchCancelNoteDeletion(noteId: string, issuedAt: string): Promise<void>;
+/**
+ * Serialize frontmatter + body to markdown and write atomically via Rust command.
+ */
+async function tagSaveToFile(
+  noteId: string,
+  body: string,
+  tags: readonly string[],
+  createdAt: number,
+  updatedAt: number,
+): Promise<void> {
+  const createdAtIso = new Date(createdAt).toISOString();
+  const updatedAtIso = new Date(updatedAt).toISOString();
+  const tagsYaml = tags.map((t) => `  - ${t}`).join('\n');
+  const markdown = `---\ntags:\n${tagsYaml || '  []'}\ncreatedAt: ${createdAtIso}\nupdatedAt: ${updatedAtIso}\n---\n${body}`;
+  return invoke(CMD.writeFileAtomic, { path: noteId, contents: markdown });
 }
 
 export function createTauriFeedAdapter(): TauriFeedAdapter {
@@ -44,6 +45,42 @@ export function createTauriFeedAdapter(): TauriFeedAdapter {
     },
     dispatchCancelNoteDeletion(noteId: string, issuedAt: string): Promise<void> {
       return invoke(CMD.cancelNoteDeletion, { noteId, issuedAt });
+    },
+    // ui-tag-chip: Tag write operations call the Tauri write command.
+    // The domain pipeline (tagChipUpdate) is invoked via the Vault-level adapter
+    // which shares the writeFileAtomic handler. Filter operations are pure client-side.
+    dispatchAddTagViaChip(
+      noteId: string,
+      tag: string,
+      body: string,
+      existingTags: readonly string[],
+      createdAt: number,
+      updatedAt: number,
+      issuedAt: string,
+    ): Promise<void> {
+      const newTags = existingTags.includes(tag) ? [...existingTags] : [...existingTags, tag];
+      return tagSaveToFile(noteId, body, newTags, createdAt, updatedAt);
+    },
+    dispatchRemoveTagViaChip(
+      noteId: string,
+      tag: string,
+      body: string,
+      existingTags: readonly string[],
+      createdAt: number,
+      updatedAt: number,
+      issuedAt: string,
+    ): Promise<void> {
+      const newTags = existingTags.filter((t) => t !== tag);
+      return tagSaveToFile(noteId, body, newTags, createdAt, updatedAt);
+    },
+    dispatchApplyFilter(_tag: string): void {
+      // Pure client-side filter toggle — state updated by reducer.
+    },
+    dispatchRemoveFilter(_tag: string): void {
+      // Pure client-side filter toggle — state updated by reducer.
+    },
+    dispatchClearFilter(): void {
+      // Pure client-side filter clear — state updated by reducer.
     },
   };
 }

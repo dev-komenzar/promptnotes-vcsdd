@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "REQ-TAG-017 specifies importing tryNewTag from $lib/domain/apply-filter-or-search/try-new-tag.js, but the domain module's barrel export (index.ts) intentionally does NOT re-export tryNewTag — the domain team documented it as 'an implementation detail consumed only by parseFilterInput'. The spec does not acknowledge this design conflict between the UI layer's direct need for tryNewTag normalization (REQ-TAG-005, REQ-TAG-006) and the domain's intended encapsulation boundary. Direct file import bypassing the barrel is technically functional but represents unacknowledged architectural tension.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+    "lineRange": "1-8",
+    "snippet": "// tryNewTag is intentionally NOT re-exported here. It is an implementation\n// detail consumed only by parseFilterInput. Callers use parseFilterInput\n// (which rewraps any tag error as { kind: \"invalid-tag\", raw }) per REQ-003.\n\nexport { parseFilterInput } from \"./parse-filter-input.js\";\nexport { applyFilterOrSearch } from \"./apply-filter-or-search.js\";"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "155-156",
+    "snippet": "- `tryNewTag` from `$lib/domain/apply-filter-or-search/try-new-tag.js`"
+  },
+  "routeToPhase": "1a"
+}

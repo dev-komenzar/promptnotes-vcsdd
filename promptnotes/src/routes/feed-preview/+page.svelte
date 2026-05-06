@@ -76,10 +76,13 @@
     editingNoteId: null,
     pendingNextNoteId: null,
     visibleNoteIds: ["note-001", "note-002", "note-003"],
+    allNoteIds: ["note-001", "note-002", "note-003"],
     loadingStatus: "ready",
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
     noteMetadata: sampleMetadata,
+    tagAutocompleteVisibleFor: null,
+    activeFilterTags: [],
     filterApplied: false,
   };
 

@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "REQ-TAG-018 requires extending FeedDomainSnapshot with a tagInventory field. However, FeedDomainSnapshot is a type defined in promptnotes/src/lib/feed/types.ts (line 79-101) whose instances are produced by the Rust/Tauri backend process (the snapshot is synthesized from Tauri IPC events). Adding tagInventory to this type requires coordination with the Rust backend that emits these snapshots. The spec treats this as a pure TypeScript type extension but does not acknowledge the cross-process data flow: the Rust side must serialize TagInventory data into the snapshot, and the Tauri adapter must deserialize it. The spec's §1.3 says 'No new Tauri commands needed' (line 44), which is inconsistent with requiring new data in an existing IPC snapshot.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/types.ts",
+    "lineRange": "79-101",
+    "snippet": "export type FeedDomainSnapshot = {\n  readonly editing: { ... };\n  readonly feed: { ... };\n  readonly delete: { ... };\n  readonly noteMetadata: ...;\n  readonly cause: ...;\n};"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "163-166",
+    "snippet": "THE SYSTEM SHALL extend `FeedDomainSnapshot` with a `tagInventory` field carrying `readonly TagEntry[]`"
+  },
+  "routeToPhase": "1a"
+}

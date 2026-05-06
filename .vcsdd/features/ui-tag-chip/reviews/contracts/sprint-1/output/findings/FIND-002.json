@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-TAG-017 requires importing and calling domain pipelines tagChipUpdate, applyFilterOrSearch, and parseFilterInput without reimplementing them. The TauriFeedAdapter interface declares dispatchAddTagViaChip, dispatchRemoveTagViaChip, dispatchApplyFilter, dispatchRemoveFilter, dispatchClearFilter as optional methods (tauriFeedAdapter.ts:33-41) but createTauriFeedAdapter() does NOT implement them (tauriFeedAdapter.ts:44-58). This means all tag add/remove/filter operations executed by the effectful shell (FeedList.svelte:110-124) silently become no-ops. Furthermore, grep for 'tagChipUpdate|applyFilterOrSearch|parseFilterInput' in the entire feed directory returns zero hits — none of the domain pipelines are imported anywhere in the feed module.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/tauriFeedAdapter.ts",
+    "lineRange": "33-58",
+    "snippet": "dispatchAddTagViaChip?(noteId: string, tag: string, issuedAt: string): Promise<void>;\ndispatchRemoveTagViaChip?(noteId: string, tag: string, issuedAt: string): Promise<void>;\ndispatchApplyFilter?(tag: string): void;\ndispatchRemoveFilter?(tag: string): void;\ndispatchClearFilter?(): void;"
+  },
+  "additionalEvidence": [
+    {
+      "type": "grep",
+      "pattern": "tagChipUpdate|applyFilterOrSearch|parseFilterInput",
+      "location": "promptnotes/src/lib/feed/",
+      "result": "zero hits across all files"
+    }
+  ],
+  "routeToPhase": "2b"
+}

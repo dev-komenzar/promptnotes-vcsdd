@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-TAG-005 requires an inline tag input field with autocomplete dropdown sourced from TagInventory.entries. The implementation sets tagAutocompleteVisibleFor state (feedReducer.ts:158-163) but FeedRow.svelte never renders an <input> element or autocomplete dropdown based on this state. grep for 'tag-input|tagInput|autocomplete|tag-autocomplete' in FeedRow.svelte returns zero hits. This also invalidates REQ-TAG-006 (TagError UI), REQ-TAG-007 (Escape/Blur dismissal), and EC-001 through EC-007c (input edge cases).",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "133-162",
+    "snippet": "{#if tags.length > 0}\n        <div class=\"tag-list\">\n          {#each tags as tag}\n            <span data-testid=\"tag-chip\" class=\"tag-chip\">\n              <span class=\"tag-text\">{tag}</span>\n              <button class=\"tag-remove\" ...>×</button>\n            </span>\n          {/each}\n          <button class=\"tag-add\" ...>+</button>\n        </div>\n      {/if}"
+  },
+  "additionalEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/feedReducer.ts",
+      "lineRange": "158-163",
+      "description": "TagAddClicked sets tagAutocompleteVisibleFor but no corresponding UI to render the input"
+    },
+    {
+      "type": "grep",
+      "pattern": "tag-input|tagInput|autocomplete|tag-autocomplete",
+      "location": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "result": "zero hits"
+    }
+  ],
+  "routeToPhase": "2b"
+}

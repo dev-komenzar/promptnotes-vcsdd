@@ -46,6 +46,12 @@ export type FeedViewState = {
   readonly lastDeletionError: { reason: NoteDeletionFailureReason; detail?: string } | null;
   /** Per-noteId row metadata. Mirrors FeedDomainSnapshot.noteMetadata (FIND-004). */
   readonly noteMetadata: Readonly<Record<string, NoteRowMetadata>>;
+  /** NoteId with an open tag autocomplete input, or null. Single-input invariant. */
+  readonly tagAutocompleteVisibleFor: string | null;
+  /** Currently selected filter tag strings. Preserved across snapshots by reducer. */
+  readonly activeFilterTags: readonly string[];
+  /** Unfiltered full note ID list from the last DomainSnapshot. Used as source for tag filter computation. */
+  readonly allNoteIds: readonly string[];
 };
 
 // ── NoteRowMetadata ───────────────────────────────────────────────────────────
@@ -116,7 +122,14 @@ export type FeedAction =
   | { kind: 'DeletionBannerDismissed' }
   | { kind: 'LoadingStateChanged';      status: FeedViewState['loadingStatus'] }
   | { kind: 'FilterApplied';            visibleNoteIds: readonly string[] }
-  | { kind: 'FilterCleared';            visibleNoteIds: readonly string[] };
+  | { kind: 'FilterCleared';            visibleNoteIds: readonly string[] }
+  // ui-tag-chip extensions:
+  | { kind: 'TagAddClicked';            noteId: string }
+  | { kind: 'TagRemoveClicked';         noteId: string; tag: string }
+  | { kind: 'TagInputCommitted';        noteId: string; rawTag: string }
+  | { kind: 'TagInputCancelled' }
+  | { kind: 'TagFilterToggled';         tag: string }
+  | { kind: 'TagFilterCleared' };
 
 // ── FeedCommand ───────────────────────────────────────────────────────────────
 
@@ -140,7 +153,13 @@ export type FeedCommand =
   | { kind: 'cancel-note-deletion';    payload: { noteId: string; issuedAt: string } }
   | { kind: 'refresh-feed' }
   | { kind: 'open-delete-modal';       payload: { noteId: string } }
-  | { kind: 'close-delete-modal' };
+  | { kind: 'close-delete-modal' }
+  // ui-tag-chip extensions:
+  | { kind: 'add-tag-via-chip';        payload: { noteId: string; tag: string; body: string; existingTags: readonly string[]; createdAt: number; updatedAt: number; issuedAt: string } }
+  | { kind: 'remove-tag-via-chip';     payload: { noteId: string; tag: string; body: string; existingTags: readonly string[]; createdAt: number; updatedAt: number; issuedAt: string } }
+  | { kind: 'apply-tag-filter';        payload: { tag: string } }
+  | { kind: 'remove-tag-filter';       payload: { tag: string } }
+  | { kind: 'clear-filter' };
 
 // ── FeedReducerResult ─────────────────────────────────────────────────────────
 

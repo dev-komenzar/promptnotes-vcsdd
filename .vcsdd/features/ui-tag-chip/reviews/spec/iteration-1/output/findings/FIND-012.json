@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-012",
+  "dimension": "scope_clarity",
+  "category": "spec_ambiguity",
+  "severity": "medium",
+  "description": "REQ-TAG-009 states the tag filter list is rendered 'in the left sidebar (above or integrated with the feed list)'. The phrase 'above or integrated with' is ambiguous and leaves a critical layout decision unspecified. The existing codebase has FeedList.svelte as a self-contained component rendering a .feed-list div. The spec does not clarify whether: (a) TagFilterSidebar is a sibling component rendered alongside FeedList by a parent layout, (b) TagFilterSidebar is rendered inside FeedList.svelte above the feed rows, or (c) TagFilterSidebar is a completely separate left-panel component. This ambiguity affects component ownership, props/dependency flow, and test architecture.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "95-96",
+    "snippet": "THE SYSTEM SHALL render a tag filter list in the left sidebar (above or integrated with the feed list)"
+  },
+  "routeToPhase": "1a"
+}

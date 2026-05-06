@@ -1,0 +1,17 @@
+{
+  "findingId": "FIND-S3-003",
+  "severity": "minor",
+  "dimension": "verification_readiness",
+  "criterion": null,
+  "category": "test_quality",
+  "description": "The test named 'ArrowDown wraps from last to no highlight on second wrap' (FeedRow.dom.vitest.ts:569) has a misleading name. The name suggests that ArrowDown wrapping eventually results in a 'no highlight' state, implying behavior where continuous wrapping might reset the highlight to −1. However, the test body never calls assertNoHighlightedItem and never verifies any 'no highlight' state — it only asserts positive highlights (react, rest, react) through repeated wrapping. The ArrowDown modulo logic (line 139) always produces a valid index and never results in 'no highlight', making the test name inaccurate. This reduces test readability and could mislead future maintainers about the intended wrapping behavior.",
+  "expected": "Test name should accurately reflect the behavior being tested, such as 'ArrowDown wraps repeatedly through suggestions' or 'ArrowDown continuous wrapping stays within bounds'.",
+  "actual": "Test name says 'wraps from last to no highlight on second wrap' but the test never asserts any no-highlight state. The test only verifies that the modulo wrapping continues to produce valid highlighted items across multiple full cycles.",
+  "recommendation": "Rename the test to accurately describe what it verifies. Suggested names: 'ArrowDown continuous wrapping stays within bounds across multiple cycles' or 'ArrowDown wraps repeatedly through all suggestions without errors'.",
+  "routeToPhase": "2a",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+    "lineRange": "569-586",
+    "snippet": "test('ArrowDown wraps from last to no highlight on second wrap', async () => {\n    const { input } = await setupTagInputWithSuggestions();\n    for (let i = 0; i < 3; i++) { fireKeydown(input!, 'ArrowDown'); flushSync(); }\n    fireKeydown(input!, 'ArrowDown'); flushSync();\n    assertHighlightedItem(target, 'react');\n    for (let i = 0; i < 2; i++) { fireKeydown(input!, 'ArrowDown'); flushSync(); }\n    assertHighlightedItem(target, 'rest');\n    fireKeydown(input!, 'ArrowDown'); flushSync();\n    assertHighlightedItem(target, 'react');\n  });"
+  }
+}

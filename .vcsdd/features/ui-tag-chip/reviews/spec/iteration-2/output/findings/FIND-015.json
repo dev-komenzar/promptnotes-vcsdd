@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-015",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "Typed text in tag input is not preserved across DomainSnapshotReceived events. The spec preserves tagAutocompleteVisibleFor (which noteId has an open input) following the loadingStatus preservation pattern, but does not address the user's typed text within the tag input. When DomainSnapshotReceived fires (on every save, delete, or note switch), FeedViewState is reconstructed. If the tag input component re-renders due to noteMetadata changes, the user's partially-typed tag text (e.g., 'imp' intended for 'important') is silently lost. This can occur frequently since auto-save triggers DomainSnapshotReceived periodically. The spec should either require preserving the typed text in FeedViewState alongside tagAutocompleteVisibleFor, or clarify that component-local state survives FeedViewState reconstruction (and provide a PROOF obligation for this).",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "172-174",
+    "snippet": "THE SYSTEM SHALL extend FeedViewState with tagAutocompleteVisibleFor: string | null field (noteId with open tag input, or null; mutually exclusive across all rows). THE SYSTEM SHALL maintain activeFilterTags (the set of currently selected filter tag strings) as a UI-layer state that is NOT mirrored from FeedDomainSnapshot. The DomainSnapshotReceived handler in feedReducer preserves activeFilterTags from the previous state"
+  },
+  "secondEvidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "293-298",
+    "snippet": "tagAutocompleteVisibleFor: string | null; // noteId with open tag input, or null. Single-input invariant: only one row at a time. activeFilterTags: readonly string[]; // currently selected filter tag strings. Preserved by reducer across snapshots. // TagInventory is NOT stored in FeedViewState. It is a $derived value computed // from noteMetadata in the component layer."
+  },
+  "routeToPhase": "1a"
+}

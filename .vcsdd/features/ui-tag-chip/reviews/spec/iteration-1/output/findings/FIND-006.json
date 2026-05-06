@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "medium",
+  "description": "PROP-TAG-010 covers the positive blur path (valid text commits tag), but no PROP covers the negative blur path where the input contains non-empty text that fails tryNewTag validation. REQ-TAG-007 only specifies the success case on blur; the failure case is undefined (see FIND-002). Even if the spec is amended to define this behavior, the verification architecture currently lacks a proof obligation for it.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/verification-architecture.md",
+    "lineRange": "102-105",
+    "snippet": "### PROP-TAG-010 — Blur with valid text commits tag\n**Maps to**: REQ-TAG-007\n**Tier**: 1 (component test)\n**Assertion**: Blurring the tag input with valid non-empty text dispatches `add-tag-via-chip`."
+  },
+  "routeToPhase": "1a"
+}

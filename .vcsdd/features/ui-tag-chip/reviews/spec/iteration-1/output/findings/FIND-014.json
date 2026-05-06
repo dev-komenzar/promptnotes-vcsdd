@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-014",
+  "dimension": "traceability_completeness",
+  "category": "spec_ambiguity",
+  "severity": "low",
+  "description": "PROP-TAG-021 (Keyboard navigation in autocomplete) maps to REQ-TAG-016 (Accessibility). However, EC-021 (keyboard navigation) relates more directly to REQ-TAG-005 (autocomplete behavior) than to REQ-TAG-016 (which is about aria-labels, roles, and focus rings). The keyboard navigation behavior (Arrow Up/Down for suggestions, Enter to select) is functional UX, not purely an accessibility concern. The traceability chain is weakened by mapping this PROP to the accessibility requirement rather than the autocomplete requirement.",
+  "evidence": {
+    "filePath": "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/.vcsdd/features/ui-tag-chip/specs/verification-architecture.md",
+    "lineRange": "157-160",
+    "snippet": "### PROP-TAG-021 — Keyboard navigation in autocomplete\n**Maps to**: REQ-TAG-016 (EC-021)\n**Tier**: 1 (interaction test)"
+  },
+  "routeToPhase": "1a"
+}

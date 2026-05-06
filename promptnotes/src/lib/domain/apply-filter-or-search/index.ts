@@ -6,3 +6,4 @@
 
 export { parseFilterInput } from "./parse-filter-input.js";
 export { applyFilterOrSearch } from "./apply-filter-or-search.js";
+export { tryNewTag } from "./try-new-tag.js";

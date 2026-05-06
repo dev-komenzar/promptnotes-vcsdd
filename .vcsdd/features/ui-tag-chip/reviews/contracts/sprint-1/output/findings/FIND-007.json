@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "implementation_correctness",
+  "category": "test_quality",
+  "severity": "critical",
+  "description": "TagFilterSidebar.dom.vitest.ts has 15 tests that ALL fail with 'TypeError: Cannot read properties of undefined (reading 'length')' at TagFilterSidebar.svelte:22. The test fixture's mountSidebar() function passes a `tags` prop (line 87: `mountSidebar({ tags, ... })`) but the actual component's Props interface declares `entries` (TagFilterSidebar.svelte:14). This prop name mismatch means the tests never exercise the real component behavior, making the DOM test suite entirely non-validating. Additionally, the test uses data-testid='tag-filter-clear-all' (line 276) but the component uses data-testid='tag-filter-clear' (TagFilterSidebar.svelte:53).",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts",
+    "lineRange": "37-42",
+    "snippet": "interface TagFilterSidebarProps {\n  tags: TagEntry[];          // <-- passes 'tags'\n  activeFilterTags: readonly string[];\n  onToggle: (tag: string) => void;\n  onClear: () => void;\n}"
+  },
+  "additionalEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+      "lineRange": "13-18",
+      "description": "Component expects 'entries' prop, not 'tags'"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+      "lineRange": "22",
+      "snippet": "const hasTags = $derived(entries.length > 0);",
+      "description": "Crash site: entries is undefined because prop name mismatch"
+    }
+  ],
+  "routeToPhase": "2a"
+}
