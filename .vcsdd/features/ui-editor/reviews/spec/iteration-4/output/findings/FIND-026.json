@@ -1,0 +1,15 @@
+{
+  "id": "FIND-026",
+  "severity": "major",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md §10 lines 970-979; docs/domain/code/ts/src/capture/states.ts lines 70-75",
+  "description": "EditingSessionStateDto.save-failed declares a focusedBlockId field that is absent from the canonical SaveFailedState aggregate. The DTO definition at behavioral-spec.md lines 970-979 reads: `{ status: 'save-failed'; currentNoteId: string; focusedBlockId: string | null; pendingNextFocus: { noteId: string; blockId: string } | null; lastSaveError: SaveError; isNoteEmpty: boolean }`. But the source-of-truth `SaveFailedState` in capture/states.ts lines 70-75 has only `currentNoteId`, `pendingNextFocus`, `lastSaveError` — NO focusedBlockId field. This is load-bearing because REQ-EDIT-029 ('Cancel button restores focus to the prior focusedBlockId'), RD-018, EC-EDIT-014, and PROP-EDIT-014 ('for all snapshots S of status editing | save-failed, snapshot.focusedBlockId === S.focusedBlockId') all depend on save-failed carrying a real focusedBlockId. Either Rust must add focusedBlockId to SaveFailedState (a type-contract change beyond ui-editor scope) or the spec must explicitly document the projection rule (e.g., the UI caches the prior focusedBlockId locally on every editing→saving→save-failed transition). Without that explanation, Phase 2 cannot implement REQ-EDIT-029 / PROP-EDIT-014 against the actual DTO.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/capture/states.ts",
+    "lineRange": "70-75",
+    "snippet": "export type SaveFailedState = { readonly status: 'save-failed'; readonly currentNoteId: NoteId; readonly pendingNextFocus: PendingNextFocus | null; readonly lastSaveError: SaveError; };"
+  },
+  "suggestedRemediation": "Add a §10 'projection rule' subsection stating explicitly: (a) the Rust SaveFailedState DTO is augmented at the IPC boundary with focusedBlockId carried from the prior EditingState snapshot, OR (b) the impure shell maintains a local `lastEditingFocusedBlockId` cache and merges it into EditorViewState on save-failed transitions. Option (a) is cleaner and aligns with the existing 'lastSaveResult' field on the editing DTO variant which is also a projection. Update PROP-EDIT-014 to refer to the projection source rather than 'S.focusedBlockId'.",
+  "routeToPhase": "1a"
+}

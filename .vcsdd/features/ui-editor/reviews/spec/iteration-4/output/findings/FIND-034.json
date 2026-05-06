@@ -1,0 +1,15 @@
+{
+  "id": "FIND-034",
+  "severity": "minor",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md §3.9 REQ-EDIT-035 lines 570-583; verification-architecture.md §4 PROP-EDIT-024a / 024b lines 191-192",
+  "description": "RequestNewNote behaviour for the (status === 'editing' AND isDirty === false) case is unspecified. REQ-EDIT-035 first paragraph (lines 570-572): 'When RequestNewNote is dispatched while EditorViewState.status === \"editing\" AND isDirty === true, the system shall trigger blur-save semantics first.' The carve-out at line 574 covers save-failed. Neither REQ-EDIT-035 nor PROP-EDIT-024a (only covers editing+isDirty=true) nor PROP-EDIT-024b (only covers save-failed) addresses what happens for editing+isDirty=false: presumably RequestNewNote is dispatched directly without blur-save (because there is nothing dirty to save), but no acceptance criterion or PROP asserts this. Phase 2 will need to choose between (a) firing TriggerBlurSave anyway (incorrect — wastes IPC), (b) firing RequestNewNote directly (likely intended), (c) some third option. The other three statuses (idle, saving, switching) are also implicitly covered by RD-014 and EC-EDIT-010 but the editing+clean case is genuinely a gap.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+    "lineRange": "570-583",
+    "snippet": "When RequestNewNote is dispatched while EditorViewState.status === 'editing' AND isDirty === true, the system shall trigger blur-save semantics first ... Explicit carve-out for save-failed: When status === 'save-failed' and the user dispatches RequestNewNote, the UI does NOT first dispatch TriggerBlurSave."
+  },
+  "suggestedRemediation": "Either (a) add an acceptance criterion bullet to REQ-EDIT-035 stating 'When status === \"editing\" AND isDirty === false, RequestNewNote is dispatched directly without preceding TriggerBlurSave', and add a PROP-EDIT-024c integration test for the case; OR (b) generalise PROP-EDIT-024a's gate from '(editing AND isDirty===true)' to 'editing' and require TriggerBlurSave only when isDirty (which the reducer already gates per REQ-EDIT-014's isDirty=true precondition).",
+  "routeToPhase": "1a"
+}

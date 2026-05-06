@@ -1,0 +1,15 @@
+{
+  "id": "FIND-032",
+  "severity": "minor",
+  "dimension": "verification_readiness",
+  "category": "spec_gap",
+  "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md §10 lines 940-941; docs/domain/code/ts/src/capture/commands.ts lines 153-163",
+  "description": "Asymmetric source-field at the Tauri wire boundary. behavioral-spec.md §10 specifies the outbound adapter signatures: dispatchTriggerIdleSave(noteId: string, source: 'capture-idle', issuedAt: string): Promise<void> (line 940) and dispatchTriggerBlurSave(noteId: string, source: 'capture-blur', issuedAt: string): Promise<void> (line 941). The corresponding EditorCommand payloads (verification-architecture.md §10 lines 436-437) also carry the source field: { source: 'capture-idle'; noteId; issuedAt }. However, capture/commands.ts TriggerIdleSave (lines 153-157) and TriggerBlurSave (lines 159-163) do NOT have a source field — the source lives on SaveNoteRequested (the Public Domain Event downstream of the command). The spec implicitly requires the Rust IPC handler to either drop the source parameter or use it to construct SaveNoteRequested.source, but neither path is documented. Phase 2 IPC integration tests have no reference for the wire-format kind string with or without source.",
+  "evidence": {
+    "filePath": "docs/domain/code/ts/src/capture/commands.ts",
+    "lineRange": "153-163",
+    "snippet": "export type TriggerIdleSave = { readonly kind: 'trigger-idle-save'; readonly noteId: NoteId; readonly issuedAt: Timestamp; }; export type TriggerBlurSave = { readonly kind: 'trigger-blur-save'; readonly noteId: NoteId; readonly issuedAt: Timestamp; };"
+  },
+  "suggestedRemediation": "Add a §10 'wire-boundary erasure' note: the UI sends source as part of the outbound IPC payload because the Rust handler uses it to populate SaveNoteRequested.source; the source is NOT stored on the Rust TriggerIdleSave/TriggerBlurSave intermediate command (which is in-process only). Document explicitly that the EditorCommand carries source for PROP-EDIT-002 to assert against, while the canonical CaptureCommand does not — this is intentional asymmetry.",
+  "routeToPhase": "1b"
+}

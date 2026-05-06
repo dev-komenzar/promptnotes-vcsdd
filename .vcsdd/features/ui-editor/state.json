@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "1c",
   "phaseHistory": [
     {
       "from": "init",
@@ -233,6 +233,27 @@
       "timestamp": "2026-05-06T08:36:00Z",
       "reason": "Sprint 7 respec: verification architecture rewritten for block-based contract",
       "sprint": 7
+    },
+    {
+      "from": "1b",
+      "to": "1b",
+      "timestamp": "2026-05-06T08:55:00Z",
+      "reason": "Sprint 7 iter-4 spec findings remediation",
+      "sprint": 7
+    },
+    {
+      "from": "1b",
+      "to": "1b",
+      "timestamp": "2026-05-06T08:55:00Z",
+      "reason": "Sprint 7 iter-4 spec findings remediation (FIND-025..034 fixed)",
+      "sprint": 7
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-06T09:05:00Z",
+      "reason": "Sprint 7 iter-5 adversary PASS — pending human approval",
+      "sprint": 7
     }
   ],
   "iterations": {
@@ -242,7 +263,7 @@
     "6": 2,
     "1a": 2,
     "1b": 2,
-    "1c": 2,
+    "1c": 4,
     "2a": 4,
     "2b": 5,
     "2c": 5,
@@ -1714,6 +1735,126 @@
         "createdInPhase": "1b",
         "externalId": "PROP-EDIT-024b",
         "sprint": 7
+      },
+      {
+        "beadId": "BEAD-129",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-025.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-025",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-130",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-026.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-026",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-131",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-027.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-027",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-132",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-028.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-028",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-133",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-029.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-029",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-134",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-030.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-030",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-135",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-031.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-031",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-136",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-032.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-032",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-137",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-033.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-033",
+        "sprint": 7,
+        "iteration": 4
+      },
+      {
+        "beadId": "BEAD-138",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-4/output/findings/FIND-034.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T08:50:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-034",
+        "sprint": 7,
+        "iteration": 4
       }
     ]
   },
@@ -1805,9 +1946,30 @@
         "findingsCount": 0,
         "details": "All 4 convergence dimensions PASS: findings 6→0, all specs covered, tests 23+195 pass, no duplicates"
       }
+    },
+    "1c-sprint-7": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-06T09:05:00Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 5,
+        "sprint": 7,
+        "findingsCount": 0,
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "iter4Resolved": "FIND-025..034 (10/10)",
+        "approvedBy": "takuya"
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-06T09:05:00Z",
+      "humanApproved": true,
+      "humanApprovalPending": false,
+      "humanApprovedAt": "2026-05-06T09:10:00Z",
+      "humanVerdict": "PASS"
     }
   },
   "sprintCount": 6,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-06T08:35:55Z"
+  "updatedAt": "2026-05-06T09:10:00Z"
 }

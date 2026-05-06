@@ -1,0 +1,15 @@
+{
+  "id": "FIND-033",
+  "severity": "minor",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md §3.1 REQ-EDIT-010 line 215; §7 Purity Boundary Candidates line 871",
+  "description": "classifyMarkdownPrefix 'on its own line' rule for divider is unenforceable from the signature. REQ-EDIT-010 (line 215) lists '`---` on its own line → divider' alongside the inline prefixes (`# `, `## `, etc.). The pure predicate signature in §7 is `classifyMarkdownPrefix(content: string): { newType: BlockType; trimmedContent: string } | null` — taking a single content string with no line context. PROP-EDIT-010 (verification-architecture.md line 177) lists the recognised prefixes including `---` but does not address the 'on its own line' constraint. Without line-context, the predicate cannot distinguish '---' typed at the start of an empty paragraph (which should map to divider) from '---more text' typed at the start of a paragraph (which should remain paragraph). Phase 2 must guess the rule (e.g., 'content === \"---\"' equality vs 'content.startsWith(\"---\")') without spec direction.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+    "lineRange": "215-215",
+    "snippet": "OR types a recognised Markdown prefix at the start of an empty paragraph (`# ` → heading-1, `## ` → heading-2, `### ` → heading-3, `- ` / `* ` → bullet, `1. ` → numbered, ``` ``` ``` → code, `> ` → quote, `---` on its own line → divider)"
+  },
+  "suggestedRemediation": "Pin the divider recognition rule explicitly in PROP-EDIT-010: e.g., 'classifyMarkdownPrefix returns { newType: \"divider\", trimmedContent: \"\" } iff content === \"---\" exactly (no surrounding whitespace, no trailing chars); for any other input starting with \"---\" returns null'. Add a corresponding example in the editorPredicates.test.ts list at §5.",
+  "routeToPhase": "1a"
+}

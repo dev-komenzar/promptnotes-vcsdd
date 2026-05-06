@@ -1,0 +1,15 @@
+{
+  "id": "FIND-027",
+  "severity": "major",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md §3 Tier 2 PROP-EDIT-040 line 114; §4 PROP-EDIT-040 line 208; behavioral-spec.md §10 lines 952-979",
+  "description": "PROP-EDIT-040 declares a property that cannot be true as stated. Line 114 reads: 'for any `s: EditorViewState` and any `S: EditingSessionStateDto`, editorReducer(s, { kind: \\'DomainSnapshotReceived\\', snapshot: S }).state mirrors `S` field-for-field on `status`, `isDirty`, `currentNoteId`, `focusedBlockId`, `pendingNextFocus`, `isNoteEmpty`, `lastSaveError`'. Line 208 (§4 row): 'mirrors S.{status, isDirty, currentNoteId, focusedBlockId, pendingNextFocus, isNoteEmpty, lastSaveError} field-for-field for any s and any S'. But EditingSessionStateDto is a discriminated union (lines 952-979) with per-status field subsets: idle has only status; editing has status + currentNoteId + focusedBlockId + isDirty + isNoteEmpty + lastSaveResult; saving has status + currentNoteId + isNoteEmpty; switching has status + currentNoteId + pendingNextFocus + isNoteEmpty; save-failed has status + currentNoteId + focusedBlockId + pendingNextFocus + lastSaveError + isNoteEmpty. None of these variants carries all seven enumerated fields, and lastSaveError appears ONLY on save-failed while isDirty appears ONLY on editing. A field-for-field mirror over `any S` is therefore impossible — the property assertion will always fail for snapshots whose status omits any of the seven fields. Phase 2 fast-check will either be unable to express the property or will need an entirely different specification (per-variant mirror plus per-variant default rules for absent fields).",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+    "lineRange": "114-115",
+    "snippet": "PROP-EDIT-040 (`editorReducer.ts`): DomainSnapshotReceived mirroring — for any `s: EditorViewState` and any `S: EditingSessionStateDto`, ... mirrors `S` field-for-field on `status, isDirty, currentNoteId, focusedBlockId, pendingNextFocus, isNoteEmpty, lastSaveError`"
+  },
+  "suggestedRemediation": "Restate PROP-EDIT-040 per-variant: for snapshots of status 'editing', mirror status+currentNoteId+focusedBlockId+isDirty+isNoteEmpty+lastSaveResult; for 'saving', mirror status+currentNoteId+isNoteEmpty plus reset isDirty=true|false explicitly; for 'switching', mirror status+currentNoteId+pendingNextFocus+isNoteEmpty plus document focusedBlockId fallback; for 'save-failed', mirror status+currentNoteId+focusedBlockId+pendingNextFocus+lastSaveError+isNoteEmpty; for 'idle' set every UI field to its idle default. Add a defaults table for fields absent from the source variant (e.g., on 'saving' snapshot, EditorViewState.focusedBlockId either retains prior value or becomes null — pick one and pin it). Without this, the reducer's behaviour on partial DTOs is unspecified.",
+  "routeToPhase": "1b"
+}

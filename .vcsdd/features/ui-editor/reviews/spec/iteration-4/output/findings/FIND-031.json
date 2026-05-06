@@ -1,0 +1,15 @@
+{
+  "id": "FIND-031",
+  "severity": "minor",
+  "dimension": "verification_readiness",
+  "category": "spec_gap",
+  "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md §10 line 435; §10 Tier 0 obligation line 474-476; behavioral-spec.md §10 outbound list lines 928-947",
+  "description": "EditorCommand 'cancel-idle-timer' has no IPC adapter binding and the spec does not document its handler shape. The variant is declared at line 435: '| { kind: \\'cancel-idle-timer\\' }' (no payload). Behavioral-spec.md §10 lines 931-946 enumerates 16 outbound dispatchXxx adapter methods — none is dispatchCancelIdleTimer. The §10 Tier 0 exhaustive-switch obligation at line 474-476 says 'every EditorCommand variant is handled via an exhaustive switch on kind. Adding a new variant without updating the switch is a compile error.' This is fine for IPC variants because their handlers are clearly the dispatchXxx adapter calls, but the spec never tells the implementer what 'handling' cancel-idle-timer means: presumably it calls timerModule.cancelIdleSave(currentHandle), but this is implicit. The Tier 0 structural conformance assertions at lines 459-470 only cover three variants (edit-block-content, split-block, copy-note-body) and do not pin which variants are intentionally adapter-less.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+    "lineRange": "435-435",
+    "snippet": "| { kind: 'cancel-idle-timer' }"
+  },
+  "suggestedRemediation": "Add a §10 'Adapter binding' table that enumerates each EditorCommand variant's shell handler: 16 IPC variants → adapter.dispatchXxx call; 1 local variant cancel-idle-timer → timerModule.cancelIdleSave(currentHandle). Make the binding explicit so Phase 2 unit tests for the impure shell can mock the right surface (a vi.fn for the timer module versus the IPC adapter).",
+  "routeToPhase": "1b"
+}
