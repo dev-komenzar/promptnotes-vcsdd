@@ -104,7 +104,15 @@
       "language": "typescript",
       "currentPhase": "3",
       "updatedAt": "2026-05-05T12:55:24.788Z"
+    },
+    "ui-filter-search": {
+      "status": "active",
+      "createdAt": "2026-05-06T03:38:06.107Z",
+      "mode": "strict",
+      "language": "typescript",
+      "currentPhase": "init",
+      "updatedAt": "2026-05-06T03:38:06.107Z"
     }
   },
-  "activeFeature": "ui-tag-chip"
+  "activeFeature": "ui-filter-search"
 }
