@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-007",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "critical",
+  "description": "No contract criterion targets the 'structural_integrity' dimension. Phase 3 adversary review evaluates code organization, abstraction quality, and dead-code paths. The contract has no pass threshold for: (a) computeVisible being the single source of truth for visibleNoteIds (behavioral-spec.md §2 invariant: 'identical logic used in all four cases'), (b) absence of duplicated tag-filter / search-filter logic between feedReducer and computeVisible, (c) FilterApplied/FilterCleared / SearchInputChanged absence in the wired union (PROP-FILTER-021 partial), (d) helper extraction such as searchSortOf cited in 2c gate evidence. Without criteria, the adversary will be forced to invent thresholds.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "20-60",
+    "snippet": "(no dimension named structural_integrity)"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

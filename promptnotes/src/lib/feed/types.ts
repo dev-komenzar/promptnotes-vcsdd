@@ -52,6 +52,11 @@ export type FeedViewState = {
   readonly activeFilterTags: readonly string[];
   /** Unfiltered full note ID list from the last DomainSnapshot. Used as source for tag filter computation. */
   readonly allNoteIds: readonly string[];
+  // ── ui-filter-search extensions ─────────────────────────────────────────
+  /** Committed search query. Set ONLY by SearchApplied / SearchCleared. '' = no active search. */
+  readonly searchQuery: string;
+  /** Sort direction. Default: 'desc' (newest first). Preserved across snapshots. */
+  readonly sortDirection: 'asc' | 'desc';
 };
 
 // ── NoteRowMetadata ───────────────────────────────────────────────────────────
@@ -129,7 +134,11 @@ export type FeedAction =
   | { kind: 'TagInputCommitted';        noteId: string; rawTag: string }
   | { kind: 'TagInputCancelled' }
   | { kind: 'TagFilterToggled';         tag: string }
-  | { kind: 'TagFilterCleared' };
+  | { kind: 'TagFilterCleared' }
+  // ui-filter-search extensions:
+  | { kind: 'SearchApplied';           query: string }
+  | { kind: 'SearchCleared' }
+  | { kind: 'SortDirectionToggled' };
 
 // ── FeedCommand ───────────────────────────────────────────────────────────────
 

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-003",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "CRIT-002 pass threshold says 'Every critical edge case (EC-S-*, EC-T-*, EC-C-*) has an explicit test' but the contract never defines which edge cases are 'critical'. behavioral-spec.md §4 catalogs 28 edge cases (16 EC-S-*, 5 EC-T-*, 7 EC-C-*). The CRIT-002 evidence list explicitly cites only 14, omitting EC-S-001 (empty string dispatch), EC-S-003/EC-S-012 (very long query), EC-S-004/EC-S-015 (regex chars literal), EC-S-006 (note save during search), EC-S-011 (control chars), EC-S-013 (RTL chars), EC-T-004 (toggle sort while debounce pending), EC-T-005 (toggle sort with empty feed), EC-C-001 (tag then search), EC-C-002 (search then tag), EC-C-005 (no tag, search 0 results), EC-C-007 (snapshot mid-debounce). With 'critical' undefined, the threshold is non-binary-evaluable.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "32-36",
+    "snippet": "passThreshold: Every critical edge case (EC-S-*, EC-T-*, EC-C-*) has an explicit test"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

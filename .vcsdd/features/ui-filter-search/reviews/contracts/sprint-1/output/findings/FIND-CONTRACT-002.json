@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-002",
+  "dimension": "spec_fidelity",
+  "category": "test_quality",
+  "severity": "high",
+  "description": "CRIT-001 pass threshold 'Every requirement ID appears in at least one test file' is mechanically grep-checkable but does NOT verify the test exercises the requirement. A test file could contain only a stub like `describe('REQ-FILTER-017')` and still pass this threshold. The threshold should require at minimum (a) an executable test assertion citing the REQ, and (b) a passing run for that test. Without this, REQ-FILTER-005 (toLowerCase vs toLocaleLowerCase prohibition), REQ-FILTER-015 (purity invariant), and REQ-FILTER-017 (adversarial input handling) can be silently under-tested.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "26",
+    "snippet": "passThreshold: Every requirement ID appears in at least one test file"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

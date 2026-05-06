@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-PHASE3-001",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "CRIT-EC-002 mandates a dedicated test for EC-T-004 (toggle sort while debounce pending) AND a dedicated test for EC-C-007 (DomainSnapshotReceived while debounce mid-flight). Neither test exists anywhere in promptnotes/src/lib/feed/__tests__/. The string 'EC-T-004' appears in zero test files. The string 'EC-C-007' appears in zero test files. These ECs are explicitly called out as guarding race-freedom obligations PROP-FILTER-022 and PROP-FILTER-024, so without them the race-freedom claim is unverified. The current debounce DOM tests cover EC-S-005/EC-S-010/EC-S-014/EC-S-016 only.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts",
+    "lineRange": "1-557",
+    "snippet": "No 'EC-T-004' or 'EC-C-007' label in feedReducer.search.test.ts, computeVisible.test.ts, searchPredicate.test.ts, sortByUpdatedAt.test.ts, dom/SearchInput.dom.vitest.ts, dom/SortToggle.dom.vitest.ts, dom/FeedList.search-empty.dom.vitest.ts, prop/searchPredicate.prop.test.ts, or prop/feedReducer.totality.test.ts."
+  },
+  "routeToPhase": "2a"
+}

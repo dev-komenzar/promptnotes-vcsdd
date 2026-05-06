@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-PHASE3-004",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "high",
+  "description": "Contract CRIT-IC-001 requires PROP-FILTER-005 (feedReducer totality) to live in either 'searchPredicate.prop.test.ts' OR 'feedReducer.property.test.ts'. The actual file is 'promptnotes/src/lib/feed/__tests__/prop/feedReducer.totality.test.ts' (a third name, not contractually approved). Verification-architecture.md §4 also names the file 'feedReducer.property.test.ts'. searchPredicate.prop.test.ts (which exists) does NOT contain PROP-FILTER-005; it covers PROP-FILTER-010 / PROP-FILTER-011. Strict reading of the contract therefore fails because neither approved filename contains the PROP-FILTER-005 property. Although the property test functionally exists, the file naming deviates from both the sprint-1 contract and the verification architecture without a contract amendment.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/prop/feedReducer.totality.test.ts",
+    "lineRange": "1-238",
+    "snippet": "PROP-FILTER-005a..f tests are defined in feedReducer.totality.test.ts; the file is not named feedReducer.property.test.ts as required by the contract / verification architecture."
+  },
+  "routeToPhase": "2a"
+}

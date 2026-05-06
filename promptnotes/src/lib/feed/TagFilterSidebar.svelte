@@ -3,7 +3,7 @@
    * TagFilterSidebar.svelte — Tag filter list component for the left sidebar.
    *
    * Props:
-   *   entries          — TagEntry[] sorted by usageCount descending
+   *   entries          — TagEntry[]; the sidebar re-sorts by usageCount desc
    *   activeFilterTags — Currently selected filter tag strings
    *   onToggle         — Callback: tag filter toggled with tag name
    *   onClear          — Callback: clear all filters
@@ -19,7 +19,12 @@
 
   const { entries, activeFilterTags, onToggle, onClear }: Props = $props();
 
-  const hasTags = $derived(entries.length > 0);
+  // REQ-TAG-009 / PROP-TAG-012: the sidebar itself owns the descending order
+  // by usageCount, regardless of caller-supplied order.
+  const sortedEntries = $derived(
+    [...entries].sort((a, b) => b.usageCount - a.usageCount)
+  );
+  const hasTags = $derived(sortedEntries.length > 0);
   const hasActive = $derived(activeFilterTags.length > 0);
 </script>
 
@@ -28,7 +33,7 @@
     <div class="section-label">タグフィルタ</div>
 
     <ul class="tag-list" role="group" aria-label="タグフィルタ">
-      {#each entries as entry (entry.name)}
+      {#each sortedEntries as entry (entry.name)}
         {@const isActive = activeFilterTags.includes(entry.name)}
         <li>
           <button
@@ -50,7 +55,7 @@
     {#if hasTags}
       <button
         class="clear-button"
-        data-testid="tag-filter-clear"
+        data-testid="tag-filter-clear-all"
         onclick={onClear}
       >
         すべて解除

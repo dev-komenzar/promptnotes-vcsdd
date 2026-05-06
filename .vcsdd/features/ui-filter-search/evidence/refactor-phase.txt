@@ -1,0 +1,22 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+Refactors applied:
+1. feedReducer.ts: extracted searchSortOf(state) helper to eliminate 5 repeated
+   `state.searchQuery ?? ''` / `state.sortDirection ?? 'desc'` patterns
+2. feedReducer.ts: collapsed single-expression nextState returns in SearchApplied,
+   SearchCleared, SortDirectionToggled cases
+3. FeedList.svelte: removed dead `filterApplied` $state variable (assigned but
+   never read after ui-filter-search unified empty state replaced it)
+4. FeedList.svelte: removed FeedListViewState extended type alias (no longer needed)
+
+Post-refactor test results:
+  bun test:  1650/1650 pass
+  DOM tests: 248/253 pass (5 pre-existing TagFilterSidebar failures unchanged)
+
+[POST-CONVERGENCE UPDATE — 2026-05-06T14:40:31Z]
+The 5 pre-existing TagFilterSidebar failures noted on the line above were
+later resolved by a coherence fix to TagFilterSidebar.svelte. DOM suite is
+now 253/253. See evidence/post-convergence-tagfilter-fix.txt for details
+and finding resolutions in ui-tag-chip/.../FIND-005.json, FIND-007.json,
+and ui-filter-search/.../FIND-CONTRACT-006.json.

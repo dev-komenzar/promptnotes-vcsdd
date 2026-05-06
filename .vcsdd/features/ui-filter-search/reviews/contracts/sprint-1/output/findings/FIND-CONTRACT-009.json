@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-009",
+  "dimension": "verification_readiness",
+  "category": "purity_boundary",
+  "severity": "critical",
+  "description": "CRIT-003 pass threshold says 'purityAudit.test.ts passes; no setTimeout in pure modules' but verification-architecture.md §4 (Test File Map) does NOT list any purityAudit.test.ts. PROP-FILTER-001 specifies a grep audit on feedReducer.ts for the regex `setTimeout|Date\\.now|fetch|invoke|\\$state|\\$effect|\\$derived` (six forbidden APIs). The threshold (a) references a non-existent test file, (b) covers only one of six forbidden APIs (setTimeout) by name, (c) widens the audit scope to 'pure modules' without enumerating searchPredicate.ts, sortByUpdatedAt.ts, computeVisible.ts. This threshold is not binary-evaluable and lets Date.now/fetch/invoke/$state/$effect/$derived slip through.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/specs/verification-architecture.md",
+    "lineRange": "98-136",
+    "snippet": "PROP-FILTER-001 ... grep audit ... Zero hits for setTimeout|Date.now|fetch|invoke|$state|$effect|$derived"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

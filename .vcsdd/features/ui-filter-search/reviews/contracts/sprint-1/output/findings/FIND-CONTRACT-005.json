@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-005",
+  "dimension": "implementation_correctness",
+  "category": "spec_gap",
+  "severity": "critical",
+  "description": "No contract criterion explicitly covers the 'implementation_correctness' dimension required by Phase 3 adversary review. Critical correctness obligations are absent from any pass threshold: PROP-FILTER-005 (feedReducer totality / never-throws over adversarial strings, REQ-FILTER-017), PROP-FILTER-010 (searchPredicate ASCII property; toLowerCase vs toLocaleLowerCase, REQ-FILTER-005), PROP-FILTER-014 (sort tiebreak determinism, EC-T-001), PROP-FILTER-022 (debounce coalescing, EC-S-016), PROP-FILTER-023 (whitespace-only not short-circuited, EC-S-002), PROP-FILTER-024 (Esc cancels timer, EC-S-005). CRIT-001's 'REQ appears in test file' threshold cannot substitute for a criterion that demands these specific properties pass.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "20-60",
+    "snippet": "(no criterion lists implementation_correctness as dimension; no PROP-FILTER-005/010/014/022/023/024 in any pass threshold)"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

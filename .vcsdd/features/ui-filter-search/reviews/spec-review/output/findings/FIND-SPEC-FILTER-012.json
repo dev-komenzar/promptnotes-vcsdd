@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-SPEC-FILTER-012",
+  "iteration": 2,
+  "dimension": "specification_crystallization",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "title": "Edge case IDs EC-S-005 and EC-S-010 are double-defined with conflicting meanings",
+  "description": "behavioral-spec.md defines EC-S-005 and EC-S-010 twice each, with mutually inconsistent semantics. Inside REQ-FILTER-003 (lines 204-206) the spec states:\n  - EC-S-005: 'Esc on already-empty input: SearchCleared may be dispatched but has no visible effect'\n  - EC-S-010: 'Esc while debounce timer is pending: timer is cancelled BEFORE SearchCleared is dispatched'\n\nIn the §4.1 Edge Case Catalog table (lines 449-455) the same IDs are reassigned:\n  - EC-S-005: 'Rapid keystroke followed by Esc before debounce'\n  - EC-S-010: 'Esc key with no pending debounce'\n\nThe two scenarios behind EC-S-005 are roughly inverse (already-empty input vs. typed-then-Esc-mid-debounce); the two scenarios behind EC-S-010 are also inverse (Esc with pending timer vs. Esc with no pending timer). Tests that cite EC-S-005/EC-S-010 by ID (e.g. PROP-FILTER-024 references EC-S-005 and EC-S-010) cannot determine which behavior they must verify. This is a hard internal contradiction that blocks the EARS → test traceability that Done items 7-8 rely on.",
+  "evidence": {
+    "filePath": "specs/behavioral-spec.md",
+    "lineRange": "204-206, 449-455",
+    "snippet": "REQ-FILTER-003 inline:\n- EC-S-005: Esc on already-empty input ...\n- EC-S-010: Esc while debounce timer is pending ...\n\n§4.1 catalog row 5: EC-S-005 | Rapid keystroke followed by Esc before debounce ...\n§4.1 catalog row 10: EC-S-010 | Esc key with no pending debounce ..."
+  },
+  "remediation": "Renumber so each EC-S-NNN ID has exactly one definition. Suggested split: keep EC-S-005 = 'rapid keystroke + Esc before debounce' (table) and assign new IDs (e.g. EC-S-016, EC-S-017) to 'Esc on already-empty input' and 'Esc with pending timer'. Update PROP-FILTER-024 and any test references accordingly.",
+  "routeToPhase": "1a"
+}

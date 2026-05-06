@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-SPEC-FILTER-015",
+  "iteration": 2,
+  "dimension": "specification_crystallization",
+  "category": "spec_gap",
+  "severity": "high",
+  "title": "DomainSnapshotReceived pseudocode references undefined `reconstructedState`",
+  "description": "behavioral-spec.md §2 lines 122-130 give the canonical pseudocode for the DomainSnapshotReceived case:\n\n```\ncase 'DomainSnapshotReceived':\n  // searchQuery and sortDirection carried forward (not reset)\n  nextVisible = computeVisible(snapshot.feed.visibleNoteIds, snapshot.noteMetadata,\n                               state.activeFilterTags, state.searchQuery,\n                               state.sortDirection)\n  return { state: { ...reconstructedState,\n                    searchQuery: state.searchQuery,\n                    sortDirection: state.sortDirection,\n                    visibleNoteIds: nextVisible }, commands: [...] }\n```\n\nThe identifier `reconstructedState` is never defined anywhere in the spec or in verification-architecture.md. It is presumably meant to stand for 'the rest of FeedViewState rebuilt from the snapshot' (editingStatus, editingNoteId, pendingNextNoteId, allNoteIds, noteMetadata, activeDeleteModalNoteId, lastDeletionError, tagAutocompleteVisibleFor, loadingStatus, activeFilterTags), but the spec never enumerates which of those come from `snapshot.*` and which carry over from `state.*`. REQ-FILTER-012 mentions only allNoteIds, noteMetadata, sortDirection, searchQuery, and activeFilterTags — it does not address the other six fields.\n\nAlso, `snapshot.feed.visibleNoteIds` is being used here as the pure input to `computeVisible`'s `allNoteIds` parameter (per the parameter name in line 132). That is an invariant rename that must be locked down: in the existing reducer (feedReducer.ts:33-44, 51), `snapshot.feed.visibleNoteIds` becomes the new `state.allNoteIds`. The spec needs to state that explicitly, otherwise iterations may diverge on whether allNoteIds means 'unfiltered domain ids' or 'pre-search filtered ids'.\n\nThis ambiguity blocks Done item 4 ('FeedViewState contains searchQuery and sortDirection; both are preserved across DomainSnapshotReceived') because the spec hasn't said what is preserved versus replaced for the other fields.",
+  "evidence": {
+    "filePath": "specs/behavioral-spec.md",
+    "lineRange": "122-130",
+    "snippet": "return { state: { ...reconstructedState, searchQuery: state.searchQuery, sortDirection: state.sortDirection, visibleNoteIds: nextVisible }, commands: [...] }"
+  },
+  "remediation": "Replace the `...reconstructedState` shorthand with an explicit object literal listing every FeedViewState field and where it comes from (snapshot vs. previous state vs. derived). Cross-reference feedReducer.ts:46-67 to keep the field-by-field provenance consistent with the existing DomainSnapshotReceived case.",
+  "routeToPhase": "1a"
+}

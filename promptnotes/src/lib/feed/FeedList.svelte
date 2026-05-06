@@ -25,15 +25,14 @@
   import DeleteConfirmModal from './DeleteConfirmModal.svelte';
   import DeletionFailureBanner from './DeletionFailureBanner.svelte';
   import TagFilterSidebar from './TagFilterSidebar.svelte';
+  import SearchInput from './SearchInput.svelte';
+  import SortToggle from './SortToggle.svelte';
   import { tagInventoryFromMetadata } from './tagInventory.js';
   import { onDestroy, untrack } from 'svelte';
   import { nowIso } from './clockHelpers.js';
 
-  /** Extended prop type that allows filterApplied to be passed alongside viewState. */
-  type FeedListViewState = FeedViewState & { filterApplied?: boolean };
-
   interface Props {
-    viewState: FeedListViewState;
+    viewState: FeedViewState;
     adapter: TauriFeedAdapter;
     stateChannel: FeedStateChannel;
     /** FIND-S2-01/05/06: vault directory path, forwarded to Rust commands. */
@@ -44,14 +43,12 @@
 
   const _initial = untrack(() => initialViewState);
   let currentViewState = $state<FeedViewState>({ ..._initial });
-  let filterApplied = $state(_initial.filterApplied ?? false);
 
   const _channel = untrack(() => stateChannel);
 
   const unsubscribe = _channel.subscribe((snapshot) => {
     const result = feedReducer(currentViewState, { kind: 'DomainSnapshotReceived', snapshot });
     currentViewState = result.state;
-    filterApplied = snapshot.feed.filterApplied;
     // Consume commands emitted by the reducer (FIND-008: reducer→shell command bus)
     for (const cmd of result.commands) {
       dispatchCommand(cmd);
@@ -276,6 +273,26 @@
     }
   }
 
+  // ── ui-filter-search handlers ───────────────────────────────────────
+
+  function handleSearchApplied(query: string): void {
+    const result = feedReducer(currentViewState, { kind: 'SearchApplied', query });
+    currentViewState = result.state;
+    // SearchApplied returns commands:[] — no dispatch needed
+  }
+
+  function handleSearchCleared(): void {
+    const result = feedReducer(currentViewState, { kind: 'SearchCleared' });
+    currentViewState = result.state;
+    // SearchCleared returns commands:[] — no dispatch needed
+  }
+
+  function handleSortDirectionToggle(): void {
+    const result = feedReducer(currentViewState, { kind: 'SortDirectionToggled' });
+    currentViewState = result.state;
+    // SortDirectionToggled returns commands:[] — no dispatch needed
+  }
+
   onDestroy(() => {
     unsubscribe();
   });
@@ -284,8 +301,16 @@
   const loadingStatus = $derived(currentViewState.loadingStatus);
   const isLoading = $derived(loadingStatus === 'loading');
   const isEmpty = $derived(visibleNoteIds.length === 0 && !isLoading);
-  const isFilteredEmpty = $derived(isEmpty && (filterApplied || activeFilterTags.length > 0));
-  const isPlainEmpty = $derived(isEmpty && !filterApplied && activeFilterTags.length === 0);
+
+  // ui-filter-search: unified search-empty-state when any active filter/search produces 0 results
+  // searchQuery and sortDirection are required fields on FeedViewState (types.ts lines 57-59)
+  const searchQuery = $derived(currentViewState.searchQuery);
+  const sortDirection = $derived(currentViewState.sortDirection);
+  const isSearchOrFilterActive = $derived(
+    searchQuery !== '' || activeFilterTags.length > 0
+  );
+  const isSearchEmpty = $derived(isEmpty && isSearchOrFilterActive);
+  const isPlainEmpty = $derived(isEmpty && !isSearchOrFilterActive);
 
   const activeDeleteModalNoteId = $derived(currentViewState.activeDeleteModalNoteId);
   const lastDeletionError = $derived(currentViewState.lastDeletionError);
@@ -308,6 +333,18 @@
     onClear={handleTagFilterClear}
   />
 
+  <!-- Search + Sort toolbar (ui-filter-search) -->
+  <div class="search-toolbar">
+    <SearchInput
+      onSearchApplied={handleSearchApplied}
+      onSearchCleared={handleSearchCleared}
+    />
+    <SortToggle
+      {sortDirection}
+      onToggle={handleSortDirectionToggle}
+    />
+  </div>
+
   <!-- Deletion failure banner at top of feed per spec (FIND-012 fix) -->
   {#if lastDeletionError !== null}
     <DeletionFailureBanner
@@ -323,9 +360,10 @@
     <div data-testid="feed-loading" class="feed-loading">
       読み込み中...
     </div>
-  {:else if isFilteredEmpty}
-    <div data-testid="feed-filtered-empty-state" class="feed-empty">
-      フィルター条件に一致するノートがありません
+  {:else if isSearchEmpty}
+    <!-- Unified zero-results state when search or filter is active (REQ-FILTER-004) -->
+    <div data-testid="feed-search-empty-state" class="feed-empty">
+      検索条件に一致するノートがありません
     </div>
   {:else if isPlainEmpty}
     <div data-testid="feed-empty-state" class="feed-empty">
@@ -369,6 +407,15 @@
     flex-direction: column;
     gap: 0;
     padding: 8px;
+  }
+
+  /* Search + Sort toolbar (ui-filter-search) */
+  .search-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    margin-bottom: 4px;
   }
 
   .feed-loading {

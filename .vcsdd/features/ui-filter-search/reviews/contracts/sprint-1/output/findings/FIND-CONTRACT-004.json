@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-004",
+  "dimension": "edge_case_coverage",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "Several edge cases that map to safety-critical proof obligations are not surfaced as named pass-criteria. EC-S-007 (note deleted while search active) maps to REQ-FILTER-012 / PROP-FILTER-007; EC-T-004 (toggle sort while debounce pending) maps to PROP-FILTER-022/024 race-freedom; EC-C-007 (DomainSnapshotReceived while debounce mid-flight) is the only place asserting reducer-shell race freedom. Missing these from the binary pass threshold lets the Phase 3 adversary skip them. The contract should explicitly enumerate each PROP-FILTER-NNN that the criterion guards.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/specs/behavioral-spec.md",
+    "lineRange": "529-565",
+    "snippet": "EC-T-004 ... EC-C-007 ... DomainSnapshotReceived while debounce mid-flight"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

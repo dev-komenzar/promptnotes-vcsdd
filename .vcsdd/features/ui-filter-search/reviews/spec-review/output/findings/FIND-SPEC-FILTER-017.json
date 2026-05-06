@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-SPEC-FILTER-017",
+  "iteration": 3,
+  "dimension": "specification_crystallization",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "title": "DomainSnapshotReceived pseudocode regresses ui-tag-chip's tagAutocompleteVisibleFor stale-reference guard",
+  "description": "Iteration 3 expanded the DomainSnapshotReceived pseudocode (behavioral-spec.md §2 lines 122-147) and added a provenance table (lines 184-199) to fix FIND-SPEC-FILTER-015. While the expansion is now explicit, the new prescription contradicts the existing feedReducer.ts implementation for one field: `tagAutocompleteVisibleFor`.\n\nThe existing pure reducer (promptnotes/src/lib/feed/feedReducer.ts:62-66) implements a stale-reference guard:\n```\ntagAutocompleteVisibleFor:\n  state.tagAutocompleteVisibleFor !== null &&\n  snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined\n    ? state.tagAutocompleteVisibleFor\n    : null,\n```\nThis was introduced by ui-tag-chip so that when the note hosting an open tag-input is deleted (note disappears from snapshot), the input automatically closes.\n\nThe new ui-filter-search spec drops this guard:\n  - §2 line 141: `tagAutocompleteVisibleFor: state.tagAutocompleteVisibleFor`  (straight pass-through)\n  - §2 line 196 provenance table: `tagAutocompleteVisibleFor | state.tagAutocompleteVisibleFor | Preserved from previous state`\n\nAn implementer following this spec literally would either (a) replace the existing guard with straight pass-through (regressing ui-tag-chip behavior — REQ-TAG handlers would now retain stale autocomplete IDs across delete) or (b) refuse to follow the spec, in which case the spec is wrong.\n\nThis is a high-severity defect because:\n1. It contradicts an already-shipped feature.\n2. It creates a Phase 2c risk: a refactor that follows the spec breaks ui-tag-chip's regression baseline (verification-architecture §5 lists `dom/TagFilterSidebar.dom.vitest.ts` and tag tests as must-stay-green).\n3. Done item 4 ('FeedViewState contains searchQuery and sortDirection; both are preserved across DomainSnapshotReceived') passes, but the DomainSnapshotReceived case as a whole is now mis-specified.",
+  "evidence": {
+    "filePath": "specs/behavioral-spec.md",
+    "lineRange": "141, 196",
+    "snippet": "§2 line 141: tagAutocompleteVisibleFor: state.tagAutocompleteVisibleFor,  // ── preserved from previous state\n§2 line 196 provenance table: | `tagAutocompleteVisibleFor` | `state.tagAutocompleteVisibleFor` | Preserved from previous state |\n\nfeedReducer.ts:62-66 (existing): tagAutocompleteVisibleFor: state.tagAutocompleteVisibleFor !== null && snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined ? state.tagAutocompleteVisibleFor : null"
+  },
+  "remediation": "Update §2 pseudocode line 141 and the provenance table row 196 to capture the existing stale-reference guard. Suggested:\n```\ntagAutocompleteVisibleFor:\n  state.tagAutocompleteVisibleFor !== null &&\n  snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined\n    ? state.tagAutocompleteVisibleFor\n    : null,\n```\nProvenance table: Provenance = 'Preserved if note still exists in snapshot; nulled otherwise'. Add a note that this is inherited from ui-tag-chip and ui-filter-search must not regress it.",
+  "routeToPhase": "1a"
+}

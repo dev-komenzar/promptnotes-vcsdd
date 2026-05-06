@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-PHASE3-005",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "FeedList.svelte at lines 306-307 uses `(currentViewState as unknown as { searchQuery: string })` and `(currentViewState as unknown as { sortDirection: 'asc' | 'desc' })` to read fields that types.ts (lines 56-59) declares as required, non-optional members of FeedViewState. The double-cast suggests the author either did not trust the type or copy-pasted defensive code from a pre-extension state shape. This (a) fights the type system, (b) implies the searchQuery/sortDirection invariants might be violated at runtime, and (c) makes purity/exhaustiveness reasoning harder. The same defensive pattern leaks into feedReducer.ts via `searchSortOf`, which uses `state.searchQuery ?? ''` and `state.sortDirection ?? 'desc'` — but FeedViewState already mandates these as non-optional. Either tighten the types or document why the runtime guards are needed; do not silently mix two truths.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedList.svelte",
+    "lineRange": "306-307",
+    "snippet": "const searchQuery = $derived((currentViewState as unknown as { searchQuery: string }).searchQuery ?? '');\nconst sortDirection = $derived((currentViewState as unknown as { sortDirection: 'asc' | 'desc' }).sortDirection ?? 'desc');"
+  },
+  "routeToPhase": "2c"
+}

@@ -22,5 +22,18 @@
       "description": "Crash site: entries is undefined because prop name mismatch"
     }
   ],
-  "routeToPhase": "2a"
+  "routeToPhase": "2a",
+  "resolution": {
+    "status": "resolved",
+    "resolvedAt": "2026-05-06T14:42:00.000Z",
+    "resolutionType": "post-convergence-coherence-fix",
+    "resolutionNotes": "Two coherence faults addressed in a single fix to TagFilterSidebar.svelte: (1) prop name was already unified to 'entries' on both the test and component sides; (2) data-testid 'tag-filter-clear' on the clear button was renamed to 'tag-filter-clear-all' to match the test fixture's selector. Also fixed in the same pass: the sidebar now sorts entries by usageCount descending internally (PROP-TAG-012 / REQ-TAG-009) so that callers cannot regress the rendered order. All 15 TagFilterSidebar.dom.vitest.ts tests now pass; the suite as a whole reports 253/253.",
+    "evidence": {
+      "testRun": "bun run test:dom: Test Files 28 passed (28); Tests 253 passed (253) at 2026-05-06T14:40:31Z",
+      "componentChange": {
+        "filePath": "promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+        "summary": "Added `sortedEntries` $derived sort by usageCount desc; iterated `sortedEntries` instead of `entries`; renamed data-testid to 'tag-filter-clear-all'."
+      }
+    }
+  }
 }

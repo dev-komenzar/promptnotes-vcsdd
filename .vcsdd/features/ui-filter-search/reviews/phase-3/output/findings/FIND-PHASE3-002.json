@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-PHASE3-002",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "CRIT-EC-001 requires all 28 EC IDs (EC-S-001..016, EC-T-001..005, EC-C-001..007) to appear as named test cases. Audit of every test file shows 7 EC IDs have NO occurrence as a named test case: EC-S-001 (empty string SearchApplied — the empty-needle behavior is asserted as 'PROP-FILTER-002d' but the EC label is not used), EC-S-003 (very long query — only EC-S-012 is labeled, despite being a separate ID in §4.1), EC-S-004 (special regex chars literal — only EC-S-015 is labeled), EC-S-006 (note saved while search active — referenced as 'PROP-FILTER-007b' but EC-S-006 label is absent), EC-T-004 (already in FIND-PHASE3-001), EC-C-002 (search active then tag toggled — no test labeled), EC-C-007 (already in FIND-PHASE3-001). Pass threshold of CRIT-EC-001 ('grep -r EC-... returns at least one match per EC ID') therefore fails for 7 of 28 IDs.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts",
+    "lineRange": "75-557",
+    "snippet": "Test labels found: EC-S-002, EC-S-005, EC-S-007, EC-S-008, EC-S-009, EC-S-010, EC-S-011, EC-S-012, EC-S-013, EC-S-014, EC-S-015, EC-S-016, EC-T-001, EC-T-002, EC-T-003, EC-T-005, EC-C-001, EC-C-003, EC-C-004, EC-C-005, EC-C-006 (21 of 28). Missing labels: EC-S-001, EC-S-003, EC-S-004, EC-S-006, EC-T-004, EC-C-002, EC-C-007."
+  },
+  "routeToPhase": "2a"
+}
