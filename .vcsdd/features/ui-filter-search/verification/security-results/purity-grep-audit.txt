@@ -1,0 +1,26 @@
+## Purity / Forbidden API grep audit — ui-filter-search Phase 5
+## Date: 2026-05-06
+## Scope: searchPredicate.ts, sortByUpdatedAt.ts, computeVisible.ts, feedReducer.ts
+
+=== setTimeout ===
+  0 hits in pure core files
+
+=== setInterval ===
+  0 hits in pure core files
+
+=== Date.now ===
+  0 hits in pure core files
+
+=== Date( ===
+  0 hits in pure core files
+
+=== new Date ===
+  0 hits in pure core files
+
+=== Math.random ===
+  0 hits in pure core files
+
+NOTE: types.ts lines 9,11,12 contain these strings but ONLY inside a JSDoc block comment
+that documents the forbidden API list. No actual usage in any pure core file.
+
+Result: PASS — 0 forbidden API calls in pure core implementation files.
