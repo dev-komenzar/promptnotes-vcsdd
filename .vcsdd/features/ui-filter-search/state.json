@@ -2,7 +2,7 @@
   "featureName": "ui-filter-search",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "ready-for-3",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -18,7 +18,7 @@
       "from": "1b",
       "to": "1a",
       "timestamp": "2026-05-06T05:00:00.000Z",
-      "reason": "adversary findings FIND-SPEC-FILTER-001..011 — spec revision required"
+      "reason": "adversary findings FIND-SPEC-FILTER-001..011 \u2014 spec revision required"
     },
     {
       "from": "1a",
@@ -30,7 +30,7 @@
       "from": "1b",
       "to": "1a",
       "timestamp": "2026-05-06T06:00:00.000Z",
-      "reason": "adversary iteration 2 findings FIND-SPEC-FILTER-012..015 — pinpoint spec re-revision required"
+      "reason": "adversary iteration 2 findings FIND-SPEC-FILTER-012..015 \u2014 pinpoint spec re-revision required"
     },
     {
       "from": "1a",
@@ -42,7 +42,7 @@
       "from": "1b",
       "to": "1a",
       "timestamp": "2026-05-06T07:00:00.000Z",
-      "reason": "adversary iteration 3 findings FIND-SPEC-FILTER-016..017 — PROP-FILTER-022 wrong EC category; tagAutocompleteVisibleFor guard regression"
+      "reason": "adversary iteration 3 findings FIND-SPEC-FILTER-016..017 \u2014 PROP-FILTER-022 wrong EC category; tagAutocompleteVisibleFor guard regression"
     },
     {
       "from": "1a",
@@ -67,19 +67,19 @@
       "from": "2a",
       "to": "2b",
       "timestamp": "2026-05-06T13:00:00.000Z",
-      "reason": "red phase PASS — 8 test files written, all new tests fail, regression baseline passes; entering green phase"
+      "reason": "red phase PASS \u2014 8 test files written, all new tests fail, regression baseline passes; entering green phase"
     },
     {
       "from": "2b",
       "to": "2c",
       "timestamp": "2026-05-06T13:45:00.000Z",
-      "reason": "green phase PASS — 1650 bun tests pass, 248 DOM tests pass; all ui-filter-search target tests green; entering refactor phase"
+      "reason": "green phase PASS \u2014 1650 bun tests pass, 248 DOM tests pass; all ui-filter-search target tests green; entering refactor phase"
     },
     {
       "from": "2c",
       "to": "ready-for-3",
       "timestamp": "2026-05-06T13:50:00.000Z",
-      "reason": "refactor PASS — extracted searchSortOf helper in feedReducer, removed dead filterApplied state in FeedList; all 1650 bun tests and 248 DOM tests remain green"
+      "reason": "refactor PASS \u2014 extracted searchSortOf helper in feedReducer, removed dead filterApplied state in FeedList; all 1650 bun tests and 248 DOM tests remain green"
     }
   ],
   "iterations": {
@@ -91,31 +91,131 @@
     "2c": 1
   },
   "proofObligations": [
-    { "id": "PROP-FILTER-001", "tier": 0, "status": "asserted" },
-    { "id": "PROP-FILTER-002", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-003", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-004", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-005", "tier": 2, "status": "asserted" },
-    { "id": "PROP-FILTER-006", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-007", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-008", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-009", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-010", "tier": 2, "status": "asserted" },
-    { "id": "PROP-FILTER-011", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-012", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-013", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-014", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-015", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-016", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-017", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-018", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-019", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-020", "tier": 0, "status": "asserted" },
-    { "id": "PROP-FILTER-021", "tier": 0, "status": "asserted" },
-    { "id": "PROP-FILTER-022", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-023", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-024", "tier": 1, "status": "asserted" },
-    { "id": "PROP-FILTER-025", "tier": 1, "status": "asserted" }
+    {
+      "id": "PROP-FILTER-001",
+      "tier": 0,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-002",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-003",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-004",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-005",
+      "tier": 2,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-006",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-007",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-008",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-009",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-010",
+      "tier": 2,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-011",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-012",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-013",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-014",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-015",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-016",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-017",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-018",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-019",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-020",
+      "tier": 0,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-021",
+      "tier": 0,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-022",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-023",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-024",
+      "tier": 1,
+      "status": "asserted"
+    },
+    {
+      "id": "PROP-FILTER-025",
+      "tier": 1,
+      "status": "asserted"
+    }
   ],
   "traceability": {
     "epicId": "VCSDD-ui-filter-search-1778038686107",
@@ -131,77 +231,109 @@
         "beadId": "BEAD-002",
         "type": "spec-verification",
         "artifactPath": "specs/verification-architecture.md",
-        "linkedBeads": ["BEAD-001"],
+        "linkedBeads": [
+          "BEAD-001"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-003",
         "type": "review-spec",
         "artifactPath": ".vcsdd/features/ui-filter-search/reviews/spec-review/output/verdict.json",
-        "linkedBeads": ["BEAD-001", "BEAD-002"],
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-002"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-004",
         "type": "test-suite",
         "artifactPath": "promptnotes/src/lib/feed/__tests__/searchPredicate.test.ts",
-        "linkedBeads": ["BEAD-003"],
+        "linkedBeads": [
+          "BEAD-003"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-005",
         "type": "test-suite",
         "artifactPath": "promptnotes/src/lib/feed/__tests__/sortByUpdatedAt.test.ts",
-        "linkedBeads": ["BEAD-003"],
+        "linkedBeads": [
+          "BEAD-003"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-006",
         "type": "test-suite",
         "artifactPath": "promptnotes/src/lib/feed/__tests__/computeVisible.test.ts",
-        "linkedBeads": ["BEAD-003"],
+        "linkedBeads": [
+          "BEAD-003"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-007",
         "type": "test-suite",
         "artifactPath": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts",
-        "linkedBeads": ["BEAD-003"],
+        "linkedBeads": [
+          "BEAD-003"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-008",
         "type": "implementation",
         "artifactPath": "promptnotes/src/lib/feed/searchPredicate.ts",
-        "linkedBeads": ["BEAD-004"],
+        "linkedBeads": [
+          "BEAD-004"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-009",
         "type": "implementation",
         "artifactPath": "promptnotes/src/lib/feed/sortByUpdatedAt.ts",
-        "linkedBeads": ["BEAD-005"],
+        "linkedBeads": [
+          "BEAD-005"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-010",
         "type": "implementation",
         "artifactPath": "promptnotes/src/lib/feed/computeVisible.ts",
-        "linkedBeads": ["BEAD-006"],
+        "linkedBeads": [
+          "BEAD-006"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-011",
         "type": "implementation",
         "artifactPath": "promptnotes/src/lib/feed/SearchInput.svelte",
-        "linkedBeads": ["BEAD-007"],
+        "linkedBeads": [
+          "BEAD-007"
+        ],
         "status": "active"
       },
       {
         "beadId": "BEAD-012",
         "type": "implementation",
         "artifactPath": "promptnotes/src/lib/feed/SortToggle.svelte",
-        "linkedBeads": ["BEAD-007"],
+        "linkedBeads": [
+          "BEAD-007"
+        ],
+        "status": "active"
+      },
+      {
+        "beadId": "BEAD-013",
+        "type": "review-contract-sprint-1",
+        "artifactPath": "reviews/contracts/sprint-1/output/verdict.json",
+        "linkedBeads": [
+          "BEAD-007"
+        ],
         "status": "active"
       }
     ]
@@ -246,10 +378,15 @@
         "testsAfterRefactor": "PASS (1650/1650 bun + 248 DOM)",
         "evidencePath": ".vcsdd/features/ui-filter-search/evidence/refactor-phase.txt"
       }
+    },
+    "contract-sprint-1": {
+      "verdict": "PASS",
+      "recordedAt": "2026-05-06T08:00:00.000Z",
+      "iteration": 2
     }
   },
   "sprintCount": 1,
   "createdAt": "2026-05-06T03:38:06.107Z",
   "contractIteration": 2,
-  "updatedAt": "2026-05-06T14:30:00.000Z"
+  "updatedAt": "2026-05-06T08:00:00.000Z"
 }
