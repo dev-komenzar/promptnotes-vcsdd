@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-PHASE3-007",
+  "dimension": "edge_case_coverage",
+  "category": "test_quality",
+  "severity": "medium",
+  "description": "Several existing tests use REQ/PROP labels (e.g. 'PROP-FILTER-002d: SearchApplied with empty query', 'PROP-FILTER-007b: note saved with matching content', 'PROP-FILTER-014c: updatedAt=0 sorted correctly') to cover scenarios that the spec catalogs as distinct EC IDs (EC-S-001, EC-S-006, EC-T-002 respectively). Because the contract grades EC coverage by greppable EC label, those tests do NOT count toward CRIT-EC-001 even though their assertions are correct. This is a labeling mismatch that masquerades as coverage. The fix is mechanical (rename or add comment with the EC ID) but the audit signal is real: greppable EC labels are missing for at least EC-S-001, EC-S-003, EC-S-004, EC-S-006, EC-C-002 in addition to the CRIT EC-T-004 and EC-C-007 gaps in FIND-PHASE3-001.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts",
+    "lineRange": "103-115",
+    "snippet": "test('PROP-FILTER-002d: SearchApplied(\"\") shows all notes (no search predicate applied)', ...)  — semantically EC-S-001 but label not present."
+  },
+  "routeToPhase": "2a"
+}

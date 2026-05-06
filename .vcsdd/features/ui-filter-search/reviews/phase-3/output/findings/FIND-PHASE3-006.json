@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-PHASE3-006",
+  "dimension": "implementation_correctness",
+  "category": "test_quality",
+  "severity": "low",
+  "description": "computeVisible.ts at line 50 lowercases searchQuery once: `const needle = (searchQuery ?? '').toLowerCase();` and then passes that already-lowercased `needle` to searchPredicate, which lowercases both sides again at line 28: `haystack.toLowerCase().includes(needle.toLowerCase())`. The double lowercasing of the needle is functionally idempotent but is wasted work on the hot path (per-note, per-query). More importantly, it means the empty-needle short-circuit in searchPredicate (`if (needle === '') return true;`) is dead in this code path because computeVisible already filters out empty needles before calling. This shows the boundary between the two functions is not crisp: either searchPredicate is the canonical case-fold + substring entry point (and computeVisible should not pre-fold), or computeVisible is responsible for case fold (and searchPredicate should accept already-lowercased inputs and document that). Pick one and document it; otherwise the next refactor will reintroduce a case-sensitivity bug.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/computeVisible.ts",
+    "lineRange": "48-58",
+    "snippet": "const needle = (searchQuery ?? '').toLowerCase();\nconst searchFiltered = needle !== ''\n  ? tagFiltered.filter((id) => { ... return searchPredicate(needle, haystack); })\n  : tagFiltered;"
+  },
+  "routeToPhase": "2c"
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-PHASE3-003",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "high",
+  "description": "Contract CRIT-IC-004 and CRIT-IC-006 explicitly name the test file 'searchDebounce.test.ts' and require vitest-fake-timers coverage of PROP-FILTER-022 (rapid keystrokes coalesce) and PROP-FILTER-024 (Esc cancels pending debounce). The file 'promptnotes/src/lib/feed/__tests__/searchDebounce.test.ts' does not exist on disk. The functional content has been moved into 'promptnotes/src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts' but that filename is not what the contract approved. Strict reading of the criteria pass thresholds ('searchDebounce.test.ts (vitest fake timers) covers this and passes') therefore fails. This is a contract-fidelity violation: the builder unilaterally renamed/relocated a contractually named artifact instead of negotiating a contract amendment. Verification-architecture.md §4 also lists 'lib/feed/__tests__/searchDebounce.test.ts' explicitly.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts",
+    "lineRange": "118-256",
+    "snippet": "The fake-timers debounce + Esc-cancel tests (PROP-FILTER-022, PROP-FILTER-024) live here at __tests__/dom/SearchInput.dom.vitest.ts, not at __tests__/searchDebounce.test.ts as the contract requires."
+  },
+  "routeToPhase": "2a"
+}

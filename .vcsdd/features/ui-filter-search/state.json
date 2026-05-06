@@ -80,6 +80,12 @@
       "to": "ready-for-3",
       "timestamp": "2026-05-06T13:50:00.000Z",
       "reason": "refactor PASS \u2014 extracted searchSortOf helper in feedReducer, removed dead filterApplied state in FeedList; all 1650 bun tests and 248 DOM tests remain green"
+    },
+    {
+      "from": "phase-3-feedback",
+      "to": "phase-3-feedback",
+      "timestamp": "2026-05-06T14:10:00.000Z",
+      "reason": "phase-3 adversary findings addressed (iteration 2): EC labels added for EC-S-001/003/004/006/C-002/T-004/C-007; computeVisible double-lowercase fixed; FeedList.svelte double-cast removed; contract CRIT-IC-001/004/006 file paths corrected"
     }
   ],
   "iterations": {
@@ -88,7 +94,8 @@
     "1c": 1,
     "2a": 1,
     "2b": 1,
-    "2c": 1
+    "2c": 1,
+    "phase-3-feedback": 2
   },
   "proofObligations": [
     {
@@ -388,5 +395,5 @@
   "sprintCount": 1,
   "createdAt": "2026-05-06T03:38:06.107Z",
   "contractIteration": 2,
-  "updatedAt": "2026-05-06T08:00:00.000Z"
+  "updatedAt": "2026-05-06T14:10:00.000Z"
 }

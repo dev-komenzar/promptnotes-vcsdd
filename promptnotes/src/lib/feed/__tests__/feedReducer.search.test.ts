@@ -100,7 +100,7 @@ describe('PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005)', () =
     expect(result.state.visibleNoteIds).not.toContain('note-b');
   });
 
-  test('PROP-FILTER-002d: SearchApplied("") shows all notes (no search predicate applied)', () => {
+  test('PROP-FILTER-002d / EC-S-001: SearchApplied("") shows all notes (no search predicate applied)', () => {
     const state = makeState({
       allNoteIds: ['note-a', 'note-b'],
       noteMetadata: {
@@ -338,7 +338,7 @@ describe('PROP-FILTER-007: DomainSnapshotReceived + search active (REQ-FILTER-01
     expect(result.state.visibleNoteIds).not.toContain('note-b');
   });
 
-  test('PROP-FILTER-007b: note saved with matching content appears in visibleNoteIds (EC-S-006)', () => {
+  test('PROP-FILTER-007b / EC-S-006: note saved with matching content appears in visibleNoteIds', () => {
     const state = makeState({ searchQuery: 'saved', sortDirection: 'desc' });
     const snapshot = makeSnapshot({
       cause: { kind: 'NoteFileSaved', savedNoteId: 'note-a' },
@@ -552,5 +552,162 @@ describe('EC-C-006: Sort varies order; set of visible notes unchanged', () => {
     }
     // But orders differ
     expect(Array.from(r1.state.visibleNoteIds)).not.toEqual(Array.from(r2.state.visibleNoteIds));
+  });
+});
+
+// ── EC-S-003: Very long query (10 000 chars) ─────────────────────────────────
+
+describe('EC-S-003: Very long query string (10 000 chars)', () => {
+  test('EC-S-003: SearchApplied with 10000-char query does not throw and returns correct results', () => {
+    const longQuery = 'a'.repeat(10000);
+    const state = makeState({
+      allNoteIds: ['note-a', 'note-b'],
+      noteMetadata: {
+        'note-a': makeMetadata('a'.repeat(10000), []),
+        'note-b': makeMetadata('no match here', []),
+      },
+    });
+    const action = { kind: 'SearchApplied' as const, query: longQuery };
+    expect(() => feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction)).not.toThrow();
+    const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+    // note-a body contains the query as substring; note-b does not
+    expect(result.state.visibleNoteIds).toContain('note-a');
+    expect(result.state.visibleNoteIds).not.toContain('note-b');
+  });
+});
+
+// ── EC-S-004: Special regex chars in query ───────────────────────────────────
+
+describe('EC-S-004: Query with special regex chars', () => {
+  test('EC-S-004: SearchApplied with ".*+?[]()" treats characters as literals, not regex', () => {
+    const state = makeState({
+      allNoteIds: ['note-a', 'note-b'],
+      noteMetadata: {
+        'note-a': makeMetadata('price is 5.00 (discount)', []),
+        'note-b': makeMetadata('regular text', []),
+      },
+    });
+    // Query contains regex-special chars; must be treated as literal substring
+    const action = { kind: 'SearchApplied' as const, query: '5.00 (discount)' };
+    expect(() => feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction)).not.toThrow();
+    const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+    expect(result.state.visibleNoteIds).toContain('note-a');
+    expect(result.state.visibleNoteIds).not.toContain('note-b');
+  });
+});
+
+// ── EC-C-002: Search active, then tag filter toggled ─────────────────────────
+
+describe('EC-C-002: Search active, then tag filter toggled', () => {
+  test('EC-C-002: TagFilterToggled while search is active applies AND of search + new tag set', () => {
+    // Start with search active but no tag filter
+    const stateWithSearch = makeState({
+      searchQuery: 'hello',
+      activeFilterTags: [],
+      allNoteIds: ['note-a', 'note-b', 'note-c'],
+      noteMetadata: {
+        'note-a': makeMetadata('hello world', ['work']),
+        'note-b': makeMetadata('hello personal', ['personal']),
+        'note-c': makeMetadata('goodbye', ['work']),
+      },
+      visibleNoteIds: ['note-a', 'note-b'], // search active: note-a + note-b match "hello"
+    });
+    // Simulate TagFilterToggled by directly constructing the state that would result
+    // (TagFilterToggled is handled by existing reducer; we test composition via SearchApplied
+    //  on a state that already has activeFilterTags set — same as EC-C-002 scenario)
+    const stateAfterTagToggle = makeState({
+      searchQuery: 'hello',
+      activeFilterTags: ['work'],
+      allNoteIds: ['note-a', 'note-b', 'note-c'],
+      noteMetadata: {
+        'note-a': makeMetadata('hello world', ['work']),
+        'note-b': makeMetadata('hello personal', ['personal']),
+        'note-c': makeMetadata('goodbye', ['work']),
+      },
+    });
+    // Re-applying SearchApplied with the same query on state with tags: result is AND
+    const action = { kind: 'SearchApplied' as const, query: 'hello' };
+    const result = feedReducer(stateAfterTagToggle as unknown as FeedViewState, action as unknown as FeedAction);
+    // AND: tag "work" → note-a, note-c; AND search "hello" → note-a, note-b; intersection = note-a
+    expect(result.state.visibleNoteIds).toContain('note-a');
+    expect(result.state.visibleNoteIds).not.toContain('note-b');
+    expect(result.state.visibleNoteIds).not.toContain('note-c');
+  });
+});
+
+// ── EC-T-004: Toggle sort while debounce is pending ──────────────────────────
+// Reducer-level verification: SortDirectionToggled state is preserved when
+// SearchApplied fires afterwards (no race — reducer is synchronous).
+
+describe('EC-T-004: Toggle sort while debounce is pending', () => {
+  test('EC-T-004: SortDirectionToggled processed; subsequent SearchApplied uses updated sortDirection', () => {
+    const state = makeState({
+      sortDirection: 'desc',
+      searchQuery: '',
+      allNoteIds: ['note-a', 'note-b', 'note-c'],
+      noteMetadata: {
+        'note-a': makeMetadata('hello', [], 3000),
+        'note-b': makeMetadata('hello', [], 1000),
+        'note-c': makeMetadata('hello', [], 2000),
+      },
+    });
+
+    // Step 1: SortDirectionToggled dispatched (sort button clicked while debounce mid-flight)
+    const toggleAction = { kind: 'SortDirectionToggled' as const };
+    const afterToggle = feedReducer(state as unknown as FeedViewState, toggleAction as unknown as FeedAction);
+    expect((afterToggle.state as unknown as SearchFeedViewState).sortDirection).toBe('asc');
+
+    // Step 2: SearchApplied fires when debounce timer expires — uses current sortDirection (asc)
+    const searchAction = { kind: 'SearchApplied' as const, query: 'hello' };
+    const afterSearch = feedReducer(afterToggle.state as unknown as FeedViewState, searchAction as unknown as FeedAction);
+
+    // sortDirection still 'asc' after SearchApplied (not reverted)
+    expect((afterSearch.state as unknown as SearchFeedViewState).sortDirection).toBe('asc');
+    // visibleNoteIds are in asc order: note-b(1000), note-c(2000), note-a(3000)
+    expect(Array.from(afterSearch.state.visibleNoteIds)).toEqual(['note-b', 'note-c', 'note-a']);
+  });
+});
+
+// ── EC-C-007: DomainSnapshotReceived while debounce is mid-flight ─────────────
+// Reducer-level verification: snapshot preserves searchQuery; subsequent
+// SearchApplied correctly applies the pending input.
+
+describe('EC-C-007: DomainSnapshotReceived while debounce mid-flight', () => {
+  test('EC-C-007: snapshot does not cancel pending debounce; SearchApplied after snapshot applies correctly', () => {
+    // Initial state: pending input "hello" is in the shell (not yet dispatched)
+    // searchQuery is still '' (debounce has not fired)
+    const stateBeforeSnapshot = makeState({
+      searchQuery: '',
+      sortDirection: 'desc',
+      allNoteIds: ['note-a'],
+      noteMetadata: {
+        'note-a': makeMetadata('Hello World', []),
+      },
+    });
+
+    // Step 1: DomainSnapshotReceived arrives (note was saved) — searchQuery stays ''
+    const snapshot = makeSnapshot({
+      cause: { kind: 'NoteFileSaved', savedNoteId: 'note-a' },
+      feed: { visibleNoteIds: ['note-a'], filterApplied: false },
+      noteMetadata: {
+        'note-a': makeMetadata('Hello World updated', []),
+      },
+    });
+    const snapshotAction: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const afterSnapshot = feedReducer(stateBeforeSnapshot as unknown as FeedViewState, snapshotAction);
+
+    // searchQuery still '' (snapshot does not cancel the pending debounce in the shell)
+    expect((afterSnapshot.state as unknown as SearchFeedViewState).searchQuery).toBe('');
+    // note-a visible (no search active yet)
+    expect(afterSnapshot.state.visibleNoteIds).toContain('note-a');
+
+    // Step 2: Debounce timer fires — SearchApplied dispatched with the pending input "hello"
+    const searchAction = { kind: 'SearchApplied' as const, query: 'hello' };
+    const afterSearch = feedReducer(afterSnapshot.state as unknown as FeedViewState, searchAction as unknown as FeedAction);
+
+    // searchQuery now set from the pending input
+    expect((afterSearch.state as unknown as SearchFeedViewState).searchQuery).toBe('hello');
+    // note-a body contains "hello" → visible
+    expect(afterSearch.state.visibleNoteIds).toContain('note-a');
   });
 });

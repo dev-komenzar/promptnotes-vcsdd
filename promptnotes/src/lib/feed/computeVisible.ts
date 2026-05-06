@@ -46,14 +46,17 @@ export function computeVisible(
       : allNoteIds;
 
   // Step 2: search filter (AND, case-insensitive substring)
-  // Guard: searchQuery may be undefined if called from pre-extension state
-  const needle = (searchQuery ?? '').toLowerCase();
+  // searchPredicate is the canonical case-fold + substring entry point.
+  // It accepts the raw (un-lowercased) needle and handles case folding internally.
+  // Empty string is the only short-circuit trigger (searchPredicate returns true for empty needle,
+  // but we skip the per-note filter entirely for performance when no search is active).
+  const rawNeedle = searchQuery ?? '';
   const searchFiltered =
-    needle !== ''
+    rawNeedle !== ''
       ? tagFiltered.filter((id) => {
           const m = noteMetadata[id];
           const haystack = (m?.body ?? '') + ' ' + (m?.tags ?? []).join(' ');
-          return searchPredicate(needle, haystack);
+          return searchPredicate(rawNeedle, haystack);
         })
       : tagFiltered;
 

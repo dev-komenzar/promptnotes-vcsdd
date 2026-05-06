@@ -67,6 +67,8 @@ const INITIAL_VIEW_STATE: FeedViewState = {
   noteMetadata: {},
   tagAutocompleteVisibleFor: null,
   activeFilterTags: [],
+  searchQuery: '',
+  sortDirection: 'desc',
 };
 
 // ── Setup / teardown ──────────────────────────────────────────────────────────

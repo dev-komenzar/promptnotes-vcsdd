@@ -303,8 +303,9 @@
   const isEmpty = $derived(visibleNoteIds.length === 0 && !isLoading);
 
   // ui-filter-search: unified search-empty-state when any active filter/search produces 0 results
-  const searchQuery = $derived((currentViewState as unknown as { searchQuery: string }).searchQuery ?? '');
-  const sortDirection = $derived((currentViewState as unknown as { sortDirection: 'asc' | 'desc' }).sortDirection ?? 'desc');
+  // searchQuery and sortDirection are required fields on FeedViewState (types.ts lines 57-59)
+  const searchQuery = $derived(currentViewState.searchQuery);
+  const sortDirection = $derived(currentViewState.sortDirection);
   const isSearchOrFilterActive = $derived(
     searchQuery !== '' || activeFilterTags.length > 0
   );

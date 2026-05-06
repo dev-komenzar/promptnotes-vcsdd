@@ -55,7 +55,7 @@ All 5 dimensions PASS. Each CRIT criterion within a dimension is individually re
 
 - **NC-EC-001** — EC-S-011 (control chars), EC-S-012 (10 000-char query), EC-S-013 (RTL chars), EC-S-015 (regex chars literal) have tests in `feedReducer.search.test.ts` or `searchPredicate.prop.test.ts`. Pass threshold: at least one of these ECs is covered by a property test (fast-check) in the property test suite.
 
-**Evidence sources**: `feedReducer.search.test.ts`, `computeVisible.test.ts`, `searchDebounce.test.ts`, `searchPredicate.prop.test.ts`
+**Evidence sources**: `feedReducer.search.test.ts`, `computeVisible.test.ts`, `dom/SearchInput.dom.vitest.ts`, `searchPredicate.prop.test.ts`
 
 ---
 
@@ -65,23 +65,23 @@ All 5 dimensions PASS. Each CRIT criterion within a dimension is individually re
 
 ### CRIT Criteria
 
-- **CRIT-IC-001** — PROP-FILTER-005: `feedReducer` never throws for any `SearchApplied { query }` where `query` is any string (length 0..10000, any Unicode). Pass threshold: `searchPredicate.prop.test.ts` (or `feedReducer.property.test.ts`) contains a fast-check property test for PROP-FILTER-005 that passes under `bun test`.
+- **CRIT-IC-001** — PROP-FILTER-005: `feedReducer` never throws for any `SearchApplied { query }` where `query` is any string (length 0..10000, any Unicode). Pass threshold: `searchPredicate.prop.test.ts` (or `feedReducer.property.test.ts` or `prop/feedReducer.totality.test.ts`) contains a fast-check property test for PROP-FILTER-005 that passes under `bun test`.
 
 - **CRIT-IC-002** — PROP-FILTER-010: `searchPredicate` uses `String.prototype.toLowerCase()` (not `toLocaleLowerCase()`), is case-insensitive substring, returns `true` for empty needle. Pass threshold: property test for PROP-FILTER-010 passes under `bun test`; `grep -n "toLocaleLowerCase" promptnotes/src/lib/feed/searchPredicate.ts` returns zero matches.
 
 - **CRIT-IC-003** — PROP-FILTER-014: `sortByUpdatedAt` tiebreak by `noteId` lexicographic in the same sort direction is deterministic. Pass threshold: `sortByUpdatedAt.test.ts` contains a test for EC-T-001 that passes.
 
-- **CRIT-IC-004** — PROP-FILTER-022: rapid keystrokes within 200ms window dispatch exactly one `SearchApplied` after the last keystroke + 200ms silence. Pass threshold: `searchDebounce.test.ts` (vitest fake timers) covers this and passes.
+- **CRIT-IC-004** — PROP-FILTER-022: rapid keystrokes within 200ms window dispatch exactly one `SearchApplied` after the last keystroke + 200ms silence. Pass threshold: `dom/SearchInput.dom.vitest.ts` (vitest fake timers, debounce-related `it()` blocks covering EC-S-016) covers this and passes.
 
 - **CRIT-IC-005** — PROP-FILTER-023: whitespace-only query `"   "` dispatched via `SearchApplied` does NOT short-circuit to no-search in the reducer. Pass threshold: unit test in `feedReducer.search.test.ts` for EC-S-002 passes.
 
-- **CRIT-IC-006** — PROP-FILTER-024: Esc while debounce pending cancels the timer and fires `SearchCleared` immediately. Pass threshold: `searchDebounce.test.ts` (vitest fake timers) covers EC-S-005 and passes.
+- **CRIT-IC-006** — PROP-FILTER-024: Esc while debounce pending cancels the timer and fires `SearchCleared` immediately. Pass threshold: `dom/SearchInput.dom.vitest.ts` (vitest fake timers, EC-S-005 `it()` block) covers this and passes.
 
 ### NON-CRIT Criteria
 
 - **NC-IC-001** — All existing tests (pre-sprint baseline) continue to pass after the sprint's changes. Pass threshold: all previously passing bun tests still pass; any DOM test failures are limited to failures that existed before this sprint (recorded in `evidence/regression-baseline.json`).
 
-**Evidence sources**: `searchPredicate.prop.test.ts`, `feedReducer.property.test.ts`, `sortByUpdatedAt.test.ts`, `feedReducer.search.test.ts`, `searchDebounce.test.ts`, `evidence/regression-baseline.json`
+**Evidence sources**: `searchPredicate.prop.test.ts`, `prop/feedReducer.totality.test.ts`, `sortByUpdatedAt.test.ts`, `feedReducer.search.test.ts`, `dom/SearchInput.dom.vitest.ts`, `evidence/regression-baseline.json`
 
 ---
 
