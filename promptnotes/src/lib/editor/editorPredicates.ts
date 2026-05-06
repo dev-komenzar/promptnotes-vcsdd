@@ -1,8 +1,7 @@
 /**
  * editorPredicates.ts — pure predicates for the block-based ui-editor (Sprint 7)
  *
- * Phase 2a stub: every function body throws 'not-implemented: phase-2a stub'.
- * This makes all tests that call these functions fail at runtime (Red phase).
+ * Phase 2b implementation: all stubs replaced with real logic.
  *
  * Pure core module: must never import @tauri-apps/api or any forbidden API.
  * Signatures match verification-architecture.md §2 exactly.
@@ -17,7 +16,20 @@ import type { EditorViewState, SaveError, BlockType } from './types.js';
  * - !view.isNoteEmpty for status ∈ {'editing', 'saving'}.
  */
 export function canCopy(view: EditorViewState): boolean {
-  throw new Error('not-implemented: phase-2a stub');
+  switch (view.status) {
+    case 'idle':
+    case 'switching':
+    case 'save-failed':
+      return false;
+    case 'editing':
+    case 'saving':
+      return !view.isNoteEmpty;
+    default: {
+      const _exhaustive: never = view.status;
+      void _exhaustive;
+      return false;
+    }
+  }
 }
 
 /**
@@ -26,7 +38,34 @@ export function canCopy(view: EditorViewState): boolean {
  * Exhaustive switch enforced at compile time.
  */
 export function bannerMessageFor(error: SaveError): string | null {
-  throw new Error('not-implemented: phase-2a stub');
+  switch (error.kind) {
+    case 'fs': {
+      switch (error.reason.kind) {
+        case 'permission':
+          return '保存に失敗しました（権限不足）';
+        case 'disk-full':
+          return '保存に失敗しました（ディスク容量不足）';
+        case 'lock':
+          return '保存に失敗しました（ファイルがロックされています）';
+        case 'not-found':
+          return '保存に失敗しました（保存先が見つかりません）';
+        case 'unknown':
+          return '保存に失敗しました';
+        default: {
+          const _exhaustive: never = error.reason;
+          void _exhaustive;
+          return '保存に失敗しました';
+        }
+      }
+    }
+    case 'validation':
+      return null;
+    default: {
+      const _exhaustive: never = error;
+      void _exhaustive;
+      return null;
+    }
+  }
 }
 
 /**
@@ -35,7 +74,17 @@ export function bannerMessageFor(error: SaveError): string | null {
  * 'idle' → 'capture-idle'; 'blur' → 'capture-blur'.
  */
 export function classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | 'capture-blur' {
-  throw new Error('not-implemented: phase-2a stub');
+  switch (triggerKind) {
+    case 'idle':
+      return 'capture-idle';
+    case 'blur':
+      return 'capture-blur';
+    default: {
+      const _exhaustive: never = triggerKind;
+      void _exhaustive;
+      return 'capture-idle';
+    }
+  }
 }
 
 /**
@@ -44,7 +93,7 @@ export function classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | '
  * returns 'split' for any offset strictly inside the block.
  */
 export function splitOrInsert(offset: number, contentLength: number): 'split' | 'insert' {
-  throw new Error('not-implemented: phase-2a stub');
+  return offset === contentLength ? 'insert' : 'split';
 }
 
 /**
@@ -56,7 +105,31 @@ export function splitOrInsert(offset: number, contentLength: number): 'split' | 
 export function classifyMarkdownPrefix(
   content: string
 ): { newType: BlockType; trimmedContent: string } | null {
-  throw new Error('not-implemented: phase-2a stub');
+  // Exact match for divider — must be exactly '---', no more no less.
+  if (content === '---') {
+    return { newType: 'divider', trimmedContent: '' };
+  }
+
+  // Ordered from most specific to least specific to avoid prefix clashes.
+  const prefixes: Array<[string, BlockType]> = [
+    ['### ', 'heading-3'],
+    ['## ', 'heading-2'],
+    ['# ', 'heading-1'],
+    ['- ', 'bullet'],
+    ['* ', 'bullet'],
+    ['1. ', 'numbered'],
+    ['```', 'code'],
+    ['> ', 'quote'],
+  ];
+
+  for (const [prefix, newType] of prefixes) {
+    if (content.startsWith(prefix)) {
+      const trimmedContent = content.slice(prefix.length);
+      return { newType, trimmedContent };
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -71,5 +144,11 @@ export function classifyBackspaceAtZero(
   focusedIndex: number,
   blockCount: number
 ): 'merge' | 'remove-empty-noop' | 'first-block-noop' | 'normal-edit' {
-  throw new Error('not-implemented: phase-2a stub');
+  if (focusedIndex === 0) {
+    return 'first-block-noop';
+  }
+  if (focusedIndex > 0 && focusedIndex < blockCount) {
+    return 'merge';
+  }
+  return 'normal-edit';
 }

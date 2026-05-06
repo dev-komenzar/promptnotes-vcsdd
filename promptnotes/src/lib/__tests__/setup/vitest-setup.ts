@@ -24,6 +24,36 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   });
 }
 
+// jsdom に DragEvent が存在しないため最低限の polyfill を注入する
+// REQ-EDIT-011 (block-drag-handle.dom.vitest.ts) が DragEvent を使用するため必要。
+if (typeof window !== "undefined" && typeof (window as any).DragEvent === "undefined") {
+  class DataTransferPolyfill {
+    private _data: Map<string, string> = new Map();
+    effectAllowed: string = 'uninitialized';
+    dropEffect: string = 'none';
+    setData(format: string, data: string): void { this._data.set(format, data); }
+    getData(format: string): string { return this._data.get(format) ?? ''; }
+    clearData(format?: string): void {
+      if (format) this._data.delete(format);
+      else this._data.clear();
+    }
+  }
+
+  class DragEventPolyfill extends MouseEvent {
+    readonly dataTransfer: DataTransferPolyfill;
+    constructor(type: string, init?: MouseEventInit & { dataTransfer?: DataTransferPolyfill }) {
+      super(type, init);
+      this.dataTransfer = init?.dataTransfer ?? new DataTransferPolyfill();
+    }
+  }
+
+  Object.defineProperty(window, 'DragEvent', {
+    writable: true,
+    configurable: true,
+    value: DragEventPolyfill,
+  });
+}
+
 // 各テスト後にモックをリセット（appShellStore / bootFlag は __resetForTesting__ で
 // テスト側からリセットする想定だが、念のため timers / mocks も clear）
 afterEach(() => {

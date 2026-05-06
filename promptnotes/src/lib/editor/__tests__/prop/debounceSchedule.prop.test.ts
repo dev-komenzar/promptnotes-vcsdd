@@ -41,7 +41,7 @@ describe("PROP-EDIT-003: 'debounce-semantics' (REQ-EDIT-012, EC-EDIT-001)", () =
   test('PROP-EDIT-003b: given lastEditAt, nowMs < lastEditAt+debounceMs → shouldFire=false (≥100 runs)', () => {
     fc.assert(
       fc.property(
-        fc.nat({ min: 1, max: 10000 }),
+        fc.integer({ min: 1, max: 10000 }),
         fc.nat({ max: 1999 }),
         (lastEditAt, deficit) => {
           const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
@@ -79,7 +79,7 @@ describe("PROP-EDIT-003: 'debounce-semantics' (REQ-EDIT-012, EC-EDIT-001)", () =
   test('PROP-EDIT-003d: computeNextFireAt returns shouldFire=false when debounce not elapsed (≥100 runs)', () => {
     fc.assert(
       fc.property(
-        fc.nat({ min: 1, max: 10000 }),
+        fc.integer({ min: 1, max: 10000 }),
         (lastEditAt) => {
           const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
           const nowMs = lastEditAt + debounceMs - 1;
@@ -100,7 +100,7 @@ describe("PROP-EDIT-003: 'debounce-semantics' (REQ-EDIT-012, EC-EDIT-001)", () =
     fc.assert(
       fc.property(
         fc.nat({ max: 10000 }),
-        fc.nat({ min: 1, max: 5000 }),
+        fc.integer({ min: 1, max: 5000 }),
         (lastEditAt, gap) => {
           const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
           const lastSaveAt = lastEditAt + gap;
@@ -157,7 +157,7 @@ describe("PROP-EDIT-004: 'blur-cancels-idle' (REQ-EDIT-014, REQ-EDIT-015)", () =
     fc.assert(
       fc.property(
         fc.nat({ max: 10000 }),
-        fc.nat({ min: 1, max: 5000 }),
+        fc.integer({ min: 1, max: 5000 }),
         (lastEditAt, blurOffset) => {
           const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
           const blurSaveAt = lastEditAt + blurOffset;
@@ -175,7 +175,7 @@ describe("PROP-EDIT-004: 'blur-cancels-idle' (REQ-EDIT-014, REQ-EDIT-015)", () =
     fc.assert(
       fc.property(
         fc.nat({ max: 10000 }),
-        fc.nat({ min: 1, max: 5000 }),
+        fc.integer({ min: 1, max: 5000 }),
         (lastEditAt, blurOffset) => {
           const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
           const blurSaveAt = lastEditAt + blurOffset;
@@ -196,7 +196,7 @@ describe("PROP-EDIT-004: 'blur-cancels-idle' (REQ-EDIT-014, REQ-EDIT-015)", () =
   test('PROP-EDIT-004c: for any blur timing before idle window: blur save takes precedence (≥100 runs)', () => {
     fc.assert(
       fc.property(
-        fc.nat({ min: 100, max: 10000 }),
+        fc.integer({ min: 100, max: 10000 }),
         fc.nat({ max: 1999 }), // blur within debounce window
         (lastEditAt, blurDelay) => {
           const debounceMs = IDLE_SAVE_DEBOUNCE_MS;

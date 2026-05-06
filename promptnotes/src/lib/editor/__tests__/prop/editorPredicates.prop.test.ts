@@ -294,7 +294,7 @@ describe("PROP-EDIT-010: 'markdown-prefix-totality' (REQ-EDIT-010, EC-EDIT-013)"
 describe("PROP-EDIT-011: 'backspace-classifier-coverage' (REQ-EDIT-008, EC-EDIT-011)", () => {
   test('PROP-EDIT-011a: classifyBackspaceAtZero(0, n) === first-block-noop for any n ≥ 1 (≥100 runs)', () => {
     fc.assert(
-      fc.property(fc.nat({ min: 1, max: 100 }), (blockCount) => {
+      fc.property(fc.integer({ min: 1, max: 100 }), (blockCount) => {
         return classifyBackspaceAtZero(0, blockCount) === 'first-block-noop';
       }),
       { numRuns: 100 }
@@ -304,8 +304,8 @@ describe("PROP-EDIT-011: 'backspace-classifier-coverage' (REQ-EDIT-008, EC-EDIT-
   test('PROP-EDIT-011b: classifyBackspaceAtZero(k, n) === merge for 0 < k < n (≥100 runs)', () => {
     fc.assert(
       fc.property(
-        fc.nat({ min: 2, max: 100 }).chain(n =>
-          fc.tuple(fc.nat({ min: 1, max: n - 1 }), fc.constant(n))
+        fc.integer({ min: 2, max: 100 }).chain(n =>
+          fc.tuple(fc.integer({ min: 1, max: n - 1 }), fc.constant(n))
         ),
         ([k, n]) => {
           return classifyBackspaceAtZero(k, n) === 'merge';

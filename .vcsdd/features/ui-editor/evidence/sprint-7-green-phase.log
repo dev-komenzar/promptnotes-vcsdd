@@ -1,0 +1,26 @@
+new-feature-tests: PASS
+- bun run test:dom: 215/215 pass, 0 fail (18 test files)
+- bun run check: 0 errors and 0 warnings in src/lib/editor/ scope
+  (179 errors total project-wide are pre-existing in src/lib/feed/* and feed-preview routes;
+   pre-Sprint-7 baseline was 242 errors, so Sprint 7 net-reduced errors by 63)
+
+regression-baseline: PASS
+- All non-editor tests in promptnotes/ pass (no test count regression vs Sprint 6 baseline)
+
+deferred (with rationale):
+- PROP-EDIT-045 (NFR-EDIT-003 / EC-EDIT-009 OS sleep/resume): best-effort timer mock only;
+  spec explicitly defers OS-sleep coverage as environment-dependent (verification-architecture §4
+  PROP-EDIT-045 cell)
+
+implementation summary:
+- New components: EditorPanel.svelte, BlockElement.svelte, SaveFailureBanner.svelte,
+  SlashMenu.svelte, BlockDragHandle.svelte, timerModule.ts
+- Pure modules rewritten: editorPredicates.ts, editorReducer.ts, debounceSchedule.ts
+- Adapters rewritten: tauriEditorAdapter.ts (16 dispatch* methods), editorStateChannel.ts
+- Routes updated: src/routes/+page.svelte and src/routes/editor-preview/+page.svelte
+- Legacy deleted: src/lib/editor/EditorPane.svelte and 23 legacy test files
+- 17-variant EditorCommand union; 5-arm EditingSessionStateDto with priorFocusedBlockId on save-failed
+
+phase: 2b
+sprint: 7
+iteration: 1

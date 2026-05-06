@@ -20,16 +20,21 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { flushSync } from 'svelte';
+import { flushSync, mount, unmount } from 'svelte';
 import type { EditorIpcAdapter, EditingSessionStateDto, EditorViewState } from '$lib/editor/types';
 import { IDLE_SAVE_DEBOUNCE_MS } from '$lib/editor/types';
+import EditorPanel from '$lib/editor/EditorPanel.svelte';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 
 // ── Mock adapter factory ───────────────────────────────────────────────────────
 
-function createMockAdapter(): EditorIpcAdapter & Record<string, ReturnType<typeof vi.fn>> {
+type MockEditorIpcAdapter = EditorIpcAdapter & {
+  _emitState: (state: EditingSessionStateDto) => void;
+} & Record<string, ReturnType<typeof vi.fn>>;
+
+function createMockAdapter(): MockEditorIpcAdapter {
   let _stateHandler: ((s: EditingSessionStateDto) => void) | null = null;
   const adapter = {
     dispatchFocusBlock: vi.fn().mockResolvedValue(undefined),
@@ -55,22 +60,45 @@ function createMockAdapter(): EditorIpcAdapter & Record<string, ReturnType<typeo
     _emitState: (state: EditingSessionStateDto) => {
       if (_stateHandler) _stateHandler(state);
     },
-  } as unknown as EditorIpcAdapter & Record<string, ReturnType<typeof vi.fn>>;
+  } as unknown as MockEditorIpcAdapter;
   return adapter;
 }
 
-// ── Placeholder component setup ────────────────────────────────────────────────
+// ── Component setup ────────────────────────────────────────────────────────────
 
 let target: HTMLDivElement;
 let adapter: ReturnType<typeof createMockAdapter>;
+let component: ReturnType<typeof mount> | null = null;
+
+const DEFAULT_EDITING_STATE: EditingSessionStateDto = {
+  status: 'editing',
+  currentNoteId: 'note-1',
+  focusedBlockId: 'block-1',
+  isDirty: true,
+  isNoteEmpty: false,
+  lastSaveResult: null,
+};
 
 beforeEach(() => {
   target = document.createElement('div');
   document.body.appendChild(target);
   adapter = createMockAdapter();
+  component = mount(EditorPanel, {
+    target,
+    props: {
+      adapter,
+      initialBlocks: [
+        { id: 'block-1', type: 'paragraph', content: 'test content' },
+      ],
+    },
+  });
+  // Emit editing+dirty state so copy button is enabled and blocks are visible
+  adapter._emitState(DEFAULT_EDITING_STATE);
+  flushSync();
 });
 
 afterEach(() => {
+  if (component) { unmount(component); component = null; }
   target.remove();
   vi.clearAllMocks();
   vi.useRealTimers();
@@ -121,8 +149,18 @@ describe('Copy button disabled matrix (PROP-EDIT-021, REQ-EDIT-032)', () => {
 
 describe('New Note button (PROP-EDIT-022, REQ-EDIT-033)', () => {
   test('REQ-EDIT-033: new-note-button click dispatches RequestNewNote with source=explicit-button', () => {
+    // Emit editing+clean state so click goes direct (REQ-EDIT-035 PROP-EDIT-024c)
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+    });
+    flushSync();
     const btn = target.querySelector('[data-testid="new-note-button"]');
-    expect(btn).not.toBeNull(); // FAILS
+    expect(btn).not.toBeNull();
     btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(adapter.dispatchRequestNewNote).toHaveBeenCalledWith(
       expect.objectContaining({ source: 'explicit-button' })
@@ -130,8 +168,15 @@ describe('New Note button (PROP-EDIT-022, REQ-EDIT-033)', () => {
   });
 
   test('REQ-EDIT-033: new-note-button is disabled only in switching state', () => {
+    adapter._emitState({
+      status: 'switching',
+      currentNoteId: 'note-1',
+      pendingNextFocus: { noteId: 'note-2', blockId: 'block-99' },
+      isNoteEmpty: false,
+    });
+    flushSync();
     const btn = target.querySelector('[data-testid="new-note-button"]');
-    expect(btn).not.toBeNull(); // FAILS
+    expect(btn).not.toBeNull();
     expect(btn?.hasAttribute('disabled')).toBe(true);
   });
 });
@@ -140,8 +185,18 @@ describe('New Note button (PROP-EDIT-022, REQ-EDIT-033)', () => {
 
 describe('Ctrl+N shortcut (PROP-EDIT-023, REQ-EDIT-034)', () => {
   test('REQ-EDIT-034: Ctrl+N within editor pane root dispatches RequestNewNote with source=ctrl-N', () => {
+    // Emit editing+clean state so Ctrl+N goes direct (REQ-EDIT-035 PROP-EDIT-024c)
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+    });
+    flushSync();
     const paneRoot = target.querySelector('[data-testid="editor-pane-root"]');
-    expect(paneRoot).not.toBeNull(); // FAILS
+    expect(paneRoot).not.toBeNull();
     const event = new KeyboardEvent('keydown', {
       key: 'n', ctrlKey: true, bubbles: true, cancelable: true,
     });
@@ -184,8 +239,17 @@ describe('RequestNewNote while editing+dirty (PROP-EDIT-024a, REQ-EDIT-035)', ()
 
 describe('RequestNewNote while save-failed (PROP-EDIT-024b, REQ-EDIT-035, EC-EDIT-008)', () => {
   test('EC-EDIT-008: RequestNewNote while save-failed dispatches directly without TriggerBlurSave', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: { kind: 'fs', reason: { kind: 'permission' } },
+      isNoteEmpty: false,
+    });
+    flushSync();
     const btn = target.querySelector('[data-testid="new-note-button"]');
-    expect(btn).not.toBeNull(); // FAILS
+    expect(btn).not.toBeNull();
     btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     flushSync();
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledTimes(0);
@@ -197,8 +261,17 @@ describe('RequestNewNote while save-failed (PROP-EDIT-024b, REQ-EDIT-035, EC-EDI
 
 describe('RequestNewNote while editing+clean (PROP-EDIT-024c, REQ-EDIT-035)', () => {
   test('REQ-EDIT-035: RequestNewNote while editing AND isDirty=false dispatches directly without TriggerBlurSave', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+    });
+    flushSync();
     const btn = target.querySelector('[data-testid="new-note-button"]');
-    expect(btn).not.toBeNull(); // FAILS
+    expect(btn).not.toBeNull();
     btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     flushSync();
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledTimes(0);
@@ -218,16 +291,29 @@ describe('All-blocks blur save logic (PROP-EDIT-032, REQ-EDIT-014, REQ-EDIT-016,
   });
 
   test('EC-EDIT-002: all-blocks blur while saving dispatches nothing', () => {
+    adapter._emitState({
+      status: 'saving',
+      currentNoteId: 'note-1',
+      isNoteEmpty: false,
+    });
+    flushSync();
     const paneRoot = target.querySelector('[data-testid="editor-pane-root"]');
-    expect(paneRoot).not.toBeNull(); // FAILS
+    expect(paneRoot).not.toBeNull();
     paneRoot?.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
     flushSync();
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledTimes(0);
   });
 
   test('EC-EDIT-002: all-blocks blur while switching dispatches nothing', () => {
+    adapter._emitState({
+      status: 'switching',
+      currentNoteId: 'note-1',
+      pendingNextFocus: { noteId: 'note-2', blockId: 'block-99' },
+      isNoteEmpty: false,
+    });
+    flushSync();
     const paneRoot = target.querySelector('[data-testid="editor-pane-root"]');
-    expect(paneRoot).not.toBeNull(); // FAILS
+    expect(paneRoot).not.toBeNull();
     paneRoot?.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
     flushSync();
     expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledTimes(0);

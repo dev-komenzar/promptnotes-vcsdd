@@ -12,8 +12,9 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { flushSync } from 'svelte';
+import { flushSync, mount, unmount } from 'svelte';
 import type { EditorIpcAdapter, EditingSessionStateDto, SaveError } from '$lib/editor/types';
+import EditorPanel from '$lib/editor/EditorPanel.svelte';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
@@ -49,14 +50,24 @@ function createMockAdapter() {
 
 let target: HTMLDivElement;
 let adapter: ReturnType<typeof createMockAdapter>;
+let component: ReturnType<typeof mount> | null = null;
 
 beforeEach(() => {
   target = document.createElement('div');
   document.body.appendChild(target);
   adapter = createMockAdapter();
+  component = mount(EditorPanel, {
+    target,
+    props: {
+      adapter,
+      initialBlocks: [{ id: 'block-1', type: 'paragraph', content: 'test' }],
+    },
+  });
+  flushSync();
 });
 
 afterEach(() => {
+  if (component) { unmount(component); component = null; }
   target.remove();
   vi.clearAllMocks();
 });

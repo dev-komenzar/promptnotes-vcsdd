@@ -10,8 +10,9 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { flushSync } from 'svelte';
+import { flushSync, mount, unmount } from 'svelte';
 import type { EditorIpcAdapter, EditingSessionStateDto } from '$lib/editor/types';
+import EditorPanel from '$lib/editor/EditorPanel.svelte';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
@@ -40,14 +41,38 @@ function createMockAdapter(): EditorIpcAdapter & Record<string, ReturnType<typeo
 
 let target: HTMLDivElement;
 let adapter: ReturnType<typeof createMockAdapter>;
+let component: ReturnType<typeof mount> | null = null;
+
+const EDITING_STATE: EditingSessionStateDto = {
+  status: 'editing',
+  currentNoteId: 'note-1',
+  focusedBlockId: 'block-1',
+  isDirty: false,
+  isNoteEmpty: false,
+  lastSaveResult: null,
+};
 
 beforeEach(() => {
   target = document.createElement('div');
   document.body.appendChild(target);
   adapter = createMockAdapter();
+  component = mount(EditorPanel, {
+    target,
+    props: {
+      adapter,
+      initialBlocks: [
+        { id: 'block-1', type: 'paragraph', content: 'first' },
+        { id: 'block-2', type: 'paragraph', content: 'second' },
+        { id: 'block-3', type: 'paragraph', content: 'third' },
+      ],
+    },
+  });
+  (adapter.subscribeToState as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]?.(EDITING_STATE);
+  flushSync();
 });
 
 afterEach(() => {
+  if (component) { unmount(component); component = null; }
   target.remove();
   vi.clearAllMocks();
 });
@@ -76,7 +101,7 @@ describe('Block drag handle (PROP-EDIT-031, REQ-EDIT-011)', () => {
     const dropTarget = target.querySelector('[data-block-drop-index="1"]');
     dropTarget?.dispatchEvent(new DragEvent('drop', { bubbles: true }));
     flushSync();
-    const call = adapter.dispatchMoveBlock.mock.calls[0];
+    const call = (adapter.dispatchMoveBlock as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(call).toBeDefined(); // FAILS
     if (call) {
       const toIndex = (call[0] as { toIndex: number }).toIndex;

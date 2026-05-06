@@ -2,9 +2,9 @@
   /**
    * +page.svelte — Main route.
    *
-   * Sprint 2 (REQ-FEED-023): Two-column layout inside AppShell.
+   * Sprint 2/7 (REQ-FEED-023): Two-column layout inside AppShell.
    *   - Left sidebar (.feed-sidebar, 320px): FeedList
-   *   - Central pane (.editor-main, 1fr): EditorPane
+   *   - Central pane (.editor-main, 1fr): EditorPanel (Sprint 7)
    *
    * DESIGN.md compliance:
    *   - Sidebar border: #e9e9e7 (whisper border)
@@ -13,23 +13,19 @@
    */
 
   import AppShell from "$lib/ui/app-shell/AppShell.svelte";
-  import EditorPane from "$lib/editor/EditorPane.svelte";
+  import EditorPanel from "$lib/editor/EditorPanel.svelte";
   import FeedList from "$lib/feed/FeedList.svelte";
   import { createTauriEditorAdapter } from "$lib/editor/tauriEditorAdapter.js";
   import { createEditorStateChannel } from "$lib/editor/editorStateChannel.js";
-  import { createDebounceTimer } from "$lib/editor/debounceTimer.js";
-  import { createClipboardAdapter } from "$lib/editor/clipboardAdapter.js";
   import { createTauriFeedAdapter } from "$lib/feed/tauriFeedAdapter.js";
   import { createFeedStateChannel } from "$lib/feed/feedStateChannel.js";
   import type { FeedViewState } from "$lib/feed/types.js";
   import { invoke } from "@tauri-apps/api/core";
 
-  // ── Editor adapters (Sprint 1, ui-editor feature) ────────────────────────
-  const clock = { now: () => Date.now() };
-  const adapter = createTauriEditorAdapter();
-  const stateChannel = createEditorStateChannel();
-  const timer = createDebounceTimer(clock);
-  const clipboard = createClipboardAdapter();
+  // ── Editor adapter (Sprint 7, ui-editor feature) ─────────────────────────
+  // Compose outbound dispatch + inbound subscribeToState into a single EditorIpcAdapter
+  const { subscribeToState: editorSubscribeToState } = createEditorStateChannel();
+  const adapter = createTauriEditorAdapter(editorSubscribeToState);
 
   // ── Feed adapters (Sprint 2, ui-feed-list-actions feature) ──────────────
   const feedAdapter = createTauriFeedAdapter();
@@ -103,7 +99,7 @@
 </script>
 
 <AppShell>
-  <!-- REQ-FEED-023: Two-column layout — sidebar (FeedList) + central pane (EditorPane) -->
+  <!-- REQ-FEED-023: Two-column layout — sidebar (FeedList) + central pane (EditorPanel) -->
   <div class="layout">
     <aside class="feed-sidebar">
       <FeedList
@@ -114,13 +110,7 @@
       />
     </aside>
     <div class="editor-main">
-      <EditorPane
-        {adapter}
-        {stateChannel}
-        {timer}
-        {clipboard}
-        {clock}
-      />
+      <EditorPanel {adapter} />
     </div>
   </div>
 </AppShell>

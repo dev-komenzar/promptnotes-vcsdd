@@ -1,8 +1,7 @@
 /**
  * debounceSchedule.ts — pure idle-save debounce scheduling logic (Sprint 7)
  *
- * Phase 2a stub: every function body throws 'not-implemented: phase-2a stub'.
- * This makes all tests that call these functions fail at runtime (Red phase).
+ * Phase 2b implementation: all stubs replaced with real logic.
  *
  * Pure core module: must never import @tauri-apps/api or any forbidden API.
  * Signatures match verification-architecture.md §2 and behavioral-spec.md §12 exactly.
@@ -23,9 +22,7 @@ export const IDLE_SAVE_DEBOUNCE_MS = 2000;
  * Pure helper: the timestamp at which the idle save should fire.
  */
 export function nextFireAt(lastEditTimestamp: number, debounceMs: number): number {
-  void lastEditTimestamp;
-  void debounceMs;
-  throw new Error('not-implemented: phase-2a stub');
+  return lastEditTimestamp + debounceMs;
 }
 
 /**
@@ -34,7 +31,10 @@ export function nextFireAt(lastEditTimestamp: number, debounceMs: number): numbe
  * clock time, returns whether and when the idle save should fire.
  *
  * shouldFire === true iff:
- *   lastEditAt + debounceMs <= nowMs AND lastSaveAt <= lastEditAt
+ *   lastEditAt + debounceMs <= nowMs AND lastSaveAt < lastEditAt
+ *
+ * fireAt is lastEditAt + debounceMs when there is a pending unsaved edit;
+ * fireAt is null when lastSaveAt >= lastEditAt (save covers all edits).
  */
 export function computeNextFireAt(params: {
   lastEditAt: number;
@@ -42,8 +42,18 @@ export function computeNextFireAt(params: {
   debounceMs: number;
   nowMs: number;
 }): { shouldFire: boolean; fireAt: number | null } {
-  void params;
-  throw new Error('not-implemented: phase-2a stub');
+  const { lastEditAt, lastSaveAt, debounceMs, nowMs } = params;
+  const fireTime = lastEditAt + debounceMs;
+
+  // If a real save (lastSaveAt > 0) happened at or after the last edit, no fire needed.
+  // lastSaveAt === 0 is the "never saved" sentinel; treat as no save.
+  if (lastSaveAt !== 0 && lastSaveAt >= lastEditAt) {
+    return { shouldFire: false, fireAt: null };
+  }
+
+  // There is an unsaved edit; schedule or fire at fireTime.
+  const shouldFire = nowMs >= fireTime;
+  return { shouldFire, fireAt: fireTime };
 }
 
 /**
@@ -54,6 +64,10 @@ export function computeNextFireAt(params: {
  * - lastSaveTimestamp: time of the most recent save (0 if never saved)
  * - debounceMs: quiescence window
  * - nowMs: current clock time
+ *
+ * Per spec: true iff editTimestamps.length > 0
+ *   AND last element + debounceMs <= nowMs
+ *   AND lastSaveTimestamp <= last element (save does not cover the last edit)
  */
 export function shouldFireIdleSave(
   editTimestamps: readonly number[],
@@ -61,9 +75,22 @@ export function shouldFireIdleSave(
   debounceMs: number,
   nowMs: number
 ): boolean {
-  void editTimestamps;
-  void lastSaveTimestamp;
-  void debounceMs;
-  void nowMs;
-  throw new Error('not-implemented: phase-2a stub');
+  if (editTimestamps.length === 0) {
+    return false;
+  }
+
+  // The most recent edit governs the debounce window.
+  // Use Math.max to find the latest timestamp regardless of insertion order.
+  const lastEditAt = Math.max(...editTimestamps);
+
+  // If a real save (lastSaveTimestamp > 0) happened at or after the last edit,
+  // the edit is covered — no idle save needed.
+  // lastSaveTimestamp === 0 is the "never saved" sentinel; an edit at time 0
+  // is still unsaved in that case.
+  if (lastSaveTimestamp !== 0 && lastSaveTimestamp >= lastEditAt) {
+    return false;
+  }
+
+  // Fire iff debounce window has elapsed.
+  return lastEditAt + debounceMs <= nowMs;
 }
