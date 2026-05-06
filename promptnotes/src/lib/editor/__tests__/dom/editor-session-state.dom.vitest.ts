@@ -334,19 +334,33 @@ describe('Switching lock and Cancel (PROP-EDIT-050, EC-EDIT-005, EC-EDIT-014)', 
     expect(blockEl?.getAttribute('contenteditable')).toBe('false');
   });
 
-  test('EC-EDIT-014: Cancel in save-failed restores focusedBlockId=priorFocusedBlockId', () => {
+  test('EC-EDIT-014: Cancel in save-failed restores focusedBlockId=priorFocusedBlockId and moves DOM focus', () => {
     adapter._emitState({
       status: 'save-failed',
       currentNoteId: 'note-1',
-      priorFocusedBlockId: 'block-prior',
+      priorFocusedBlockId: 'block-1',
       pendingNextFocus: null,
       lastSaveError: FS_PERMISSION_ERROR,
       isNoteEmpty: false,
     });
     flushSync();
     const cancelBtn = target.querySelector('[data-testid="cancel-switch-button"]');
-    expect(cancelBtn).not.toBeNull(); // FAILS
+    expect(cancelBtn).not.toBeNull();
     cancelBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    flushSync();
     expect(adapter.dispatchCancelSwitch).toHaveBeenCalledTimes(1);
+    // Simulate domain acknowledgement: editing snapshot with focusedBlockId=priorFocusedBlockId
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: true,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+    });
+    flushSync();
+    // DOM focus must move to the prior block element (REQ-EDIT-029 / PROP-EDIT-018)
+    const focusedEl = document.activeElement;
+    expect(focusedEl?.getAttribute('data-block-id')).toBe('block-1');
   });
 });

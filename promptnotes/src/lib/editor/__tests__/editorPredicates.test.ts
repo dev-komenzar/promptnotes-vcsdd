@@ -35,6 +35,7 @@ function makeView(overrides: Partial<EditorViewState> = {}): EditorViewState {
     isNoteEmpty: false,
     lastSaveError: null,
     lastSaveResult: null,
+    blocks: [],
     ...overrides,
   };
 }

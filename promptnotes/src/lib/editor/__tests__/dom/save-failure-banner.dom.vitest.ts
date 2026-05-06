@@ -197,24 +197,30 @@ describe('Cancel button (PROP-EDIT-018, REQ-EDIT-029)', () => {
 // ── PROP-EDIT-019 (REQ-EDIT-030, NFR-EDIT-007): Banner visual style ──────────
 
 describe('Banner visual style (PROP-EDIT-019, REQ-EDIT-030, NFR-EDIT-007)', () => {
-  test('REQ-EDIT-030: banner uses 5-layer Deep Shadow string', () => {
+  test('REQ-EDIT-030: banner root carries save-failure-banner CSS class (5-layer shadow and #dd5b00 border are applied via that class)', () => {
+    // jsdom does not evaluate Svelte-scoped CSS, so we cannot use getComputedStyle.
+    // The contract: the banner element must have the class that carries the 5-layer shadow
+    // and #dd5b00 left-border rules. The literal CSS values are grep-verified in Phase 5.
     adapter._emitState(SAVE_FAILED_STATE);
     flushSync();
     const banner = target.querySelector('[data-testid="save-failure-banner"]') as HTMLElement | null;
-    expect(banner).not.toBeNull(); // FAILS
-    const style = banner ? window.getComputedStyle(banner) : null;
-    // The 5-layer shadow literal must appear in the component source (grep-verified in Phase 5)
-    // In jsdom, we check for the data attribute set by the component
-    expect(banner?.getAttribute('data-shadow-applied')).toBe('deep'); // FAILS
+    expect(banner).not.toBeNull();
+    // Verify the CSS class is applied (not a synthetic data attribute)
+    expect(banner?.className).toMatch(/save-failure-banner/);
   });
 
-  test('REQ-EDIT-030: banner has left accent with #dd5b00', () => {
-    adapter._emitState(SAVE_FAILED_STATE);
-    flushSync();
-    const banner = target.querySelector('[data-testid="save-failure-banner"]') as HTMLElement | null;
-    expect(banner).not.toBeNull(); // FAILS
-    // Color assertion via data attribute set by component (grep audit in Phase 5)
-    expect(banner?.getAttribute('data-accent-color')).toBe('#dd5b00'); // FAILS
+  test('REQ-EDIT-030: SaveFailureBanner.svelte source contains 5-layer shadow literal (0px 23px 52px)', async () => {
+    // Source-grep audit: the 5-layer Deep Shadow token must be present in the component source.
+    // This verifies the CSS is actually authored, not just claimed via a data attribute.
+    const { readFileSync } = await import('fs');
+    const { resolve } = await import('path');
+    const sourceFile = resolve(
+      __dirname,
+      '../../SaveFailureBanner.svelte',
+    );
+    const source = readFileSync(sourceFile, 'utf-8');
+    expect(source).toContain('0px 23px 52px');
+    expect(source).toContain('#dd5b00');
   });
 });
 

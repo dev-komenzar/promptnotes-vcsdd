@@ -1,0 +1,15 @@
+{
+  "id": "FIND-063",
+  "severity": "major",
+  "dimension": "edge_case_coverage",
+  "category": "test_quality",
+  "location": "promptnotes/src/lib/editor/__tests__/dom/editor-session-state.dom.vitest.ts:337-351",
+  "description": "EC-EDIT-014 (Cancel restores priorFocusedBlockId) test is tautological. The spec requires that activating Cancel from the save-failure banner causes the prior focusedBlockId to regain DOM focus (behavioral-spec REQ-EDIT-029, REQ-EDIT-023; verification-architecture PROP-EDIT-018: 'After editing snapshot returns, the prior focusedBlockId regains DOM focus'). The test only asserts `adapter.dispatchCancelSwitch.toHaveBeenCalledTimes(1)` — i.e., that the IPC fired — without simulating the post-Cancel `editing` snapshot or asserting that `document.activeElement` is the `[data-block-id='block-prior']` element. The actual focus-restoration $effect in EditorPanel.svelte:186-193 is therefore unverified for this edge case.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/dom/editor-session-state.dom.vitest.ts",
+    "lineRange": "337-351",
+    "snippet": "test('EC-EDIT-014: Cancel in save-failed restores focusedBlockId=priorFocusedBlockId', () => {\n  adapter._emitState({\n    status: 'save-failed',\n    ...\n    priorFocusedBlockId: 'block-prior',\n    ...\n  });\n  flushSync();\n  const cancelBtn = target.querySelector('[data-testid=\"cancel-switch-button\"]');\n  cancelBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));\n  expect(adapter.dispatchCancelSwitch).toHaveBeenCalledTimes(1);\n});"
+  },
+  "suggestedRemediation": "After dispatching the Cancel click, simulate the domain ack by `_emitState({ status: 'editing', currentNoteId: 'note-1', focusedBlockId: 'block-prior', isDirty: true, isNoteEmpty: false, lastSaveResult: null })` then `flushSync()`, then assert `document.activeElement?.getAttribute('data-block-id')` equals `'block-prior'`. CRIT-712 listing alone does not guarantee EC-EDIT-014 is verified; this is the only coverage referenced in the matrix.",
+  "routeToPhase": "2a"
+}

@@ -618,7 +618,7 @@ The values `'curate-tag-chip'` and `'curate-frontmatter-edit-outside-editor'` ex
 
 #### REQ-EDIT-038: Block Validation Error Display
 
-When the domain returns a `BlockOperationError` or `BlockContentError` (via the inbound snapshot's `lastSaveError` field or via a rejected command response), the system shall display the corresponding inline error or hint text near the affected Block without locking the Block. The Block remains contenteditable. The exhaustive error mapping covers (`shared/note.ts BlockOperationError`):
+When a `dispatchEditBlockContent`, `dispatchChangeBlockType`, `dispatchInsertBlockAfter`, or `dispatchInsertBlockAtBeginning` Promise rejects with a `BlockOperationError` or `BlockContentError`, the `EditorPanel` shall set a local `$state currentBlockError = { blockId: string; error: { kind: string; max?: number } } | null` and render the corresponding inline hint near the affected Block without locking the Block. The error is cleared when the next successful dispatch for the same block resolves OR when the user begins editing the affected block. The Block remains contenteditable throughout. The exhaustive error mapping covers (`shared/note.ts BlockOperationError`):
 
 | Error variant | UI surface |
 |---|---|
@@ -638,9 +638,10 @@ Likewise for `SaveValidationError`:
 - `invariant-violated` — `console.error` only
 
 **Acceptance Criteria**:
-- Inline hint area is `aria-describedby`-linked to the affected Block.
+- Inline hint area is `data-testid="block-validation-hint"` and `data-error-kind="<kind>"` near the affected Block.
 - The Block is never `contenteditable="false"` solely because of a validation error.
-- The exhaustive switch over `BlockOperationError.kind`, `BlockContentError.kind`, and `SaveValidationError.kind` is enforced by the TypeScript compiler.
+- `currentBlockError` is local `$state` in the impure shell (`EditorPanel.svelte`) only — it is NOT part of `EditorViewState` or `EditingSessionStateDto`.
+- The hint is triggered by Promise rejection from the dispatch* methods, not from the snapshot DTO.
 
 ---
 
@@ -919,6 +920,8 @@ _All other formerly open questions resolved; see §9._
 | RD-018 | `SaveFailedState` focus restoration | The Cancel button restores focus to the block identified by `EditingSessionStateDto.save-failed.priorFocusedBlockId` (a DTO-only projection field populated at the IPC emission layer from the preceding `EditingState.focusedBlockId`). `pendingNextFocus = { noteId, blockId }` is rendered as a visual "queued switch" cue but never edited by the UI. | EC-EDIT-014; §10 DTO save-failed arm |
 | RD-019 | Slash-menu local state | Slash-menu open/close, query string, and selected index are local `$state` in the impure shell only. They never enter the reducer or the snapshot. | REQ-EDIT-010; NFR-EDIT-008 |
 | RD-020 | Drag preview local state | The DnD preview node is local DOM owned by the impure shell. The pure reducer accepts only the final `MoveBlock` command via the dispatch path. | REQ-EDIT-011 |
+| RD-021 | Block list ownership in `EditingSessionStateDto` | Option (a) chosen: `EditingSessionStateDto` non-idle arms carry an optional `blocks?: ReadonlyArray<{ id: string; type: BlockType; content: string }>` DTO projection field. When present, `editorReducer` mirrors it into `EditorViewState.blocks` on `DomainSnapshotReceived`; when absent (e.g., in tests or legacy snapshots), the reducer preserves the current `state.blocks`. `EditorPanel.svelte` replaces local `blocks: Block[]` with `$derived(viewState.blocks)`. This eliminates the FIND-066 ambiguity where local block list state diverged from domain snapshots. The `idle` arm carries no `blocks` field; the panel clears to `[]` on `idle`. | FIND-066; §10 |
+| RD-022 | `REQ-EDIT-038` error surface: DTO vs. dispatch rejection | Block validation errors (`BlockOperationError`, `BlockContentError`) are surfaced via Promise rejection from the `dispatchXxx` methods (not via snapshot DTO fields). `EditorPanel.svelte` holds a local `$state` `currentBlockError: { blockId: string; error: { kind: string; max?: number } } \| null`. This field is impure shell state only and never enters the pure reducer or `EditorViewState`. The choice avoids extending `EditingSessionStateDto` with per-block error data that the Rust backend may not emit. | REQ-EDIT-038; FIND-066 |
 
 ---
 
@@ -965,6 +968,12 @@ type EditingSessionStateDto =
       isDirty: boolean;
       isNoteEmpty: boolean;
       lastSaveResult: 'success' | 'failed' | null;
+      /**
+       * DTO projection field (RD-021): canonical rendered block list. When present,
+       * the editorReducer mirrors this into EditorViewState.blocks on DomainSnapshotReceived.
+       * When absent (legacy snapshots / tests), the reducer preserves state.blocks.
+       */
+      blocks?: ReadonlyArray<{ id: string; type: BlockType; content: string }>;
     }
   | {
       status: 'saving';
@@ -977,6 +986,8 @@ type EditingSessionStateDto =
        * snapshot).
        */
       isNoteEmpty: boolean;
+      /** DTO projection field (RD-021). See editing arm for semantics. */
+      blocks?: ReadonlyArray<{ id: string; type: BlockType; content: string }>;
     }
   | {
       status: 'switching';
@@ -989,6 +1000,8 @@ type EditingSessionStateDto =
        * snapshot).
        */
       isNoteEmpty: boolean;
+      /** DTO projection field (RD-021). See editing arm for semantics. */
+      blocks?: ReadonlyArray<{ id: string; type: BlockType; content: string }>;
     }
   | {
       status: 'save-failed';
@@ -1011,6 +1024,8 @@ type EditingSessionStateDto =
        * snapshot).
        */
       isNoteEmpty: boolean;
+      /** DTO projection field (RD-021). See editing arm for semantics. */
+      blocks?: ReadonlyArray<{ id: string; type: BlockType; content: string }>;
     };
 ```
 

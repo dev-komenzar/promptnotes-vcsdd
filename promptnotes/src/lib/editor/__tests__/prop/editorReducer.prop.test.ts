@@ -68,6 +68,7 @@ const arbViewState: fc.Arbitrary<EditorViewState> = fc.record({
   isNoteEmpty: fc.boolean(),
   lastSaveError: fc.oneof(fc.constant(null), arbSaveError),
   lastSaveResult: fc.oneof(fc.constant(null), fc.constant('success' as const)),
+  blocks: fc.constant([]),
 });
 
 // EditingSessionStateDto arbitraries — one per arm

@@ -1,0 +1,15 @@
+{
+  "id": "FIND-072",
+  "severity": "minor",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "location": "promptnotes/src/lib/editor/__tests__/dom/editor-panel.dom.vitest.ts:247-256",
+  "description": "FIND-065 (deferred RequestNewNote after blur-save) was fixed in EditorPanel.svelte (pendingNewNoteSource $state + $effect on saving→editing transition), but the corresponding integration test (PROP-EDIT-024a, lines 247-256) still asserts only the immediate negative — `expect(adapter.dispatchRequestNewNote).toHaveBeenCalledTimes(0)` right after the click — and never drives the full sequence to verify RequestNewNote eventually fires. The full sequence prescribed by REQ-EDIT-035 ('RequestNewNote is not dispatched until the snapshot leaves saving') is therefore unverified by the integration tier. A future regression that re-introduces the original bug (drop the pending intent silently) would not be caught by this test.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/dom/editor-panel.dom.vitest.ts",
+    "lineRange": "247-256",
+    "snippet": "test('REQ-EDIT-035: RequestNewNote while editing AND isDirty=true dispatches TriggerBlurSave before RequestNewNote', () => {\n  const btn = target.querySelector('[data-testid=\"new-note-button\"]');\n  expect(btn).not.toBeNull();\n  btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));\n  flushSync();\n  expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledTimes(1);\n  expect(adapter.dispatchRequestNewNote).toHaveBeenCalledTimes(0);\n});"
+  },
+  "suggestedRemediation": "Add a follow-up test in the same describe block that drives the full transition: click new-note while editing+dirty → assert TriggerBlurSave fires once → emit `{status:'saving', currentNoteId:'note-1', isNoteEmpty:false}` snapshot → emit `{status:'editing', currentNoteId:'note-1', focusedBlockId:'block-1', isDirty:false, isNoteEmpty:false, lastSaveResult:'success'}` → flushSync → assert `dispatchRequestNewNote.toHaveBeenCalledTimes(1)` with `source:'explicit-button'`. Add a second test that verifies the save-failed branch clears pendingNewNoteSource (no RequestNewNote fires; user must resolve via banner).",
+  "routeToPhase": "2a"
+}

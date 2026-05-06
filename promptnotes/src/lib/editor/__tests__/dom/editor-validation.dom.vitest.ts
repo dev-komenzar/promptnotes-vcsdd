@@ -75,36 +75,72 @@ afterEach(() => {
 // ── PROP-EDIT-043 (REQ-EDIT-038, REQ-EDIT-026) ───────────────────────────────
 
 describe('Block validation error display (PROP-EDIT-043, REQ-EDIT-038, REQ-EDIT-026)', () => {
-  test('REQ-EDIT-038: incompatible-content-for-type snapshot shows inline hint このブロック種別に変換できません', () => {
-    // Simulate an editing snapshot where lastSaveError contains a block error hint
-    // The domain might surface this via the snapshot or via a rejected command response
+  test('REQ-EDIT-038: incompatible-content-for-type dispatch rejection shows inline hint このブロック種別に変換できません', async () => {
+    // REQ-EDIT-038 (RD-022): block errors are surfaced via Promise rejection from dispatch methods.
+    // Trigger: emit an editing state so block-1 is rendered, then mock dispatchChangeBlockType
+    // to reject with incompatible-content-for-type and simulate the input that triggers it.
     adapter._emitState({
       status: 'editing',
       currentNoteId: 'note-1',
       focusedBlockId: 'block-1',
-      isDirty: true,
+      isDirty: false,
       isNoteEmpty: false,
       lastSaveResult: null,
     });
     flushSync();
-    // Inline hint element should be rendered near block-1
+
+    // Mock dispatchChangeBlockType to reject once with the block operation error
+    (adapter.dispatchChangeBlockType as ReturnType<typeof vi.fn>).mockRejectedValueOnce({
+      kind: 'incompatible-content-for-type',
+      reason: { kind: 'too-long', max: 100 },
+    });
+
+    // Trigger a markdown prefix input that causes BlockElement to call dispatchChangeBlockType.
+    // Simulate '# ' input in the block element (triggers classifyMarkdownPrefix → heading-1)
+    const blockEl = target.querySelector('[data-testid="block-element"]') as HTMLElement | null;
+    expect(blockEl).not.toBeNull();
+    if (blockEl) {
+      blockEl.textContent = '# heading';
+      blockEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    // Wait for the microtask queue to flush (Promise rejection handler runs)
+    await Promise.resolve();
+    flushSync();
+
     const hint = target.querySelector('[data-testid="block-validation-hint"]');
-    expect(hint).not.toBeNull(); // FAILS: no component rendered
+    expect(hint).not.toBeNull();
     expect(hint?.textContent).toContain('このブロック種別に変換できません');
   });
 
-  test('REQ-EDIT-038: control-character block error shows 制御文字は入力できません', () => {
+  test('REQ-EDIT-038: control-character dispatch rejection shows 制御文字は入力できません', async () => {
+    // REQ-EDIT-038 (RD-022): control-character error surfaced via dispatchEditBlockContent rejection.
     adapter._emitState({
       status: 'editing',
       currentNoteId: 'note-1',
       focusedBlockId: 'block-1',
-      isDirty: true,
+      isDirty: false,
       isNoteEmpty: false,
       lastSaveResult: null,
     });
     flushSync();
+
+    // Mock dispatchEditBlockContent to reject with control-character error
+    (adapter.dispatchEditBlockContent as ReturnType<typeof vi.fn>).mockRejectedValueOnce({
+      kind: 'control-character',
+    });
+
+    // Trigger an input event on the block element to call dispatchEditBlockContent
+    const blockEl = target.querySelector('[data-testid="block-element"]') as HTMLElement | null;
+    expect(blockEl).not.toBeNull();
+    if (blockEl) {
+      blockEl.textContent = 'text with control char';
+      blockEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    await Promise.resolve();
+    flushSync();
+
     const hint = target.querySelector('[data-testid="block-validation-hint"][data-error-kind="control-character"]');
-    expect(hint).not.toBeNull(); // FAILS
+    expect(hint).not.toBeNull();
     expect(hint?.textContent).toContain('制御文字は入力できません');
   });
 

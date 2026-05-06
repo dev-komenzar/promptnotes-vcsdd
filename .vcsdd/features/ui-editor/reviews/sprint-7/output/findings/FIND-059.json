@@ -1,0 +1,15 @@
+{
+  "id": "FIND-059",
+  "severity": "critical",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:94",
+  "description": "REQ-EDIT-005 / REQ-EDIT-020 / REQ-EDIT-032 / PROP-EDIT-006 require that the Copy button is enabled when `status ∈ {editing, saving} && !isNoteEmpty` regardless of `isDirty`. The pure predicate `canCopy` is correct (editorPredicates.ts:18-33). The shell additionally narrows enable to `&& !viewState.isDirty`, which is not in the spec and contradicts the explicit REQ-EDIT-020 acceptance criterion 'The Copy button is enabled when isNoteEmpty === false'. This makes the Copy button unusable during the entire dirty editing period that any normal user spends typing — the default state in which a user would actually want to copy. No DOM test currently exercises copy-while-dirty (editor-session-state.dom.vitest.ts line 152 sets `isDirty: false` for the enabled assertion), so the bug slips through.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "92-94",
+    "snippet": "// Copy is enabled only when canCopy returns true AND the note is not dirty\n// (REQ-EDIT-032: disabled in idle/switching, and when editing+dirty or empty)\nconst isCopyEnabled = $derived(canCopy(viewState) && !viewState.isDirty);"
+  },
+  "suggestedRemediation": "Change to `const isCopyEnabled = $derived(canCopy(viewState));` and remove the misleading inline comment that fabricates a non-existent 'editing+dirty' disable rule. Add a regression test: editing + isDirty=true + isNoteEmpty=false → copy-body-button has no disabled attribute and click dispatches CopyNoteBody.",
+  "routeToPhase": "2b"
+}

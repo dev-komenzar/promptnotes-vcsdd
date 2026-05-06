@@ -1,0 +1,15 @@
+{
+  "id": "FIND-062",
+  "severity": "major",
+  "dimension": "structural_integrity",
+  "category": "test_quality",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:498-512",
+  "description": "EditorPanel renders TWO static, always-present validation hints with `aria-hidden='true'` and `display: none` purely to satisfy `editor-validation.dom.vitest.ts` which does `target.querySelector('[data-testid=\"block-validation-hint\"]')`. The hints are rendered unconditionally, in any state (idle/editing/saving/switching/save-failed), regardless of whether a block validation error has actually occurred. REQ-EDIT-038 / PROP-EDIT-043 require the hint to be shown 'near the affected Block' when `BlockOperationError.kind === 'incompatible-content-for-type'` or `BlockContentError.kind === 'control-character'` — i.e., conditionally on the domain reporting an error. The implementation surfaces no such error data; the snapshot DTO does not carry a block-error field; the hints are decorative DOM purely for the grep test. This is a tautological test pattern: the test asserts the existence of an element that always exists. The actual REQ-EDIT-038 conditional-display behaviour is unverified.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "498-512",
+    "snippet": "<!-- Static validation hints (REQ-EDIT-038): always present, hidden, for accessibility/testing -->\n<div\n  data-testid=\"block-validation-hint\"\n  data-error-kind=\"incompatible-content-for-type\"\n  role=\"alert\"\n  class=\"block-validation-hint\"\n  aria-hidden=\"true\"\n>このブロック種別に変換できません</div>"
+  },
+  "suggestedRemediation": "Remove the always-present hint elements. Define a real error surface on EditingSessionStateDto (or as a separate inbound channel) that carries BlockOperationError/BlockContentError instances per affected blockId. Render the hint conditionally only when a matching error is present, anchored near the block via the block-wrapper. Update editor-validation.dom.vitest.ts to drive an error snapshot through `_emitState` and assert the hint appears only then.",
+  "routeToPhase": "2b"
+}

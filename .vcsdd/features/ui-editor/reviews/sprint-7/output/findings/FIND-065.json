@@ -1,0 +1,15 @@
+{
+  "id": "FIND-065",
+  "severity": "major",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:286-305",
+  "description": "REQ-EDIT-035 'editing+dirty' branch implementation discards the user's intent. Per spec REQ-EDIT-035 / PROP-EDIT-024a: 'RequestNewNote while editing AND isDirty=true dispatches TriggerBlurSave first; RequestNewNote is not dispatched until the snapshot leaves saving.' The handler dispatches `dispatchTriggerBlurSave` and then `return;` — RequestNewNote is silently dropped, never deferred. There is no queued intent, no $effect waiting on the saving→editing transition to fire RequestNewNote. So after the save completes, the user remains on the same note instead of getting a new one. The PROP-EDIT-024a vitest only asserts `dispatchRequestNewNote.toHaveBeenCalledTimes(0)` immediately after the click — it never simulates the saving→editing snapshot transition to verify RequestNewNote eventually fires. The 'is not dispatched until the snapshot leaves saving' clause of the spec is unverified and unimplemented.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "286-305",
+    "snippet": "function handleNewNoteRequest(source: 'explicit-button' | 'ctrl-N'): void {\n  // REQ-EDIT-035: editing+dirty → TriggerBlurSave first\n  if (viewState.status === 'editing' && viewState.isDirty && viewState.currentNoteId) {\n    adapter.dispatchTriggerBlurSave({...}).catch(() => {});\n    // RequestNewNote is deferred until after save completes (domain will send snapshot)\n    return;\n  }\n  // save-failed or editing+clean or idle → dispatch directly\n  dispatch({ kind: 'RequestNewNoteRequested', payload: { source, ... } });\n}"
+  },
+  "suggestedRemediation": "Set a pending flag (`let pendingNewNoteSource = $state<NewNoteSource | null>(null)`); in the editing+dirty branch, set `pendingNewNoteSource = source` then dispatch TriggerBlurSave. Add a `$effect` that watches the saving→editing transition (lastSaveResult==='success', isDirty===false) and, if `pendingNewNoteSource !== null`, dispatches RequestNewNote and clears the pending flag. Add an integration test that drives the full sequence: click → TriggerBlurSave fires → emit `{status:'saving'}` → emit `{status:'editing', isDirty:false, lastSaveResult:'success'}` → assert RequestNewNote fires.",
+  "routeToPhase": "2b"
+}

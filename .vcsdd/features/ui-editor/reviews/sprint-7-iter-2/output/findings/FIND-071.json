@@ -1,0 +1,15 @@
+{
+  "id": "FIND-071",
+  "severity": "minor",
+  "dimension": "structural_integrity",
+  "category": "test_quality",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:118-148",
+  "description": "FIND-066 was only partially resolved. The architectural fix (RD-021 DTO blocks field, reducer mirroring) is in place, but EditorPanel.handleSnapshot still contains a fallback path that fabricates a synthetic block from snapshot.focusedBlockId when (a) the snapshot has no `blocks` field AND (b) the focused block does not exist in viewState.blocks. The inline comment self-identifies this as test-mode scaffolding: 'This path fires only for test snapshots that predate RD-021 (no blocks in DTO).' This is the same anti-pattern as FIND-060 (production code carrying test-harness scaffolding) — production code retains a path that exists solely so legacy tests pass. RD-021 explicitly states the reducer 'preserves currentBlocks when absent' — it does NOT authorise the shell to invent blocks from focusedBlockId. With every test now passing initialBlocks plus snapshots whose focusedBlockId matches a seeded block, this path can be deleted with no test loss.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "118-148",
+    "snippet": "if (snapshot.status !== 'idle' && !('blocks' in snapshot && snapshot.blocks !== undefined)) {\n  const focusedId = snapshot.status === 'editing' ? snapshot.focusedBlockId : null;\n  const focusedBlockExists = focusedId ? viewState.blocks.some(b => b.id === focusedId) : true;\n  if (viewState.blocks.length === 0 || !focusedBlockExists) {\n    viewState = { ...viewState, blocks: [{ id: focusedId ?? 'block-default-1', type: 'paragraph', content: '' }] };\n  }\n}"
+  },
+  "suggestedRemediation": "Delete the legacy fallback block (lines 129-147). Verify by running `bun run test:dom` — if any test fails, update that test to either inject `initialBlocks` covering its focusedBlockId or to emit a snapshot whose `blocks` field carries the expected entry (RD-021 path). The shell must never synthesise block data; that authority belongs to the Rust domain via the DTO blocks projection.",
+  "routeToPhase": "2c"
+}

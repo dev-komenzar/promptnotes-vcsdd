@@ -32,8 +32,6 @@
     class="save-failure-banner"
     role="alert"
     data-testid="save-failure-banner"
-    data-shadow-applied="deep"
-    data-accent-color="#dd5b00"
   >
     <p class="banner-message">{message}</p>
     <div class="banner-actions">

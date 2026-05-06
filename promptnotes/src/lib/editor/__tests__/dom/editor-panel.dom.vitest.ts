@@ -22,7 +22,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
 import type { EditorIpcAdapter, EditingSessionStateDto, EditorViewState } from '$lib/editor/types';
-import { IDLE_SAVE_DEBOUNCE_MS } from '$lib/editor/types';
+import { IDLE_SAVE_DEBOUNCE_MS } from '$lib/editor/debounceSchedule';
 import EditorPanel from '$lib/editor/EditorPanel.svelte';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
@@ -126,21 +126,42 @@ describe('Copy button (PROP-EDIT-020, REQ-EDIT-031)', () => {
 
 describe('Copy button disabled matrix (PROP-EDIT-021, REQ-EDIT-032)', () => {
   test('REQ-EDIT-032: copy button has disabled and aria-disabled in idle state', () => {
+    // Emit idle state — canCopy returns false for idle
+    adapter._emitState({ status: 'idle' });
+    flushSync();
     const btn = target.querySelector('[data-testid="copy-body-button"]');
-    expect(btn).not.toBeNull(); // FAILS
+    expect(btn).not.toBeNull();
     expect(btn?.hasAttribute('disabled')).toBe(true);
     expect(btn?.getAttribute('aria-disabled')).toBe('true');
   });
 
   test('REQ-EDIT-032: copy button has disabled and aria-disabled in switching state', () => {
+    // Emit switching state — canCopy returns false for switching
+    adapter._emitState({
+      status: 'switching',
+      currentNoteId: 'note-1',
+      pendingNextFocus: { noteId: 'note-2', blockId: 'block-99' },
+      isNoteEmpty: false,
+    });
+    flushSync();
     const btn = target.querySelector('[data-testid="copy-body-button"]');
-    expect(btn).not.toBeNull(); // FAILS
+    expect(btn).not.toBeNull();
     expect(btn?.hasAttribute('disabled')).toBe(true);
   });
 
   test('REQ-EDIT-032: copy button has disabled when isNoteEmpty=true in editing state', () => {
+    // Emit editing+isNoteEmpty=true state — canCopy returns false when isNoteEmpty
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: true,
+      lastSaveResult: null,
+    });
+    flushSync();
     const btn = target.querySelector('[data-testid="copy-body-button"]');
-    expect(btn).not.toBeNull(); // FAILS
+    expect(btn).not.toBeNull();
     expect(btn?.hasAttribute('disabled')).toBe(true);
   });
 });

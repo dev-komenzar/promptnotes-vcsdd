@@ -36,6 +36,7 @@ function makeIdleView(): EditorViewState {
     isNoteEmpty: true,
     lastSaveError: null,
     lastSaveResult: null,
+    blocks: [],
   };
 }
 
@@ -49,6 +50,7 @@ function makeEditingView(overrides: Partial<EditorViewState> = {}): EditorViewSt
     isNoteEmpty: false,
     lastSaveError: null,
     lastSaveResult: null,
+    blocks: [],
     ...overrides,
   };
 }
@@ -63,6 +65,7 @@ function makeSavingView(): EditorViewState {
     isNoteEmpty: false,
     lastSaveError: null,
     lastSaveResult: null,
+    blocks: [],
   };
 }
 
@@ -76,6 +79,7 @@ function makeSwitchingView(): EditorViewState {
     isNoteEmpty: false,
     lastSaveError: null,
     lastSaveResult: null,
+    blocks: [],
   };
 }
 
@@ -90,6 +94,7 @@ function makeSaveFailedView(overrides: Partial<EditorViewState> = {}): EditorVie
     isNoteEmpty: false,
     lastSaveError: fsError,
     lastSaveResult: null,
+    blocks: [],
     ...overrides,
   };
 }

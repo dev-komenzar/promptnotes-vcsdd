@@ -91,6 +91,18 @@ export type PendingNextFocus = {
   blockId: string;
 };
 
+// ── DtoBlock ──────────────────────────────────────────────────────────────────
+
+/**
+ * Canonical block shape carried in the DTO projection field `blocks` (RD-021).
+ * Matches the UI-internal Block shape used by EditorPanel / BlockElement.
+ */
+export type DtoBlock = {
+  id: string;
+  type: BlockType;
+  content: string;
+};
+
 // ── EditingSessionStateDto ────────────────────────────────────────────────────
 
 /**
@@ -99,13 +111,17 @@ export type PendingNextFocus = {
  *
  * Per-variant field sets (from §10):
  * - 'idle': only status
- * - 'editing': status, currentNoteId, focusedBlockId, isDirty, isNoteEmpty, lastSaveResult
- * - 'saving': status, currentNoteId, isNoteEmpty
- * - 'switching': status, currentNoteId, pendingNextFocus, isNoteEmpty
- * - 'save-failed': status, currentNoteId, priorFocusedBlockId, pendingNextFocus, lastSaveError, isNoteEmpty
+ * - 'editing': status, currentNoteId, focusedBlockId, isDirty, isNoteEmpty, lastSaveResult, blocks?
+ * - 'saving': status, currentNoteId, isNoteEmpty, blocks?
+ * - 'switching': status, currentNoteId, pendingNextFocus, isNoteEmpty, blocks?
+ * - 'save-failed': status, currentNoteId, priorFocusedBlockId, pendingNextFocus, lastSaveError, isNoteEmpty, blocks?
  *
  * Note: priorFocusedBlockId is a DTO-only projection field on the save-failed arm
  * (behavioral-spec.md §10, §3.6a, PROP-EDIT-014).
+ *
+ * Note: blocks is an optional DTO projection field (RD-021). When present the
+ * editorReducer mirrors it into EditorViewState.blocks. When absent the reducer
+ * preserves the current state.blocks. The idle arm carries no blocks field.
  */
 export type EditingSessionStateDto =
   | { status: 'idle' }
@@ -116,17 +132,23 @@ export type EditingSessionStateDto =
       isDirty: boolean;
       isNoteEmpty: boolean;
       lastSaveResult: 'success' | null;
+      /** DTO projection field (RD-021). See spec §10 editing arm. */
+      blocks?: ReadonlyArray<DtoBlock>;
     }
   | {
       status: 'saving';
       currentNoteId: string;
       isNoteEmpty: boolean;
+      /** DTO projection field (RD-021). See spec §10 saving arm. */
+      blocks?: ReadonlyArray<DtoBlock>;
     }
   | {
       status: 'switching';
       currentNoteId: string;
       pendingNextFocus: PendingNextFocus;
       isNoteEmpty: boolean;
+      /** DTO projection field (RD-021). See spec §10 switching arm. */
+      blocks?: ReadonlyArray<DtoBlock>;
     }
   | {
       status: 'save-failed';
@@ -136,6 +158,8 @@ export type EditingSessionStateDto =
       pendingNextFocus: PendingNextFocus | null;
       lastSaveError: SaveError;
       isNoteEmpty: boolean;
+      /** DTO projection field (RD-021). See spec §10 save-failed arm. */
+      blocks?: ReadonlyArray<DtoBlock>;
     };
 
 // ── EditorViewState ──────────────────────────────────────────────────────────
@@ -170,6 +194,12 @@ export type EditorViewState = {
    * Informs the dirty indicator and post-save banner UX.
    */
   lastSaveResult: 'success' | null;
+  /**
+   * Canonical rendered block list (RD-021). Mirrored from DTO `blocks` field when
+   * present; preserved from prior state when absent. Empty array when status=idle.
+   * EditorPanel derives its rendered list from this field via `$derived(viewState.blocks)`.
+   */
+  blocks: ReadonlyArray<DtoBlock>;
 };
 
 // ── EditorAction ─────────────────────────────────────────────────────────────
@@ -261,13 +291,11 @@ export interface EditorIpcAdapter {
   subscribeToState(handler: (state: EditingSessionStateDto) => void): () => void;
 }
 
-// ── Spec constants ────────────────────────────────────────────────────────────
+// ── Spec constants (FIND-068: IDLE_SAVE_DEBOUNCE_MS is canonical in debounceSchedule.ts) ──
 
-/**
- * REQ-EDIT-012: Idle-save debounce window in milliseconds.
- * Named export so tests can reference it via vi.useFakeTimers().
- */
-export const IDLE_SAVE_DEBOUNCE_MS = 2000;
+// IDLE_SAVE_DEBOUNCE_MS was previously exported from this module.
+// Canonical location: debounceSchedule.ts (its owning module).
+// Import from: '$lib/editor/debounceSchedule' (not here).
 
 // ── Tier 0 structural-conformance assertions ──────────────────────────────────
 

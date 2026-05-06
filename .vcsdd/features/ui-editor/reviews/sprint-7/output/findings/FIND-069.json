@@ -1,0 +1,15 @@
+{
+  "id": "FIND-069",
+  "severity": "minor",
+  "dimension": "implementation_correctness",
+  "category": "test_quality",
+  "location": "promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:100-113",
+  "description": "Test 'PROP-EDIT-003: lastSaveAt === lastEditAt (saved exactly at edit time)' has the assertion body `expect(result).toBeDefined();` — it does not assert any specific value. The test docstring even acknowledges 'implementation decides; test records the expected behavior per spec' but then fails to encode the spec decision. The current implementation (debounceSchedule.ts:50) returns `{ shouldFire: false, fireAt: null }` for `lastSaveAt >= lastEditAt && lastSaveAt !== 0`, which is sensible but unverified. The boundary `lastSaveAt === lastEditAt` could regress without test failure.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts",
+    "lineRange": "100-113",
+    "snippet": "test('PROP-EDIT-003: lastSaveAt === lastEditAt (saved exactly at edit time) → shouldFire=false after debounce window', () => {\n  ...\n  // implementation decides; test records the expected behavior per spec\n  expect(result).toBeDefined();\n});"
+  },
+  "suggestedRemediation": "Replace `expect(result).toBeDefined()` with `expect(result).toEqual({ shouldFire: false, fireAt: null })` (matching current implementation) or update the spec to document the boundary. Either way, the test must encode the canonical behavior so a future regression is caught.",
+  "routeToPhase": "2c"
+}

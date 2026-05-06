@@ -109,24 +109,42 @@ describe('Block drag handle (PROP-EDIT-031, REQ-EDIT-011)', () => {
     }
   });
 
-  test('REQ-EDIT-011: Alt+Shift+Up dispatches MoveBlock for the focused block', () => {
+  test('REQ-EDIT-011: Alt+Shift+Up dispatches MoveBlock with toIndex = currentIndex - 1', () => {
+    // block-1 is at index 0 (focusedBlockId), block-2 at 1, block-3 at 2.
+    // For Alt+Shift+Up on block-1 (index 0): direction=-1, toIndex=max(0,0-1)=0 (boundary clamp).
+    // Use block-2 (index 1) to get a meaningful toIndex=0 for the up direction.
+    // Re-emit EDITING_STATE with focusedBlockId='block-2' so block at index 1 is focused.
+    (adapter.subscribeToState as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]?.({
+      ...EDITING_STATE,
+      focusedBlockId: 'block-2',
+    });
+    flushSync();
     const paneRoot = target.querySelector('[data-testid="editor-pane-root"]');
-    expect(paneRoot).not.toBeNull(); // FAILS
+    expect(paneRoot).not.toBeNull();
     paneRoot?.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowUp', altKey: true, shiftKey: true, bubbles: true })
     );
     flushSync();
     expect(adapter.dispatchMoveBlock).toHaveBeenCalledTimes(1);
+    // block-2 is at index 1; Alt+Shift+Up → toIndex = 1 - 1 = 0
+    expect(adapter.dispatchMoveBlock).toHaveBeenCalledWith(
+      expect.objectContaining({ blockId: 'block-2', toIndex: 0 })
+    );
   });
 
-  test('REQ-EDIT-011: Alt+Shift+Down dispatches MoveBlock for the focused block', () => {
+  test('REQ-EDIT-011: Alt+Shift+Down dispatches MoveBlock with toIndex = currentIndex + 1', () => {
+    // block-1 is focusedBlockId (index 0); Alt+Shift+Down → toIndex = 0 + 1 = 1.
     const paneRoot = target.querySelector('[data-testid="editor-pane-root"]');
-    expect(paneRoot).not.toBeNull(); // FAILS
+    expect(paneRoot).not.toBeNull();
     paneRoot?.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true, shiftKey: true, bubbles: true })
     );
     flushSync();
     expect(adapter.dispatchMoveBlock).toHaveBeenCalledTimes(1);
+    // block-1 is at index 0; Alt+Shift+Down → toIndex = 0 + 1 = 1
+    expect(adapter.dispatchMoveBlock).toHaveBeenCalledWith(
+      expect.objectContaining({ blockId: 'block-1', toIndex: 1 })
+    );
   });
 
   test('REQ-EDIT-011: drag preview element is removed from DOM after drop', () => {

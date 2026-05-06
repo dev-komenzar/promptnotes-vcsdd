@@ -1,0 +1,15 @@
+{
+  "id": "FIND-067",
+  "severity": "major",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:186-193, 59-63",
+  "description": "REQ-EDIT-001 / PROP-EDIT-025 mandates that clicking a Block dispatches FocusBlock exactly ONCE per focus transition. The implementation has TWO independent focus side-effect paths that can both fire on a single click: (a) BlockElement.svelte:95-101 `handleClick` calls `blockEl.focus()` which triggers `onfocusin → adapter.dispatchFocusBlock` (this is the one production browsers exercise); (b) EditorPanel.svelte:186-193 `$effect` reacts to `viewState.focusedBlockId` and calls `el.focus()` on the matching block; the `el.focus()` triggers focusin which dispatches FocusBlock from BlockElement again. When a domain snapshot lands with the same focusedBlockId the user just clicked, the $effect re-focuses the same element. Although a guard `document.activeElement !== el` prevents the no-op case, race conditions (rapid clicks or switching back to a previously focused block) can produce duplicate FocusBlock dispatches. There is no debounce on FocusBlock dispatch and no test that asserts exactly-once dispatch under simultaneous click+snapshot scenarios.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "186-193",
+    "snippet": "$effect(() => {\n  const focusedId = viewState.focusedBlockId;\n  if (!focusedId || !panelRoot) return;\n  const el = panelRoot.querySelector(`[data-block-id=\"${focusedId}\"]`) as HTMLElement | null;\n  if (el && document.activeElement !== el) {\n    el.focus();\n  }\n});"
+  },
+  "suggestedRemediation": "Add an integration test: click block-2 (when block-1 was focused), wait one tick, emit a snapshot with focusedBlockId='block-2', flushSync, assert dispatchFocusBlock called exactly once. Alternatively, when the domain echoes the user's click via snapshot, the $effect should be inert because `document.activeElement` already equals the target. Verify this guard works under jsdom via test, since jsdom's focus management differs from real browsers.",
+  "routeToPhase": "2a"
+}

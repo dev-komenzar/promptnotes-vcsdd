@@ -1,0 +1,133 @@
+{
+  "feature": "ui-editor",
+  "phase": 3,
+  "mode": "strict",
+  "sprint": 7,
+  "iteration": 2,
+  "reviewedAt": "2026-05-06T12:30:00Z",
+  "reviewContext": {
+    "reviewType": "implementation",
+    "contractPath": "contracts/sprint-7.md"
+  },
+  "overallVerdict": "PASS",
+  "summary": "Iteration 2 of sprint-7 adversarial review. All 13 iter-1 findings (FIND-058..070) — 3 critical + 7 major + 3 minor — are resolved in production source per evidence (sprint-7-green-phase-iter-2.log, sprint-7-test-fixes-iter-2.log, sprint-7-cleanup-iter-3.log) and verified by direct file inspection: the off-screen ghost block in EditorPanel.svelte is gone, isNewNoteDisabled is `viewState.status === 'switching'` only, isCopyEnabled is `canCopy(viewState)` only (no isDirty gate), the dual-dispatch Enter handler is gone, the always-rendered hidden block-validation-hint elements are replaced by conditional rendering driven by `currentBlockError` $state populated via Promise rejection wrapping (RD-022), DTO `blocks` field plus reducer mirroring (RD-021) replaces the focusedBlockId synthesis path, the EC-EDIT-014 test now simulates the post-Cancel editing snapshot and asserts `document.activeElement?.getAttribute('data-block-id')`, and SaveFailureBanner data-shadow-applied/data-accent-color attributes are gone (className + source-grep verification). RD-021 and RD-022 are coherently documented in behavioral-spec.md §9 and §10. Per cleanup-iter-3 evidence, `bun run test:dom` reports 216 passed (216) and editor-scope tsc errors=0. Two new minor findings (FIND-071 residual block-synthesis fallback in EditorPanel, FIND-072 PROP-EDIT-024a test does not drive the full saving→editing transition) are recorded for cleanup but do not block strict-mode dimension PASS (dimension PASS requires zero critical AND zero major). Phase 5 may proceed.",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:160", "description": "FIND-059 fixed: isCopyEnabled = $derived(canCopy(viewState)) — no isDirty gate"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:162", "description": "FIND-058 fixed: isNewNoteDisabled = $derived(viewState.status === 'switching') only"},
+        {"type": "file", "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md:923-924", "description": "RD-021 (blocks DTO field) and RD-022 (REQ-EDIT-038 dispatch-rejection surface) coherently added"},
+        {"type": "file", "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md:619-644", "description": "REQ-EDIT-038 rewritten to specify Promise-rejection surface, currentBlockError local $state, contenteditable preserved"}
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": ["FIND-072"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:110,260-282,379-399", "description": "FIND-065 fixed: pendingNewNoteSource $state + $effect deferred dispatch on saving→editing-clean OR idle transition; cleared on save-failed"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:467-469", "description": "FIND-060/061 fixed: ghost block removed; comment confirms BlockElement handles all keyboard events on real rendered elements"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:249-256", "description": "FIND-067 fixed: $effect with document.activeElement guard to prevent re-focus duplicate dispatches; verified by new click-once-and-domain-echo test"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/debounceSchedule.test.ts:100-113", "description": "FIND-069 fixed: replaced expect(result).toBeDefined() with concrete assertions on shouldFire and fireAt"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:69-101", "description": "REQ-EDIT-038 (RD-022): makeErrorSurfacingAdapter wraps 4 dispatch methods with rejection capture; clears on subsequent edit"}
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": ["FIND-071"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:467-469", "description": "FIND-060 fixed: ghost block element + handleGhostKeyDown + handleGhostInput + .ghost-block CSS removed entirely"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:567-593", "description": "FIND-062 fixed: validation hint rendered conditionally on currentBlockError?.blockId === block.id; no always-present hidden divs"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/types.ts:294-298", "description": "FIND-068 fixed: IDLE_SAVE_DEBOUNCE_MS removed from types.ts; canonical export only in debounceSchedule.ts"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/editorReducer.ts:44-121,195-205", "description": "FIND-066 architectural fix: mirrorSnapshot accepts currentBlocks; mirrors snapshot.blocks when present, preserves prior state.blocks when absent (RD-021)"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/types.ts:100-163", "description": "DtoBlock type added; optional blocks?: ReadonlyArray<DtoBlock> on all four non-idle DTO arms (RD-021)"}
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/editor-session-state.dom.vitest.ts:337-365", "description": "FIND-063 fixed: EC-EDIT-014 test now emits post-Cancel editing snapshot and asserts document.activeElement?.getAttribute('data-block-id') === 'block-1'"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/save-failure-banner.dom.vitest.ts:200-224", "description": "FIND-064 fixed: data-shadow-applied tautology replaced with className regex + source-grep on SaveFailureBanner.svelte for 5-layer shadow + #dd5b00 literals"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/SaveFailureBanner.svelte:30-37", "description": "FIND-064 fixed: data-shadow-applied and data-accent-color attributes removed from banner root"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/block-element.dom.vitest.ts:91-118", "description": "FIND-067 fixed: REQ-EDIT-001 click-once test (calledTimes(1)) + new domain-echo test verifies $effect guard prevents duplicate dispatch"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/block-drag-handle.dom.vitest.ts:112-148", "description": "FIND-070 partial: Alt+Shift+Up/Down tests now assert specific toIndex values (block-2 up→0, block-1 down→1)"}
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/editorPredicates.ts", "description": "Pure-tier purity audit: zero forbidden-API hits"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/editorReducer.ts", "description": "Pure-tier purity audit: zero forbidden-API hits; total reducer over EditorAction × EditingSessionStatus"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/debounceSchedule.ts", "description": "Pure-tier purity audit: zero forbidden-API hits"},
+        {"type": "test-output", "location": ".vcsdd/features/ui-editor/evidence/sprint-7-cleanup-iter-3.log", "description": "bun run test:dom reports 216 passed (216); editor-scope tsc errors=0"},
+        {"type": "file", "location": "promptnotes/src/lib/editor/EditorPanel.svelte:55-101", "description": "REQ-EDIT-038 (RD-022): currentBlockError is local impure-shell $state; never enters EditorViewState or pure reducer; purity boundary preserved"}
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 2,
+    "criticalCount": 0,
+    "majorCount": 0,
+    "minorCount": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-700",
+      "CRIT-701",
+      "CRIT-702",
+      "CRIT-703",
+      "CRIT-704",
+      "CRIT-705",
+      "CRIT-706",
+      "CRIT-707",
+      "CRIT-708",
+      "CRIT-709",
+      "CRIT-710",
+      "CRIT-711",
+      "CRIT-712",
+      "CRIT-713",
+      "CRIT-714"
+    ],
+    "criteriaResults": {
+      "CRIT-700": "PASS",
+      "CRIT-701": "PASS",
+      "CRIT-702": "PASS",
+      "CRIT-703": "PASS",
+      "CRIT-704": "PASS",
+      "CRIT-705": "PASS",
+      "CRIT-706": "PASS",
+      "CRIT-707": "PASS",
+      "CRIT-708": "PASS",
+      "CRIT-709": "PASS",
+      "CRIT-710": "PASS",
+      "CRIT-711": "PASS",
+      "CRIT-712": "PASS",
+      "CRIT-713": "PASS",
+      "CRIT-714": "PASS"
+    },
+    "iter1FindingsResolved": [
+      "FIND-058",
+      "FIND-059",
+      "FIND-060",
+      "FIND-061",
+      "FIND-062",
+      "FIND-063",
+      "FIND-064",
+      "FIND-065",
+      "FIND-066",
+      "FIND-067",
+      "FIND-068",
+      "FIND-069",
+      "FIND-070"
+    ],
+    "newFindings": ["FIND-071", "FIND-072"],
+    "duplicateFindings": []
+  }
+}

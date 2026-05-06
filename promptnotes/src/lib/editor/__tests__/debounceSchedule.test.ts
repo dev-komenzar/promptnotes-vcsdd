@@ -97,19 +97,19 @@ describe('computeNextFireAt (PROP-EDIT-003, REQ-EDIT-012, CRIT-705)', () => {
     expect(result.shouldFire).toBe(false);
   });
 
-  test('PROP-EDIT-003: lastSaveAt === lastEditAt (saved exactly at edit time) → shouldFire=false after debounce window', () => {
-    // lastSaveAt > lastEditAt guard covers this: if they're equal, save happened simultaneously
-    // but the implementation should treat lastSaveAt <= lastEditAt as needing a save
-    // Per spec: shouldFire true iff lastSaveAt <= lastEditAt AND debounce elapsed
+  test('PROP-EDIT-003: lastSaveAt === lastEditAt (saved exactly at edit time) → shouldFire=false, no re-save needed', () => {
+    // When lastSaveAt === lastEditAt, the save covers the edit (non-zero lastSaveAt >= lastEditAt).
+    // Per computeNextFireAt semantics: `lastSaveAt !== 0 && lastSaveAt >= lastEditAt` → no fire.
+    // Most restrictive interpretation: shouldFire=false, fireAt=null (save already covers edit).
+    // RD choice: treat simultaneous save as covering the edit to avoid spurious idle saves.
     const result = computeNextFireAt({
       lastEditAt: 1000,
       lastSaveAt: 1000,
       debounceMs: 2000,
       nowMs: 4000,
     });
-    // lastSaveAt === lastEditAt means the save covered this edit; no re-save needed
-    // implementation decides; test records the expected behavior per spec
-    expect(result).toBeDefined();
+    expect(result.shouldFire).toBe(false);
+    expect(result.fireAt).toBeNull();
   });
 });
 

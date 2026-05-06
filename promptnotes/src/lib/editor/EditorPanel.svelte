@@ -13,7 +13,7 @@
    */
 
   import { onDestroy, untrack } from 'svelte';
-  import type { EditorIpcAdapter, EditorViewState, EditorAction, EditorCommand, BlockType, EditingSessionStateDto } from './types.js';
+  import type { EditorIpcAdapter, EditorViewState, EditorAction, EditorCommand, BlockType, EditingSessionStateDto, DtoBlock } from './types.js';
   import { editorReducer } from './editorReducer.js';
   import { canCopy } from './editorPredicates.js';
   import { IDLE_SAVE_DEBOUNCE_MS } from './debounceSchedule.js';
@@ -22,21 +22,20 @@
   import BlockDragHandle from './BlockDragHandle.svelte';
   import SaveFailureBanner from './SaveFailureBanner.svelte';
 
-  interface Block {
-    id: string;
-    type: BlockType;
-    content: string;
-  }
-
   interface Props {
     adapter: EditorIpcAdapter;
-    /** Optional initial blocks for the current note (for preview/testing). */
-    initialBlocks?: Block[];
+    /**
+     * Optional initial blocks for the current note (for preview/testing).
+     * Used to seed EditorViewState.blocks before any domain snapshot arrives.
+     * When a snapshot with `blocks` arrives, the DTO value supersedes this.
+     */
+    initialBlocks?: ReadonlyArray<DtoBlock>;
   }
 
   const { adapter, initialBlocks = [] }: Props = $props();
 
-  // Initial view state — idle until domain sends a snapshot
+  // Initial view state — idle until domain sends a snapshot.
+  // RD-021: blocks is owned by EditorViewState; initialBlocks seeds it before any snapshot.
   let viewState = $state<EditorViewState>({
     status: 'idle',
     isDirty: false,
@@ -46,16 +45,69 @@
     isNoteEmpty: true,
     lastSaveError: null,
     lastSaveResult: null,
+    blocks: untrack(() => [...initialBlocks]),
   });
 
-  // Block list: updated when domain sends snapshots.
-  // For UI tests, initialBlocks provides a starting set.
-  // untrack: capturing the initial value is intentional — blocks are owned by the
-  // component after mount and updated only via handleSnapshot.
-  let blocks = $state<Block[]>(untrack(() => [...initialBlocks]));
+  // RD-021: rendered block list is derived from viewState.blocks.
+  // EditorPanel no longer owns an independent blocks: Block[] variable.
+  const blocks = $derived(viewState.blocks);
+
+  // REQ-EDIT-038 (RD-022): local $state for block-level dispatch rejection errors.
+  // NOT part of EditorViewState or the pure reducer. Impure shell only.
+  let currentBlockError = $state<{ blockId: string; error: { kind: string; max?: number } } | null>(null);
+
+  /**
+   * REQ-EDIT-038 (RD-022): adapter wrapper that intercepts the 4 block-edit dispatch
+   * methods and surfaces Promise rejections as `currentBlockError`.
+   * All other methods delegate unchanged to the real adapter.
+   *
+   * The blockId is extracted from the payload's `blockId` field (all 4 targeted
+   * methods carry it in their payload). This wrapper is passed to BlockElement
+   * instead of the raw adapter so that any rejection from those dispatches sets
+   * `currentBlockError` in the EditorPanel's reactive state.
+   */
+  function makeErrorSurfacingAdapter(a: EditorIpcAdapter): EditorIpcAdapter {
+    function withErrorSurface(
+      blockId: string,
+      fn: () => Promise<void>,
+    ): Promise<void> {
+      return fn().catch((err: unknown) => {
+        if (err && typeof err === 'object' && 'kind' in err) {
+          const errorObj = err as { kind: string; max?: number };
+          currentBlockError = { blockId, error: errorObj };
+        }
+      });
+    }
+
+    return {
+      ...a,
+      dispatchEditBlockContent(payload) {
+        return withErrorSurface(payload.blockId, () => a.dispatchEditBlockContent(payload));
+      },
+      dispatchChangeBlockType(payload) {
+        return withErrorSurface(payload.blockId, () => a.dispatchChangeBlockType(payload));
+      },
+      dispatchInsertBlockAfter(payload) {
+        return withErrorSurface(payload.prevBlockId, () => a.dispatchInsertBlockAfter(payload));
+      },
+      dispatchInsertBlockAtBeginning(payload) {
+        // No blockId in this payload; use empty string sentinel (error is rare here)
+        return withErrorSurface('', () => a.dispatchInsertBlockAtBeginning(payload));
+      },
+    };
+  }
+
+  // Adapter passed to BlockElement — error surface wrapping REQ-EDIT-038
+  const blockElementAdapter = $derived(makeErrorSurfacingAdapter(adapter));
 
   let idleTimerHandle = $state<TimerHandle>(null);
   let panelRoot = $state<HTMLElement | null>(null);
+
+  // REQ-EDIT-035 / PROP-EDIT-024a: deferred RequestNewNote after TriggerBlurSave completes.
+  // When editing+dirty, we dispatch TriggerBlurSave and set this flag. After the snapshot
+  // transitions out of saving to editing/idle (save success), we dispatch RequestNewNote.
+  // If the transition is to save-failed, we clear the flag (user must resolve via banner).
+  let pendingNewNoteSource = $state<'explicit-button' | 'ctrl-N' | null>(null);
 
   // Track the block being dragged (component-level, because jsdom DragEvent instances
   // don't share dataTransfer between dragstart and drop events).
@@ -64,19 +116,33 @@
   // ── Inbound state subscription (synchronous — runs during mount) ──────────
 
   function handleSnapshot(snapshot: EditingSessionStateDto): void {
+    // RD-021: reducer mirrors snapshot.blocks when present; preserves prior viewState.blocks when absent.
+    // EditorPanel no longer independently manages block list — all block list state lives in viewState.
     dispatch({ kind: 'DomainSnapshotReceived', snapshot });
-    if (snapshot.status === 'idle') {
-      // Always clear blocks in idle state regardless of initialBlocks
-      blocks = [];
-    } else {
+
+    // Legacy / test-mode fallback: when the snapshot has no blocks field AND we are in a
+    // non-idle state, check if the focused block exists in the current block list.
+    // If not (e.g., new-note snapshot with a new focusedBlockId not yet in the list),
+    // synthesize a minimal block from focusedBlockId so the editor renders the correct element.
+    // Also handles the case where viewState.blocks is empty (no initialBlocks provided).
+    // This path fires only for test snapshots that predate RD-021 (no blocks in DTO).
+    if (
+      snapshot.status !== 'idle' &&
+      !('blocks' in snapshot && snapshot.blocks !== undefined)
+    ) {
       const focusedId = snapshot.status === 'editing' ? snapshot.focusedBlockId : null;
-      const blockExists = focusedId ? blocks.some(b => b.id === focusedId) : true;
-      if (blocks.length === 0 || !blockExists) {
-        blocks = [{
-          id: focusedId ?? 'block-default-1',
-          type: 'paragraph',
-          content: '',
-        }];
+      const focusedBlockExists = focusedId
+        ? viewState.blocks.some(b => b.id === focusedId)
+        : true;
+      if (viewState.blocks.length === 0 || !focusedBlockExists) {
+        viewState = {
+          ...viewState,
+          blocks: [{
+            id: focusedId ?? 'block-default-1',
+            type: 'paragraph',
+            content: '',
+          }],
+        };
       }
     }
   }
@@ -89,14 +155,11 @@
 
   // ── Derived values ────────────────────────────────────────────────────────
 
-  // Copy is enabled only when canCopy returns true AND the note is not dirty
-  // (REQ-EDIT-032: disabled in idle/switching, and when editing+dirty or empty)
-  const isCopyEnabled = $derived(canCopy(viewState) && !viewState.isDirty);
-  // New note button is disabled only when switching
-  const isNewNoteDisabled = $derived(
-    viewState.status === 'switching' ||
-    (viewState.status === 'editing' && viewState.isDirty)
-  );
+  // Copy is enabled when canCopy returns true (REQ-EDIT-005, REQ-EDIT-020, REQ-EDIT-032).
+  // Per spec: enabled when status ∈ {editing, saving} && !isNoteEmpty — no isDirty gate.
+  const isCopyEnabled = $derived(canCopy(viewState));
+  // New note button is disabled ONLY in switching state (REQ-EDIT-033, PROP-EDIT-022)
+  const isNewNoteDisabled = $derived(viewState.status === 'switching');
   const showDirtyIndicator = $derived(viewState.isDirty);
   const showSaveIndicator = $derived(viewState.status === 'saving');
   const showSaveFailedBanner = $derived(viewState.status === 'save-failed');
@@ -192,6 +255,32 @@
     }
   });
 
+  // ── Deferred RequestNewNote after blur-save completes (REQ-EDIT-035) ────────
+
+  $effect(() => {
+    if (pendingNewNoteSource === null) return;
+    const status = viewState.status;
+    // Save succeeded: status left saving → editing with isDirty=false, or idle
+    if (
+      (status === 'editing' && !viewState.isDirty) ||
+      status === 'idle'
+    ) {
+      const source = pendingNewNoteSource;
+      pendingNewNoteSource = null;
+      dispatch({
+        kind: 'RequestNewNoteRequested',
+        payload: {
+          source,
+          issuedAt: new Date().toISOString(),
+        },
+      });
+    }
+    // Save failed: clear flag so the user resolves via banner
+    if (status === 'save-failed') {
+      pendingNewNoteSource = null;
+    }
+  });
+
   // ── Keyboard listener: Ctrl+N and Alt+Shift+Arrow scoped to panel root ────
 
   $effect(() => {
@@ -267,8 +356,12 @@
 
   // ── Event handler: block content edited (from BlockElement) ──────────────
 
-  function handleBlockEdit(noteId: string): void {
+  function handleBlockEdit(noteId: string, blockId?: string): void {
     scheduleOrRescheduleIdle(noteId);
+    // REQ-EDIT-038: clear currentBlockError when user begins editing the affected block.
+    if (blockId && currentBlockError?.blockId === blockId) {
+      currentBlockError = null;
+    }
   }
 
   // ── Button handlers ───────────────────────────────────────────────────────
@@ -284,14 +377,15 @@
   }
 
   function handleNewNoteRequest(source: 'explicit-button' | 'ctrl-N'): void {
-    // REQ-EDIT-035: editing+dirty → TriggerBlurSave first
+    // REQ-EDIT-035: editing+dirty → TriggerBlurSave first, defer RequestNewNote
     if (viewState.status === 'editing' && viewState.isDirty && viewState.currentNoteId) {
+      pendingNewNoteSource = source;
       adapter.dispatchTriggerBlurSave({
         source: 'capture-blur',
         noteId: viewState.currentNoteId,
         issuedAt: new Date().toISOString(),
       }).catch(() => {});
-      // RequestNewNote is deferred until after save completes (domain will send snapshot)
+      // RequestNewNote will be dispatched by the $effect once saving completes
       return;
     }
     // save-failed or editing+clean or idle → dispatch directly
@@ -370,65 +464,9 @@
     }
   }
 
-  // ── Ghost block for REQ-EDIT-007 / REQ-EDIT-008 / REQ-EDIT-022 / EC-EDIT-005 ──
-  // The ghost is an off-screen block-element positioned FIRST in the DOM tree.
-  // It serves as a test-harness hook so that:
-  //   - REQ-EDIT-007: Enter on first [data-testid="block-element"] dispatches SplitBlock
-  //   - REQ-EDIT-008: Backspace at offset 0 of first block-element dispatches MergeBlocks
-  //   - REQ-EDIT-022/EC-EDIT-005: first block-element contenteditable=false in switching state
-  // The ghost has NO onclick/onfocusin to prevent double FocusBlock dispatch (REQ-EDIT-001).
-
-  // ghostBlockIndex is min(1, blocks.length-1) so Backspace at offset 0 classifies as 'merge'
-  const ghostBlockIndex = $derived(Math.min(1, Math.max(0, blocks.length - 1)));
-  const ghostBlockId = $derived(
-    blocks[Math.min(1, blocks.length - 1)]?.id ?? blocks[0]?.id ?? 'ghost'
-  );
-  const ghostNoteId = $derived(viewState.currentNoteId ?? '');
-
-  function handleGhostInput(event: Event): void {
-    const content = (event.target as HTMLElement | null)?.textContent ?? '';
-    adapter.dispatchEditBlockContent({
-      noteId: ghostNoteId,
-      blockId: ghostBlockId,
-      content,
-      issuedAt: getIssuedAt(),
-    }).catch(() => {});
-    handleBlockEdit(ghostNoteId);
-  }
-
-  function handleGhostKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      // Dispatch both SplitBlock (REQ-EDIT-007) and InsertBlock (REQ-EDIT-006)
-      const offset = (window.getSelection?.()?.anchorOffset) ?? 0;
-      adapter.dispatchSplitBlock({
-        noteId: ghostNoteId,
-        blockId: ghostBlockId,
-        offset,
-        issuedAt: getIssuedAt(),
-      }).catch(() => {});
-      adapter.dispatchInsertBlockAfter({
-        noteId: ghostNoteId,
-        prevBlockId: ghostBlockId,
-        type: 'paragraph',
-        content: '',
-        issuedAt: getIssuedAt(),
-      }).catch(() => {});
-      return;
-    }
-
-    if (event.key === 'Backspace') {
-      if (ghostBlockIndex > 0) {
-        event.preventDefault();
-        adapter.dispatchMergeBlocks({
-          noteId: ghostNoteId,
-          blockId: ghostBlockId,
-          issuedAt: getIssuedAt(),
-        }).catch(() => {});
-      }
-      return;
-    }
-  }
+  // Ghost block removed (FIND-060): the ghost was a test-harness hack.
+  // BlockElement.svelte handles all keyboard events (Enter/Backspace/Delete)
+  // via real handlers on the real rendered block elements.
 </script>
 
 <div
@@ -495,51 +533,9 @@
     </div>
   {/if}
 
-  <!-- Static validation hints (REQ-EDIT-038): always present, hidden, for accessibility/testing -->
-  <div
-    data-testid="block-validation-hint"
-    data-error-kind="incompatible-content-for-type"
-    role="alert"
-    class="block-validation-hint"
-    aria-hidden="true"
-  >このブロック種別に変換できません</div>
-  <div
-    data-testid="block-validation-hint"
-    data-error-kind="control-character"
-    role="alert"
-    class="block-validation-hint"
-    aria-hidden="true"
-  >制御文字は入力できません</div>
-
   <!-- Block tree -->
   {#if isBlockTreeVisible}
     <div class="block-tree" data-testid="block-tree">
-      <!-- Ghost block: first [data-testid="block-element"] in DOM.
-           ONLY rendered when blocks.length > 1 (with 1 block, real block-1 must be first
-           so slash-menu and input tests work correctly).
-           Present ONLY in non-idle states (so REQ-EDIT-019 passes — idle shows 0 block-elements).
-           Has NO onclick/onfocusin (REQ-EDIT-001: click dispatches FocusBlock exactly once).
-           Has onkeydown to dispatch SplitBlock+InsertBlock on Enter (REQ-EDIT-007)
-           and MergeBlocks on Backspace at non-first index (REQ-EDIT-008).
-           contenteditable is dynamic (REQ-EDIT-022/EC-EDIT-005: false in switching state).
-           data-block-id is set to blocks[1].id (a non-focused block) so EditorPanel's
-           focus $effect finds and focuses the REAL focused block element (not ghost). -->
-      {#if viewState.status !== 'idle' && blocks.length > 1}
-        <div
-          class="block-element block-paragraph ghost-block"
-          data-testid="block-element"
-          data-block-id={ghostBlockId}
-          data-block-index={ghostBlockIndex}
-          data-block-empty="false"
-          role="textbox"
-          aria-multiline="true"
-          contenteditable={isEditable ? 'true' : 'false'}
-          tabindex={isEditable ? 0 : -1}
-          oninput={handleGhostInput}
-          onkeydown={handleGhostKeyDown}
-        ></div>
-      {/if}
-
       {#each blocks as block, i (block.id)}
         <div
           class="block-drop-zone"
@@ -565,9 +561,36 @@
             isFocused={viewState.focusedBlockId === block.id}
             {isEditable}
             issuedAt={getIssuedAt}
-            {adapter}
-            onBlockEdit={() => handleBlockEdit(viewState.currentNoteId ?? '')}
+            adapter={blockElementAdapter}
+            onBlockEdit={() => handleBlockEdit(viewState.currentNoteId ?? '', block.id)}
           />
+          <!-- REQ-EDIT-038: inline validation hint shown when a dispatch rejection
+               targets this block. Cleared on next successful edit or re-edit. -->
+          {#if currentBlockError?.blockId === block.id}
+            {@const err = currentBlockError.error}
+            {#if err.kind === 'incompatible-content-for-type'}
+              <div
+                data-testid="block-validation-hint"
+                data-error-kind="incompatible-content-for-type"
+                class="block-validation-hint"
+                aria-describedby="block-{block.id}"
+              >このブロック種別に変換できません</div>
+            {:else if err.kind === 'control-character'}
+              <div
+                data-testid="block-validation-hint"
+                data-error-kind="control-character"
+                class="block-validation-hint"
+                aria-describedby="block-{block.id}"
+              >制御文字は入力できません</div>
+            {:else if err.kind === 'too-long'}
+              <div
+                data-testid="block-validation-hint"
+                data-error-kind="too-long"
+                class="block-validation-hint"
+                aria-describedby="block-{block.id}"
+              >上限を超えました（max: {err.max ?? '?'}）</div>
+            {/if}
+          {/if}
         </div>
       {/each}
       <!-- Drop zone at end -->
@@ -655,10 +678,6 @@
     overflow: hidden;
   }
 
-  .block-validation-hint {
-    display: none;
-  }
-
   .block-tree {
     flex: 1;
     overflow-y: auto;
@@ -669,13 +688,11 @@
     min-height: 4px;
   }
 
-  .ghost-block {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    pointer-events: none;
-    visibility: hidden;
+  .block-validation-hint {
+    padding: 2px 16px;
+    font-size: 12px;
+    color: #e03e3e;
+    font-weight: 400;
   }
+
 </style>

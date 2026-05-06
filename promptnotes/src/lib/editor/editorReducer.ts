@@ -10,7 +10,7 @@
  * DomainSnapshotReceived and emits commands for outbound action types.
  */
 
-import type { EditorViewState, EditorAction, EditorCommand, EditingSessionStateDto } from './types.js';
+import type { EditorViewState, EditorAction, EditorCommand, EditingSessionStateDto, DtoBlock } from './types.js';
 
 export type { EditorAction, EditorCommand, EditorViewState } from './types.js';
 
@@ -31,14 +31,20 @@ function defaultIdleState(): EditorViewState {
     isNoteEmpty: true,
     lastSaveError: null,
     lastSaveResult: null,
+    blocks: [],
   };
 }
 
 /**
  * Mirror a DTO snapshot into EditorViewState.
  * Per PROP-EDIT-040: map per-variant fields; default absent fields.
+ * RD-021: when snapshot carries `blocks`, mirror into state.blocks;
+ * when absent, preserve currentBlocks (caller passes prior state.blocks).
  */
-function mirrorSnapshot(snapshot: EditingSessionStateDto): EditorViewState {
+function mirrorSnapshot(
+  snapshot: EditingSessionStateDto,
+  currentBlocks: ReadonlyArray<DtoBlock>,
+): EditorViewState {
   switch (snapshot.status) {
     case 'idle':
       return {
@@ -50,6 +56,7 @@ function mirrorSnapshot(snapshot: EditingSessionStateDto): EditorViewState {
         isNoteEmpty: true,
         lastSaveError: null,
         lastSaveResult: null,
+        blocks: [],
       };
 
     case 'editing':
@@ -62,6 +69,7 @@ function mirrorSnapshot(snapshot: EditingSessionStateDto): EditorViewState {
         isNoteEmpty: snapshot.isNoteEmpty,
         lastSaveError: null,
         lastSaveResult: snapshot.lastSaveResult,
+        blocks: snapshot.blocks ?? currentBlocks,
       };
 
     case 'saving':
@@ -74,6 +82,7 @@ function mirrorSnapshot(snapshot: EditingSessionStateDto): EditorViewState {
         isNoteEmpty: snapshot.isNoteEmpty,
         lastSaveError: null,
         lastSaveResult: null,
+        blocks: snapshot.blocks ?? currentBlocks,
       };
 
     case 'switching':
@@ -86,6 +95,7 @@ function mirrorSnapshot(snapshot: EditingSessionStateDto): EditorViewState {
         isNoteEmpty: snapshot.isNoteEmpty,
         lastSaveError: null,
         lastSaveResult: null,
+        blocks: snapshot.blocks ?? currentBlocks,
       };
 
     case 'save-failed':
@@ -99,6 +109,7 @@ function mirrorSnapshot(snapshot: EditingSessionStateDto): EditorViewState {
         isNoteEmpty: snapshot.isNoteEmpty,
         lastSaveError: snapshot.lastSaveError,
         lastSaveResult: null,
+        blocks: snapshot.blocks ?? currentBlocks,
       };
 
     default: {
@@ -181,7 +192,7 @@ export function editorReducer(
 
     // ── Domain snapshot mirror ─────────────────────────────────────────────────
     case 'DomainSnapshotReceived': {
-      const newState = mirrorSnapshot(action.snapshot);
+      const newState = mirrorSnapshot(action.snapshot, state.blocks);
       const commands: EditorCommand[] = [];
 
       // When transitioning to editing from saving (NoteFileSaved): emit cancel-idle-timer.
