@@ -1,9 +1,9 @@
 {
   "sprintNumber": 1,
   "feature": "ui-filter-search",
-  "overallVerdict": "FAIL",
-  "timestamp": "2026-05-06T00:00:00Z",
-  "iteration": 1,
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-06T14:30:00Z",
+  "iteration": 2,
   "reviewContext": {
     "reviewType": "sprint",
     "scope": "phase-3"
@@ -11,43 +11,48 @@
   "dimensions": [
     {
       "name": "spec_fidelity",
-      "verdict": "FAIL",
-      "findings": ["FIND-PHASE3-003", "FIND-PHASE3-004"],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
-        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts", "description": "REQ-FILTER-002..012 + REQ-FILTER-016 each appear at least once in describe/it labels"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts", "description": "REQ-FILTER-002..012 + REQ-FILTER-016 each appear in describe/it labels (lines 74, 156, 194, 219, 257, 305, 325, 358, 376, 422, 443, 483, 495)"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts", "description": "Contract iteration 2 explicitly approves dom/SearchInput.dom.vitest.ts as the home for PROP-FILTER-022/024 (CRIT-IC-004/006 thresholds reference this exact path); all assertions pass under fake timers"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/prop/feedReducer.totality.test.ts", "description": "Contract CRIT-IC-001 explicitly approves prop/feedReducer.totality.test.ts as one of three approved locations for PROP-FILTER-005"},
         {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/searchPredicate.test.ts", "description": "REQ-FILTER-005 / PROP-FILTER-010 / PROP-FILTER-011 covered"},
-        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/sortByUpdatedAt.test.ts", "description": "REQ-FILTER-009 / PROP-FILTER-014 covered"},
-        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts", "description": "REQ-FILTER-001/002/003/013 covered (but at the wrong filename per CRIT-IC-004/006)"}
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/sortByUpdatedAt.test.ts", "description": "REQ-FILTER-009 / PROP-FILTER-014 covered"}
       ]
     },
     {
       "name": "edge_case_coverage",
-      "verdict": "FAIL",
-      "findings": ["FIND-PHASE3-001", "FIND-PHASE3-002", "FIND-PHASE3-007"],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
-        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts", "description": "21 of 28 EC IDs labeled; 7 missing (EC-S-001, EC-S-003, EC-S-004, EC-S-006, EC-T-004, EC-C-002, EC-C-007)"}
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts", "description": "All 28 EC IDs now greppable. EC-S-001 at line 103 (PROP-FILTER-002d / EC-S-001), EC-S-003 at line 560, EC-S-004 at line 581, EC-S-006 at line 341 (PROP-FILTER-007b / EC-S-006), EC-T-004 at line 642 (dedicated reducer-level race-freedom test), EC-C-002 at line 601, EC-C-007 at line 675 (dedicated snapshot-during-debounce test)"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts", "description": "EC-S-005, EC-S-010, EC-S-014, EC-S-016 covered with fake timers"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/computeVisible.test.ts", "description": "EC-C-001..006 composition cases covered"}
       ]
     },
     {
       "name": "implementation_correctness",
       "verdict": "PASS",
-      "findings": ["FIND-PHASE3-006"],
+      "findings": [],
       "evidence": [
-        {"type": "file", "location": "promptnotes/src/lib/feed/searchPredicate.ts", "description": "Pure substring search; uses toLowerCase only; empty-needle universal pass; no toLocaleLowerCase"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/searchPredicate.ts", "description": "Pure substring search; toLowerCase only at line 28; empty-needle universal pass at line 25; no toLocaleLowerCase"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/computeVisible.ts", "description": "Boundary fix at lines 49-59: rawNeedle passed to searchPredicate without pre-lowercasing; case-fold responsibility now solely in searchPredicate; no double-lowercasing on hot path"},
         {"type": "file", "location": "promptnotes/src/lib/feed/sortByUpdatedAt.ts", "description": "Curried comparator factory; updatedAt primary; noteId tiebreak in same direction; deterministic"},
-        {"type": "file", "location": "promptnotes/src/lib/feed/feedReducer.ts", "description": "SearchApplied/SearchCleared/SortDirectionToggled handled; commands:[] returned; DomainSnapshotReceived preserves searchQuery and sortDirection"},
-        {"type": "file", "location": "promptnotes/src/lib/feed/SearchInput.svelte", "description": "200ms debounce + Esc immediate clear; clearTimeout on each keystroke"},
-        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/prop/searchPredicate.prop.test.ts", "description": "fast-check: ASCII case-insensitive correctness + Unicode no-throw"},
-        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/prop/feedReducer.totality.test.ts", "description": "fast-check: reducer totality across all action variants"}
+        {"type": "file", "location": "promptnotes/src/lib/feed/feedReducer.ts", "description": "SearchApplied/SearchCleared/SortDirectionToggled handled at lines 314-353; commands:[] returned; DomainSnapshotReceived preserves searchQuery and sortDirection at lines 78-80"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/SearchInput.svelte", "description": "200ms debounce + Esc immediate clear; clearTimeout on each keystroke and on Esc"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/prop/feedReducer.totality.test.ts", "description": "fast-check totality: reducer never throws across all action variants including SearchApplied with strings up to 10000 chars"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/prop/searchPredicate.prop.test.ts", "description": "fast-check ASCII case-insensitive correctness + Unicode no-throw"}
       ]
     },
     {
       "name": "structural_integrity",
-      "verdict": "FAIL",
-      "findings": ["FIND-PHASE3-005"],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {"type": "file", "location": "promptnotes/src/lib/feed/feedReducer.ts", "description": "computeVisible is the SoT; searchSortOf helper exists at line 27; no allNoteIds.filter calls outside computeVisible.ts; SearchInputChanged absent from FeedAction"},
-        {"type": "file", "location": "promptnotes/src/lib/feed/types.ts", "description": "FeedAction extended with three variants; searchQuery and sortDirection are non-optional members of FeedViewState"}
+        {"type": "file", "location": "promptnotes/src/lib/feed/types.ts", "description": "FeedAction extended with three variants (lines 138-141); searchQuery and sortDirection are non-optional members of FeedViewState (lines 56-59)"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/FeedList.svelte", "description": "Lines 307-308 read currentViewState.searchQuery and currentViewState.sortDirection directly without double-cast (FIND-PHASE3-005 resolved)"}
       ]
     },
     {
@@ -65,7 +70,7 @@
     }
   ],
   "convergenceSignals": {
-    "findingCount": 7,
+    "findingCount": 0,
     "allCriteriaEvaluated": true,
     "evaluatedCriteria": [
       "CRIT-SF-001",
