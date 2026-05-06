@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-010",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "high",
+  "description": "Coverage of the 25 PROP-FILTER-NNN proof obligations across pass thresholds is sparse. Only PROP-FILTER-017 and PROP-FILTER-025 are named (in CRIT-005 evidence). Tier 0 obligations PROP-FILTER-020 (DESIGN.md hex/rgba grep on .svelte files) and PROP-FILTER-021 (tsc compile + SearchInputChanged absent from union) are not mentioned in any threshold. Tier 2 obligations PROP-FILTER-005 (reducer totality, fast-check) and PROP-FILTER-010 (searchPredicate property, fast-check) are not mentioned. The user's evaluation explicitly required 'pass threshold が PROP-FILTER-XXX が pass のように具体的に検証可能か' — only 2 of 25 PROPs are surfaced.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "55-60",
+    "snippet": "evidence: SearchInput.dom.vitest.ts PROP-FILTER-017/025 pass; SortToggle.dom.vitest.ts REQ-FILTER-014/PROP-FILTER-025 pass"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

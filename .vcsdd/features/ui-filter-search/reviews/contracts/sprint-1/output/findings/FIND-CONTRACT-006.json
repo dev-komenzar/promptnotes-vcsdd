@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-006",
+  "dimension": "implementation_correctness",
+  "category": "verification_tool_mismatch",
+  "severity": "high",
+  "description": "CRIT-004 pass threshold 'All 1650 bun tests pass; DOM test failures are only pre-existing TagFilterSidebar ones' bakes the count 1650 and accepts 5 pre-existing failures into the contract itself. (a) The hard-coded count is brittle: any new sprint adding tests immediately breaks the threshold without a logical change. (b) Allow-listing 5 known DOM failures by name in the pass criterion creates a permanent regression-debt that no future sprint can clean up without renegotiating the contract. The threshold should reference a regression-baseline manifest (e.g. evidence/regression-baseline.json) instead of inline counts.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "50-52",
+    "snippet": "passThreshold: All 1650 bun tests pass; DOM test failures are only pre-existing TagFilterSidebar ones"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-001",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "critical",
+  "description": "The contract uses non-canonical VCSDD dimension names. CRIT-003 names dimension 'purity_boundary', CRIT-004 names 'regression_safety', CRIT-005 names 'design_compliance'. Canonical VCSDD adversary review evaluates exactly five dimensions: spec_fidelity, edge_case_coverage, implementation_correctness, structural_integrity, verification_readiness. The contract is missing grading criteria for 'implementation_correctness', 'structural_integrity', and 'verification_readiness' as labeled dimensions. This forces the Phase 3 adversary either to re-map criteria heuristically (grade inflation risk) or to evaluate a dimension with no contract criteria at all.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "22-60",
+    "snippet": "dimension: purity_boundary ... dimension: regression_safety ... dimension: design_compliance"
+  },
+  "routeToPhase": "contract-renegotiation"
+}

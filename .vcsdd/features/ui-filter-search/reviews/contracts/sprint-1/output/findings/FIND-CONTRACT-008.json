@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-CONTRACT-008",
+  "dimension": "structural_integrity",
+  "category": "test_quality",
+  "severity": "high",
+  "description": "The contract has no CRIT vs NON-CRIT split. All five criteria are labeled CRIT-001..005 with no indication of which are blocking and which are advisory. The user's review checklist explicitly required 'CRIT (critical) と NON-CRIT の区別があるか'. Combined with the pre-stamped 'status: PASS' on every criterion (lines 27, 35, 43, 51, 59) and an 'evidence' field that lists final test artifacts, this contract reads as a post-hoc verdict rather than a binding pre-implementation contract. A negotiationRound: 0 contract should not embed evidence pointing at green-phase.txt or specific test cases that did not exist when the contract was first negotiated.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-filter-search/contracts/sprint-1.md",
+    "lineRange": "5-60",
+    "snippet": "negotiationRound: 0 ... status: approved ... status: PASS ... evidence: green-phase.txt — 1650/1650 bun pass"
+  },
+  "routeToPhase": "contract-renegotiation"
+}
