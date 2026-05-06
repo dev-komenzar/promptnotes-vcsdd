@@ -2,7 +2,7 @@
 coherence:
   node_id: "req:ui-editor"
   type: req
-  name: "ui-editor 行動仕様"
+  name: "ui-editor 行動仕様 (block-based)"
   depends_on:
     - id: "governance:implement-mapping"
       relation: derives_from
@@ -12,18 +12,21 @@ coherence:
       relation: derives_from
     - id: "design:aggregates"
       relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
     - id: "governance:design-system"
       relation: depends_on
   modules:
     - "ui-editor"
     - "capture-auto-save"
     - "copy-body"
+    - "edit-past-note-start"
     - "handle-save-failure"
   source_files:
     - "promptnotes/src/lib/editor"
 ---
 
-# Behavioral Specification: ui-editor
+# Behavioral Specification: ui-editor (Block-based)
 
 **Feature**: `ui-editor`
 **Phase**: 1a
@@ -31,37 +34,51 @@ coherence:
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 
 **Source of truth**:
-- `docs/domain/ui-fields.md` §1A, §画面 4, §UI 状態と型の対応, §検証エラー ↔ UI フィールド マッピング
-- `docs/domain/workflows.md` §Workflow 2 (CaptureAutoSave), §Workflow 6 (CopyBody), §Workflow 8 (HandleSaveFailure)
-- `docs/domain/aggregates.md` — `EditingSessionState`, `Body.isEmptyAfterTrim` (`note.isEmpty()`), `SaveError` error type structure
-- `docs/domain/validation.md` — シナリオ 3, 9, 15
-- `DESIGN.md` — §4 Inputs & Forms, §4 Buttons, §4 Cards & Containers, §4 Distinctive Components (Modal & Overlay), §3 Typography, §2 Color Palette, §8 Accessibility & States
+- `docs/domain/code/ts/src/shared/note.ts` — `Block`, `Note`, `NoteOps` (block 操作 8 メソッド)
+- `docs/domain/code/ts/src/shared/blocks.ts` — `serializeBlocksToMarkdown`, `parseMarkdownToBlocks`, `BlockParseError`
+- `docs/domain/code/ts/src/shared/value-objects.ts` — `BlockId`, `BlockType`, `BlockContent` (Smart Constructor)
+- `docs/domain/code/ts/src/shared/events.ts` — `SaveNoteRequested`, `NoteFileSaved`, `PastNoteSelected` (`blockId` 追加)
+- `docs/domain/code/ts/src/capture/commands.ts` — `CaptureCommand` 17 種 (`FocusBlock` / `EditBlockContent` / `InsertBlock` / `RemoveBlock` / `MergeBlocks` / `SplitBlock` / `ChangeBlockType` / `MoveBlock` ほか)
+- `docs/domain/code/ts/src/capture/internal-events.ts` — Block 系 Internal Events 9 種
+- `docs/domain/code/ts/src/capture/states.ts` — `EditingState.focusedBlockId`, `PendingNextFocus`, `EditingSessionTransitions`
+- `docs/domain/code/ts/src/capture/stages.ts` — `BlockFocusRequest`, `CurrentSessionDecision` (`same-note` バリアント), `ValidatedSaveRequest` (`blocks`+`body` 両持ち)
+- `docs/domain/code/ts/src/capture/workflows.ts` — `EditPastNoteStart`, `CaptureAutoSave`, `CopyBody`, `HandleSaveFailure`
+- `docs/domain/code/ts/src/shared/errors.ts` — `SaveError`, `SwitchError.pendingNextFocus`, `SaveValidationError.empty-body-on-idle`
+- `docs/domain/aggregates.md` §1 Note Aggregate (Block Sub-entity), §EditingSessionState
+- `docs/domain/workflows.md` Workflow 2 / 3 / 6 / 8 / 10 (BlockEdit)
+- `docs/tasks/feature-impact.md` — `ui-editor` を「強く影響」と分類した移行ノート
+- `DESIGN.md` — §3 Typography, §4 Inputs & Forms / Buttons / Cards / Distinctive Components, §6 Depth & Elevation, §8 Accessibility & States, §10 Token Reference
 
-**Scope**: UI/orchestration layer for the right-pane editor only. This feature wires domain workflow commands to the Svelte UI. It does NOT contain business validation rules; those live in domain value objects and aggregates. This feature consumes existing `EditNoteBody`, `TriggerIdleSave`, `TriggerBlurSave`, `CopyNoteBody`, `RequestNewNote`, `RetrySave`, `DiscardCurrentSession`, and `CancelSwitch` commands verbatim.
+**Scope**: UI/orchestration layer for the right-pane editor only. The editor renders one Note as a vertical stack of contenteditable Block elements and translates user input (typing / Enter / Backspace / `/` menu / drag-and-drop / focus changes) into the typed `CaptureCommand` set defined by the block-based contract. It does NOT contain business validation rules; those live in `NoteOps` and `EditingSessionTransitions`. This feature consumes existing `FocusBlock`, `EditBlockContent`, `InsertBlock`, `RemoveBlock`, `MergeBlocks`, `SplitBlock`, `ChangeBlockType`, `MoveBlock`, `TriggerIdleSave`, `TriggerBlurSave`, `CopyNoteBody`, `RequestNewNote`, `RetrySave`, `DiscardCurrentSession`, and `CancelSwitch` commands verbatim — it never invents new variants.
 
 ---
 
 ## 1. Feature Overview
 
-The `ui-editor` feature renders and orchestrates the note editor panel — the primary capture surface of the application. It presents a multi-line Body textarea for the currently active note, tracks dirtiness, schedules debounced idle autosaves, fires blur saves on focus loss, displays saving state feedback, and handles save-failure recovery. Two supporting actions — copy body to clipboard and create a new note — are surfaced as buttons (with keyboard shortcuts).
+The `ui-editor` feature renders and orchestrates the note editor panel — the primary capture surface of the application. It presents a Notion-style block editor: each `Block` of the active `Note` is rendered as its own focusable contenteditable element inside a single editor surface. The editor tracks per-block focus, dispatches block-level commands per keystroke / Enter / Backspace / `/` menu / drag, schedules debounced idle autosaves and blur autosaves, displays saving state feedback, and handles save-failure recovery. Two supporting actions — copy body to clipboard and create a new note — are surfaced as buttons (with keyboard shortcuts).
 
-The editor is an orchestration-only component. All business rules (empty-body detection, serialisation, file I/O, tag invariants) are delegated to domain workflows invoked via Tauri IPC. The editor's sole responsibilities are: (a) translating user input events into the correct domain commands with the correct `source` field, (b) reflecting `EditingSessionState` transitions in the UI without mutating state directly, and (c) surfacing domain error responses as user-recoverable affordances.
+The editor is an orchestration-only component. All business rules — block invariants (`removeBlock` last-block protection, `mergeBlockWithPrevious` first-block guard, `splitBlock` offset range, `BlockContent` constraints), serialisation (`serializeBlocksToMarkdown`), persistence, tag invariants, and `note.isEmpty()` — are delegated to domain functions invoked via Tauri IPC. The editor's sole responsibilities are: (a) translating user input events into the correct `CaptureCommand` with the correct `noteId` / `blockId` / `source` fields, (b) reflecting `EditingSessionState` transitions (including `focusedBlockId`) in the UI without mutating state directly, and (c) surfacing domain error responses as user-recoverable affordances.
 
 **In scope:**
-- Body textarea with idle-debounce autosave (`IDLE_SAVE_DEBOUNCE_MS = 2000`)
-- Blur autosave on focus loss
+- Block-tree rendering: one focusable contenteditable element per `Block`, ordered by `note.blocks`
+- Per-block focus management with `EditingState.focusedBlockId` mirroring (REQ-EDIT-001)
+- Per-keystroke `EditBlockContent` dispatch (REQ-EDIT-003)
+- Enter / Backspace / `/` menu / Markdown shortcut handling that maps to `InsertBlock` / `SplitBlock` / `MergeBlocks` / `RemoveBlock` / `ChangeBlockType` (REQ-EDIT-006..010)
+- Drag-and-drop or keyboard reordering mapping to `MoveBlock` (REQ-EDIT-011)
+- Idle-debounce autosave (`IDLE_SAVE_DEBOUNCE_MS = 2000`) and blur autosave (`EditorBlurredAllBlocks` trigger)
 - `EditingSessionState` UI mapping for all 5 states: `idle`, `editing`, `saving`, `switching`, `save-failed`
-- Save-failure banner with Retry / Discard / Cancel actions
-- Copy Body button (`CopyNoteBody` command, Workflow 6)
-- New Note button and Ctrl+N shortcut (`RequestNewNote` command)
-- Inline validation-error hint area for Body field
-- Source discrimination: every save command carries the correct `source` value
+- Save-failure banner with Retry / Discard / Cancel actions; Cancel restores the prior `focusedBlockId`
+- Copy Body button (`CopyNoteBody` command, Workflow 6) — derives clipboard text from `serializeBlocksToMarkdown(note.blocks)` server-side
+- New Note button and Ctrl+N / Cmd+N shortcut (`RequestNewNote` command); new note focuses the first block (`focusedBlockId = firstBlockId` from `NewNoteAutoCreated`)
+- Source discrimination: every save command carries `source: 'capture-idle' | 'capture-blur'`
 
 **Out of scope (belong to other features):**
-- List pane / feed note rows and per-row actions
-- Detail metadata column (tag chips, timestamps, createdAt/updatedAt display)
-- Settings dialog / Vault configuration modal
-- Cross-note search box and tag filter sidebar
+- List pane / feed note rows and per-row actions (`ui-feed-list-actions`)
+- Detail metadata column (tag chips, timestamps) (`ui-tag-chip`, `ui-app-shell`)
+- Settings / Vault configuration modal (`configure-vault`, `ui-app-shell`)
+- Cross-note search box and tag filter sidebar (`ui-filter-search`)
+- Markdown ↔ Block parsing/serialisation correctness — verified by `app-startup` (Hydration) and `capture-auto-save` (serialise) features
+- Backend Rust handlers and atomic file writes — covered by `capture-auto-save` / `handle-save-failure`
 
 ---
 
@@ -71,513 +88,646 @@ The editor is an orchestration-only component. All business rules (empty-body de
 
 The note-taker launches the app to capture prompt ideas or prose quickly, then copies the body into an AI tool. Key concerns:
 
-- Zero friction between opening the app and typing: focus must land in the Body textarea automatically.
-- Never lose a draft: autosave must be silent and reliable; failures must be recoverable without losing content.
-- Instant copy: a single click copies the body without frontmatter contamination.
+- Zero friction between opening the app and typing: focus must land in a Block automatically (the first block of the active note, or the first block of a freshly created empty note).
+- Block typing must feel native to a Notion-style editor: Enter splits the current block, Backspace at start merges with the previous, `/` opens a block-type menu, `# `/`- `/`> ` etc. convert via `ChangeBlockType`.
+- Never lose a draft: autosave must be silent and reliable; failures must be recoverable without losing block content or focus.
+- Instant copy: a single click copies the full body (`serializeBlocksToMarkdown(note.blocks)`) without frontmatter contamination.
 - Minimal chrome: the editor must not show distracting chrome when saving is proceeding normally; the save-failure banner appears only on error.
 
 ---
 
 ## 3. Functional Requirements (EARS)
 
-### §3.1 Body Editing and Dirty Tracking
+### §3.1 Block Focus and Per-Block Editing
 
-#### REQ-EDIT-001: Body Input Dispatches EditNoteBody Command
+#### REQ-EDIT-001: Block Focus Dispatches FocusBlock and Updates focusedBlockId
 
-When the user changes the content of the Body textarea, the system shall dispatch an `EditNoteBody` command carrying the full current raw string as `body` (as a raw `string` — not a branded `Body` value; see §11 for brand-type construction contracts). The `isDirty` property of the resulting `EditorViewState` becomes `true` via the pure `editorReducer` processing a `NoteBodyEdited` action. The UI mirrors `isDirty` off the domain's `EditingSessionState` via the inbound event channel (§10); there is NO separate optimistic UI flag. (ref: workflows.md §Workflow 2 step 1 `prepareSaveRequest`; ui-fields.md §1A-1 動的挙動; aggregates.md:258 `EditingSessionState.isDirty`; aggregates.md:273 `editing + NoteBodyEdited → isDirty=true`)
+When the user clicks into a Block element, or moves the caret into a Block via keyboard navigation (Tab / Arrow / programmatic focus), the system shall dispatch a `FocusBlock { kind: 'focus-block', noteId, blockId, issuedAt }` command. The mirrored `EditorViewState.focusedBlockId` becomes `blockId` once the domain emits the corresponding `BlockFocused` Internal Event and the resulting `EditingState` snapshot arrives via the inbound channel (§10). (ref: capture/commands.ts `FocusBlock`; capture/internal-events.ts `BlockFocused`; capture/states.ts `EditingState.focusedBlockId`; aggregates.md §1 Block Focus)
 
 **Edge Cases**:
-- Each individual keystroke dispatches `EditNoteBody`; there is no per-character debounce on command dispatch itself (debounce applies only to the save trigger).
-- Dispatching `EditNoteBody` does NOT immediately trigger a save; it resets the idle debounce timer (REQ-EDIT-004).
+- Focus changes within the same Note are NOT note-switches: `EditingSessionTransitions.refocusBlockSameNote` keeps `status === 'editing'` and continues the idle timer (REQ-EDIT-018).
+- A focus event into a Block that belongs to a different Note triggers the `EditPastNoteStart` workflow (Workflow 3) via `BlockFocusRequest{ noteId, blockId, snapshot }`; that path is owned by the feed feature, not by `ui-editor`.
 
 **Acceptance Criteria**:
-- Given the editor is in `editing` state and the user presses any key in the Body textarea, then `EditNoteBody` is dispatched with the updated body string.
-- `isDirty` is `true` after the `NoteBodyEdited` action is processed by `editorReducer`, as mirrored in `EditorViewState`.
-- The `EditNoteBody` command's `noteId` matches `EditorViewState.currentNoteId`.
+- Clicking a Block element dispatches `FocusBlock` with the matching `(noteId, blockId)` exactly once per focus transition.
+- The Block element corresponding to `EditorViewState.focusedBlockId` carries the visible focus ring (DESIGN.md §8 Focus System).
+- The UI never sets `focusedBlockId` locally; it reads the field from `EditorViewState` mirrored from the domain snapshot.
 
 ---
 
-#### REQ-EDIT-002: isDirty Reset After Successful Save
+#### REQ-EDIT-002: focusedBlockId is Read-Only Mirror of EditingState
 
-When the domain signals a successful save (the editor receives an `EditingSessionState` snapshot via the inbound event channel where `status` transitions to `editing` with `isDirty=false`), the pure `editorReducer` processes a `SaveSuccess` action that sets `isDirty=false` in `EditorViewState`, and any pending idle debounce timer shall be cleared. The UI reads `isDirty` from the mirrored `EditorViewState`; it does NOT maintain a separate local dirty flag. (ref: aggregates.md:258 `EditingSessionState.isDirty`; aggregates.md:275 `saving + NoteFileSaved → isDirty=false`; aggregates.md:276 `saving + NoteSaveFailed → isDirty=true retained`)
+The `editorReducer` shall mirror `EditingState.focusedBlockId` from incoming domain snapshots and shall NOT author new values. Optimistic local focus changes are limited to the impure shell setting native DOM focus on a Block element; the canonical `focusedBlockId` is owned by the Rust domain. The UI converges within one inbound event cycle. (ref: §3.4a; capture/states.ts `EditingState.focusedBlockId: BlockId | null`)
 
 **Acceptance Criteria**:
-- `EditorViewState.isDirty === false` after `SaveSuccess` is processed by `editorReducer`.
-- The idle debounce timer is cancelled after a successful save.
-- `EditorViewState.isDirty` remains `true` when `SaveFailed` action is processed (save failure does not clear dirty).
+- `editorReducer({ kind: 'DomainSnapshotReceived', snapshot: S }).state.focusedBlockId === S.focusedBlockId` for every snapshot `S` of status `editing`.
+- No `editorReducer` action other than `DomainSnapshotReceived` overwrites `focusedBlockId`.
+- No Svelte component constructs an `EditingState` carrying a synthetic `focusedBlockId`.
 
 ---
 
-#### REQ-EDIT-003: Empty Body After Trim — Copy Button Disable
+#### REQ-EDIT-003: Block Content Edit Dispatches EditBlockContent
 
-If `Body.isEmptyAfterTrim` is true for the current body content (i.e., `body.trim().length === 0` per ECMAScript `String.prototype.trim`), then the system shall disable the Copy Body button with appropriate visual and ARIA treatment. If `Body.isEmptyAfterTrim` is false, the Copy Body button shall be enabled (subject to status — see REQ-EDIT-022). (ref: aggregates.md `note.isEmpty(): boolean`; ui-fields.md §1A-1 空白のみは Empty Note として破棄; §11 Brand Type Construction Contracts)
+When the user types inside the focused Block element, the system shall dispatch `EditBlockContent { kind: 'edit-block-content', noteId, blockId, content, issuedAt }` per input event, where `content` is the full current raw string of the focused Block (sent as raw `string` at the wire boundary — Rust runs `BlockContentSmartCtor.tryNew` or `tryNewMultiline` per §11). The dispatch sets `EditorViewState.isDirty=true` after the domain snapshot returns. (ref: capture/commands.ts `EditBlockContent`; capture/internal-events.ts `BlockContentEdited`; aggregates.md §1 editBlockContent)
+
+**Edge Cases**:
+- For a `code` Block, the wire-format `content` may include embedded newlines; the multi-line variant of the Smart Constructor is used Rust-side. The TypeScript wire type is the same `string`.
+- For non-`code` Blocks, embedded newline characters in a single input event are reinterpreted by the Rust Smart Constructor as `BlockContentError.kind === 'newline-in-inline'`. The UI treats this as a domain validation error (REQ-EDIT-027).
+- Per-character debounce on command dispatch is not required; debounce applies only to the save trigger.
 
 **Acceptance Criteria**:
-- When the textarea contains only whitespace characters (spaces, tabs, newlines), the Copy button is rendered with `disabled` attribute and `aria-disabled="true"`.
-- When the textarea contains at least one non-whitespace character, the Copy button is enabled (when status also permits).
-- The disabled visual uses Warm Gray 300 (`#a39e98`) text color per DESIGN.md §8 Disabled state.
+- Each `input` event in a Block dispatches exactly one `EditBlockContent` carrying the full current Block content.
+- `isDirty` is `true` after the resulting `BlockContentEdited` action is processed by `editorReducer`, mirrored from `EditingState.isDirty`.
+- The dispatch reuses the focused Block's `(noteId, blockId)` pair from `EditorViewState`.
 
 ---
 
-### §3.2 Idle Autosave
+#### REQ-EDIT-004: isDirty Reset After Successful Save
 
-#### REQ-EDIT-004: Idle Debounce Timer
+When the domain emits `NoteFileSaved` (received by the `editorReducer` as a snapshot transition `saving → editing` with `isDirty=false`), the reducer shall set `EditorViewState.isDirty=false`, and any pending idle debounce timer shall be cleared via the impure shell reacting to a `'cancel-idle-timer'` `EditorCommand` in the reducer output. (ref: aggregates.md L274 `saving + NoteFileSaved → isDirty=false`; verification-architecture.md §10 EditorCommand union)
+
+**Acceptance Criteria**:
+- `EditorViewState.isDirty === false` after the `SaveSuccess` action.
+- The idle debounce timer is cancelled before the next edit cycle.
+- `EditorViewState.isDirty` remains `true` on `NoteSaveFailed` (save failure does not clear dirty).
+
+---
+
+#### REQ-EDIT-005: Empty Note Predicate — Copy Button Disable
+
+If `note.isEmpty()` is true (i.e., `blocks.length === 1 && BlockContent.isEmpty(blocks[0].content) && blocks[0].type === 'paragraph'`), then the system shall disable the Copy Body button. The pure UI predicate `canCopy(view, status)` reads the local mirror `isNoteEmpty: boolean` field from `EditorViewState`; that field is set by the `editorReducer` when mirroring an `EditingSessionState` snapshot (the snapshot's owner Rust domain runs `NoteOps.isEmpty`). (ref: aggregates.md §1 `isEmpty`; shared/note.ts `NoteOps.isEmpty`; shared/value-objects.ts `BlockContentSmartCtor.isEmpty`; ui-fields.md §1A-1; §11)
+
+**Acceptance Criteria**:
+- When `EditorViewState.isNoteEmpty === true`, the Copy Body button is rendered with `disabled` and `aria-disabled="true"`.
+- When `EditorViewState.isNoteEmpty === false`, the Copy Body button is enabled (subject to status — REQ-EDIT-022).
+- The disabled visual uses Warm Gray 300 (`#a39e98`) per DESIGN.md §8.
+
+---
+
+### §3.2 Block Structure Operations
+
+#### REQ-EDIT-006: Enter at End of Block Dispatches InsertBlock
+
+When the user presses Enter while the caret is at the end of a Block's content (`selection.start === selection.end === content.length`), the system shall dispatch `InsertBlock { kind: 'insert-block', atBeginning: false, noteId, prevBlockId, type: 'paragraph', content: '', issuedAt }` and the new Block shall receive focus (the domain emits `BlockInserted` followed by `BlockFocused`; the UI mirrors `focusedBlockId`). (ref: capture/commands.ts `InsertBlock`; aggregates.md §1 `insertBlockAfter`; workflows.md Workflow 10)
+
+**Acceptance Criteria**:
+- Enter at the end of a non-empty Block dispatches `InsertBlock` with `atBeginning: false` and `prevBlockId === EditorViewState.focusedBlockId`.
+- The newly inserted Block becomes the focused Block once the snapshot returns.
+- The newly inserted Block's `type` defaults to `'paragraph'`; `content` is empty.
+
+---
+
+#### REQ-EDIT-007: Enter Mid-Block Dispatches SplitBlock
+
+When the user presses Enter while the caret is strictly inside a Block (`selection.start === selection.end ∈ (0, content.length)`), the system shall dispatch `SplitBlock { kind: 'split-block', noteId, blockId, offset, issuedAt }` where `offset` is the caret index. The text after the caret moves into a new `paragraph` Block inserted directly after, and focus moves to that new Block. (ref: capture/commands.ts `SplitBlock`; capture/internal-events.ts `BlockSplit`; aggregates.md §1 `splitBlock`)
+
+**Acceptance Criteria**:
+- Enter mid-block dispatches `SplitBlock` carrying the caret offset.
+- The reducer never invents an offset value out of `[0, content.length]`; the impure shell reads it from `Selection.anchorOffset`.
+- After the resulting `BlockSplit` snapshot, `EditorViewState.focusedBlockId` matches the newly created Block (`BlockSplit.newBlockId`).
+
+---
+
+#### REQ-EDIT-008: Backspace at Block Start Dispatches MergeBlocks
+
+When the user presses Backspace at the start of a non-first Block (`selection.start === selection.end === 0`), the system shall dispatch `MergeBlocks { kind: 'merge-blocks', noteId, blockId, issuedAt }`. The domain merges the current Block's content into the previous Block and removes the current Block (`BlocksMerged` event); focus follows to the survivor. Backspace at the start of the first Block is a no-op (the domain returns `merge-on-first-block` and the UI treats it silently). (ref: capture/commands.ts `MergeBlocks`; capture/internal-events.ts `BlocksMerged`; aggregates.md §1 `mergeBlockWithPrevious`; shared/note.ts `BlockOperationError.merge-on-first-block`)
+
+**Acceptance Criteria**:
+- Backspace at offset 0 in a non-first Block dispatches `MergeBlocks`.
+- After the snapshot, `focusedBlockId` mirrors `BlocksMerged.survivorBlockId`.
+- Backspace at offset 0 in the first Block dispatches nothing (the UI gates this client-side via `EditorViewState.focusedBlockId === blocks[0].id`).
+
+---
+
+#### REQ-EDIT-009: Empty-Block Backspace / Delete Dispatches RemoveBlock
+
+When the user presses Backspace or Delete on a Block whose content is empty AND the Note has more than one Block, the system shall dispatch `RemoveBlock { kind: 'remove-block', noteId, blockId, issuedAt }`. If the Note has only one Block, the command is NOT dispatched (the domain refuses `last-block-cannot-be-removed`; the UI elides the no-op). Focus moves to the previous Block when one exists, otherwise to the next Block. (ref: capture/commands.ts `RemoveBlock`; aggregates.md §1 `removeBlock` invariant; shared/note.ts `BlockOperationError.last-block-cannot-be-removed`)
+
+**Acceptance Criteria**:
+- Backspace/Delete on an empty non-last Block dispatches `RemoveBlock`.
+- Backspace/Delete on the only Block of a Note dispatches nothing.
+- After the snapshot, `focusedBlockId` matches the neighbouring Block produced by the domain.
+
+---
+
+#### REQ-EDIT-010: Slash Menu and Markdown Shortcut Dispatch ChangeBlockType
+
+When the user invokes the `/` menu inside a Block and selects a Block type, OR types a recognised Markdown prefix at the start of an empty paragraph (`# ` → heading-1, `## ` → heading-2, `### ` → heading-3, `- ` / `* ` → bullet, `1. ` → numbered, ``` ``` ``` → code, `> ` → quote, `---` on its own line → divider), the system shall dispatch `ChangeBlockType { kind: 'change-block-type', noteId, blockId, newType, issuedAt }`. For Markdown shortcuts, the trigger characters are stripped from the Block content via a follow-up `EditBlockContent` dispatch (or the domain returns the cleaned content via `BlockTypeChanged`; UI mirrors). The slash menu surface itself is purely local UI state and never persists. (ref: capture/commands.ts `ChangeBlockType`; capture/internal-events.ts `BlockTypeChanged`; aggregates.md §1 `changeBlockType`)
+
+**Acceptance Criteria**:
+- Selecting "Heading 1" in the slash menu dispatches `ChangeBlockType` with `newType: 'heading-1'`.
+- Typing `# ` at the start of an empty paragraph dispatches `ChangeBlockType` with `newType: 'heading-1'` and clears the prefix.
+- Each of `paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider` is reachable from the slash menu and is a valid `BlockType` literal.
+- The slash-menu DOM is mounted only while open and torn down on selection or Escape.
+
+---
+
+#### REQ-EDIT-011: Block Reorder Dispatches MoveBlock
+
+When the user drags a Block handle to a new vertical position OR uses the keyboard shortcut Alt+Shift+Up/Down to move the focused Block, the system shall dispatch `MoveBlock { kind: 'move-block', noteId, blockId, toIndex, issuedAt }` where `toIndex` is the new 0-based index in `note.blocks` and `0 <= toIndex < blocks.length`. (ref: capture/commands.ts `MoveBlock`; capture/internal-events.ts `BlockMoved`; aggregates.md §1 `moveBlock`; shared/note.ts `BlockOperationError.move-index-out-of-range`)
+
+**Acceptance Criteria**:
+- Drop releases or Alt+Shift+Up/Down dispatches `MoveBlock` with a `toIndex` inside `[0, blocks.length)`.
+- The UI reads the source index from the focused Block and the destination index from the drop target / keyboard direction; it does not invent indices outside the Note.
+- The drag preview Element is removed from the DOM regardless of dispatch outcome.
+
+---
+
+### §3.3 Idle Autosave
+
+#### REQ-EDIT-012: Idle Debounce Timer
 
 **Spec contract constant**: `IDLE_SAVE_DEBOUNCE_MS = 2000`
 
-When an `EditNoteBody` command is dispatched while `EditorViewState.isDirty === true`, the system shall (re)start a debounce timer of exactly `IDLE_SAVE_DEBOUNCE_MS` milliseconds. If no further `EditNoteBody` dispatch occurs before the timer fires, the system shall fire `TriggerIdleSave { source: 'capture-idle' }` (Workflow 2). Each new `EditNoteBody` dispatch resets the timer. (ref: ui-fields.md §1A-1 動的挙動 「入力停止 ~2s で `TriggerIdleSave` 自動発火」; workflows.md §Workflow 2 概要; domain-events.md:115 `source: 'capture-idle' | 'capture-blur' | 'curate-tag-chip' | 'curate-frontmatter-edit-outside-editor'`)
+When any block-edit command (`EditBlockContent`, `InsertBlock`, `RemoveBlock`, `MergeBlocks`, `SplitBlock`, `ChangeBlockType`, `MoveBlock`) is dispatched while `EditorViewState.isDirty === true`, the impure shell shall (re)start a debounce timer of exactly `IDLE_SAVE_DEBOUNCE_MS` ms. If no further block-edit dispatch occurs before the timer fires, the system shall fire `TriggerIdleSave { kind: 'trigger-idle-save', noteId, issuedAt }` (Workflow 2) with effective `source: 'capture-idle'` (carried on the resulting `SaveNoteRequested` Public Event). Each new block-edit dispatch resets the timer. (ref: capture/commands.ts `TriggerIdleSave`; shared/events.ts `SaveNoteSource = 'capture-idle' | 'capture-blur' | 'curate-tag-chip' | 'curate-frontmatter-edit-outside-editor'`; workflows.md Workflow 2 step 1; aggregates.md §EditingState `applyBlockEdit`)
 
-**Debounce shell contract**: The impure `timerModule.ts` calls `scheduleIdleSave(delayMs, callback)` based on the pure `debounceSchedule.computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs })` result. The reducer never schedules timers; the impure shell observes reducer state and (re)schedules. See §12 Debounce Contract.
+**Debounce shell contract**: The pure `debounceSchedule.computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs, nowMs })` is invoked by the impure shell. The reducer never schedules timers; it only emits `'cancel-idle-timer'` and `'trigger-idle-save'` `EditorCommand`s for the impure shell to consume. (See §12 Debounce Contract.)
 
 **Acceptance Criteria**:
-- Given the user stops typing for exactly `IDLE_SAVE_DEBOUNCE_MS` ms, `TriggerIdleSave` is fired once with `source: 'capture-idle'`.
-- Given the user types again within `IDLE_SAVE_DEBOUNCE_MS` ms, the timer resets and no intermediate `TriggerIdleSave` is fired.
-- `IDLE_SAVE_DEBOUNCE_MS` is defined as a named exported constant (not an inline magic number) so tests can control it via `vi.useFakeTimers()`.
-- The timer is not started when `EditorViewState.isDirty === false`.
+- After any block-edit dispatch, exactly one `TriggerIdleSave` fires `IDLE_SAVE_DEBOUNCE_MS` ms after the last dispatch.
+- A subsequent block-edit dispatch within the window resets the timer; no intermediate `TriggerIdleSave` fires.
+- `IDLE_SAVE_DEBOUNCE_MS` is a named exported constant so tests use `vi.useFakeTimers()`.
+- The timer is not started while `EditorViewState.isDirty === false`.
 
 ---
 
-#### REQ-EDIT-005: Idle Timer Cancelled on Successful Save
+#### REQ-EDIT-013: Idle Timer Cancelled on Successful Save
 
-When a save completes successfully (per REQ-EDIT-002), the system shall cancel any running idle debounce timer so that `TriggerIdleSave` does not fire redundantly after the save. (ref: workflows.md §Workflow 2 未解決の問い 「重複保存抑制」)
+When a save completes successfully (per REQ-EDIT-004), the system shall cancel any running idle debounce timer so that `TriggerIdleSave` does not fire redundantly after the save. (ref: workflows.md Workflow 2 「重複保存抑制」)
 
 **Acceptance Criteria**:
-- If the idle timer fires and a save is dispatched, the timer is cleared before the next edit cycle.
+- After `NoteFileSaved` is mirrored, the impure shell calls `cancelIdleSave(handle)` exactly once before the next edit cycle.
 - A second `TriggerIdleSave` is not dispatched for a body that was already saved.
 
 ---
 
-### §3.3 Blur Autosave
+### §3.4 Blur Autosave
 
-#### REQ-EDIT-006: Blur Fires TriggerBlurSave When Dirty
+#### REQ-EDIT-014: All-Blocks Blur Fires TriggerBlurSave
 
-When the Body textarea loses focus (blur event) while `EditorViewState.isDirty === true`, the system shall immediately dispatch `TriggerBlurSave { source: 'capture-blur' }` (Workflow 2) and cancel any pending idle debounce timer. (ref: ui-fields.md §1A-1 動的挙動 「フォーカスアウトで `TriggerBlurSave` 自動発火」; aggregates.md `EditingSessionState` transition: `editing → saving` on `AutoSaveOnBlur`; domain-events.md:115 `source: 'capture-blur'`)
+When the editor surface as a whole loses focus while `EditorViewState.isDirty === true` — i.e., the impure shell observes that the focusout target is outside the editor pane root and no following focus into another Block of the same Note has arrived within the same event loop tick — the system shall dispatch `TriggerBlurSave { kind: 'trigger-blur-save', noteId, issuedAt }` (Workflow 2) with effective `source: 'capture-blur'`, and shall cancel any pending idle debounce timer. (ref: capture/commands.ts `TriggerBlurSave`; capture/internal-events.ts `EditorBlurredAllBlocks`; shared/events.ts `SaveNoteSource`)
 
 **Acceptance Criteria**:
-- Given `EditorViewState.isDirty === true` and the textarea loses focus, `TriggerBlurSave` is dispatched exactly once with `source: 'capture-blur'`.
-- The pending idle debounce timer is cancelled before `TriggerBlurSave` is dispatched.
-- If `EditorViewState.isDirty === false` at the time of blur, `TriggerBlurSave` is NOT dispatched.
+- Blur to outside the editor pane while dirty dispatches `TriggerBlurSave` exactly once with effective `source: 'capture-blur'`.
+- A blur from one Block followed by a focus into another Block of the same Note (same event loop tick) does NOT dispatch `TriggerBlurSave`; the editor remains in `editing` and `focusedBlockId` updates via REQ-EDIT-001.
+- The pending idle timer is cancelled before `TriggerBlurSave` fires.
+- If `EditorViewState.isDirty === false` at the time of all-blocks blur, `TriggerBlurSave` is NOT dispatched.
 
 ---
 
-#### REQ-EDIT-007: Blur Does Not Duplicate Fire With Idle
+#### REQ-EDIT-015: Blur Does Not Duplicate Idle for the Same Dirty Interval
 
-When `TriggerBlurSave { source: 'capture-blur' }` is dispatched due to a blur event, the system shall ensure that the idle debounce timer is cancelled so that `TriggerIdleSave { source: 'capture-idle' }` does NOT also fire for the same dirty interval. Blur and idle MUST NOT both fire for the same dirty editing session. (ref: ui-fields.md §1A-1 同動的挙動; validation.md シナリオ 9; domain-events.md:115)
+When `TriggerBlurSave` is dispatched, the system shall ensure the idle debounce timer is cancelled so that `TriggerIdleSave` does NOT also fire for the same dirty interval. Blur and idle MUST NOT both fire for the same dirty editing session. (ref: workflows.md Workflow 2 未解決の問い)
 
 **Acceptance Criteria**:
-- Given a blur occurs while an idle timer is pending, only `TriggerBlurSave { source: 'capture-blur' }` fires; `TriggerIdleSave` does not fire subsequently for that same edit.
-- Given a blur occurs and the save completes, a subsequent restart of editing from `EditorViewState.isDirty === false` begins a fresh debounce cycle.
+- Given an idle timer is pending, an all-blocks blur cancels it and dispatches only `TriggerBlurSave`.
+- After the save completes, a fresh dirty cycle (`isDirty: false → true`) starts a new debounce window.
 
 ---
 
-#### REQ-EDIT-008: Blur Does Not Fire When State Is Already Saving
+#### REQ-EDIT-016: Blur Does Not Fire When State Is Already Saving or Switching
 
-If the blur event arrives while `EditorViewState.status === 'saving'`, the system shall NOT dispatch a second `TriggerBlurSave` because a save is already in flight. (ref: aggregates.md state transition table — `saving` has no outgoing `AutoSaveOnBlur` transition)
+If the all-blocks blur event arrives while `EditorViewState.status === 'saving'` or `'switching'`, the system shall NOT dispatch a second `TriggerBlurSave` because a save is already in flight (or the domain's `EditPastNoteStart.flushCurrentSession` step owns the flush). (ref: capture/states.ts; aggregates.md state transition table — `saving` / `switching` have no outgoing `EditorBlurredAllBlocks`-driven autosave)
 
 **Acceptance Criteria**:
-- Given the state is `saving` and a blur event arrives, no additional `TriggerBlurSave` is dispatched.
-- The in-flight save proceeds uninterrupted.
+- Blur while `status === 'saving'` dispatches nothing.
+- Blur while `status === 'switching'` dispatches nothing; the in-flight switch proceeds.
 
 ---
 
-### §3.4 EditingSessionState UI Mapping
+### §3.5 Block Focus Maintenance Across Same-Note Moves
 
-#### REQ-EDIT-009: Idle State — Editor Collapsed
+#### REQ-EDIT-017: Same-Note Block Focus Does Not Begin a Switch
 
-While `EditorViewState.status === 'idle'`, the system shall render the editor area in a collapsed/read-only placeholder state: the Body textarea is not shown in editable form, the Copy button is disabled, and no save indicator is shown. The placeholder text communicates that no note is selected. (ref: ui-fields.md §UI 状態と型の対応 `idle` 行: 「編集中ノートなし」「折りたたみ表示のみ」「コピーボタン無効」)
+When the user moves focus to a different Block of the same Note, `EditingSessionTransitions.refocusBlockSameNote` keeps `status === 'editing'` and only updates `focusedBlockId`. The UI shall NOT dispatch any save command, NOT cancel the idle timer, and NOT show any switching affordance. (ref: capture/states.ts `EditingSessionTransitions.refocusBlockSameNote`; capture/stages.ts `CurrentSessionDecision.same-note`; aggregates.md L355)
 
 **Acceptance Criteria**:
-- When `status === 'idle'`, the Body textarea is not interactive (either absent or `readonly`).
-- The Copy button is rendered with `disabled` and `aria-disabled="true"`.
-- A placeholder message is visible (e.g., "ノートを選択してください" or similar).
-- The New Note button remains enabled in `idle` state (creating a note is always valid).
+- A focus change between Blocks of the same Note dispatches only `FocusBlock` (REQ-EDIT-001).
+- No `TriggerBlurSave` or `TriggerIdleSave` is dispatched as a result of the focus move alone.
+- The visible focus ring moves; no spinner or banner appears.
 
 ---
 
-#### REQ-EDIT-010: Editing State — Active Input
+#### REQ-EDIT-018: Idle Timer Continues Across Same-Note Block Moves
 
-While `EditorViewState.status === 'editing'`, the system shall render the Body textarea as interactive and editable. When `EditorViewState.isDirty === true`, a dirty indicator (e.g., a subtle badge or dot) is displayed near the textarea to signal unsaved changes. No save-failure banner is shown. `isDirty` is read from `EditorViewState` (the UI's mirror of domain state); the UI maintains no separate local copy. (ref: ui-fields.md §UI 状態と型の対応 `editing` 行: 「入力可、`isDirty` バッジ」「コピーボタン有効」; DESIGN.md §4 Inputs & Forms; aggregates.md:258 `EditingSessionState.isDirty`)
+When the user moves focus to another Block of the same Note while the idle timer is pending, the timer SHALL continue running (a same-note move is not a new edit and does not reset the debounce window). The next block-edit dispatch (REQ-EDIT-003 or any structural REQ-EDIT-006..011) does reset the timer per REQ-EDIT-012. (ref: aggregates.md L355–356; capture/states.ts `applyBlockEdit`)
 
 **Acceptance Criteria**:
-- The textarea accepts user input.
-- When `EditorViewState.isDirty === true`, a visual dirty indicator is present in the DOM.
-- The Copy button is enabled when `Body.isEmptyAfterTrim === false`.
+- Tab/click between Blocks does not call `cancelIdleSave` and does not call `scheduleIdleSave`.
+- A subsequent `EditBlockContent` dispatch in the new focused Block resets the timer per REQ-EDIT-012.
+
+---
+
+### §3.6 EditingSessionState UI Mapping
+
+#### REQ-EDIT-019: Idle State — Editor Collapsed
+
+While `EditorViewState.status === 'idle'`, the system shall render the editor area in a collapsed/read-only placeholder state: no Block elements are interactive, the Copy button is disabled, no save indicator is shown. The placeholder text communicates that no note is active. (ref: ui-fields.md §UI 状態と型の対応 `idle` 行)
+
+**Acceptance Criteria**:
+- When `status === 'idle'`, the Block tree is either absent from the DOM or rendered with `contenteditable="false"` and `aria-disabled="true"`.
+- The Copy button has `disabled` and `aria-disabled="true"`.
+- A placeholder message is visible (e.g., "ノートを選択してください").
+- The New Note button remains enabled in `idle` state.
+
+---
+
+#### REQ-EDIT-020: Editing State — Active Block Editing
+
+While `EditorViewState.status === 'editing'`, the system shall render the Block tree as interactive: the Block matching `focusedBlockId` is contenteditable and carries the focus ring; non-focused Blocks remain contenteditable but visually de-emphasised per DESIGN.md. When `EditorViewState.isDirty === true`, a dirty indicator is displayed near the editor heading. No save-failure banner is shown. (ref: ui-fields.md §UI 状態と型の対応 `editing` 行; DESIGN.md §4 Inputs & Forms; aggregates.md L274 `EditingSessionState.isDirty`)
+
+**Acceptance Criteria**:
+- The Block whose `id === EditorViewState.focusedBlockId` is the active editable element.
+- When `isDirty === true`, a visual dirty indicator is present in the DOM.
+- The Copy button is enabled when `isNoteEmpty === false` (REQ-EDIT-005).
 - No spinner and no error banner is shown.
 
 ---
 
-#### REQ-EDIT-011: Saving State — In-Flight Indicator
+#### REQ-EDIT-021: Saving State — In-Flight Indicator
 
-While `EditorViewState.status === 'saving'`, the system shall render a save-in-progress indicator (spinner or animated label) near the textarea, keep the textarea editable (the user may continue typing during save), and show the Copy button as enabled when body is non-empty. The system shall NOT disable the textarea during `saving`. The New Note button is **enabled** in `saving` state (per EC-EDIT-010 the domain queues the intent). (ref: ui-fields.md §UI 状態と型の対応 `saving` 行: 「入力可、保存中インジケータ」「コピーボタン有効」「削除ボタン無効」)
+While `EditorViewState.status === 'saving'`, the system shall render a save-in-progress indicator near the editor heading, keep the Block tree editable (the user may continue typing during save), and show the Copy button enabled when `isNoteEmpty === false`. The system shall NOT make the Block tree `contenteditable="false"` during `saving`. The New Note button is **enabled** in `saving` state (per EC-EDIT-010). (ref: ui-fields.md §UI 状態と型の対応 `saving` 行)
 
 **Acceptance Criteria**:
-- A save indicator element is present in the DOM with `aria-label` containing save-in-progress language (e.g., "保存中").
-- The textarea is not `disabled` and not `readonly`.
-- The `isDirty` badge (reflecting `EditorViewState.isDirty`) may or may not be shown; the saving indicator takes precedence.
-- The New Note button is enabled (not `disabled`, not `aria-disabled="true"`).
+- A save indicator element is present in the DOM with `aria-label` containing "保存中".
+- Block elements remain `contenteditable="true"`.
+- The dirty badge may or may not be shown; the saving indicator takes precedence.
+- The New Note button is enabled.
 
 ---
 
-#### REQ-EDIT-012: Switching State — Input Locked
+#### REQ-EDIT-022: Switching State — Block Tree Locked
 
-While `EditorViewState.status === 'switching'`, the system shall render the textarea as non-interactive (disabled or read-only) with a visual cue indicating a note switch is pending. The Copy button and delete button shall be disabled. The New Note button is **disabled** in `switching` state — a switch is already in progress and no new intent can be queued. The user cannot make new edits until the switch completes. (ref: ui-fields.md §UI 状態と型の対応 `switching` 行: 「入力不可（save 完了待ち）」「コピーボタン無効」「削除ボタン無効」)
+While `EditorViewState.status === 'switching'`, the system shall render the Block tree as non-interactive (`contenteditable="false"` and `aria-disabled="true"`) with a visual cue indicating a note switch is pending. The Copy button and New Note button shall be disabled. The user cannot make new edits until the switch completes. The pending Block focus target is `EditorViewState.pendingNextFocus = { noteId, blockId }`; the editor uses this only for visual feedback. (ref: ui-fields.md §UI 状態と型の対応 `switching` 行; capture/states.ts `SwitchingState.pendingNextFocus`)
 
 **Acceptance Criteria**:
-- The textarea is `disabled` or has `aria-disabled="true"` and does not accept keyboard input.
+- Block elements have `contenteditable="false"` and `aria-disabled="true"`.
 - The Copy button is disabled.
-- The New Note button is `disabled` or `aria-disabled="true"`.
-- A visual cue (e.g., overlay or spinner) communicates the pending switch.
+- The New Note button is `disabled` / `aria-disabled="true"`.
+- A visual cue communicates the pending switch.
 
 ---
 
-#### REQ-EDIT-013: Save-Failed State — Banner and Degraded Editor
+#### REQ-EDIT-023: Save-Failed State — Banner and Degraded Editor
 
-While `EditorViewState.status === 'save-failed'`, the system shall render the save-failure banner (§3.5), keep the textarea editable, and disable the Copy button and the delete affordance. Input in the textarea during this state accumulates as pending dirty content. The New Note button is **enabled** in `save-failed` state (per EC-EDIT-008 the dispatch is allowed; the domain decides). (ref: ui-fields.md §UI 状態と型の対応 `save-failed` 行: 「失敗バナー」「入力可、再試行/破棄ボタン強調」「コピーボタン無効」「削除ボタン無効」)
+While `EditorViewState.status === 'save-failed'`, the system shall render the save-failure banner (§3.7), keep the Block tree editable, and disable the Copy button. Input continues to accumulate as pending dirty content. The New Note button is **enabled** in `save-failed` state (per EC-EDIT-008 the dispatch is allowed; the domain's `HandleSaveFailure` decides). The banner Cancel button restores focus to the previous `focusedBlockId` (held in `EditorViewState`). (ref: ui-fields.md §UI 状態と型の対応 `save-failed` 行; capture/states.ts `SaveFailedState.pendingNextFocus`)
 
 **Acceptance Criteria**:
-- The save-failure banner is visible (REQ-EDIT-015 through REQ-EDIT-019).
-- The textarea accepts new input.
-- The Copy button is disabled (`aria-disabled="true"`).
-- The New Note button is enabled (not `disabled`).
+- The save-failure banner is visible.
+- Block elements remain `contenteditable="true"`.
+- The Copy button is `disabled` / `aria-disabled="true"`.
+- The New Note button is enabled.
 
 ---
 
-#### §3.4a State Ownership Contract
+#### §3.6a State Ownership Contract
 
-**This subsection is normative.** It resolves FIND-004 (state ownership ambiguity).
+**This subsection is normative.** It resolves the state-ownership ambiguity carried over from prior iterations.
 
-**Canonical `EditingSessionState`** is owned exclusively by the Rust domain layer (`src-tauri/src/domain/...`). The TypeScript `editorReducer` is a **mirror reducer** whose output type is `EditorViewState` — a UI-side projection derived from inbound `EditingSessionState` snapshot events.
+**Canonical `EditingSessionState`** is owned exclusively by the Rust domain layer. The TypeScript `editorReducer` is a **mirror reducer** whose output type is `EditorViewState` — a UI-side projection derived from inbound `EditingSessionState` snapshot events.
 
 **Relationship between `EditorViewState` and `EditingSessionState`**:
-- `EditorViewState` is a strict subset of `EditingSessionState`: it contains `status`, `isDirty`, `currentNoteId`, and `pendingNextNoteId`, mirroring the domain fields by name and type.
+- `EditorViewState` is a strict subset of `EditingSessionState`: it contains `status`, `isDirty`, `currentNoteId`, `focusedBlockId`, `pendingNextFocus`, `isNoteEmpty`, `lastSaveError` (when status is `save-failed`).
 - `EditorViewState` is NOT the authoritative state. It is a locally-cached projection for UI rendering.
-- The `editorReducer`'s job is UI-projection only: given an inbound domain snapshot action (e.g., `DomainSnapshotReceived { snapshot: EditingSessionState }`), it produces an `EditorViewState` suitable for driving Svelte reactivity.
-- The `editorReducer` also handles locally-observed action shapes (e.g., `NoteBodyEdited` for optimistic `isDirty=true`) — but these are immediately superseded by the next domain snapshot.
+- The reducer's job is UI-projection only: given an inbound domain snapshot action (`DomainSnapshotReceived { snapshot }`), it produces an `EditorViewState` suitable for driving Svelte reactivity.
+- Locally-observed action shapes (e.g., `BlockContentEdited` for optimistic `isDirty=true`) are immediately superseded by the next domain snapshot.
 
 **Who emits transitions**: The Rust domain emits transitions. The TypeScript `editorReducer` does NOT author new transitions; it only reflects them into `EditorViewState`.
 
 **Inbound event channel**: See §10 Domain ↔ UI State Synchronization.
 
-**Invariant**: `EditorViewState` must converge to the domain's `EditingSessionState` within one inbound event cycle. Any divergence (e.g., optimistic `isDirty=true`) is transient and overwritten by the next `DomainSnapshotReceived` action.
+**Invariant**: `EditorViewState` must converge to the domain's `EditingSessionState` within one inbound event cycle. Any divergence (e.g., optimistic `isDirty=true`) is transient and overwritten by the next `DomainSnapshotReceived`.
 
 ---
 
-#### REQ-EDIT-014: State Transitions Are Domain-Driven
+#### REQ-EDIT-024: State Transitions Are Domain-Driven
 
-The system shall NOT mutate `EditingSessionState` or `EditorViewState` directly from UI event handlers other than via the `editorReducer`. All canonical state transitions are driven by domain events received via the inbound `editing_session_state_changed` Tauri event channel (§10). The Svelte component calls `editorReducer` with an `EditorAction` and renders the returned `EditorViewState`; it never constructs `EditingSessionState`. (ref: ui-fields.md Phase 11 差し戻し: 「すべて Command 経由」; aggregates.md CaptureSession 設計原則)
+The system shall NOT mutate `EditingSessionState` or `EditorViewState` directly from UI event handlers other than via the `editorReducer`. All canonical state transitions are driven by domain events received via the inbound `editing_session_state_changed` Tauri event channel (§10). The Svelte component calls `editorReducer` with an `EditorAction` and renders the returned `EditorViewState`; it never constructs `EditingSessionState`. (ref: aggregates.md CaptureSession 設計原則; ui-fields.md Phase 11 差し戻し)
 
 **Acceptance Criteria**:
-- No Svelte component in `ui-editor` constructs or mutates an `EditingSessionState` object.
-- The canonical state flows from the domain layer via the `EditorIpcAdapter.subscribeToState(handler)` inbound channel.
+- No Svelte component constructs or mutates an `EditingSessionState` object.
+- The canonical state flows from the domain layer via `EditorIpcAdapter.subscribeToState(handler)` (§10).
 - The UI re-renders reactively when the `$state`-stored `EditorViewState` is updated by the inbound event callback.
 - The `editorReducer` is the only code that produces a new `EditorViewState` from an `EditorAction`.
 
 ---
 
-### §3.5 Save-Failure Banner
+### §3.7 Save-Failure Banner
 
-#### REQ-EDIT-015: Save-Failure Banner Rendered for save-failed State
+#### REQ-EDIT-025: Save-Failure Banner Rendered for save-failed State
 
-When `EditorViewState.status === 'save-failed'`, the system shall render a non-modal inline banner within the editor area displaying a user-facing error message derived from `SaveError.kind`. (ref: ui-fields.md §画面 4; workflows.md §Workflow 8 HandleSaveFailure; validation.md シナリオ 15)
+When `EditorViewState.status === 'save-failed'`, the system shall render a non-modal inline banner within the editor area displaying a user-facing error message derived from `SaveError.kind`. (ref: ui-fields.md §画面 4; workflows.md Workflow 8; shared/errors.ts `SaveError`)
 
 **Acceptance Criteria**:
-- The banner is present in the DOM when and only when `status === 'save-failed'`.
-- The banner does not use a blocking modal overlay; it is inline within the editor panel.
-- The banner has `role="alert"` so screen readers announce it immediately.
-- The banner has `data-testid="save-failure-banner"`.
+- The banner is present in the DOM if and only if `status === 'save-failed'`.
+- The banner does not use a blocking modal overlay; it is inline.
+- The banner has `role="alert"` and `data-testid="save-failure-banner"`.
 
 ---
 
-#### REQ-EDIT-016: Save-Failure Banner Message Derived From SaveError.kind
+#### REQ-EDIT-026: Save-Failure Banner Message Derived From SaveError.kind
 
-When the save-failure banner is rendered, the system shall display a message corresponding to the `SaveError` `kind` nested structure as follows. The mapping is drawn verbatim from `ui-fields.md §画面 4` and `workflows.md §Workflow 2 エラーカタログ`:
+When the save-failure banner is rendered, the system shall display a message corresponding to the `SaveError` nested structure, drawn verbatim from `ui-fields.md §画面 4`:
 
 | `SaveError` structure | User-facing message |
 |---|---|
 | `{ kind: 'fs', reason: { kind: 'permission' } }` | 「保存に失敗しました（権限不足）」 |
 | `{ kind: 'fs', reason: { kind: 'disk-full' } }` | 「保存に失敗しました（ディスク容量不足）」 |
 | `{ kind: 'fs', reason: { kind: 'lock' } }` | 「保存に失敗しました（ファイルがロックされています）」 |
+| `{ kind: 'fs', reason: { kind: 'not-found' } }` | 「保存に失敗しました（保存先が見つかりません）」 |
 | `{ kind: 'fs', reason: { kind: 'unknown' } }` | 「保存に失敗しました」（詳細はログ） |
-| `{ kind: 'validation', reason: { kind: 'invariant-violated' } }` | 内部バグ: エラーログのみ、バナーは表示しない（サイレント） |
-| `{ kind: 'validation', reason: { kind: 'empty-body-on-idle' } }` | サイレント（破棄パスへ、バナーを表示しない）。後継状態: `EditorViewState.status` は `editing` になり `isDirty=false` にリセットされ、idle debounce タイマーはクリアされる。以降の `NoteBodyEdited` アクションは通常サイクルを再開する。(ref: aggregates.md:280 `EmptyNoteDiscarded`; §9 RD-007) |
+| `{ kind: 'validation', reason: { kind: 'empty-body-on-idle' } }` | サイレント（破棄パスへ、バナー非表示）。後継状態: `EditorViewState.status === 'editing'`、`isDirty === false`、`isNoteEmpty === true`、idle debounce タイマーはクリア。以降の block-edit は通常サイクルを再開 |
+| `{ kind: 'validation', reason: { kind: 'invariant-violated' } }` | 内部バグ: エラーログのみ、バナー非表示（サイレント） |
 
-(ref: ui-fields.md §画面 4 メッセージ分岐テーブル; workflows.md §Workflow 2 エラーカタログ `SaveError` 型定義)
+(ref: shared/errors.ts `FsError` / `SaveError` / `SaveValidationError`; ui-fields.md §画面 4)
 
 **Acceptance Criteria**:
-- Each `fs` error kind maps to the exact user-facing message string listed above.
-- `validation.invariant-violated` does NOT render the banner; it logs to console.error and leaves the UI unchanged.
-- `validation.empty-body-on-idle` does NOT render the banner; it is treated as a silent discard. The successor `EditorViewState` has `status === 'editing'` and `isDirty === false`. The idle debounce timer is cleared.
+- Each `fs` error kind maps to the exact user-facing message string above.
+- `validation.invariant-violated` does NOT render the banner; it logs to `console.error` and leaves the UI unchanged.
+- `validation.empty-body-on-idle` does NOT render the banner; the successor `EditorViewState` has `status === 'editing'`, `isDirty === false`, `isNoteEmpty === true`, and the idle debounce timer is cleared.
+- The TypeScript switch over `SaveError.kind` and `FsError.kind` is exhaustive (compile-time `never` guarantee).
 - The message element has `data-testid="save-failure-message"`.
-- The TypeScript switch over `SaveError.kind` is exhaustive (compile-time guarantee; no default fallthrough without narrowing).
 
 ---
 
-#### REQ-EDIT-017: Save-Failure Banner — Retry Button
+#### REQ-EDIT-027: Save-Failure Banner — Retry Button
 
-When the save-failure banner is visible, the system shall render a 再試行 (Retry) button. When the user activates this button, the system shall dispatch the `RetrySave` command (Workflow 8), transitioning the domain state from `save-failed` to `saving`. (ref: ui-fields.md §画面 4 `RetrySave → editing から再 saving`; workflows.md §Workflow 8 分岐: `RetrySave → CaptureAutoSave を再実行`)
+When the save-failure banner is visible, the system shall render a 再試行 (Retry) button. When the user activates it, the system shall dispatch `RetrySave { kind: 'retry-save', noteId, issuedAt }`, transitioning the domain from `save-failed` to `saving`. (ref: capture/commands.ts `RetrySave`; capture/states.ts `EditingSessionTransitions.retry`)
 
 **Acceptance Criteria**:
 - The Retry button is present and labeled "再試行" when `status === 'save-failed'`.
 - Activating the button dispatches `RetrySave` exactly once.
-- The button has `data-testid="retry-save-button"`.
-- The button is keyboard-reachable (Tab order) and activatable via Enter/Space.
-- After dispatch, the banner hides (driven by domain state transition to `saving`).
+- The button has `data-testid="retry-save-button"`, is keyboard-reachable, and activatable via Enter/Space.
+- After dispatch, the banner hides via the `saving` snapshot.
 
 ---
 
-#### REQ-EDIT-018: Save-Failure Banner — Discard Button
+#### REQ-EDIT-028: Save-Failure Banner — Discard Button
 
-When the save-failure banner is visible, the system shall render a 破棄 (Discard) button. When the user activates this button, the system shall dispatch the `DiscardCurrentSession` command (Workflow 8). If `EditorViewState.pendingNextNoteId` is non-null, the domain will start the next note session; otherwise it returns to `idle`. (ref: ui-fields.md §画面 4 `DiscardCurrentSession → pendingNextNoteId あれば次セッション、無ければ idle`; workflows.md §Workflow 8 分岐: `DiscardCurrentSession → 編集破棄`)
+When the save-failure banner is visible, the system shall render a 破棄 (Discard) button. Activating it dispatches `DiscardCurrentSession { kind: 'discard-current-session', noteId, issuedAt }`. If `EditorViewState.pendingNextFocus` is non-null, the domain `EditingSessionTransitions.discard` returns an `EditingState` for the queued next Block Focus; otherwise it returns `IdleState`. (ref: capture/commands.ts `DiscardCurrentSession`; capture/states.ts `EditingSessionTransitions.discard`)
 
 **Acceptance Criteria**:
 - The Discard button is present and labeled "変更を破棄" when `status === 'save-failed'`.
 - Activating the button dispatches `DiscardCurrentSession` exactly once.
-- The button has `data-testid="discard-session-button"`.
-- The button is keyboard-reachable and activatable via Enter/Space.
+- The button has `data-testid="discard-session-button"`, is keyboard-reachable, and activatable via Enter/Space.
 
 ---
 
-#### REQ-EDIT-019: Save-Failure Banner — Cancel Button
+#### REQ-EDIT-029: Save-Failure Banner — Cancel Button
 
-When the save-failure banner is visible, the system shall render a キャンセル (Cancel) button. When the user activates this button, the system shall dispatch the `CancelSwitch` command (Workflow 8), which returns the domain state to `editing(currentNoteId)` — the user continues editing the current note. (ref: ui-fields.md §画面 4 `CancelSwitch → 元の editing(currentNoteId)`; workflows.md §Workflow 8 分岐: `CancelSwitch → 元のセッション維持`)
+When the save-failure banner is visible, the system shall render a キャンセル (Cancel) button. Activating it dispatches `CancelSwitch { kind: 'cancel-switch', noteId, issuedAt }`, which returns the domain to `editing(currentNoteId, focusedBlockId)` — the user continues editing the prior Block. (ref: capture/commands.ts `CancelSwitch`; capture/states.ts `EditingSessionTransitions.cancelSwitch`)
 
 **Acceptance Criteria**:
 - The Cancel button is present and labeled "閉じる（このまま編集を続ける）" when `status === 'save-failed'`.
 - Activating the button dispatches `CancelSwitch` exactly once.
-- The button has `data-testid="cancel-switch-button"`.
-- The button is keyboard-reachable and activatable via Enter/Space.
-- After dispatch, the banner hides (driven by domain state transition to `editing`).
+- The button has `data-testid="cancel-switch-button"`, is keyboard-reachable, and activatable via Enter/Space.
+- After dispatch, the banner hides and the prior `focusedBlockId` regains the visible focus ring.
 
 ---
 
-#### REQ-EDIT-020: Save-Failure Banner Visual Style
+#### REQ-EDIT-030: Save-Failure Banner Visual Style
 
-When the save-failure banner is rendered, the system shall style it as a Deep Card (Level 3) overlay using the 5-layer Deep Shadow, with a left accent border in Orange (`#dd5b00`) to indicate warning severity. All three action buttons (Retry, Discard, Cancel) must be rendered with DESIGN.md-compliant button styles and adequate touch/click targets. (ref: DESIGN.md §4 Cards & Containers; DESIGN.md §2 Shadows & Depth Deep Shadow; DESIGN.md §4 Buttons)
+When the save-failure banner is rendered, the system shall style it as a Deep Card (Level 3) overlay using the 5-layer Deep Shadow, with a left accent border in Orange (`#dd5b00`). All three action buttons must be DESIGN.md-compliant. (ref: DESIGN.md §4 Cards & Containers; §6 Depth & Elevation; §4 Buttons)
 
 **Acceptance Criteria**:
 - The banner container uses the 5-layer Deep Shadow: `rgba(0,0,0,0.01) 0px 1px 3px, rgba(0,0,0,0.02) 0px 3px 7px, rgba(0,0,0,0.02) 0px 7px 15px, rgba(0,0,0,0.04) 0px 14px 28px, rgba(0,0,0,0.05) 0px 23px 52px`.
-- The banner has a left accent using `#dd5b00`.
-- The banner `border-radius` is 8px (Standard per DESIGN.md §5).
-- Retry button uses Primary Blue style (`#0075de` background, white text, 4px radius, 8px 16px padding).
-- Discard and Cancel buttons use Secondary style (`rgba(0,0,0,0.05)` background, near-black text, 4px radius).
-- All button text uses Nav/Button typography: 15px weight 600.
+- The left accent uses `#dd5b00`.
+- The banner `border-radius` is 8px.
+- Retry button uses Primary Blue (`#0075de` background, white text); Discard and Cancel use Secondary style.
+- Button text is 15px weight 600.
 
 ---
 
-### §3.6 Copy Body
+### §3.8 Copy Body
 
-#### REQ-EDIT-021: Copy Button Dispatches CopyNoteBody
+#### REQ-EDIT-031: Copy Button Dispatches CopyNoteBody
 
-When the user activates the Copy Body button and `Body.isEmptyAfterTrim === false`, the system shall dispatch the `CopyNoteBody` command (Workflow 6: `note.bodyForClipboard() → Clipboard.write`). The command carries the `noteId` of the currently active note. (ref: workflows.md §Workflow 6 CopyBody; ui-fields.md §1A-3 アクションボタン `CopyNoteBody`; aggregates.md `note.bodyForClipboard()`)
-
-**Trim semantics**: `Body.isEmptyAfterTrim` is defined as `body.trim().length === 0` where `String.prototype.trim()` is the ECMAScript 2024 definition. The pure predicate `canCopy(body, status)` calls `body.isEmptyAfterTrim()` (the domain method on `Body`) — the TypeScript `editorPredicates.ts` computes this as `bodyStr.trim().length === 0` on the raw string. (ref: §9 RD-006; §11)
+When the user activates the Copy Body button and `EditorViewState.isNoteEmpty === false`, the system shall dispatch `CopyNoteBody { kind: 'copy-note-body', noteId, issuedAt }`. The Rust handler invokes `NoteOps.bodyForClipboard(note)` (which internally calls `serializeBlocksToMarkdown(note.blocks)`) and writes the result to the clipboard. (ref: capture/commands.ts `CopyNoteBody`; shared/note.ts `NoteOps.bodyForClipboard`; shared/blocks.ts `SerializeBlocksToMarkdown`; workflows.md Workflow 6)
 
 **Acceptance Criteria**:
-- Activating the Copy button dispatches `CopyNoteBody` with the current `noteId`.
-- `CopyNoteBody` is NOT dispatched when `Body.isEmptyAfterTrim === true`.
-- The button has `data-testid="copy-body-button"`.
-- The button is keyboard-reachable via Tab and activatable via Enter/Space.
+- Activating the Copy button dispatches `CopyNoteBody` with the active `noteId`.
+- `CopyNoteBody` is NOT dispatched when `EditorViewState.isNoteEmpty === true`.
+- The button has `data-testid="copy-body-button"`, is keyboard-reachable, and activatable via Enter/Space.
 
 ---
 
-#### REQ-EDIT-022: Copy Button Disabled State — Visual and ARIA
+#### REQ-EDIT-032: Copy Button Disabled State Matrix
 
-The Copy button disabled rule covers all 5 `EditingSessionState.status` values as follows:
-- `idle` → Copy button **disabled** (no note is active)
-- `editing` → Copy button **enabled** if `!Body.isEmptyAfterTrim`; disabled if body is empty after trim
-- `saving` → Copy button **enabled** if `!Body.isEmptyAfterTrim`; disabled if body is empty after trim
-- `switching` → Copy button **disabled** (input locked)
-- `save-failed` → Copy button **disabled** (per REQ-EDIT-013)
+The Copy button disabled rule across all 5 statuses:
+- `idle` → **disabled** (no active note)
+- `editing` → **enabled** when `isNoteEmpty === false`; disabled otherwise
+- `saving` → **enabled** when `isNoteEmpty === false`; disabled otherwise
+- `switching` → **disabled** (input locked)
+- `save-failed` → **disabled**
 
-If `Body.isEmptyAfterTrim === true` OR `EditorViewState.status` is one of `idle`, `switching`, `save-failed`, the Copy button shall be rendered in the disabled state: `disabled` HTML attribute, `aria-disabled="true"`, text color Warm Gray 300 (`#a39e98`), and no hover interaction. (ref: ui-fields.md §UI 状態と型の対応; DESIGN.md §8 Disabled state: `#a39e98` text, reduced opacity)
+When disabled, the button has `disabled`, `aria-disabled="true"`, text color `#a39e98`, and no hover interaction. (ref: ui-fields.md §UI 状態と型の対応; DESIGN.md §8 Disabled state)
 
 **Acceptance Criteria**:
-- The `disabled` attribute is present on the Copy button in `idle`, `switching`, and `save-failed` states (regardless of body content).
-- The `disabled` attribute is present when the body is empty after trim regardless of status.
-- The Copy button text/icon uses `#a39e98` color when disabled.
-- No `click` handler fires while the button is disabled.
+- The `disabled` attribute is present in `idle`, `switching`, `save-failed` regardless of `isNoteEmpty`.
+- The `disabled` attribute is present when `isNoteEmpty === true` regardless of status.
+- The Copy button text/icon uses `#a39e98` when disabled.
+- No `click` handler fires while disabled.
 
 ---
 
-### §3.7 New Note (+新規ノート)
+### §3.9 New Note (+新規ノート)
 
-#### REQ-EDIT-023: New Note Button Dispatches RequestNewNote
+#### REQ-EDIT-033: New Note Button Dispatches RequestNewNote
 
-When the user activates the "+ 新規" button, the system shall dispatch `RequestNewNote { source: 'explicit-button', issuedAt: string }` (where `issuedAt` is a raw ISO-8601 string at the wire boundary — see §11 Brand Type Construction Contracts). (ref: ui-fields.md:78 `source は 'explicit-button' | 'ctrl-N' 判別`; ui-fields.md:295 ベース型サマリ `RequestNewNote`)
+When the user activates the "+ 新規" button, the system shall dispatch `RequestNewNote { kind: 'request-new-note', source: 'explicit-button', issuedAt }` (`issuedAt` is a raw ISO-8601 string at the wire boundary — §11). (ref: capture/commands.ts `RequestNewNote`)
 
-**New Note button enable/disable matrix** (all 5 states):
-- `idle` → **enabled** (creating a note is always valid in idle)
-- `editing` → **enabled** (creating a new note is allowed; triggers blur-save-first per REQ-EDIT-025)
-- `saving` → **enabled** (per EC-EDIT-010, the domain queues the intent)
-- `switching` → **disabled** (a switch is already in progress; no new intent can be queued)
-- `save-failed` → **enabled** (per EC-EDIT-008, the dispatch is allowed; the domain decides)
+**New Note button enable/disable matrix**:
+- `idle` → **enabled**
+- `editing` → **enabled** (REQ-EDIT-035 may inject blur-save first)
+- `saving` → **enabled** (per EC-EDIT-010 the domain queues the intent)
+- `switching` → **disabled** (a switch is already in progress)
+- `save-failed` → **enabled** (per EC-EDIT-008)
 
 **Acceptance Criteria**:
-- Activating the "+ 新規" button dispatches `RequestNewNote` with `source: 'explicit-button'`.
+- Activating "+ 新規" dispatches `RequestNewNote` with `source: 'explicit-button'`.
 - The button has `data-testid="new-note-button"`.
-- The button is keyboard-reachable and activatable via Enter/Space.
-- The button is `disabled` (and `aria-disabled="true"`) only in `switching` state.
+- The button is `disabled` / `aria-disabled="true"` only in `switching` state.
 
 ---
 
-#### REQ-EDIT-024: Ctrl+N / Cmd+N Keyboard Shortcut Dispatches RequestNewNote
+#### REQ-EDIT-034: Ctrl+N / Cmd+N Dispatches RequestNewNote
 
-When the user presses Ctrl+N (Linux/Windows) or Cmd+N (macOS) **while focus is within the editor pane root element** (the keyboard listener is scoped to the editor pane — NOT the global `document`; it fires only when focus is within the editor pane), the system shall dispatch `RequestNewNote { source: 'ctrl-N', issuedAt: string }`. (ref: ui-fields.md:78 `source は 'explicit-button' | 'ctrl-N' 判別`; ui-fields.md:295 ベース型サマリ; §9 RD-004; §9 RD-008)
+When the user presses Ctrl+N (Linux/Windows) or Cmd+N (macOS) **while focus is within the editor pane root element** (the listener is scoped to the editor pane — NOT the global `document`), the system shall dispatch `RequestNewNote { source: 'ctrl-N', issuedAt }`. Both platforms map to the single `'ctrl-N'` source value. (ref: capture/commands.ts `RequestNewNote.source`)
 
-**Platform detection**: The keyboard listener checks `event.ctrlKey || event.metaKey` combined with `event.key === 'n'` (case-insensitive). This detects `Ctrl+N` on Linux/Windows and `Cmd+N` on macOS with a single condition. The domain `source` value is always `'ctrl-N'` regardless of platform — the enum label is a semantic name, not a literal key description. This is the resolved design (see §9 RD-004).
+**Platform detection**: `(event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n'`. The dispatched `source` is always `'ctrl-N'`.
 
-**Keyboard listener scope**: The listener attaches to the editor pane root element (e.g., `EditorPanel.svelte`'s root `<div>`) via `panelRoot.addEventListener('keydown', ...)`, NOT via `document.addEventListener`. This prevents Ctrl+N from firing when focus is in another panel (settings modal, feed panel, etc.). (ref: §9 RD-008)
+**Listener scope**: The listener attaches to the editor pane root via `panelRoot.addEventListener('keydown', ...)`, NOT `document.addEventListener`.
 
 **Acceptance Criteria**:
-- Pressing `Ctrl+N` (Linux/Windows) dispatches `RequestNewNote` with `source: 'ctrl-N'`.
-- Pressing `Cmd+N` (macOS, `event.metaKey === true`) dispatches `RequestNewNote` with `source: 'ctrl-N'` — same domain source value.
-- The listener pattern is: `(event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n'`.
-- The shortcut fires when focus is on any element within the editor pane (textarea, buttons, or banner).
-- `event.preventDefault()` is called to prevent the browser/OS default action for this key combination.
-- The `N` character itself is not inserted into the textarea when this combination is active.
-- The shortcut does NOT fire when focus is outside the editor pane (e.g., when a settings modal has focus).
+- Pressing `Ctrl+N` (Linux/Windows) dispatches `RequestNewNote { source: 'ctrl-N' }`.
+- Pressing `Cmd+N` (macOS) dispatches `RequestNewNote { source: 'ctrl-N' }`.
+- `event.preventDefault()` is called.
+- The `n` character is not inserted into any Block.
+- The shortcut does NOT fire when focus is outside the editor pane.
 
 ---
 
-#### REQ-EDIT-025: New Note When Current Note Is Dirty (status === 'editing') — Blur-Save First
+#### REQ-EDIT-035: New Note When Current Note Is Dirty (status === 'editing') — Blur-Save First
 
-When `RequestNewNote` is dispatched while `EditorViewState.status === 'editing'` AND `EditorViewState.isDirty === true`, the system shall trigger blur-save semantics first (`TriggerBlurSave { source: 'capture-blur' }`), wait for the domain to process the save (transition from `saving` back), and only then allow the domain's `RequestNewNote` pipeline to create the new note. If the save fails (state becomes `save-failed`), the new-note creation is deferred until the user resolves the failure via Retry, Discard, or Cancel.
+When `RequestNewNote` is dispatched while `EditorViewState.status === 'editing'` AND `isDirty === true`, the system shall trigger blur-save semantics first (`TriggerBlurSave { source: 'capture-blur' }` via REQ-EDIT-014's `EditorBlurredAllBlocks` path), wait for the `saving → editing` snapshot, and only then allow the domain `RequestNewNote` pipeline to create the new note. If the save fails (status becomes `save-failed`), new-note creation is deferred until the user resolves via Retry / Discard / Cancel.
 
-**Explicit carve-out for `save-failed` state**: When `EditorViewState.status === 'save-failed'` and the user dispatches `RequestNewNote` (via Ctrl+N or "+ 新規"), the UI does NOT first dispatch `TriggerBlurSave`. Instead, it dispatches `RequestNewNote { source: 'ctrl-N' | 'explicit-button' }` directly, and the domain's `HandleSaveFailure` workflow (Workflow 8) owns the resolution. The UI reflects whatever state the domain returns. This is the resolved design — see §9 RD-009.
+**Explicit carve-out for `save-failed`**: When `status === 'save-failed'` and the user dispatches `RequestNewNote`, the UI does NOT first dispatch `TriggerBlurSave`. It dispatches `RequestNewNote { source }` directly; the domain's `HandleSaveFailure` (Workflow 8) owns resolution. (See §9 RD-009.)
 
-(ref: ui-fields.md §1A-3 「blur-save semantics first, then create」; validation.md シナリオ 9 「現在の編集セッションが先に強制 blur save される」; aggregates.md `EditingSessionState` transition: `editing → switching`; domain-events.md:115)
+(ref: ui-fields.md §1A-3; aggregates.md `EditingSessionState` `editing → switching`; workflows.md Workflow 8)
 
 **Acceptance Criteria**:
-- When "+ 新規" or Ctrl+N/Cmd+N fires while `EditorViewState.status === 'editing'` AND `isDirty === true`, `TriggerBlurSave` is dispatched with `source: 'capture-blur'` before any new-note intent is processed.
-- `RequestNewNote` is NOT dispatched until the domain transitions away from `saving`.
-- If `status` becomes `save-failed` before the new note is created, the new-note action is suspended and the save-failure banner is displayed.
-- When `status === 'save-failed'`, `RequestNewNote` is dispatched directly (without a preceding `TriggerBlurSave`); the domain's `HandleSaveFailure` workflow owns the resolution.
+- "+ 新規" / Ctrl+N while `editing` AND `isDirty === true` dispatches `TriggerBlurSave` before `RequestNewNote`.
+- `RequestNewNote` is NOT dispatched until the snapshot transitions out of `saving`.
+- If the snapshot becomes `save-failed`, the new-note action is suspended and the banner is shown.
+- When `status === 'save-failed'`, `RequestNewNote` is dispatched directly without a preceding `TriggerBlurSave`.
 
 ---
 
-### §3.8 Source Discrimination
+#### REQ-EDIT-036: New Note Auto-Focuses First Block
 
-#### REQ-EDIT-026: Every Save Command Carries Explicit Source
+When `NewNoteAutoCreated { firstBlockId }` is mirrored into a snapshot (EditingState with `currentNoteId === <new>` and `focusedBlockId === firstBlockId`), the system shall set native DOM focus to the Block element matching `firstBlockId`. (ref: capture/internal-events.ts `NewNoteAutoCreated`; aggregates.md §1 `NoteOps.create`)
 
-The system shall set the `source` field on every save-triggering command explicitly in the UI layer. The UI MUST NOT allow the domain layer to infer the source. The permitted `source` values for the `ui-editor` feature are drawn verbatim from the domain event enum (ref: domain-events.md:115):
+**Acceptance Criteria**:
+- After `NewNoteAutoCreated` is mirrored, the Block element for `firstBlockId` receives DOM focus exactly once per creation.
+- The native focus is set inside an `$effect` reacting to `EditorViewState.focusedBlockId` changes — never inside the pure reducer.
+
+---
+
+### §3.10 Source Discrimination
+
+#### REQ-EDIT-037: Every Save Command Carries Explicit Source
+
+The system shall set the `source` field on every save-triggering `EditorCommand` explicitly in the UI layer. The UI MUST NOT allow the domain to infer the source. The permitted `source` values for `ui-editor` are drawn verbatim from `shared/events.ts SaveNoteSource`:
 
 - `'capture-idle'` — idle debounce timer fired after the user stopped typing
-- `'capture-blur'` — textarea blur event (including programmatic blur-save triggered for note-switch or new-note scenarios)
+- `'capture-blur'` — all-blocks blur (including programmatic blur-save for note-switch / new-note scenarios)
 
-The values `'curate-tag-chip'` and `'curate-frontmatter-edit-outside-editor'` exist in the same domain enum but are **out of scope** for this feature (they are issued by Curate, not Capture). The values `'switch'` and `'manual'`, `'idle'`, and `'blur'` do NOT exist in the domain enum and must NOT be used. Note-switch is handled by the domain's `EditPastNoteStart` workflow, not by a distinct save source; manual save is not in scope. (ref: domain-events.md:115; validation.md:121,176,382,399,710; aggregates.md §EditingSessionState)
-
-**Note on IPC layer**: The `ui-editor` component depends on an injected `EditorIpcAdapter` interface; it does not hard-code Tauri command strings. See §8 and verification-architecture.md §2 for details.
+The values `'curate-tag-chip'` and `'curate-frontmatter-edit-outside-editor'` exist in the same enum but are **out of scope** for this feature. The values `'switch'`, `'manual'`, `'idle'`, and `'blur'` do NOT exist in the domain enum and MUST NOT be used. Note-switch is handled by `EditPastNoteStart` (Workflow 3), not by a distinct source. (ref: shared/events.ts `SaveNoteSource`)
 
 **Acceptance Criteria**:
-- `TriggerIdleSave` always carries `source: 'capture-idle'`.
-- `TriggerBlurSave` always carries `source: 'capture-blur'` — including when called programmatically for a note switch or new-note scenario.
-- No save command is dispatched without an explicit `source` field.
-- The `source` value is always one of `'capture-idle' | 'capture-blur'`; any other string is a compile-time type error.
-- The strings `'idle'`, `'blur'`, `'switch'`, and `'manual'` MUST NOT appear as `source` values anywhere in `ui-editor`.
+- `TriggerIdleSave` always carries effective `source: 'capture-idle'` (carried on the `SaveNoteRequested` Public Event built by Capture from this command).
+- `TriggerBlurSave` always carries effective `source: 'capture-blur'`.
+- No save command is dispatched without an explicit `source` field on the resulting `EditorCommand` payload (§10 EditorCommand union).
+- The strings `'idle'`, `'blur'`, `'switch'`, `'manual'` MUST NOT appear as `source` values anywhere in `ui-editor`.
 
 ---
 
-### §3.9 Input Field Validation Surface
+### §3.11 Input Field Validation Surface
 
-#### REQ-EDIT-027: Body Field Validation Error Display
+#### REQ-EDIT-038: Block Validation Error Display
 
-When the domain returns a validation error related to the Body field (e.g., from a `SaveValidationError`), the system shall display the corresponding inline error or hint text below the textarea without blocking the user from continuing to type. The textarea remains editable. (ref: ui-fields.md §検証エラー ↔ UI フィールド マッピング; ui-fields.md §重要設計前提 「Smart Constructor は Rust 側」; §11)
+When the domain returns a `BlockOperationError` or `BlockContentError` (via the inbound snapshot's `lastSaveError` field or via a rejected command response), the system shall display the corresponding inline error or hint text near the affected Block without locking the Block. The Block remains contenteditable. The exhaustive error mapping covers (`shared/note.ts BlockOperationError`):
 
-**Note**: The Body value object has no constraints beyond its empty-trim check per `aggregates.md`. The primary validation surface for the editor is the `SaveValidationError` returned by `prepareSaveRequest`. The UI displays errors without blocking input; the domain decides save eligibility.
+| Error variant | UI surface |
+|---|---|
+| `block-not-found` | Internal bug — `console.error`, no inline hint |
+| `last-block-cannot-be-removed` | Silent (UI never dispatches RemoveBlock for last block per REQ-EDIT-009) |
+| `split-offset-out-of-range` | Internal bug — `console.error` |
+| `move-index-out-of-range` | Internal bug — `console.error` |
+| `merge-on-first-block` | Silent (UI never dispatches MergeBlocks at first block per REQ-EDIT-008) |
+| `incompatible-content-for-type` | Inline hint near Block: "このブロック種別に変換できません" |
+| `invalid-block-id` / `invalid-block-type` | Internal bug — `console.error` |
+| `BlockContentError.control-character` | Inline hint: "制御文字は入力できません" |
+| `BlockContentError.newline-in-inline` | Internal bug — `console.error` (UI gates against newlines for non-`code` Blocks per REQ-EDIT-003) |
+| `BlockContentError.too-long` | Inline hint: "上限を超えました（max: ${max}）" |
+
+Likewise for `SaveValidationError`:
+- `empty-body-on-idle` — silent (REQ-EDIT-026)
+- `invariant-violated` — `console.error` only
 
 **Acceptance Criteria**:
-- When a `SaveValidationError.kind === 'invariant-violated'` arrives, an error hint is logged but no inline UI message is shown to the user (per REQ-EDIT-016 silent rule).
-- When a `SaveValidationError.kind === 'empty-body-on-idle'` arrives, no inline error message is shown; the save silently discards. The successor state is `status === 'editing'`, `isDirty === false` (per REQ-EDIT-016 and §9 RD-007).
-- The error hint area is associated with the textarea via `aria-describedby`.
-- The textarea is never `disabled` as a result of a validation error alone.
+- Inline hint area is `aria-describedby`-linked to the affected Block.
+- The Block is never `contenteditable="false"` solely because of a validation error.
+- The exhaustive switch over `BlockOperationError.kind`, `BlockContentError.kind`, and `SaveValidationError.kind` is enforced by the TypeScript compiler.
 
 ---
 
 ## 4. Non-Functional Requirements
 
-#### NFR-EDIT-001: Accessibility — Keyboard Reachability of All Actions
+#### NFR-EDIT-001: Accessibility — Keyboard Reachability
 
-All interactive elements in the editor panel — Body textarea, Copy button, New Note button, and all three save-failure banner buttons (Retry, Discard, Cancel) — shall be reachable via Tab key navigation and activatable via Enter or Space. The focus order shall be logical: textarea → Copy button → New Note button → (when banner visible) Retry → Discard → Cancel. (ref: DESIGN.md §8 Accessibility & States; DESIGN.md §8 Focus System)
+All interactive elements — Block elements, Copy button, New Note button, Retry / Discard / Cancel — shall be reachable via Tab key navigation and activatable via Enter / Space (block elements remain in document tab order with `tabindex="0"` for non-focused blocks, or follow native contenteditable focus order). Tab order: focused Block → Copy → New Note → (when banner visible) Retry → Discard → Cancel. (ref: DESIGN.md §8 Accessibility & States)
 
 **Acceptance Criteria**:
-- `tabIndex` is not negative on any of these elements when enabled.
-- The focus ring uses `2px solid #097fe8` (Focus Blue per DESIGN.md §8).
-- All buttons have descriptive `aria-label` values when their visible label is insufficient for screen readers.
-- ARIA verification is performed via DOM assertions in vitest+jsdom tests: check that `aria-disabled`, `role`, and `tabIndex` attributes are present as expected. No external a11y library is required.
+- Block elements are reachable via Tab when not currently focused.
+- Buttons have descriptive `aria-label` if the visible label is insufficient.
+- Focus ring uses `2px solid #097fe8`.
+- ARIA verification is performed via DOM attribute assertions; no `axe-core` dependency.
 
 ---
 
 #### NFR-EDIT-002: Accessibility — ARIA Roles and Live Regions
 
-The save indicator shown during `saving` state shall have `role="status"` and `aria-live="polite"`. The save-failure banner shall have `role="alert"` — `role="alert"` implies `aria-live="assertive"` and `aria-atomic="true"` per WAI-ARIA 1.2; no explicit `aria-live` attribute is required, but it may be added for redundancy. The dirty indicator shall be `aria-hidden="true"` if it is purely decorative, or have a descriptive `aria-label` if it conveys meaningful state. (ref: DESIGN.md §8 Accessibility & States)
+The save indicator shown during `saving` shall have `role="status"` and `aria-live="polite"`. The save-failure banner shall have `role="alert"`. The dirty indicator is `aria-hidden="true"` if decorative. Each Block element exposes `role="textbox"` (or its native equivalent for contenteditable). (ref: DESIGN.md §8)
 
 **Acceptance Criteria**:
-- The saving indicator element has `role="status"`.
-- The save-failure banner root element has `role="alert"`. (WAI-ARIA 1.2: `role=alert` implies `aria-live=assertive`; the explicit `aria-live` attribute is not required by this spec.)
-- No interactive element in the editor uses `tabIndex="-1"` while enabled.
+- The saving indicator has `role="status"`.
+- The banner root element has `role="alert"`.
+- No interactive element uses `tabIndex="-1"` while enabled.
 
 ---
 
 #### NFR-EDIT-003: Performance — Idle Debounce Timer Overhead
 
-The idle debounce timer implementation shall use a single `setTimeout` reference per edit cycle, not accumulating timers. On each `EditNoteBody` dispatch, the previous timer is cleared before setting the new one. At typical Body lengths for prompt notes (up to approximately 5,000 characters per DESIGN.md reading body density), there shall be no perceptible input lag (the `EditNoteBody` dispatch must complete synchronously within the event handler; the timer is fire-and-forget). (ref: ui-fields.md §未解決項目 `IDLE_SAVE_DEBOUNCE_MS=2000`)
+The idle debounce timer uses a single `setTimeout` reference per edit cycle, not accumulating timers. On each block-edit dispatch, the previous timer is cleared before setting the new one. At typical Note sizes (up to ~50 Blocks, each up to ~5,000 chars per `BlockContentError.too-long` budget) there shall be no perceptible input lag. The reducer dispatch must complete synchronously within the event handler. (ref: REQ-EDIT-012)
 
 **Acceptance Criteria**:
-- The timer handle is stored in a single `$state` or `let` variable and cleared with `clearTimeout` on each new edit.
+- The timer handle is stored in a single `$state` variable and cleared with `clearTimeout` on each new edit.
 - Timer count does not grow unboundedly during a typing session.
 
 ---
 
-#### NFR-EDIT-004: Performance — No Input Lag at Typical Body Length
+#### NFR-EDIT-004: Performance — No Input Lag at Typical Note Size
 
-The input event handler for the Body textarea shall complete synchronously without blocking the event loop. Debounce scheduling, command dispatch, and state updates must not introduce perceptible lag. (ref: validation.md 「後回しで良い未検証項目」 — MVP 想定規模は数百件まで; Body length up to ~5,000 chars)
+The input event handler for any Block shall complete synchronously without blocking the event loop. Debounce scheduling, command dispatch, and state updates must not introduce perceptible lag. (ref: NFR-EDIT-003)
 
 **Acceptance Criteria**:
 - The `input` event handler completes without calling any async operation synchronously.
-- No `await` inside the `oninput` handler itself (async work is deferred via timer or command dispatch).
+- No `await` inside the `oninput` handler.
 
 ---
 
-#### NFR-EDIT-005: DESIGN.md Visual Conformance — Warm Neutrals and Whisper Borders
+#### NFR-EDIT-005: DESIGN.md Visual Conformance — Tokens
 
-All color values used in `ui-editor` Svelte components shall be drawn exclusively from DESIGN.md §10 Token Reference. The Body textarea shall use DESIGN.md §4 Inputs & Forms styling: background `#ffffff`, text `rgba(0,0,0,0.9)`, border `1px solid #dddddd` (Input Border token), radius 4px, placeholder text `#a39e98` (Warm Gray 300). (ref: DESIGN.md §4 Inputs & Forms; DESIGN.md §10 Token Reference)
+All hex / rgba / px values used in `ui-editor` Svelte components shall be drawn exclusively from DESIGN.md §10 Token Reference. Block elements use `font-family: -apple-system, ...` (DESIGN.md §3 Body Reading) and the body color `rgba(0,0,0,0.9)`; `code` Blocks use the monospace stack and 13px size. (ref: DESIGN.md §3 Typography; §10 Token Reference)
 
 **Acceptance Criteria**:
-- No hex or rgba value in component source files is outside the DESIGN.md §10 Token Reference allow-list.
-- The textarea border is `1px solid #dddddd` in default state, transitioning to focus ring `2px solid #097fe8` on focus.
-- Placeholder text color is `#a39e98`.
+- No hex / rgba / px value outside DESIGN.md §10 appears in component source.
+- `code` Block uses `font-family: ui-monospace, ...` and `font-size: 13px`.
 
 ---
 
 #### NFR-EDIT-006: DESIGN.md Visual Conformance — 4-Weight Typography System
 
-All text in `ui-editor` shall use only font-weight values `400 | 500 | 600 | 700` as defined in DESIGN.md §3. Button text shall use 15px weight 600 (Nav/Button style). Error message text shall use 14px weight 500 (Caption style). Dirty indicator badge text shall use 12px weight 600 (Badge style). (ref: DESIGN.md §3 Typography hierarchy table)
+All text uses only `font-weight ∈ {400, 500, 600, 700}` per DESIGN.md §3. Heading-1 / 2 / 3 Blocks use the corresponding heading weights and sizes from DESIGN.md §3.
 
 **Acceptance Criteria**:
-- No `font-weight` value other than `400`, `500`, `600`, or `700` appears in component styles.
-- Button text is `font-size: 15px; font-weight: 600`.
+- No `font-weight` value outside `{400,500,600,700}` appears in component styles.
+- `heading-1` Block matches DESIGN.md §3 H1 (28px / 700).
+- `heading-2` Block matches H2 (22px / 600).
+- `heading-3` Block matches H3 (18px / 600).
 
 ---
 
 #### NFR-EDIT-007: DESIGN.md Visual Conformance — Layered Shadow on Banner
 
-The save-failure banner shall use the 5-layer Deep Shadow per DESIGN.md §2 (Deep Card Level 3). No single shadow layer shall have opacity exceeding 0.05. (ref: DESIGN.md §6 Depth & Elevation; REQ-EDIT-020)
+The save-failure banner uses the 5-layer Deep Shadow per DESIGN.md §6 (Deep Card Level 3). No single layer opacity exceeds 0.05. (ref: REQ-EDIT-030)
 
 **Acceptance Criteria**:
-- The banner `box-shadow` property exactly matches the 5-layer Deep Shadow string (verified via grep of the Svelte component source for the literal shadow string).
-- Individual shadow layer opacities do not exceed 0.05.
+- Banner `box-shadow` exactly matches the 5-layer Deep Shadow string.
+- Individual shadow layer opacities ≤ 0.05.
 
 ---
 
 #### NFR-EDIT-008: Svelte 5 Runes — State Ownership Boundary
 
-All reactive state internal to `ui-editor` (debounce timer handle, local UI-only transient variables) shall be declared using Svelte 5 rune syntax (`$state`, `$derived`, `$effect`). `isDirty` is NOT a local Svelte state variable — it is a field of `EditorViewState` (the domain mirror), read via a read-only store or prop. No `writable` stores from Svelte 4 shall be introduced for local editor state. The canonical `EditingSessionState` from the domain layer arrives via the inbound event channel (§10) and drives `EditorViewState` updates via `editorReducer`. (ref: CLAUDE.md §UI 実装ガイド — Svelte 5 runes-only; aggregates.md:258 `EditingSessionState.isDirty`)
+All reactive state internal to `ui-editor` (debounce timer handle, slash-menu open/close, drag preview position) uses Svelte 5 rune syntax (`$state`, `$derived`, `$effect`). `isDirty` and `focusedBlockId` are NOT local Svelte state — they are fields of `EditorViewState` (the domain mirror) read from a read-only store / prop. No `writable` stores from Svelte 4 are introduced.
 
 **Acceptance Criteria**:
-- Local editor state (e.g., `timerHandle`) uses `$state(...)` syntax.
-- `isDirty` is NOT declared as a local `$state` variable; it is derived from `EditorViewState`.
-- No `import { writable } from 'svelte/store'` for editor-internal state. (Verified by grep: `grep -r "from 'svelte/store'" src/lib/editor/` must return zero hits.)
-- `EditingSessionState` is not mutated inside any `ui-editor` component. (Verified by `tsc --strict --noUncheckedIndexedAccess`.)
+- Local editor-shell state uses `$state(...)`.
+- `isDirty` and `focusedBlockId` are NOT local `$state` variables; they are derived from `EditorViewState`.
+- No `import { writable } from 'svelte/store'` for editor-internal state. Verified by `grep -r "from 'svelte/store'" src/lib/editor/` returning zero hits.
+- `EditingSessionState` is not mutated inside any `ui-editor` component. Verified by `tsc --strict --noUncheckedIndexedAccess`.
 
 ---
 
@@ -585,83 +735,85 @@ All reactive state internal to `ui-editor` (debounce timer handle, local UI-only
 
 #### EC-EDIT-001: Rapid Typing — Debounce Burst Over 10 Seconds
 
-Given the user types continuously for more than 10 seconds with no pause longer than `IDLE_SAVE_DEBOUNCE_MS`, the debounce timer is continuously reset and only one `TriggerIdleSave` fires after the user stops typing.
-
-Expected behaviour: The timer is reset on each `EditNoteBody` dispatch. At t=10s+2s after the last keystroke, exactly one `TriggerIdleSave` fires. No intermediate saves occur during the typing burst.
+The user types continuously for >10s with no pause longer than `IDLE_SAVE_DEBOUNCE_MS`. Expected: the timer is reset on each block-edit dispatch; at last-edit + 2s, exactly one `TriggerIdleSave` fires; no intermediate saves.
 
 ---
 
-#### EC-EDIT-002: Blur During In-Flight Save (Saving State)
+#### EC-EDIT-002: All-Blocks Blur During In-Flight Save
 
-Given `status === 'saving'` (a save is already in flight) and the user moves focus away from the textarea, the blur event arrives while the domain is processing a write.
-
-Expected behaviour: Per REQ-EDIT-008, `TriggerBlurSave` is NOT dispatched because the state is `saving`. The in-flight save proceeds. When the save completes, the domain transitions to `editing` (or `save-failed` on failure). No double-save occurs.
+Status is `saving` (write in flight) and the user moves focus outside the editor pane. Per REQ-EDIT-016, `TriggerBlurSave` is NOT dispatched. The in-flight save proceeds. The next snapshot transitions to `editing` (or `save-failed`). No double-save.
 
 ---
 
-#### EC-EDIT-003: Save Fails, User Continues Typing While Banner Is Shown
+#### EC-EDIT-003: Save Fails, User Continues Typing While Banner Shown
 
-Given `status === 'save-failed'` and the save-failure banner is displayed, the user continues typing in the textarea.
-
-Expected behaviour: Per REQ-EDIT-013, the textarea remains editable. Each keystroke dispatches `EditNoteBody`, accumulating further dirty content. The `isDirty` flag remains `true`. The idle debounce timer continues to run. If `TriggerIdleSave` fires while the state is still `save-failed`, the domain must handle the retry gate — the UI dispatches the command and reflects whatever state the domain returns. The banner remains until the user explicitly selects Retry, Discard, or Cancel.
+Status is `save-failed`. The user keeps typing. Per REQ-EDIT-023, Block elements remain editable. Each keystroke dispatches `EditBlockContent` and `isDirty` remains `true`. The idle timer continues to run. If `TriggerIdleSave` fires while `save-failed`, the UI dispatches the command; the domain owns the retry gate. The banner remains until Retry / Discard / Cancel.
 
 ---
 
 #### EC-EDIT-004: Discard While Save Is Mid-Flight
 
-Given `status === 'saving'` (write in progress) and the user somehow triggers `DiscardCurrentSession` (this scenario arises if a rapid state transition occurs from `save-failed` into `saving` via Retry, then back to `save-failed` again, and the user presses Discard).
-
-Expected behaviour: The `DiscardCurrentSession` command is dispatched to the domain. The domain is responsible for handling the race condition between the in-flight write and the discard command. The UI does not attempt to cancel the Tauri IPC call; it dispatches the command and reflects whatever state the domain returns. If the domain ignores the discard while saving, the UI stays in `saving` until a result arrives.
+Status is `saving` (write in progress) and the user reaches `DiscardCurrentSession` (e.g., after a fast `save-failed → saving` Retry round). The UI dispatches `DiscardCurrentSession`; the domain handles the race. The UI does not attempt to cancel the Tauri IPC call.
 
 ---
 
-#### EC-EDIT-005: Switching to Another Note While Dirty (Switching State Path)
+#### EC-EDIT-005: Switching to Another Note via Block Focus While Dirty
 
-Given `status === 'editing'` and `isDirty === true`, and the user selects another note from the feed (this command is owned by the feed feature, not the editor), the domain transitions to `status === 'switching'` with `pendingNextNoteId` set.
-
-Expected behaviour: The editor reflects the `switching` state per REQ-EDIT-012 (textarea locked, Copy disabled, New Note button disabled). The idle debounce timer is cancelled. The editor does not itself dispatch `TriggerBlurSave` for this transition — that is handled by the domain's `EditPastNoteStart` workflow (`flushCurrentSession` step). When the domain completes the switch, `EditorViewState` transitions to `editing` with the new note's content, and the editor re-enables input. If the switch fails, `status` becomes `save-failed` and the banner appears.
+Status is `editing` and `isDirty === true`. The user clicks a Block in another Note from the feed (the click is owned by the feed feature). The domain transitions to `switching` with `pendingNextFocus = { noteId: B, blockId: bX }`. Per REQ-EDIT-022, the editor renders the locked state; the idle timer is cancelled. `EditPastNoteStart` (`flushCurrentSession`) handles the flush. On success, the snapshot becomes `editing(B, bX)`; on failure, `save-failed` with `pendingNextFocus` carrying `{ B, bX }`.
 
 ---
 
-#### EC-EDIT-006: Empty Body Becomes Non-Empty After Trim (Copy Enable Transition)
+#### EC-EDIT-006: Same-Note Block Move (No Switching)
 
-Given the user has cleared the textarea to whitespace only (`Body.isEmptyAfterTrim === true`) — Copy button is disabled — and then types a non-whitespace character, `Body.isEmptyAfterTrim` becomes `false`.
-
-Expected behaviour: The Copy button transitions from disabled to enabled reactively, within the same render frame as the `EditNoteBody` dispatch. The transition is driven by `$derived` computation on the current body string.
-
-Conversely, given a non-empty body that is reduced to whitespace only, the Copy button transitions from enabled to disabled reactively.
+Status is `editing`. The user clicks another Block of the same Note. Per REQ-EDIT-017 / REQ-EDIT-018, the snapshot updates only `focusedBlockId`; status stays `editing`; idle timer continues. No `TriggerBlurSave`, no `TriggerIdleSave` from the focus move alone.
 
 ---
 
-#### EC-EDIT-007: Ctrl+N Pressed While Focus Is in Body Textarea
+#### EC-EDIT-007: Empty Note → Non-Empty Transition (Copy Enable)
 
-Given `status === 'editing'` and the textarea has focus, and the user presses Ctrl+N (Linux/Windows) or Cmd+N (macOS).
-
-Expected behaviour: The keyboard shortcut handler detects `(event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n'`, calls `event.preventDefault()` to prevent any system behaviour, and dispatches `RequestNewNote { source: 'ctrl-N' }`. The `N` key character is NOT inserted into the textarea. Per REQ-EDIT-025, if `EditorViewState.status === 'editing'` AND `isDirty === true`, `TriggerBlurSave { source: 'capture-blur' }` fires first before new-note processing continues.
+The user types into the only Block of a freshly-created Note (empty paragraph). Once the Block content is non-whitespace, the domain emits a snapshot with `isNoteEmpty: false`; the Copy button transitions enabled within the same render frame. Conversely, deleting all content reverts to `isNoteEmpty: true` and disables Copy.
 
 ---
 
 #### EC-EDIT-008: Ctrl+N Pressed While Save-Failed Banner Is Visible
 
-Given `status === 'save-failed'` and the save-failure banner is displayed, and the user presses Ctrl+N.
-
-Expected behaviour: Per §9 RD-009 (FIND-003 resolution), the UI dispatches `RequestNewNote { source: 'ctrl-N' }` **directly without a preceding `TriggerBlurSave`**. The UI does not independently block the Ctrl+N/Cmd+N dispatch. The domain's `HandleSaveFailure` workflow (Workflow 8) owns the resolution. If the domain requires the failure to be resolved first, it returns `save-failed` state again and the banner remains. The UI reflects whatever state the domain returns.
+Status is `save-failed`. Per RD-009, the UI dispatches `RequestNewNote { source: 'ctrl-N' }` directly without a preceding `TriggerBlurSave`. The domain's `HandleSaveFailure` (Workflow 8) owns the resolution. If the domain requires resolution first, it returns `save-failed` again and the banner remains.
 
 ---
 
 #### EC-EDIT-009: Idle Timer Running, OS Sleeps and Resumes
 
-Given an idle debounce timer is running (set with `setTimeout`), and the OS enters sleep/suspension and later resumes.
-
-Expected behaviour: `setTimeout` callbacks on most platforms fire shortly after resume even if the nominal duration has long passed. The timer fires and `TriggerIdleSave` is dispatched as if the timeout elapsed normally. The body saved will be the last `EditNoteBody` content. This is acceptable behaviour; there is no requirement to detect or suppress timers that fire due to OS resume. This scenario is acknowledged as environment-dependent and is not formally verified beyond unit-level timer mock tests.
+A pending `setTimeout` callback fires shortly after OS resume, dispatching `TriggerIdleSave` against the latest Block snapshot. This is acceptable; no formal verification beyond unit-level timer mocks.
 
 ---
 
-#### EC-EDIT-010: New Note Attempted While State Is saving (Ctrl+N or Button)
+#### EC-EDIT-010: New Note Attempted While State Is saving
 
-Given `status === 'saving'` and the user activates New Note.
+Status is `saving` and the user activates New Note. Per REQ-EDIT-035 + `EditPastNoteStart`, the domain queues the new-note intent (sentinel `pendingNextFocus`). The UI dispatches `RequestNewNote` and reflects the resulting `switching` state until the domain resolves. The New Note button is **enabled** in `saving` (REQ-EDIT-021 / REQ-EDIT-033).
 
-Expected behaviour: Per REQ-EDIT-025 and the domain's `EditPastNoteStart` workflow, the new-note intent must wait for the in-flight save to complete. The domain will set `pendingNextNoteId` to a sentinel for "new note" (or handle the queue via `EditPastNoteStart`'s switching path). The UI dispatches `RequestNewNote` and reflects the resulting `switching` state until the domain resolves. The editor locks input per REQ-EDIT-012. The New Note button is **enabled** in `saving` state (per REQ-EDIT-011 and REQ-EDIT-023).
+---
+
+#### EC-EDIT-011: Backspace at Start of First Block
+
+The user's caret is at offset 0 of the first Block. Per REQ-EDIT-008, the UI elides the dispatch (gated client-side via `focusedBlockId === blocks[0].id`). The default browser behaviour is `event.preventDefault()`-suppressed only when the elision applies; if there is text to delete normally inside a contenteditable, the browser handles it via REQ-EDIT-003's standard input flow.
+
+---
+
+#### EC-EDIT-012: SplitBlock at End-of-Block (Should Use InsertBlock)
+
+The user presses Enter at offset === content.length. Per REQ-EDIT-006 vs REQ-EDIT-007, the UI dispatches `InsertBlock` (not `SplitBlock`). This is a pure-tier classification: `splitOrInsert(offset, contentLength)` returns `'insert'` when `offset === contentLength`, otherwise `'split'`. (Tested in `editorPredicates.property.test.ts`.)
+
+---
+
+#### EC-EDIT-013: Unknown BlockType in Markdown Shortcut
+
+The user types a Markdown prefix that does not match any `BlockType` literal (e.g., `~~~`). The UI dispatches no `ChangeBlockType`; standard `EditBlockContent` for the typed characters proceeds.
+
+---
+
+#### EC-EDIT-014: SwitchError With pendingNextFocus
+
+A note switch save-fails. `SwitchError.pendingNextFocus = { noteId, blockId }` arrives in the `save-failed` snapshot. The Cancel button restores focus to the prior Block (`currentNoteId`'s `focusedBlockId`); the Discard button calls `EditingSessionTransitions.discard` which the domain may resolve to an `EditingState` for the queued `pendingNextFocus`. (ref: shared/errors.ts `SwitchError`; capture/states.ts `SaveFailedState.pendingNextFocus`)
 
 ---
 
@@ -669,25 +821,40 @@ Expected behaviour: Per REQ-EDIT-025 and the domain's `EditPastNoteStart` workfl
 
 | Term | Definition source |
 |---|---|
-| `EditNoteBody` | Command dispatched on each textarea input. Carries `noteId: string`, `body: string` (raw string at UI wire boundary — see §11), `issuedAt: string` (ISO-8601 string at UI wire boundary). — ui-fields.md §1A-1; ui-fields.md ベース型サマリ |
-| `TriggerIdleSave` | Command dispatched after `IDLE_SAVE_DEBOUNCE_MS` of no further edits. `source: 'capture-idle'`. — workflows.md §Workflow 2; domain-events.md:115 |
-| `TriggerBlurSave` | Command dispatched when the Body textarea loses focus while dirty. `source: 'capture-blur'`. — workflows.md §Workflow 2; domain-events.md:115 |
-| `CopyNoteBody` | Command for Workflow 6 (CopyBody). Writes `note.bodyForClipboard()` to the OS clipboard. — workflows.md §Workflow 6; ui-fields.md §1A-3 |
-| `RequestNewNote` | Command to create a new empty note. `source: 'explicit-button' \| 'ctrl-N'`. `issuedAt: string` (ISO-8601 raw string at UI wire boundary). — ui-fields.md §1A-3; ベース型サマリ |
-| `RetrySave` | Command for Workflow 8, re-initiating save from `save-failed` state. — workflows.md §Workflow 8; ui-fields.md §画面 4 |
-| `DiscardCurrentSession` | Command for Workflow 8, discarding the current dirty session. — workflows.md §Workflow 8; ui-fields.md §画面 4 |
-| `CancelSwitch` | Command for Workflow 8, cancelling a pending note switch and resuming current editing. — workflows.md §Workflow 8; ui-fields.md §画面 4 |
-| `EditingSessionState` | **Domain-owned** application-layer state in Rust. 5 `status` values: `idle`, `editing`, `saving`, `switching`, `save-failed`. The TypeScript UI layer never constructs or mutates this. It arrives via the `editing_session_state_changed` Tauri event. — aggregates.md §CaptureSession; §10 |
-| `EditorViewState` | **UI-owned mirror** of `EditingSessionState`. Produced by `editorReducer` from `EditorAction` inputs. Contains `status`, `isDirty`, `currentNoteId`, `pendingNextNoteId`. The authoritative state lives in the Rust domain; `EditorViewState` is a locally-cached UI projection. — §3.4a |
-| `isDirty` | `boolean` field of both `EditingSessionState` (domain) and `EditorViewState` (mirror). The `editorReducer` mirrors the transitions: `editing + NoteBodyEdited → isDirty=true`; `saving + NoteFileSaved → isDirty=false`; `saving + NoteSaveFailed → isDirty=true` retained. Superseded by the next domain snapshot. — aggregates.md:258,273–276 |
-| `Body.isEmptyAfterTrim` | Predicate: `true` when `body.trim().length === 0` (ECMAScript `String.prototype.trim`). Computed locally in TypeScript for immediate UI feedback (no Tauri round-trip per keystroke). The Rust-side `note.isEmpty()` MUST agree on Unicode-whitespace inputs; Phase 2 backend feature owns that proof. — aggregates.md `note.isEmpty(): boolean`; ui-fields.md §1A-1; §9 RD-006 |
-| `SaveError` | Discriminated union: `{ kind: 'fs', reason: FsError } \| { kind: 'validation', reason: SaveValidationError }`. — workflows.md §Workflow 2 エラーカタログ |
-| `pendingNextNoteId` | `string \| null` on `SaveFailedState`. Non-null means the failure occurred during a note switch. — aggregates.md `EditingSessionState` |
-| `IDLE_SAVE_DEBOUNCE_MS` | Spec-level constant: `2000`. The debounce delay in milliseconds before idle save fires. — ui-fields.md §未解決項目; ui-fields.md §1A-1 |
-| `EditorIpcAdapter` | Interface injected into editor components. Wraps all Tauri `invoke(...)` calls and exposes `subscribeToState(handler)` for inbound domain state events. — §10; verification-architecture.md §2 |
-| Workflow 2 (CaptureAutoSave) | Domain pipeline: `DirtyEditingSession → ValidatedSaveRequest → SerializedMarkdown → PersistedNote → IndexedNote`. — workflows.md §Workflow 2 |
-| Workflow 6 (CopyBody) | Domain pipeline: `Note → ClipboardText`. — workflows.md §Workflow 6 |
-| Workflow 8 (HandleSaveFailure) | Domain pipeline: `SaveFailedState → UserDecision → ResolvedState`. — workflows.md §Workflow 8 |
+| `Block` | Note Sub-entity. `{ id: BlockId, type: BlockType, content: BlockContent }`. — shared/note.ts |
+| `BlockId` | Note-local stable ID (UUIDv4 or `block-<n>`). — shared/value-objects.ts |
+| `BlockType` | One of `paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider`. — shared/value-objects.ts |
+| `BlockContent` | Branded string. Inline Markdown for non-`code`; multiline for `code`. — shared/value-objects.ts |
+| `FocusBlock` | Command dispatched on caret entry into a Block. `{ noteId, blockId, issuedAt }`. — capture/commands.ts |
+| `EditBlockContent` | Command dispatched per input event in a focused Block. `{ noteId, blockId, content, issuedAt }`. — capture/commands.ts |
+| `InsertBlock` | Command for Enter at end of Block or programmatic insert. `atBeginning: false → { prevBlockId, type, content }` ; `atBeginning: true → { type, content }`. — capture/commands.ts |
+| `RemoveBlock` | Command for Backspace/Delete on empty non-last Block. — capture/commands.ts |
+| `MergeBlocks` | Command for Backspace at offset 0 of non-first Block. — capture/commands.ts |
+| `SplitBlock` | Command for Enter mid-block. `{ blockId, offset }`. — capture/commands.ts |
+| `ChangeBlockType` | Command for slash-menu / Markdown shortcut. `{ blockId, newType }`. — capture/commands.ts |
+| `MoveBlock` | Command for drag/keyboard reorder. `{ blockId, toIndex }`. — capture/commands.ts |
+| `TriggerIdleSave` | Command after `IDLE_SAVE_DEBOUNCE_MS` quiescence. Effective `source: 'capture-idle'`. — capture/commands.ts; shared/events.ts |
+| `TriggerBlurSave` | Command on all-blocks blur while dirty. Effective `source: 'capture-blur'`. — capture/commands.ts; shared/events.ts |
+| `CopyNoteBody` | Command for Workflow 6. Internally uses `serializeBlocksToMarkdown(note.blocks)`. — capture/commands.ts |
+| `RequestNewNote` | Create a new empty note. `source: 'explicit-button' | 'ctrl-N'`. — capture/commands.ts |
+| `RetrySave` / `DiscardCurrentSession` / `CancelSwitch` | Workflow 8 commands. — capture/commands.ts |
+| `EditingSessionState` | **Domain-owned** state in Rust. 5 statuses. `EditingState.focusedBlockId: BlockId | null`. — capture/states.ts |
+| `EditorViewState` | UI-owned mirror. Contains `status`, `isDirty`, `currentNoteId`, `focusedBlockId`, `pendingNextFocus`, `isNoteEmpty`, `lastSaveError`. — §3.6a |
+| `pendingNextFocus` | `{ noteId, blockId } \| null`. Non-null on `SwitchingState` / `SaveFailedState` when a switch is queued. — capture/states.ts |
+| `serializeBlocksToMarkdown` | Pure function `ReadonlyArray<Block> → string`. — shared/blocks.ts |
+| `parseMarkdownToBlocks` | Pure function `string → Result<ReadonlyArray<Block>, BlockParseError>`. — shared/blocks.ts |
+| `note.isEmpty()` | Domain predicate: 1 block && empty paragraph. UI mirrors as `isNoteEmpty`. — shared/note.ts |
+| `BlockOperationError` | Block-level error union (block-not-found / last-block-cannot-be-removed / split-offset-out-of-range / move-index-out-of-range / merge-on-first-block / incompatible-content-for-type / invalid-block-id / invalid-block-type). — shared/note.ts |
+| `BlockParseError` | Markdown parse failure (unterminated-code-fence / malformed-structure). Surfaces in `app-startup` Hydration. — shared/blocks.ts |
+| `SaveError` | `{ kind: 'fs', reason: FsError } | { kind: 'validation', reason: SaveValidationError }`. — shared/errors.ts |
+| `SwitchError` | `{ kind: 'save-failed-during-switch', underlying: SaveError, pendingNextFocus: { noteId, blockId } }`. — shared/errors.ts |
+| `IDLE_SAVE_DEBOUNCE_MS` | Spec constant `2000`. — REQ-EDIT-012 |
+| `EditorIpcAdapter` | Interface injected into editor. Outbound `dispatch*` methods + inbound `subscribeToState`. — §10 |
+| Workflow 2 (CaptureAutoSave) | Domain pipeline: `DirtyEditingSession → ValidatedSaveRequest → ...`. — workflows.md |
+| Workflow 3 (EditPastNoteStart) | Block-focus-driven switch: `BlockFocusRequest → CurrentSessionDecision → FlushedCurrentSession → NewSession`. — workflows.md |
+| Workflow 6 (CopyBody) | `Note → ClipboardText` via `bodyForClipboard`. — workflows.md |
+| Workflow 8 (HandleSaveFailure) | `SaveFailedState → UserDecision → ResolvedState`. — workflows.md |
+| Workflow 10 (BlockEdit) | Per-block edit pipeline. — workflows.md |
 
 ---
 
@@ -695,30 +862,34 @@ Expected behaviour: Per REQ-EDIT-025 and the domain's `EditPastNoteStart` workfl
 
 The following behaviours are **pure** (deterministic, side-effect-free, formally verifiable) and seed Phase 1b proof obligations:
 
-- **Dirty tracking predicate**: Given `previousBody: string` and `currentBody: string`, `isDirty = currentBody !== previousBody` (or equivalent domain check). Pure function, no side effects.
-- **Source classification**: The mapping from UI event type (timer fire vs blur) to `source: 'capture-idle' | 'capture-blur'` is a pure switch with no I/O. Within `ui-editor` scope only these two values are produced; `'curate-*'` values are produced by the Curate bounded context. (ref: domain-events.md:115)
-- **Copy-enable predicate**: `copyEnabled = !body.isEmptyAfterTrim && status !== 'idle' && status !== 'switching' && status !== 'save-failed'`. Pure function of `(body: string, status: EditorViewState['status'])`. For `status ∈ {'idle', 'switching', 'save-failed'}`, `canCopy === false` regardless of body. For `status ∈ {'editing', 'saving'}`, `canCopy === !emptyAfterTrim(body)`.
-- **Banner message derivation**: The mapping from `SaveError` to a user-facing string (REQ-EDIT-016) is a pure function of `SaveError`. Property testable: every `SaveError` variant maps to a non-empty string or the silent sentinel (`null`).
-- **Empty-after-trim predicate**: `body.trim().length === 0` — pure string function, Rust-side equivalence can be verified by Kani.
-- **Debounce schedule** (pure core): `debounceSchedule.computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs })` returns `{ shouldFire: boolean, fireAt: number | null }`. Pure computation given timestamps. (ref: §12)
-- **Reducer** (pure mirror): `editorReducer(state: EditorViewState, action: EditorAction): { state: EditorViewState, commands: ReadonlyArray<EditorCommand> }`. Total function, no side effects.
+- **Block focus mirroring**: `editorReducer` mirrors `EditingState.focusedBlockId` from `DomainSnapshotReceived`; pure projection.
+- **Optimistic dirty bit**: A locally-observed `BlockContentEdited` action sets `isDirty=true` until the next snapshot supersedes; pure derivation.
+- **Source classification**: `classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | 'capture-blur'` — pure mapping. Within `ui-editor` only these two values are produced; `'curate-*'` are produced by the Curate context.
+- **Copy-enable predicate**: `canCopy(view): boolean = !view.isNoteEmpty && view.status !== 'idle' && view.status !== 'switching' && view.status !== 'save-failed'`. Pure function.
+- **Banner message derivation**: `bannerMessageFor(error: SaveError): string | null` — exhaustive switch over `SaveError` and `FsError`.
+- **Splitting rule**: `splitOrInsert(offset: number, contentLength: number): 'split' | 'insert'` — pure boundary classifier (REQ-EDIT-006 vs REQ-EDIT-007; EC-EDIT-012).
+- **Markdown shortcut classifier**: `classifyMarkdownPrefix(content: string): { newType: BlockType; trimmedContent: string } | null` — pure prefix → BlockType mapping.
+- **Backspace-at-zero classifier**: `classifyBackspaceAtZero(focusedIndex: number, blockCount: number): 'merge' | 'remove-empty-noop' | 'first-block-noop' | 'normal-edit'` — pure decision, given offset 0 and the focused index.
+- **Debounce schedule**: `debounceSchedule.computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs, nowMs })` (pure).
+- **Reducer**: `editorReducer(state: EditorViewState, action: EditorAction): { state: EditorViewState, commands: ReadonlyArray<EditorCommand> }`. Total function.
 
 The following behaviours are **impure** (effectful, outside pure verification):
 
-- **Timer scheduling** (`setTimeout` / `clearTimeout`): Effectful; requires fake timers in tests. The impure `timerModule.ts` calls `scheduleIdleSave`/`cancelIdleSave` based on `debounceSchedule` output.
-- **Clipboard write** (`Clipboard.write`): OS I/O; requires mock in tests.
-- **Tauri IPC for save** (calls through the `EditorIpcAdapter` interface): Network-like I/O; requires mock adapter in tests. The `ui-editor` feature invokes these through an injected port — it does not hard-code `invoke(...)` strings directly. (ref: behavioral-spec.md §9 RD-003)
-- **Focus DOM events** (`blur`, `focus` on textarea): DOM side effects; requires jsdom simulation in tests.
-- **`$effect` rune** registering event listeners on the editor pane root element: Runs as a side effect during component lifecycle.
-- **Inbound domain state subscription** (`EditorIpcAdapter.subscribeToState`): Impure; wraps `@tauri-apps/api/event listen(...)`.
+- **Timer scheduling** (`setTimeout` / `clearTimeout`): impure shell `timerModule.ts`.
+- **Clipboard write** is performed by the Rust side of `CopyNoteBody`; the editor has no direct clipboard call.
+- **Tauri IPC for save / commands** via `EditorIpcAdapter`.
+- **DOM events** (`focusin`, `focusout`, `keydown`, `input`, drag events).
+- **`$effect` rune** registering listeners on the editor pane root.
+- **Native focus management** (`element.focus()`) reacting to `EditorViewState.focusedBlockId` changes.
+- **Inbound domain state subscription** (`EditorIpcAdapter.subscribeToState`).
 
 ---
 
 ## 8. Open Questions
 
-7. **`Body.isEmptyAfterTrim` in TypeScript**: The UI must compute `copyEnabled` using the empty-after-trim predicate locally (before the Rust round-trip) to give immediate visual feedback. This is a pure client-side string check (`body.trim().length === 0`), not a Tauri call. This is acceptable per the purity boundary analysis and is the confirmed intended approach. No ambiguity remains; this note is retained only for traceability.
+- **`isNoteEmpty` mirror field source**: The `EditingSessionStateDto` payload from Rust must include a precomputed `isNoteEmpty: boolean` (running `NoteOps.isEmpty` server-side) so the UI does not re-implement the predicate. This is acceptable per §11 and is the confirmed approach — added to the inbound DTO contract in §10. No ambiguity remains; this note is retained for traceability.
 
-_All other formerly open questions (OQ-1 through OQ-6, OQ-8) have been resolved. See §9._
+_All other formerly open questions resolved; see §9._
 
 ---
 
@@ -726,118 +897,153 @@ _All other formerly open questions (OQ-1 through OQ-6, OQ-8) have been resolved.
 
 | ID | Question summary | Resolution | Source |
 |---|---|---|---|
-| RD-001 | Exact `source` enum values for save events | `'capture-idle'` (idle timer) and `'capture-blur'` (blur / programmatic blur-save) are the two values produced by `ui-editor`. `'curate-tag-chip'` and `'curate-frontmatter-edit-outside-editor'` are out of scope. `'switch'`, `'manual'`, `'idle'`, and `'blur'` do NOT exist in the domain enum and MUST NOT be used. | domain-events.md:115; validation.md:121,176,382,399,710 |
-| RD-002 | `source` for `RequestNewNote` events | `source: 'explicit-button'` (button click) and `source: 'ctrl-N'` (keyboard shortcut, both platforms) are the only two values. | ui-fields.md:78,295 |
-| RD-003 | Tauri IPC command name strings | The `ui-editor` feature does NOT hard-code Tauri `invoke()` command strings. It depends on an injected `EditorIpcAdapter` interface. Concrete Tauri handler wiring is deferred to the backend save-handler VCSDD feature. Pure-tier modules MUST NOT import `@tauri-apps/api`. Integration tests exercise a mock adapter. | verification-architecture.md §2 effectful shell; §5 integration tests |
-| RD-004 | Ctrl+N vs Cmd+N on macOS | The keyboard listener uses `(event.ctrlKey \|\| event.metaKey) && event.key.toLowerCase() === 'n'` to detect both `Ctrl+N` (Linux/Windows) and `Cmd+N` (macOS) in a single condition. The dispatched command always carries `source: 'ctrl-N'` — the enum label is a semantic name, not a literal key description. | REQ-EDIT-024; ui-fields.md:78 |
-| RD-005 | `isDirty` ownership and synchrony | `isDirty: boolean` is a field of both the canonical `EditingSessionState` (Rust domain) and the mirrored `EditorViewState` (TypeScript, produced by `editorReducer`). The `editorReducer` mirrors transitions: `editing + NoteBodyEdited → isDirty=true`; `saving + NoteFileSaved → isDirty=false`; `saving + NoteSaveFailed → isDirty=true` retained. The canonical state lives in the domain; `EditorViewState` is superseded on each inbound domain snapshot event. | aggregates.md:258,273–276; §3.4a |
-| RD-006 | `Body.isEmptyAfterTrim` trim semantics | `body.trim().length === 0` where `String.prototype.trim()` is the ECMAScript 2024 definition. Computed locally in TypeScript (`editorPredicates.ts`) without a Tauri round-trip. The Rust-side `note.isEmpty()` MUST agree on Unicode-whitespace inputs (a future Kani property in the backend feature). | FIND-009 remediation; aggregates.md `note.isEmpty()` |
-| RD-007 | Successor state for `empty-body-on-idle` discard | After `validation.empty-body-on-idle`, `EditorViewState` transitions to `editing` with `isDirty=false` and the idle debounce timer is cleared. Subsequent `NoteBodyEdited` actions resume the normal cycle. | aggregates.md:280 `EmptyNoteDiscarded`; workflows.md §Workflow 2 エラーカタログ; REQ-EDIT-016 |
-| RD-008 | Keyboard listener scope for Ctrl+N | The listener attaches to the **editor pane root element** (`EditorPanel.svelte` root `<div>`), NOT to `document`. This prevents the shortcut from firing when focus is in another panel (settings modal, feed, etc.). Acceptance criterion: "does NOT fire when focus is outside the editor pane." | FIND-010 remediation; REQ-EDIT-024 |
-| RD-009 | REQ-EDIT-025 vs EC-EDIT-008 contradiction for `save-failed` + Ctrl+N | When `status === 'save-failed'`, `RequestNewNote` is dispatched directly (NO preceding `TriggerBlurSave`). REQ-EDIT-025 blur-save gate applies only when `status === 'editing'` AND `isDirty === true`. In `save-failed`, the domain's `HandleSaveFailure` (Workflow 8) owns resolution. | FIND-003 remediation; EC-EDIT-008; REQ-EDIT-025 |
-| RD-010 | Reducer signature (commands output) | `editorReducer(state: EditorViewState, action: EditorAction): { state: EditorViewState, commands: ReadonlyArray<EditorCommand> }`. The reducer is total: every state × action pair returns a defined next state and a (possibly empty) commands array. PROP-EDIT-007/008/009 reference this signature. | FIND-013 remediation; verification-architecture.md §2 |
-| RD-011 | Inbound domain event channel | The Rust backend emits `editing_session_state_changed` events with payload `{ state: EditingSessionState }`. The TypeScript adapter `EditorIpcAdapter.subscribeToState(handler)` wraps `@tauri-apps/api/event listen('editing_session_state_changed', ...)`. See §10 and §16. | FIND-016 remediation; REQ-EDIT-014 |
-| RD-012 | Debounce shell/pure boundary | Pure `debounceSchedule.computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs })` returns `{ shouldFire: boolean, fireAt: number \| null }`. The impure `timerModule.ts` calls `setTimeout` based on this. The reducer never schedules timers; the impure shell observes reducer state and (re)schedules. The shell stores only `lastEditTimestamp` (a single `$state` number). | FIND-012 remediation; REQ-EDIT-004 |
-| RD-013 | Brand-type construction at UI boundary | The UI sends raw `string` values over Tauri commands (not branded `Body`/`Timestamp` types). Command types at the wire boundary use `string`/`number`; the Rust domain constructs branded types via `try_new_*` smart constructors. The `editorPredicates.ts` operates on the raw `string` from UI state. | FIND-005 remediation; §11 |
-| RD-014 | New Note button enable matrix | `idle` → enabled; `editing` → enabled; `saving` → enabled; `switching` → disabled; `save-failed` → enabled. See REQ-EDIT-023. | FIND-011 remediation; EC-EDIT-010; EC-EDIT-008 |
-| RD-015 | PROP-EDIT-002 vs PROP-EDIT-009 overlap | PROP-EDIT-002 is the definitive proof obligation for save-source literal correctness (`source` value equals the triggering action's `source` payload). PROP-EDIT-009 is demoted to the source-absence corollary ("reducer never inserts a `source` field not present in the action input") and is subsumed by PROP-EDIT-002 — no separate test required. Coverage Matrix REQ-EDIT-026 row cites only PROP-EDIT-002 as the required proof obligation. | FIND-020 remediation; iteration-2 |
-| RD-016 | `tauriEditorAdapter.ts` vs `editorStateChannel.ts` responsibility split | Clean split: `tauriEditorAdapter.ts` is OUTBOUND only (wraps `invoke(...)` for all save/copy/new/retry/discard/cancel commands; does NOT call `listen(...)`). `editorStateChannel.ts` is INBOUND only (wraps `event.listen('editing_session_state_changed', ...)` for state snapshot subscription; does NOT call `invoke(...)`). No overlap. Phase 5 audit greps for `@tauri-apps/api` must find `invoke` only in `tauriEditorAdapter.ts` and `listen` only in `editorStateChannel.ts`. | FIND-022 remediation; iteration-2 |
-| RD-017 | `EditorCommand` discriminated union enumeration | `EditorCommand` is a 9-variant discriminated union (see verification-architecture.md §10). Variants: `'edit-note-body'`, `'trigger-idle-save'`, `'trigger-blur-save'`, `'cancel-idle-timer'`, `'retry-save'`, `'discard-current-session'`, `'cancel-switch'`, `'copy-note-body'`, `'request-new-note'`. The impure shell must handle all variants via exhaustive switch (Tier 0). PROP-EDIT-002/007/009/010 reference this union by name. | FIND-021 remediation; iteration-2 |
-| RD-018 | `EditorCommand` wire-payload completeness for `'edit-note-body'` and `'copy-note-body'` | The `'edit-note-body'` variant's payload is `{ noteId: string; newBody: string; issuedAt: string; dirty: true }` and the `'copy-note-body'` variant's payload is `{ noteId: string; body: string }`. Both variants carry `noteId` so the pure reducer can produce a self-contained command without the impure shell reading from a side channel. Pure modules MUST NOT call `Date.now()`; `issuedAt` is supplied by the impure shell on the inbound `EditorAction` before the reducer is called. Tier 0 structural-conformance assertions (`_AssertEditNoteBodyShape`, `_AssertCopyNoteBodyShape`) in the impure shell verify payload ⊇ adapter signature at compile time. (ref: verification-architecture.md §10; FIND-023 remediation; iteration-3) | FIND-023 remediation; iteration-3 |
-| RD-019 | `computeNextFireAt` and `shouldFireIdleSave` locked signatures | The canonical signature for the pure debounce function is `computeNextFireAt({ lastEditAt: number, lastSaveAt: number, debounceMs: number, nowMs: number }): { shouldFire: boolean, fireAt: number \| null }`. `nowMs` is the fourth required parameter — supplied by the impure shell (e.g., `clock.now()`) and never derived by the function itself. The companion property-test predicate is `shouldFireIdleSave(editTimestamps: readonly number[], lastSaveTimestamp: number, debounceMs: number, nowMs: number): boolean`. Both signatures are locked between verification-architecture.md §2 and this spec (§12); Phase 2 test and implementation files MUST use these exact signatures. (ref: verification-architecture.md §2 debounceSchedule.ts row; §12 Debounce Contract; FIND-024 remediation; iteration-3) | FIND-024 remediation; iteration-3 |
-| RD-020 | PROP-EDIT-040 added to formalize REQ-EDIT-014 mirroring | FIND-002 (iteration-2) identified that `PROP-EDIT-040` was cited in `sprint-1.md` CRIT-012 but absent from the canonical proof-obligation registry in `verification-architecture.md §4`. Resolution: PROP-EDIT-040 is now declared in `verification-architecture.md §4` and §3 (Tier 2 listing) with the property statement `editorReducer(s, { kind: 'DomainSnapshotReceived', snapshot: S }).state.{status, isDirty, currentNoteId, pendingNextNoteId} === S.{status, isDirty, currentNoteId, pendingNextNoteId}` for any `s` and `S`. The Coverage Matrix REQ-EDIT-014 row is updated to cite PROP-EDIT-040 alongside PROP-EDIT-029. The PROP registry now contains 40 entries (PROP-EDIT-001..040, including 020a/020b). | FIND-002 remediation; iteration-2 |
+| RD-001 | Permitted `source` enum values | `'capture-idle'` and `'capture-blur'` only (drawn from `shared/events.ts SaveNoteSource`). `'curate-*'` are out of scope. `'switch'`, `'manual'`, `'idle'`, `'blur'` MUST NOT be used. | shared/events.ts |
+| RD-002 | `source` for `RequestNewNote` | `'explicit-button'` (button) and `'ctrl-N'` (keyboard, both platforms). | capture/commands.ts |
+| RD-003 | Tauri IPC command names | `ui-editor` does NOT hard-code `invoke()` strings. It depends on the injected `EditorIpcAdapter`. Pure-tier modules MUST NOT import `@tauri-apps/api`. Concrete handler names are defined by the backend save-handler features. | verification-architecture.md §2 / §8 |
+| RD-004 | Ctrl+N vs Cmd+N | `(event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n'`. Source label always `'ctrl-N'`. | REQ-EDIT-034 |
+| RD-005 | `isDirty` ownership | Field of both domain `EditingSessionState` and mirrored `EditorViewState`. UI never authors transitions; superseded by the next snapshot. | aggregates.md L274; §3.6a |
+| RD-006 | `note.isEmpty()` predicate at UI | UI reads `EditorViewState.isNoteEmpty` from the snapshot DTO. The Rust domain runs `NoteOps.isEmpty`. UI does not re-implement the predicate. | shared/note.ts; §11 |
+| RD-007 | Successor state for `empty-body-on-idle` | After silent discard: `EditorViewState.status === 'editing'`, `isDirty === false`, `isNoteEmpty === true`, idle timer cleared. | aggregates.md L280; REQ-EDIT-026 |
+| RD-008 | Ctrl+N listener scope | Editor pane root element only (NOT `document`). | REQ-EDIT-034 |
+| RD-009 | REQ-EDIT-035 vs EC-EDIT-008 | When `status === 'save-failed'`, `RequestNewNote` is dispatched directly without preceding `TriggerBlurSave`. The blur-save gate applies only when `status === 'editing'` AND `isDirty === true`. | EC-EDIT-008; REQ-EDIT-035 |
+| RD-010 | Reducer signature | `editorReducer(state: EditorViewState, action: EditorAction): { state: EditorViewState, commands: ReadonlyArray<EditorCommand> }`. Total. | verification-architecture.md §2 |
+| RD-011 | Inbound channel name | Rust emits `editing_session_state_changed` events with payload `{ state: EditingSessionStateDto }` carrying `status`, `isDirty`, `currentNoteId`, `focusedBlockId`, `pendingNextFocus`, `isNoteEmpty`, `lastSaveError`. | §10 |
+| RD-012 | Debounce shell/pure boundary | Pure `computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs, nowMs })`; impure shell calls `setTimeout`. The reducer never schedules timers; emits `'cancel-idle-timer'` / `'trigger-idle-save'` commands. | §12 |
+| RD-013 | Brand-type construction at UI boundary | UI sends raw `string`/`number` over Tauri commands. Rust constructs `Body`, `BlockContent`, `BlockId`, `Timestamp`, `NoteId` via Smart Constructors. | §11 |
+| RD-014 | New Note button enable matrix | `idle` enabled; `editing` enabled; `saving` enabled; `switching` disabled; `save-failed` enabled. | REQ-EDIT-033 |
+| RD-015 | Same-Note Block move ≠ switch | `EditingSessionTransitions.refocusBlockSameNote` keeps `editing`; idle timer continues; no save commands fired. | REQ-EDIT-017; REQ-EDIT-018 |
+| RD-016 | `tauriEditorAdapter.ts` vs `editorStateChannel.ts` split | OUTBOUND vs INBOUND only. No overlap. Phase 5 audit greps `invoke` only in adapter, `listen` only in channel. | verification-architecture.md §2 |
+| RD-017 | `EditorCommand` discriminated union | 16-variant union matching the new block-based contract. See verification-architecture.md §10. | verification-architecture.md §10 |
+| RD-018 | `SwitchError.pendingNextFocus` propagation | The Cancel button restores focus to the prior `focusedBlockId`. `pendingNextFocus = { noteId, blockId }` is rendered as a visual "queued switch" cue but never edited by the UI. | EC-EDIT-014 |
+| RD-019 | Slash-menu local state | Slash-menu open/close, query string, and selected index are local `$state` in the impure shell only. They never enter the reducer or the snapshot. | REQ-EDIT-010; NFR-EDIT-008 |
+| RD-020 | Drag preview local state | The DnD preview node is local DOM owned by the impure shell. The pure reducer accepts only the final `MoveBlock` command via the dispatch path. | REQ-EDIT-011 |
 
 ---
 
 ## 10. Domain ↔ UI State Synchronization
 
-This section documents the inbound channel by which the Rust domain pushes `EditingSessionState` updates to the TypeScript UI layer.
+This section documents the inbound channel and the wire-format DTO between the Rust domain and the TypeScript UI.
 
 ### Outbound commands (TypeScript → Rust)
 
-The UI dispatches domain commands via `EditorIpcAdapter`:
-- `adapter.dispatchEditNoteBody(noteId: string, body: string, issuedAt: string): Promise<void>`
-- `adapter.dispatchTriggerIdleSave(source: 'capture-idle'): Promise<void>`
-- `adapter.dispatchTriggerBlurSave(source: 'capture-blur'): Promise<void>`
-- `adapter.dispatchCopyNoteBody(noteId: string): Promise<void>`
-- `adapter.dispatchRequestNewNote(source: 'explicit-button' | 'ctrl-N', issuedAt: string): Promise<void>`
-- `adapter.dispatchRetrySave(): Promise<void>`
-- `adapter.dispatchDiscardCurrentSession(): Promise<void>`
-- `adapter.dispatchCancelSwitch(): Promise<void>`
+`EditorIpcAdapter` outbound methods (one per `EditorCommand` variant — see §10 of `verification-architecture.md`):
 
-All `issuedAt` values are ISO-8601 raw strings generated by the impure shell (e.g., `new Date().toISOString()`). Pure-tier modules never call `new Date()` or `Date.now()`.
+- `adapter.dispatchFocusBlock(noteId: string, blockId: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchEditBlockContent(noteId: string, blockId: string, content: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchInsertBlockAfter(noteId: string, prevBlockId: string, type: BlockType, content: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchInsertBlockAtBeginning(noteId: string, type: BlockType, content: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchRemoveBlock(noteId: string, blockId: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchMergeBlocks(noteId: string, blockId: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchSplitBlock(noteId: string, blockId: string, offset: number, issuedAt: string): Promise<void>`
+- `adapter.dispatchChangeBlockType(noteId: string, blockId: string, newType: BlockType, issuedAt: string): Promise<void>`
+- `adapter.dispatchMoveBlock(noteId: string, blockId: string, toIndex: number, issuedAt: string): Promise<void>`
+- `adapter.dispatchTriggerIdleSave(noteId: string, source: 'capture-idle', issuedAt: string): Promise<void>`
+- `adapter.dispatchTriggerBlurSave(noteId: string, source: 'capture-blur', issuedAt: string): Promise<void>`
+- `adapter.dispatchCopyNoteBody(noteId: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchRequestNewNote(source: 'explicit-button' | 'ctrl-N', issuedAt: string): Promise<void>`
+- `adapter.dispatchRetrySave(noteId: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchDiscardCurrentSession(noteId: string, issuedAt: string): Promise<void>`
+- `adapter.dispatchCancelSwitch(noteId: string, issuedAt: string): Promise<void>`
+
+All `issuedAt` values are ISO-8601 strings generated by the impure shell. Pure-tier modules never call `new Date()` or `Date.now()`.
 
 ### Inbound state updates (Rust → TypeScript)
 
-The Rust backend emits a Tauri event `editing_session_state_changed` whenever `EditingSessionState` transitions. The payload shape is `{ state: EditingSessionState }`.
+The Rust backend emits `editing_session_state_changed` whenever `EditingSessionState` transitions. The payload shape is `{ state: EditingSessionStateDto }`. The DTO carries:
 
-`editorStateChannel.ts` implements `subscribeToState(handler: (state: EditingSessionState) => void): () => void` by calling `@tauri-apps/api/event listen('editing_session_state_changed', payload => handler(payload.payload.state))` and returning an unlisten cleanup function. This module is the sole inbound channel for domain state events; `tauriEditorAdapter.ts` handles outbound `invoke(...)` calls only and does NOT subscribe to events. (ref: verification-architecture.md §2; RD-016)
+```typescript
+type EditingSessionStateDto =
+  | { status: 'idle' }
+  | {
+      status: 'editing';
+      currentNoteId: string;
+      focusedBlockId: string | null;
+      isDirty: boolean;
+      isNoteEmpty: boolean;
+      lastSaveResult: 'success' | 'failed' | null;
+    }
+  | { status: 'saving'; currentNoteId: string; isNoteEmpty: boolean }
+  | {
+      status: 'switching';
+      currentNoteId: string;
+      pendingNextFocus: { noteId: string; blockId: string };
+      isNoteEmpty: boolean;
+    }
+  | {
+      status: 'save-failed';
+      currentNoteId: string;
+      focusedBlockId: string | null;
+      pendingNextFocus: { noteId: string; blockId: string } | null;
+      lastSaveError: SaveError;
+      isNoteEmpty: boolean;
+    };
+```
 
-The impure shell (e.g., `EditorPanel.svelte`) calls `subscribeToState` (from `editorStateChannel.ts`) inside a `$effect` and stores the latest `EditingSessionState` in a `$state` variable. This `$state` variable is then used to derive `EditorViewState` via `editorReducer(currentViewState, { kind: 'DomainSnapshotReceived', snapshot })`.
+`editorStateChannel.ts` implements `subscribeToState(handler: (state: EditingSessionStateDto) => void): () => void` by calling `@tauri-apps/api/event listen('editing_session_state_changed', ...)` and returning an unlisten cleanup. This module is the sole inbound channel; `tauriEditorAdapter.ts` handles outbound `invoke(...)` only.
+
+The impure shell stores the latest snapshot in a `$state` and feeds it through `editorReducer({ kind: 'DomainSnapshotReceived', snapshot })`.
 
 ### Test contract for integration tests
 
-Integration tests substitute the real `EditorIpcAdapter` with a hand-rolled mock implementing `subscribe(callback)` / `emit(state)`. The mock does not use `@tauri-apps/api`. Tests call `mockAdapter.emit(newState)` to simulate domain state changes and assert Svelte DOM updates via `flushSync()`.
+Integration tests inject a hand-rolled mock `EditorIpcAdapter` exposing `subscribe(callback)` / `emit(state)` and `vi.fn()` for every outbound dispatch method. No integration test calls real `invoke()`.
 
 ---
 
 ## 11. Brand Type Construction Contracts
 
-This section resolves FIND-005: how the UI obtains `Body`, `Timestamp`, `NoteId` brand-type values given the Rust-side Smart Constructor constraint.
-
-### Rule: UI sends raw strings/numbers; Rust constructs brand types
-
-Per `ui-fields.md §重要設計前提`: `NoteId`, `Tag`, `Body`, `Frontmatter`, `VaultPath`, `Timestamp` are **not constructible in TypeScript** (Brand type + unique symbol). The UI layer sends raw `string` or `number` values over Tauri commands. The Rust domain constructs brand types via `try_new_*` smart constructors.
+Per `ui-fields.md §重要設計前提` and `shared/value-objects.ts`: `NoteId`, `BlockId`, `BlockContent`, `Body`, `Tag`, `Frontmatter`, `Timestamp`, `VaultPath` are **not constructible in TypeScript** (Brand + unique symbol). The UI sends raw `string` / `number` values over Tauri; Rust constructs branded types via `try_new_*`.
 
 ### Command wire-format types
 
-| Command | UI wire-format field | Type at boundary | Notes |
-|---|---|---|---|
-| `EditNoteBody` | `body` | `string` | Raw textarea value |
-| `EditNoteBody` | `noteId` | `string` | From `EditorViewState.currentNoteId` (already a string) |
-| `EditNoteBody` | `issuedAt` | `string` | ISO-8601, generated by impure shell |
-| `RequestNewNote` | `issuedAt` | `string` | ISO-8601, generated by impure shell |
-| `RequestNewNote` | `source` | `'explicit-button' \| 'ctrl-N'` | Literal union, no brand needed |
+| Command field | Type at UI boundary | Notes |
+|---|---|---|
+| `noteId` | `string` | From `EditorViewState.currentNoteId` |
+| `blockId` | `string` | From `EditorViewState.focusedBlockId` or hit-tested DOM node |
+| `content` (EditBlockContent / InsertBlock) | `string` | Raw text; Rust runs `BlockContentSmartCtor` |
+| `type` (InsertBlock / ChangeBlockType) | `BlockType` literal union | One of the 9 literals in `value-objects.ts` |
+| `offset` (SplitBlock) | `number` | Caret index from `Selection.anchorOffset` |
+| `toIndex` (MoveBlock) | `number` | 0-based destination index |
+| `issuedAt` | `string` | ISO-8601 generated by impure shell |
+| `source` (RequestNewNote) | `'explicit-button' | 'ctrl-N'` | Literal union |
 
-### editorPredicates.ts operates on raw strings
+### Predicates at the predicate boundary
 
-`editorPredicates.ts` computes `canCopy(bodyStr: string, status)` and `isEmptyAfterTrim(bodyStr: string)` on the raw `string` from `EditorViewState`. It does NOT operate on branded `Body` values. The TypeScript type at the predicate boundary is `string`, not `Body`.
+`canCopy(view: EditorViewState): boolean` reads `view.isNoteEmpty` (already a `boolean` from the DTO) and `view.status` (literal union). It does NOT operate on branded `Body` / `BlockContent` values.
 
-### Brand types that appear in the editor surface
+### Brand IDs in `EditorViewState`
 
-The following brand types appear in `EditorViewState` as string-typed fields that happen to be domain IDs; they are passed through as raw strings:
-- `currentNoteId: string | null` — treated as an opaque string by the editor; not reconstructed
-- `pendingNextNoteId: string | null` — same
+The following appear as opaque `string`-typed fields inside `EditorViewState`:
+- `currentNoteId: string | null`
+- `focusedBlockId: string | null`
+- `pendingNextFocus: { noteId: string; blockId: string } | null`
 
-No `Body`, `Timestamp`, or `Tag` brand types are constructed in the TypeScript editor layer. The domain returns them in the `EditingSessionState` snapshot; the UI reads them as strings from the snapshot payload.
+No `Body`, `Timestamp`, or `BlockContent` brand types are constructed in the TypeScript editor.
 
 ---
 
 ## 12. Debounce Contract
-
-This section resolves FIND-012: the pure/impure boundary for debounce scheduling.
 
 ### Pure function signature
 
 `debounceSchedule.computeNextFireAt({ lastEditAt: number, lastSaveAt: number, debounceMs: number, nowMs: number }): { shouldFire: boolean, fireAt: number | null }`
 
 - `shouldFire === true` iff `lastEditAt + debounceMs <= nowMs` AND no save has occurred since the last edit.
-- `fireAt: number | null` — the absolute timestamp (ms) when the timer should fire, or `null` if it should not.
-- The function is pure: no `Date.now()` call inside. `nowMs` is supplied by the caller.
+- `fireAt` is the absolute ms timestamp the timer should fire, or `null`.
+- `nowMs` is supplied by the caller; the function never calls `Date.now()`.
 
-`debounceSchedule.shouldFireIdleSave(editTimestamps: readonly number[], lastSaveTimestamp: number, debounceMs: number, nowMs: number): boolean` — companion predicate used by property tests (PROP-EDIT-003/004) to enumerate boundary cases across a sequence of edit timestamps. Production usage supplies a 1-element array. Returns `true` iff the last element of `editTimestamps` satisfies `lastEdit + debounceMs <= nowMs` and no save has occurred since that edit.
+`debounceSchedule.shouldFireIdleSave(editTimestamps: readonly number[], lastSaveTimestamp: number, debounceMs: number, nowMs: number): boolean` — companion predicate for property tests.
 
 ### Shell pattern
 
-On each `EditNoteBody` action received by the impure shell:
-1. The shell calls `timerModule.cancelIdleSave(currentHandle)` to clear any pending timer.
-2. The shell computes `{ fireAt } = debounceSchedule.computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs: IDLE_SAVE_DEBOUNCE_MS, nowMs: clock.now() })`. `clock.now()` is the impure shell's clock (e.g., `Date.now()` wrapped); the pure function never calls it.
+On each block-edit dispatch (`EditBlockContent`, `InsertBlock`, `RemoveBlock`, `MergeBlocks`, `SplitBlock`, `ChangeBlockType`, `MoveBlock`):
+1. The shell calls `timerModule.cancelIdleSave(currentHandle)`.
+2. The shell computes `{ fireAt } = computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs: IDLE_SAVE_DEBOUNCE_MS, nowMs: clock.now() })`.
 3. If `fireAt !== null`, the shell calls `timerModule.scheduleIdleSave(fireAt - clock.now(), () => dispatch(TriggerIdleSave))`.
-4. The shell stores only `lastEditTimestamp` (a single `$state number`). The `editTimestamps` sequence in `shouldFireIdleSave` exists only for property-test enumeration; the runtime caller supplies a 1-element array.
+4. The shell stores only `lastEditTimestamp`.
 
 ### Property test model
 
-For property tests in `debounceSchedule.property.test.ts`, PROP-EDIT-003 and PROP-EDIT-004 use `shouldFireIdleSave(editTimestamps, lastSaveTimestamp, debounceMs, nowMs)` to enumerate boundary cases. The property tests verify: for any sequence where the last element satisfies `lastEdit + debounceMs <= nowMs`, `shouldFireIdleSave` returns `true`.
+PROP-EDIT-003 / PROP-EDIT-004 use `shouldFireIdleSave` to enumerate boundary cases.
 
 ---
 
@@ -847,251 +1053,80 @@ For property tests in `debounceSchedule.property.test.ts`, PROP-EDIT-003 and PRO
 
 | ID | Summary |
 |---|---|
-| REQ-EDIT-001 | Body input dispatches EditNoteBody; sets isDirty=true in EditorViewState |
-| REQ-EDIT-002 | isDirty and idle timer reset after successful save |
-| REQ-EDIT-003 | Copy button disabled when Body.isEmptyAfterTrim is true |
-| REQ-EDIT-004 | Idle debounce timer fires TriggerIdleSave after IDLE_SAVE_DEBOUNCE_MS (2000ms) |
-| REQ-EDIT-005 | Idle timer cancelled after successful save |
-| REQ-EDIT-006 | Blur fires TriggerBlurSave when dirty, cancels idle timer |
-| REQ-EDIT-007 | Blur and idle do not both fire for the same dirty interval |
-| REQ-EDIT-008 | Blur does not dispatch TriggerBlurSave when state is already saving |
-| REQ-EDIT-009 | Idle state: editor collapsed, textarea non-interactive, Copy disabled |
-| REQ-EDIT-010 | Editing state: textarea interactive, dirty indicator shown when isDirty |
-| REQ-EDIT-011 | Saving state: save indicator shown, textarea remains editable, New Note enabled |
-| REQ-EDIT-012 | Switching state: textarea locked, Copy and New Note disabled |
-| REQ-EDIT-013 | Save-failed state: banner shown, textarea editable, Copy disabled, New Note enabled |
-| REQ-EDIT-014 | EditingSessionState mutations come only from domain layer via inbound event channel |
-| REQ-EDIT-015 | Save-failure banner rendered only in save-failed state |
-| REQ-EDIT-016 | Banner message derived from SaveError.kind per exact mapping table; empty-body-on-idle successor state is editing+isDirty=false |
-| REQ-EDIT-017 | Retry button dispatches RetrySave command |
-| REQ-EDIT-018 | Discard button dispatches DiscardCurrentSession command |
-| REQ-EDIT-019 | Cancel button dispatches CancelSwitch command |
-| REQ-EDIT-020 | Banner styled with Deep Shadow and orange accent per DESIGN.md |
-| REQ-EDIT-021 | Copy button dispatches CopyNoteBody when body is non-empty after trim |
-| REQ-EDIT-022 | Copy button disabled state: full 5-state matrix with correct attribute and aria treatment |
-| REQ-EDIT-023 | "+ 新規" button dispatches RequestNewNote with source: 'explicit-button'; enable matrix for all 5 states |
-| REQ-EDIT-024 | Ctrl+N / Cmd+N shortcut dispatches RequestNewNote; listener scoped to editor pane root |
-| REQ-EDIT-025 | New Note when editing+dirty: blur-save fires first; save-failed: direct dispatch without blur-save |
-| REQ-EDIT-026 | Every save command carries explicit source; 'idle'/'blur'/'switch'/'manual' MUST NOT be used |
-| REQ-EDIT-027 | Body validation errors displayed inline without blocking input; empty-body-on-idle successor state documented |
+| REQ-EDIT-001 | Block focus dispatches FocusBlock; focusedBlockId mirrored from snapshot |
+| REQ-EDIT-002 | focusedBlockId is read-only mirror; reducer authors no values |
+| REQ-EDIT-003 | EditBlockContent dispatched per input event in the focused Block |
+| REQ-EDIT-004 | isDirty reset and idle timer cancelled after successful save |
+| REQ-EDIT-005 | Copy disabled when isNoteEmpty=true (NoteOps.isEmpty) |
+| REQ-EDIT-006 | Enter at end of block dispatches InsertBlock (paragraph) |
+| REQ-EDIT-007 | Enter mid-block dispatches SplitBlock with caret offset |
+| REQ-EDIT-008 | Backspace at offset 0 of non-first block dispatches MergeBlocks |
+| REQ-EDIT-009 | Empty-block Backspace/Delete dispatches RemoveBlock (gated against last block) |
+| REQ-EDIT-010 | Slash menu / Markdown shortcut dispatches ChangeBlockType |
+| REQ-EDIT-011 | Drag / Alt+Shift+Up/Down dispatches MoveBlock |
+| REQ-EDIT-012 | Idle debounce timer (IDLE_SAVE_DEBOUNCE_MS=2000) |
+| REQ-EDIT-013 | Idle timer cancelled after successful save |
+| REQ-EDIT-014 | All-blocks blur fires TriggerBlurSave (capture-blur) |
+| REQ-EDIT-015 | Blur and idle do not both fire for the same dirty interval |
+| REQ-EDIT-016 | Blur does not fire while saving / switching |
+| REQ-EDIT-017 | Same-note block focus does not begin a switch |
+| REQ-EDIT-018 | Idle timer continues across same-note block moves |
+| REQ-EDIT-019 | Idle state: editor collapsed |
+| REQ-EDIT-020 | Editing state: focused block editable, dirty indicator |
+| REQ-EDIT-021 | Saving state: spinner, blocks remain editable, New Note enabled |
+| REQ-EDIT-022 | Switching state: blocks locked, Copy and New Note disabled |
+| REQ-EDIT-023 | Save-failed state: banner shown, blocks editable, Copy disabled, New Note enabled |
+| REQ-EDIT-024 | EditingSessionState mutations come only from domain via inbound channel |
+| REQ-EDIT-025 | Banner rendered only in save-failed |
+| REQ-EDIT-026 | Banner message derived from SaveError.kind per exact mapping |
+| REQ-EDIT-027 | Retry button dispatches RetrySave |
+| REQ-EDIT-028 | Discard button dispatches DiscardCurrentSession |
+| REQ-EDIT-029 | Cancel button dispatches CancelSwitch (restores prior focusedBlockId) |
+| REQ-EDIT-030 | Banner styled with Deep Shadow and orange accent |
+| REQ-EDIT-031 | Copy button dispatches CopyNoteBody when isNoteEmpty=false |
+| REQ-EDIT-032 | Copy button disabled state matrix (5 statuses × isNoteEmpty) |
+| REQ-EDIT-033 | New Note button dispatches RequestNewNote(source: 'explicit-button'); enable matrix for all 5 states |
+| REQ-EDIT-034 | Ctrl+N / Cmd+N dispatches RequestNewNote(source: 'ctrl-N'); listener scoped to editor pane root |
+| REQ-EDIT-035 | New Note while editing+dirty: blur-save first; save-failed: direct dispatch |
+| REQ-EDIT-036 | NewNoteAutoCreated auto-focuses firstBlockId via $effect |
+| REQ-EDIT-037 | Every save command carries explicit source ∈ {capture-idle, capture-blur} |
+| REQ-EDIT-038 | Block validation error display (BlockOperationError / BlockContentError / SaveValidationError) |
 
----
-
-## 14. Sprint 2 Extensions — Rust Backend Handlers + Tauri Event Emitter
-
-This section extends the `ui-editor` specification for **Sprint 2**, which completes the vertical slice by implementing the 8 Rust backend `#[tauri::command]` handlers and the `editing_session_state_changed` Tauri event emitter. Sprint 1 delivered all pure-core TypeScript modules, Svelte components, and the TS IPC adapter (`tauriEditorAdapter.ts`). Sprint 2 fills the Rust side so that `bun run tauri dev` produces working editor commands instead of "command not found" errors.
-
-**Scope**: Rust handlers in `promptnotes/src-tauri/src/editor.rs`, module registration in `lib.rs`, cargo integration tests in `promptnotes/src-tauri/tests/editor_handlers.rs`.
-
-**Out of scope**: Changes to `+page.svelte` (EditorPane already mounted), Svelte component changes, pure-core changes.
-
-### §14.1 Rust Command Handlers
-
-#### REQ-EDIT-028: `edit_note_body` Command
-
-**EARS**: WHEN the TS adapter invokes `edit_note_body` with `{ noteId, newBody, issuedAt, dirty }` THE SYSTEM SHALL acknowledge the body buffer update with `Ok(())` and perform NO side effects. The body buffer update is owned by the TypeScript editorReducer; the Rust side is a thin acknowledgement. The TS timer module controls debounce scheduling independently.
-
-**Acceptance Criteria**:
-- Returns `Ok(())` for any non-panicking input.
-- Does not write to disk, does not emit events.
-- The command is registered in `lib.rs` as `editor::edit_note_body`.
-
-**Edge Cases**:
-- Empty `newBody` string is accepted (body validation is a domain concern in TypeScript).
-- Very long body strings (up to ~5000 chars) must not cause stack overflow.
-
----
-
-#### REQ-EDIT-029: `trigger_idle_save` Command
-
-**EARS**: WHEN the TS adapter invokes `trigger_idle_save` with `{ noteId, body, issuedAt, source }` where `source === 'capture-idle'` THE SYSTEM SHALL write the body to the note file atomically via `fs_write_file_atomic` (REQ-EDIT-037), then emit an `editing_session_state_changed` event with an `EditingSessionStateDto` payload where `status === 'editing'`, `isDirty === false`, `currentNoteId === noteId`, and `body` matches the written content.
-
-**Acceptance Criteria**:
-- On successful write: emits `editing_session_state_changed` event with payload carrying `status: 'editing'` and `isDirty: false`.
-- On write failure: emits `editing_session_state_changed` event with payload carrying `status: 'save-failed'` and `lastError: { kind: 'fs', reason: { kind: '<mapped-error>' } }`.
-- The command returns `Ok(())` in both success and failure cases (errors are communicated via the event, not the command return).
-- Uses `AppHandle::emit` for event emission.
-
----
-
-#### REQ-EDIT-030: `trigger_blur_save` Command
-
-**EARS**: WHEN the TS adapter invokes `trigger_blur_save` with `{ noteId, body, issuedAt, source }` where `source === 'capture-blur'` THE SYSTEM SHALL behave identically to `trigger_idle_save` (REQ-EDIT-029): write atomically, then emit `editing_session_state_changed`.
-
-**Acceptance Criteria**:
-- Identical behaviour to REQ-EDIT-029, differing only in the `source` discriminator (logged/audited but not used for branching).
-- The `source` field does not change the write or emit behaviour.
-
----
-
-#### REQ-EDIT-031: `retry_save` Command
-
-**EARS**: WHEN the TS adapter invokes `retry_save` with `{ noteId, body, issuedAt }` THE SYSTEM SHALL re-attempt an atomic write of the body to the note file, then emit `editing_session_state_changed` with success/failure status (same emit pattern as REQ-EDIT-029).
-
-**Acceptance Criteria**:
-- On write success: emits `status: 'editing'`, `isDirty: false`.
-- On write failure: emits `status: 'save-failed'` with `lastError`.
-- Returns `Ok(())`.
-
----
-
-#### REQ-EDIT-032: `discard_current_session` Command
-
-**EARS**: WHEN the TS adapter invokes `discard_current_session` with `{ noteId, issuedAt }` THE SYSTEM SHALL discard the current editing session and emit `editing_session_state_changed` with `status: 'idle'`, `isDirty: false`, `currentNoteId: null`, `body: ''`, and `lastError: null`. No file write is performed.
-
-**Acceptance Criteria**:
-- Emits idle-state payload.
-- Does not write to disk.
-- Returns `Ok(())`.
-
----
-
-#### REQ-EDIT-033: `cancel_switch` Command
-
-**EARS**: WHEN the TS adapter invokes `cancel_switch` with `{ noteId, issuedAt }` THE SYSTEM SHALL return from `switching` state to `editing` by emitting `editing_session_state_changed` with `status: 'editing'`, `isDirty: true`, and `currentNoteId` set to the current note. No file write is performed.
-
-**Acceptance Criteria**:
-- Emits editing-state payload with `isDirty: true` (unsaved changes preserved).
-- Does not write to disk.
-- Returns `Ok(())`.
-
----
-
-#### REQ-EDIT-034: `copy_note_body` Command
-
-**EARS**: WHEN the TS adapter invokes `copy_note_body` with `{ noteId, body }` THE SYSTEM SHALL acknowledge the request with `Ok(())`. The Rust handler does NOT perform clipboard I/O — the TypeScript `clipboardAdapter.ts` handles `navigator.clipboard.writeText()` on the frontend side. The Rust side is a thin acknowledgement only.
-
-**Acceptance Criteria**:
-- Returns `Ok(())`.
-- Does not access the clipboard.
-- Does not emit events.
-- No OS-level clipboard API calls in Rust.
-
----
-
-#### REQ-EDIT-035: `request_new_note` Command
-
-**EARS**: WHEN the TS adapter invokes `request_new_note` with `{ source, issuedAt }` THE SYSTEM SHALL:
-1. Generate a new unique note ID using epoch-nanosecond timestamp (format: `{vault_path}/{timestamp_ns}.md`).
-2. Create an empty `.md` file with YAML frontmatter containing `createdAt` (current epoch ms), `updatedAt` (current epoch ms), and `tags: []`.
-3. Write the file atomically via `fs_write_file_atomic` (REQ-EDIT-037).
-4. Emit `editing_session_state_changed` with `status: 'editing'`, `isDirty: false`, `currentNoteId` set to the new note path, and `body: ''`.
-
-**Vault path resolution**: Uses `settings_load_impl()` (from `lib.rs`) to read the configured vault path. If no vault is configured, returns an error string.
-
-**Frontmatter format**:
-```yaml
----
-createdAt: <epoch_ms>
-updatedAt: <epoch_ms>
-tags: []
----
-```
-
-**Acceptance Criteria**:
-- Generates a unique file path within the vault directory.
-- Creates the file atomically with valid frontmatter.
-- On success: emits `editing_session_state_changed` with `status: 'editing'`, `currentNoteId` set to the new note's absolute path, `body: ''`.
-- On failure (no vault configured, disk full, permission denied): returns `Err(String)` with a descriptive message.
-- Does NOT use the `uuid` crate — timestamp-based IDs are sufficient.
-- Does NOT call `panic!` or `unwrap()`.
-
----
-
-### §14.2 Event Emit Rules
-
-#### REQ-EDIT-036: `editing_session_state_changed` Event Payload
-
-**EARS**: WHEN any handler emits the `editing_session_state_changed` event THE SYSTEM SHALL emit a payload of shape `{ state: EditingSessionStateDto }` where `EditingSessionStateDto` matches the TypeScript `EditingSessionState` type field-for-field with `serde(rename_all = "camelCase")`.
-
-**Payload structure**:
-```json
-{
-  "state": {
-    "status": "editing",
-    "isDirty": false,
-    "currentNoteId": "/path/to/vault/1234567890.md",
-    "pendingNextNoteId": null,
-    "lastError": null,
-    "body": ""
-  }
-}
-```
-
-**Acceptance Criteria**:
-- All field names are camelCase in the JSON payload.
-- `currentNoteId` and `pendingNextNoteId` are `null` (not absent, not `""`) when not set.
-- `lastError` is `null` (not absent) when no error.
-- The outer wrapper is `{ state: EditingSessionStateDto }` — matching `editorStateChannel.ts`'s `event.payload.state`.
-- Every emit uses `app.emit("editing_session_state_changed", payload)` with the `{ state: ... }` wrapper.
-
----
-
-### §14.3 Filesystem
-
-#### REQ-EDIT-037: `fs_write_file_atomic` Implementation
-
-**EARS**: WHEN any save handler needs to persist note body to disk THE SYSTEM SHALL write the content atomically using a tempfile + rename pattern:
-1. Write the full content to a temp file in the same directory as the target (e.g., `{target}.tmp.{random_suffix}`).
-2. `fsync` the temp file data (via `file.sync_all()`).
-3. Rename the temp file to the target path (std::fs::rename is atomic on same filesystem).
-
-**Error mapping** (io::ErrorKind → FsErrorDto `kind`):
-| io::ErrorKind | FsErrorDto.kind |
-|---|---|
-| `PermissionDenied` | `"permission"` |
-| `AlreadyExists` / `AddrInUse` | `"lock"` |
-| `StorageFull` / `WriteZero` / `TimedOut` | `"disk-full"` |
-| Any other | `"unknown"` |
-
-**Acceptance Criteria**:
-- On success, the target file contains exactly the written content.
-- On failure, the target file is NOT partially written (atomicity guarantee from rename).
-- The temp file is cleaned up on error (best-effort; missing cleanup is not a correctness issue).
-- No `unsafe` code.
-- No `unwrap()` or `expect()` — all Results are propagated.
-
----
-
-### §14.4 Cargo Integration Tests
-
-Sprint 2 adds a new test file: `promptnotes/src-tauri/tests/editor_handlers.rs`
-
-Tests cover:
-- DTO serialization correctness (serde camelCase roundtrip).
-- `fs_write_file_atomic` atomicity: partial write does not corrupt target file.
-- `EditingSessionStateDto` JSON shape matches the TypeScript `EditingSessionState` type.
-- `SaveErrorDto` and `FsErrorDto` tagged enum serialization.
-- Frontmatter generation for new notes.
-
----
-
-### §14.5 Requirement Index (Sprint 2)
+### Edge cases (EC-EDIT-XXX)
 
 | ID | Summary |
 |---|---|
-| REQ-EDIT-028 | `edit_note_body` command — thin ack, no side effects |
-| REQ-EDIT-029 | `trigger_idle_save` command — atomic write + emit |
-| REQ-EDIT-030 | `trigger_blur_save` command — atomic write + emit |
-| REQ-EDIT-031 | `retry_save` command — re-attempt atomic write + emit |
-| REQ-EDIT-032 | `discard_current_session` command — emit idle state |
-| REQ-EDIT-033 | `cancel_switch` command — emit editing state |
-| REQ-EDIT-034 | `copy_note_body` command — thin ack (clipboard in TS) |
-| REQ-EDIT-035 | `request_new_note` command — generate ID + create file + emit |
-| REQ-EDIT-036 | `editing_session_state_changed` event emit rules |
-| REQ-EDIT-037 | `fs_write_file_atomic` tempfile + rename pattern |
+| EC-EDIT-001 | Rapid typing burst >10s: only one save fires |
+| EC-EDIT-002 | All-blocks blur during in-flight save: no duplicate TriggerBlurSave |
+| EC-EDIT-003 | Save fails while user keeps typing: blocks remain editable, banner persists |
+| EC-EDIT-004 | Discard mid-flight: deferred to domain |
+| EC-EDIT-005 | Switch to another note via Block focus while dirty: switching path |
+| EC-EDIT-006 | Same-note block move: focusedBlockId update only, no flush |
+| EC-EDIT-007 | Empty note → non-empty (Copy enable transition) |
+| EC-EDIT-008 | Ctrl+N pressed while save-failed: direct RequestNewNote dispatch |
+| EC-EDIT-009 | Idle timer running across OS sleep: timer fires on resume |
+| EC-EDIT-010 | New Note attempted while saving: button enabled, domain queues |
+| EC-EDIT-011 | Backspace at start of first block: UI elides dispatch |
+| EC-EDIT-012 | SplitBlock vs InsertBlock: classifier returns 'insert' at end-of-block |
+| EC-EDIT-013 | Unknown Markdown shortcut prefix: no ChangeBlockType, normal EditBlockContent |
+| EC-EDIT-014 | SwitchError.pendingNextFocus: Cancel restores prior focusedBlockId |
 
-### Edge Cases (EC-EDIT-XXX)
+---
 
-| ID | Summary |
-|---|---|
-| EC-EDIT-001 | Rapid typing burst >10s: only one save fires after the user stops |
-| EC-EDIT-002 | Blur arrives while state is saving: no duplicate TriggerBlurSave |
-| EC-EDIT-003 | Save fails while user keeps typing: textarea stays editable, banner persists |
-| EC-EDIT-004 | Discard dispatched while save is mid-flight: deferred to domain |
-| EC-EDIT-005 | Note switch while dirty: switching state path, idle timer cancelled, New Note disabled |
-| EC-EDIT-006 | Empty body becomes non-empty (and vice versa): Copy button toggles reactively |
-| EC-EDIT-007 | Ctrl+N pressed in textarea: event.preventDefault, blur-save first if editing+dirty |
-| EC-EDIT-008 | Ctrl+N pressed while save-failed: direct RequestNewNote dispatch (no TriggerBlurSave), domain owns resolution |
-| EC-EDIT-009 | Idle timer running when OS sleeps/resumes: timer fires on resume, save dispatched |
-| EC-EDIT-010 | New Note attempted while state is saving: New Note button enabled, domain queues intent |
+## 14. Migration Notes from Sprint 1–6
+
+The previous (Sprint 1–6) `ui-editor` spec was anchored on a single textarea + `EditNoteBody` model. This Sprint 7 respec replaces that surface with the block-based contract introduced on `feature/inplace-edit-migration`. The substantive deltas:
+
+- `EditNoteBody` → 8 block-operation commands + `FocusBlock` (REQ-EDIT-001..011).
+- `NoteBodyEdited` Internal Event → 9 block-level Internal Events (`BlockFocused`, `BlockBlurred`, `EditorBlurredAllBlocks`, `BlockContentEdited`, `BlockInserted`, `BlockRemoved`, `BlocksMerged`, `BlockSplit`, `BlockTypeChanged`, `BlockMoved`).
+- `EditingState.focusedBlockId` and `EditingSessionTransitions.refocusBlockSameNote` become first-class spec concepts (REQ-EDIT-001 / 017 / 018).
+- `pendingNextNoteId` → `pendingNextFocus: { noteId, blockId }` (capture/states.ts L14).
+- `Body.isEmptyAfterTrim` → `note.isEmpty()` mirrored as `EditorViewState.isNoteEmpty` (RD-006).
+- New `BlockType` literal union (`paragraph | heading-1..3 | bullet | numbered | code | quote | divider`) drives slash menu and Markdown shortcut decisions (REQ-EDIT-010).
+- `serializeBlocksToMarkdown(note.blocks)` is the source of `body` for `SaveNoteRequested` / `bodyForClipboard`; the UI never re-implements serialisation.
+- `HydrationFailureReason` gains `'block-parse'`; `ui-editor` defers Hydration to `app-startup`.
+- `SwitchError.pendingNextFocus` carries `(noteId, blockId)`; the Cancel button restores the prior block (RD-018).
+
+The numbering of REQ / EC IDs has been re-issued to match the new logical layout (REQ-EDIT-001..038, EC-EDIT-001..014). Prior IDs are not preserved across the respec — implementation, tests, contracts, and Phase 5 audit artefacts will be re-keyed during Sprint 7 TDD.
+
+---
