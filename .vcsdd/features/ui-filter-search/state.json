@@ -2,7 +2,7 @@
   "featureName": "ui-filter-search",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "6",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -18,7 +18,7 @@
       "from": "1b",
       "to": "1a",
       "timestamp": "2026-05-06T05:00:00.000Z",
-      "reason": "adversary findings FIND-SPEC-FILTER-001..011 \u2014 spec revision required"
+      "reason": "adversary findings FIND-SPEC-FILTER-001..011 — spec revision required"
     },
     {
       "from": "1a",
@@ -30,7 +30,7 @@
       "from": "1b",
       "to": "1a",
       "timestamp": "2026-05-06T06:00:00.000Z",
-      "reason": "adversary iteration 2 findings FIND-SPEC-FILTER-012..015 \u2014 pinpoint spec re-revision required"
+      "reason": "adversary iteration 2 findings FIND-SPEC-FILTER-012..015 — pinpoint spec re-revision required"
     },
     {
       "from": "1a",
@@ -42,7 +42,7 @@
       "from": "1b",
       "to": "1a",
       "timestamp": "2026-05-06T07:00:00.000Z",
-      "reason": "adversary iteration 3 findings FIND-SPEC-FILTER-016..017 \u2014 PROP-FILTER-022 wrong EC category; tagAutocompleteVisibleFor guard regression"
+      "reason": "adversary iteration 3 findings FIND-SPEC-FILTER-016..017 — PROP-FILTER-022 wrong EC category; tagAutocompleteVisibleFor guard regression"
     },
     {
       "from": "1a",
@@ -67,19 +67,19 @@
       "from": "2a",
       "to": "2b",
       "timestamp": "2026-05-06T13:00:00.000Z",
-      "reason": "red phase PASS \u2014 8 test files written, all new tests fail, regression baseline passes; entering green phase"
+      "reason": "red phase PASS — 8 test files written, all new tests fail, regression baseline passes; entering green phase"
     },
     {
       "from": "2b",
       "to": "2c",
       "timestamp": "2026-05-06T13:45:00.000Z",
-      "reason": "green phase PASS \u2014 1650 bun tests pass, 248 DOM tests pass; all ui-filter-search target tests green; entering refactor phase"
+      "reason": "green phase PASS — 1650 bun tests pass, 248 DOM tests pass; all ui-filter-search target tests green; entering refactor phase"
     },
     {
       "from": "2c",
       "to": "ready-for-3",
       "timestamp": "2026-05-06T13:50:00.000Z",
-      "reason": "refactor PASS \u2014 extracted searchSortOf helper in feedReducer, removed dead filterApplied state in FeedList; all 1650 bun tests and 248 DOM tests remain green"
+      "reason": "refactor PASS — extracted searchSortOf helper in feedReducer, removed dead filterApplied state in FeedList; all 1650 bun tests and 248 DOM tests remain green"
     },
     {
       "from": "phase-3-feedback",
@@ -98,6 +98,18 @@
       "to": "5",
       "timestamp": "2026-05-06T14:30:01.000Z",
       "reason": "phase-3 adversary review PASS (iteration 2); all 5 dimensions PASS, 0 findings; advancing to formal hardening (phase 4 routing not needed — no open findings)"
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-06T15:00:01.000Z",
+      "reason": "phase-5 formal hardening PASS; all 25 PROP-FILTER obligations satisfied; entering convergence check"
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-06T15:30:00.000Z",
+      "reason": "phase-6 convergence PASS — 4 dimensions PASS, 0 open findings, all criteria covered, feature complete"
     }
   ],
   "iterations": {
@@ -374,6 +386,15 @@
           "BEAD-005"
         ],
         "status": "active"
+      },
+      {
+        "beadId": "BEAD-016",
+        "type": "convergence-phase-6",
+        "artifactPath": ".vcsdd/features/ui-filter-search/reviews/phase-6/output/convergence-report.md",
+        "linkedBeads": [
+          "BEAD-015"
+        ],
+        "status": "active"
       }
     ]
   },
@@ -439,10 +460,31 @@
         "securityAudit": "N/A — pure UI logic, no network/FS/subprocess",
         "evidencePath": ".vcsdd/features/ui-filter-search/verification/"
       }
+    },
+    "phase-6": {
+      "verdict": "PASS",
+      "recordedAt": "2026-05-06T15:30:00.000Z",
+      "dimensions": {
+        "finding_diminishment": "PASS",
+        "finding_specificity": "PASS",
+        "criteria_coverage": "PASS",
+        "duplicate_detection": "PASS"
+      },
+      "details": {
+        "specReviewFindingCounts": [11, 4, 2, 0],
+        "contractReviewFindingCounts": [10, 0],
+        "phase3FindingCounts": [7, 0],
+        "allCriteriaEvaluated": true,
+        "evaluatedCriteriaCount": 22,
+        "duplicateFindings": [],
+        "formalHardeningArtifacts": ["verification-report.md", "security-report.md", "purity-audit.md"],
+        "executionEvidenceFiles": ["verification/security-results/purity-grep-audit.txt"],
+        "convergenceReportPath": ".vcsdd/features/ui-filter-search/reviews/phase-6/output/convergence-report.md"
+      }
     }
   },
   "sprintCount": 1,
   "createdAt": "2026-05-06T03:38:06.107Z",
   "contractIteration": 2,
-  "updatedAt": "2026-05-06T15:00:00.000Z"
+  "updatedAt": "2026-05-06T15:30:00.000Z"
 }
