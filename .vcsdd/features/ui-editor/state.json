@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -254,6 +254,20 @@
       "timestamp": "2026-05-06T09:05:00Z",
       "reason": "Sprint 7 iter-5 adversary PASS — pending human approval",
       "sprint": 7
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-06T09:15:00Z",
+      "reason": "Sprint 7 — Phase 1c PASS (adversary + human); contract draft sprint-7.md ready",
+      "sprint": 7
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-06T09:30:00Z",
+      "reason": "Sprint 7 Red phase — failing tests in place",
+      "sprint": 7
     }
   ],
   "iterations": {
@@ -264,7 +278,7 @@
     "1a": 2,
     "1b": 2,
     "1c": 4,
-    "2a": 4,
+    "2a": 5,
     "2b": 5,
     "2c": 5,
     "complete": 2
@@ -422,6 +436,125 @@
       "required": true,
       "status": "proved",
       "artifact": "[PROP-EDIT-S2-007 sprint-2] promptnotes/src-tauri/tests/editor_handlers.rs::test_ack_handlers_no_side_effects"
+    },
+    {
+      "id": "PROP-EDIT-001",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-002",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-003",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-004",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/debounceSchedule.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-005",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-006",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-007",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-008",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-009",
+      "tier": 2,
+      "required": false,
+      "status": "skipped",
+      "artifact": "subsumed by PROP-EDIT-002"
+    },
+    {
+      "id": "PROP-EDIT-010",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-011",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-012",
+      "tier": 1,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-013",
+      "tier": 1,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-014",
+      "tier": 1,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-015",
+      "tier": 1,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-040",
+      "tier": 2,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts"
+    },
+    {
+      "id": "PROP-EDIT-042",
+      "tier": 1,
+      "required": true,
+      "status": "red",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts"
     }
   ],
   "traceability": {
@@ -1969,7 +2102,7 @@
       "humanVerdict": "PASS"
     }
   },
-  "sprintCount": 6,
+  "sprintCount": 7,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-06T09:10:00Z"
+  "updatedAt": "2026-05-06T09:30:00Z"
 }

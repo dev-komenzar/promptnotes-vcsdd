@@ -1,38 +1,37 @@
 /**
- * editor-session-state.dom.vitest.ts — PROP-EDIT-037, PROP-EDIT-039
+ * editor-session-state.dom.vitest.ts — Integration tests (vitest + jsdom + Svelte 5 mount API)
  *
- * REQ-EDIT-007, REQ-EDIT-009, REQ-EDIT-005
- * EC-EDIT-003 (save fails, user continues typing) — PROP-EDIT-037
- * EC-EDIT-005 (switching → back to editing re-enables textarea) — PROP-EDIT-039
+ * Sprint 7 Red phase. Tests FAIL because EditorPanel.svelte does not exist yet.
  *
- * Also covers FIND-007 (save-success inbound bridge):
- * - When inbound state transitions saving → editing with isDirty=false,
- *   timer.cancel() is called (idle timer cleared on save success).
- * - When inbound state transitions saving → save-failed, the banner appears.
- *
- * Also covers FIND-008 / REQ-EDIT-009:
- * - When status=idle, a placeholder message is visible in the DOM.
- *
- * RED phase: No idle placeholder is rendered; timer.cancel is not called on
- * save success inbound transition; inbound save-failed does not dispatch reducer action.
+ * Coverage:
+ *   PROP-EDIT-034 (REQ-EDIT-019): idle state UI
+ *   PROP-EDIT-035 (REQ-EDIT-020): editing state UI
+ *   PROP-EDIT-036 (REQ-EDIT-021): saving state UI
+ *   PROP-EDIT-037 (REQ-EDIT-022): switching state UI
+ *   PROP-EDIT-038 (REQ-EDIT-023): save-failed state UI
+ *   PROP-EDIT-048 (EC-EDIT-003): save-failed continued input
+ *   PROP-EDIT-050 (EC-EDIT-005, EC-EDIT-014): switching lock + Cancel priorFocusedBlockId
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { flushSync, mount, unmount } from 'svelte';
-import type { EditingSessionState } from '../../types.js';
+import { flushSync } from 'svelte';
+import type { EditorIpcAdapter, EditingSessionStateDto, SaveError } from '$lib/editor/types';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 
-import EditorPane from '../../EditorPane.svelte';
-import type { TauriEditorAdapter } from '../../tauriEditorAdapter.js';
-import type { EditorStateChannel } from '../../editorStateChannel.js';
-import type { DebounceTimer } from '../../debounceTimer.js';
-import type { ClipboardAdapter } from '../../clipboardAdapter.js';
-
-function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeof vi.fn>> {
-  return {
-    dispatchEditNoteBody: vi.fn().mockResolvedValue(undefined),
+function createMockAdapter() {
+  let _stateHandler: ((s: EditingSessionStateDto) => void) | null = null;
+  const adapter = {
+    dispatchFocusBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchEditBlockContent: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAfter: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAtBeginning: vi.fn().mockResolvedValue(undefined),
+    dispatchRemoveBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchMergeBlocks: vi.fn().mockResolvedValue(undefined),
+    dispatchSplitBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchChangeBlockType: vi.fn().mockResolvedValue(undefined),
+    dispatchMoveBlock: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerIdleSave: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerBlurSave: vi.fn().mockResolvedValue(undefined),
     dispatchRetrySave: vi.fn().mockResolvedValue(undefined),
@@ -40,304 +39,301 @@ function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeo
     dispatchCancelSwitch: vi.fn().mockResolvedValue(undefined),
     dispatchCopyNoteBody: vi.fn().mockResolvedValue(undefined),
     dispatchRequestNewNote: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
-type MockStateChannel = EditorStateChannel & { emit: (state: EditingSessionState) => void };
-
-function makeMockStateChannel(): MockStateChannel {
-  let _handler: ((s: EditingSessionState) => void) | null = null;
-  return {
-    subscribe(handler) {
-      _handler = handler;
-      return () => { _handler = null; };
-    },
-    emit(state) {
-      _handler?.(state);
+    subscribeToState: vi.fn((handler: (s: EditingSessionStateDto) => void) => {
+      _stateHandler = handler;
+      return () => { _stateHandler = null; };
+    }),
+    _emitState(state: EditingSessionStateDto) {
+      if (_stateHandler) _stateHandler(state);
     },
   };
+  return adapter;
 }
 
-function makeMockTimer(): DebounceTimer & Record<string, ReturnType<typeof vi.fn>> {
-  return {
-    scheduleIdleSave: vi.fn(),
-    cancel: vi.fn(),
-  };
-}
+let target: HTMLDivElement;
+let adapter: ReturnType<typeof createMockAdapter>;
 
-function makeMockClipboard(): ClipboardAdapter {
-  return { write: vi.fn().mockResolvedValue(undefined) };
-}
+beforeEach(() => {
+  target = document.createElement('div');
+  document.body.appendChild(target);
+  adapter = createMockAdapter();
+});
 
-const idleSnapshot: EditingSessionState = {
-  status: 'idle',
-  isDirty: false,
-  currentNoteId: null,
-  pendingNextNoteId: null,
-  lastError: null,
-  body: '',
-};
+afterEach(() => {
+  target.remove();
+  vi.clearAllMocks();
+});
 
-const savingSnapshot: EditingSessionState = {
-  status: 'saving',
-  isDirty: true,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: null,
-  lastError: null,
-  body: 'unsaved content',
-};
+const FS_PERMISSION_ERROR: SaveError = { kind: 'fs', reason: { kind: 'permission' } };
 
-const savedSnapshot: EditingSessionState = {
-  status: 'editing',
-  isDirty: false,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: null,
-  lastError: null,
-  body: 'saved content',
-};
+// ── PROP-EDIT-034 (REQ-EDIT-019): idle state ─────────────────────────────────
 
-const saveFailedSnapshot: EditingSessionState = {
-  status: 'save-failed',
-  isDirty: true,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: null,
-  lastError: { kind: 'fs', reason: { kind: 'permission' } },
-  body: 'unsaved content',
-};
-
-const switchingSnapshot: EditingSessionState = {
-  status: 'switching',
-  isDirty: true,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: 'note-002',
-  lastError: null,
-  body: 'content',
-};
-
-const editingAfterSwitchSnapshot: EditingSessionState = {
-  status: 'editing',
-  isDirty: false,
-  currentNoteId: 'note-002',
-  pendingNextNoteId: null,
-  lastError: null,
-  body: 'note 2 content',
-};
-
-describe('editor-session-state — PROP-EDIT-037 / PROP-EDIT-039', () => {
-  let target: HTMLDivElement;
-  let adapter: ReturnType<typeof makeMockAdapter>;
-  let stateChannel: MockStateChannel;
-
-  beforeEach(() => {
-    target = document.createElement('div');
-    document.body.appendChild(target);
-    adapter = makeMockAdapter();
-    stateChannel = makeMockStateChannel();
-  });
-
-  afterEach(() => {
-    document.body.innerHTML = '';
-    vi.restoreAllMocks();
-  });
-
-  // ── FIND-008 / REQ-EDIT-009: Idle placeholder ──
-
-  test('REQ-EDIT-009: When status=idle, a placeholder message is visible in the DOM', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
+describe('Idle state UI (PROP-EDIT-034, REQ-EDIT-019)', () => {
+  test('REQ-EDIT-019: in idle state, block tree is absent or contenteditable=false', () => {
+    adapter._emitState({ status: 'idle' });
     flushSync();
-
-    stateChannel.emit(idleSnapshot);
-    flushSync();
-
-    // The placeholder must be present — exact string from spec §3.4 / ui-fields §UI状態
-    // REQ-EDIT-009: "A placeholder message is visible (e.g., 'ノートを選択してください' or similar)"
-    // ui-fields.md §UI状態と型の対応: idle row: 「編集中ノートなし」
-    const placeholder = target.querySelector('[data-testid="idle-placeholder"]');
-    expect(placeholder).not.toBeNull();
-    // The placeholder text must be non-empty and communicate "no note selected"
-    expect(placeholder!.textContent?.trim().length).toBeGreaterThan(0);
-
-    unmount(app);
+    const blockEls = target.querySelectorAll('[data-testid="block-element"]');
+    // Either no blocks or all non-editable — either way placeholder has none
+    expect(blockEls.length).toBe(0); // FAILS: placeholder never emits blocks
   });
 
-  test('REQ-EDIT-009: Idle placeholder is absent when status=editing', () => {
-    const editingSnapshot: EditingSessionState = {
+  test('REQ-EDIT-019: in idle state, copy button is disabled', () => {
+    adapter._emitState({ status: 'idle' });
+    flushSync();
+    const btn = target.querySelector('[data-testid="copy-body-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.hasAttribute('disabled')).toBe(true);
+  });
+
+  test('REQ-EDIT-019: in idle state, placeholder message is visible', () => {
+    adapter._emitState({ status: 'idle' });
+    flushSync();
+    const placeholder = target.querySelector('[data-testid="editor-placeholder"]');
+    expect(placeholder).not.toBeNull(); // FAILS
+    expect(placeholder?.textContent).toContain('ノートを選択');
+  });
+
+  test('REQ-EDIT-019: in idle state, new-note button is enabled', () => {
+    adapter._emitState({ status: 'idle' });
+    flushSync();
+    const btn = target.querySelector('[data-testid="new-note-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.hasAttribute('disabled')).toBe(false);
+  });
+});
+
+// ── PROP-EDIT-035 (REQ-EDIT-020): editing state ──────────────────────────────
+
+describe('Editing state UI (PROP-EDIT-035, REQ-EDIT-020)', () => {
+  test('REQ-EDIT-020: in editing state, focused block element is contenteditable', () => {
+    adapter._emitState({
       status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: true,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+    });
+    flushSync();
+    const focusedBlock = target.querySelector('[data-block-id="block-1"]');
+    expect(focusedBlock).not.toBeNull(); // FAILS
+    expect(focusedBlock?.getAttribute('contenteditable')).toBe('true');
+  });
+
+  test('REQ-EDIT-020: in editing with isDirty=true, dirty indicator is present', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: true,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+    });
+    flushSync();
+    const dirtyIndicator = target.querySelector('[data-testid="dirty-indicator"]');
+    expect(dirtyIndicator).not.toBeNull(); // FAILS
+  });
+
+  test('REQ-EDIT-020: in editing with isNoteEmpty=false, copy button is enabled', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
       isDirty: false,
-      currentNoteId: 'note-001',
-      pendingNextNoteId: null,
-      lastError: null,
-      body: 'some content',
-    };
-
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
+    const btn = target.querySelector('[data-testid="copy-body-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.hasAttribute('disabled')).toBe(false);
+  });
+});
 
-    stateChannel.emit(editingSnapshot);
+// ── PROP-EDIT-036 (REQ-EDIT-021): saving state ───────────────────────────────
+
+describe('Saving state UI (PROP-EDIT-036, REQ-EDIT-021)', () => {
+  test('REQ-EDIT-021: in saving state, save indicator has aria-label containing 保存中', () => {
+    adapter._emitState({
+      status: 'saving',
+      currentNoteId: 'note-1',
+      isNoteEmpty: false,
+    });
     flushSync();
-
-    const placeholder = target.querySelector('[data-testid="idle-placeholder"]');
-    expect(placeholder).toBeNull();
-
-    unmount(app);
+    const indicator = target.querySelector('[role="status"]');
+    expect(indicator).not.toBeNull(); // FAILS
+    expect(indicator?.getAttribute('aria-label')).toContain('保存中');
   });
 
-  // ── FIND-007: Inbound state bridge for save success / failure ──
-
-  test('FIND-007/FIND-017: Inbound transition saving→editing(isDirty=false) cancels idle timer via executeCommand pathway', () => {
-    // FIND-017: timer.cancel() must be reached via:
-    //   stateChannel.subscribe callback
-    //   → dispatch({ kind: 'DomainSnapshotReceived', snapshot })
-    //   → reducer emits { kind: 'cancel-idle-timer' } (because isDirty=false)
-    //   → executeCommand({ kind: 'cancel-idle-timer' }) → timer.cancel()
-    // This is verified by observing that timer.cancel() is called after the snapshot
-    // arrives (behaviour is the same; the route is now through the reducer).
-    const timer = makeMockTimer();
-    vi.useFakeTimers();
-
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer,
-        clipboard: makeMockClipboard(),
-      },
+  test('REQ-EDIT-021: in saving state, block elements remain contenteditable', () => {
+    adapter._emitState({
+      status: 'saving',
+      currentNoteId: 'note-1',
+      isNoteEmpty: false,
     });
     flushSync();
-
-    // Start in saving state (timer was presumably scheduled)
-    stateChannel.emit(savingSnapshot);
-    flushSync();
-
-    (timer as unknown as Record<string, ReturnType<typeof vi.fn>>)['cancel'].mockClear();
-
-    // Simulate save success: domain transitions to editing+isDirty=false
-    stateChannel.emit(savedSnapshot);
-    flushSync();
-
-    // The idle timer must be cancelled when save succeeds (REQ-EDIT-005, FIND-017).
-    // The route is now: DomainSnapshotReceived → reducer cancel-idle-timer → executeCommand.
-    expect(timer.cancel).toHaveBeenCalled();
-
-    vi.useRealTimers();
-    unmount(app);
+    const blockEl = target.querySelector('[data-testid="block-element"]');
+    expect(blockEl).not.toBeNull(); // FAILS
+    expect(blockEl?.getAttribute('contenteditable')).toBe('true');
   });
 
-  test('FIND-007: Inbound transition saving→save-failed shows the save-failure banner', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('REQ-EDIT-021: EC-EDIT-010: new-note button is enabled in saving state', () => {
+    adapter._emitState({
+      status: 'saving',
+      currentNoteId: 'note-1',
+      isNoteEmpty: false,
     });
     flushSync();
+    const btn = target.querySelector('[data-testid="new-note-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.hasAttribute('disabled')).toBe(false);
+  });
+});
 
-    stateChannel.emit(savingSnapshot);
+// ── PROP-EDIT-037 (REQ-EDIT-022): switching state ────────────────────────────
+
+describe('Switching state UI (PROP-EDIT-037, REQ-EDIT-022)', () => {
+  test('REQ-EDIT-022: in switching state, block elements are contenteditable=false', () => {
+    adapter._emitState({
+      status: 'switching',
+      currentNoteId: 'note-1',
+      pendingNextFocus: { noteId: 'note-2', blockId: 'block-x' },
+      isNoteEmpty: false,
+    });
     flushSync();
-
-    let banner = target.querySelector('[data-testid="save-failure-banner"]');
-    expect(banner).toBeNull();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    banner = target.querySelector('[data-testid="save-failure-banner"]');
-    expect(banner).not.toBeNull();
-
-    unmount(app);
+    const blockEl = target.querySelector('[data-testid="block-element"]');
+    expect(blockEl).not.toBeNull(); // FAILS
+    expect(blockEl?.getAttribute('contenteditable')).toBe('false');
   });
 
-  // ── PROP-EDIT-037: EC-EDIT-003 — user continues typing while save-failed ──
-
-  test('PROP-EDIT-037: EC-EDIT-003 — typing in save-failed state dispatches EditNoteBody and schedules idle timer', () => {
-    const timer = makeMockTimer();
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer,
-        clipboard: makeMockClipboard(),
-      },
+  test('REQ-EDIT-022: in switching state, copy button is disabled', () => {
+    adapter._emitState({
+      status: 'switching',
+      currentNoteId: 'note-1',
+      pendingNextFocus: { noteId: 'note-2', blockId: 'block-x' },
+      isNoteEmpty: false,
     });
     flushSync();
+    const btn = target.querySelector('[data-testid="copy-body-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.hasAttribute('disabled')).toBe(true);
+  });
 
-    stateChannel.emit(saveFailedSnapshot);
+  test('REQ-EDIT-022: in switching state, new-note button is disabled', () => {
+    adapter._emitState({
+      status: 'switching',
+      currentNoteId: 'note-1',
+      pendingNextFocus: { noteId: 'note-2', blockId: 'block-x' },
+      isNoteEmpty: false,
+    });
     flushSync();
+    const btn = target.querySelector('[data-testid="new-note-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.hasAttribute('disabled')).toBe(true);
+  });
+});
 
-    // Banner should be visible
+// ── PROP-EDIT-038 (REQ-EDIT-023): save-failed state ──────────────────────────
+
+describe('Save-failed state UI (PROP-EDIT-038, REQ-EDIT-023)', () => {
+  test('REQ-EDIT-023: in save-failed state, save-failure-banner is visible', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: FS_PERMISSION_ERROR,
+      isNoteEmpty: false,
+    });
+    flushSync();
     const banner = target.querySelector('[data-testid="save-failure-banner"]');
-    expect(banner).not.toBeNull();
-
-    // Textarea should still accept input
-    const textarea = target.querySelector<HTMLTextAreaElement>('[data-testid="editor-body"]');
-    expect(textarea).not.toBeNull();
-    expect(textarea!.disabled).toBe(false);
-
-    textarea!.value = 'more content after failure';
-    textarea!.dispatchEvent(new Event('input', { bubbles: true }));
-    flushSync();
-
-    // EditNoteBody should have been dispatched
-    expect(adapter.dispatchEditNoteBody).toHaveBeenCalledOnce();
-
-    // FIND-016 / PROP-EDIT-037: idle timer must be scheduled in save-failed state
-    // (drives domain retry-gate machinery per EC-EDIT-003)
-    expect((timer as unknown as Record<string, ReturnType<typeof vi.fn>>)['scheduleIdleSave']).toHaveBeenCalled();
-
-    unmount(app);
+    expect(banner).not.toBeNull(); // FAILS
   });
 
-  // ── PROP-EDIT-039: EC-EDIT-005 — switching → editing re-enables textarea ──
-
-  test('PROP-EDIT-039: EC-EDIT-005 — after switching resolves to editing, textarea is re-enabled', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('REQ-EDIT-023: in save-failed state, block elements remain contenteditable', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: FS_PERMISSION_ERROR,
+      isNoteEmpty: false,
     });
     flushSync();
+    const blockEl = target.querySelector('[data-testid="block-element"]');
+    expect(blockEl).not.toBeNull(); // FAILS
+    expect(blockEl?.getAttribute('contenteditable')).toBe('true');
+  });
 
-    // Put in switching state: textarea should be locked
-    stateChannel.emit(switchingSnapshot);
+  test('REQ-EDIT-023: in save-failed state, new-note button is enabled', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: FS_PERMISSION_ERROR,
+      isNoteEmpty: false,
+    });
     flushSync();
+    const btn = target.querySelector('[data-testid="new-note-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.hasAttribute('disabled')).toBe(false);
+  });
+});
 
-    const textarea = target.querySelector<HTMLTextAreaElement>('[data-testid="editor-body"]');
-    expect(textarea).not.toBeNull();
-    expect(textarea!.disabled).toBe(true);
+// ── PROP-EDIT-048 (EC-EDIT-003): save-failed continued input ─────────────────
 
-    // Domain resolves switch: back to editing with new note
-    stateChannel.emit(editingAfterSwitchSnapshot);
+describe('Save-failed continued input (PROP-EDIT-048, EC-EDIT-003)', () => {
+  test('EC-EDIT-003: in save-failed state, continued input dispatches EditBlockContent and banner remains', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: FS_PERMISSION_ERROR,
+      isNoteEmpty: false,
+    });
     flushSync();
+    const blockEl = target.querySelector('[data-testid="block-element"]');
+    expect(blockEl).not.toBeNull(); // FAILS
+    blockEl?.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    flushSync();
+    expect(adapter.dispatchEditBlockContent).toHaveBeenCalledTimes(1);
+    // Banner should still be present
+    const banner = target.querySelector('[data-testid="save-failure-banner"]');
+    expect(banner).not.toBeNull(); // FAILS
+  });
+});
 
-    // Textarea should be re-enabled
-    expect(textarea!.disabled).toBe(false);
-    expect(textarea!.readOnly).toBe(false);
+// ── PROP-EDIT-050 (EC-EDIT-005, EC-EDIT-014): switching lock + Cancel restores focus
 
-    unmount(app);
+describe('Switching lock and Cancel (PROP-EDIT-050, EC-EDIT-005, EC-EDIT-014)', () => {
+  test('EC-EDIT-005: in switching state, block tree is locked (contenteditable=false)', () => {
+    adapter._emitState({
+      status: 'switching',
+      currentNoteId: 'note-1',
+      pendingNextFocus: { noteId: 'note-2', blockId: 'block-x' },
+      isNoteEmpty: false,
+    });
+    flushSync();
+    const blockEl = target.querySelector('[data-testid="block-element"]');
+    expect(blockEl).not.toBeNull(); // FAILS
+    expect(blockEl?.getAttribute('contenteditable')).toBe('false');
+  });
+
+  test('EC-EDIT-014: Cancel in save-failed restores focusedBlockId=priorFocusedBlockId', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-prior',
+      pendingNextFocus: null,
+      lastSaveError: FS_PERMISSION_ERROR,
+      isNoteEmpty: false,
+    });
+    flushSync();
+    const cancelBtn = target.querySelector('[data-testid="cancel-switch-button"]');
+    expect(cancelBtn).not.toBeNull(); // FAILS
+    cancelBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(adapter.dispatchCancelSwitch).toHaveBeenCalledTimes(1);
   });
 });

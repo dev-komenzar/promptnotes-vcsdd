@@ -1,0 +1,101 @@
+new-feature-tests: FAIL
+
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, BlockContentEdited) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, BlockFocused) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, EditorBlurredAllBlocks) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, TriggerIdleSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, TriggerBlurSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, RetrySaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, DiscardCurrentSessionRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, CancelSwitchRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, CopyNoteBodyRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(idle, RequestNewNoteRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, BlockContentEdited) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, BlockFocused) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, EditorBlurredAllBlocks) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, TriggerIdleSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, TriggerBlurSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, RetrySaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, DiscardCurrentSessionRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, CancelSwitchRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, CopyNoteBodyRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(editing, RequestNewNoteRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, BlockContentEdited) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, BlockFocused) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, EditorBlurredAllBlocks) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, TriggerIdleSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, TriggerBlurSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, RetrySaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, DiscardCurrentSessionRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, CancelSwitchRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, CopyNoteBodyRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(saving, RequestNewNoteRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, BlockContentEdited) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, BlockFocused) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, EditorBlurredAllBlocks) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, TriggerIdleSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, TriggerBlurSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, RetrySaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, DiscardCurrentSessionRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, CancelSwitchRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, CopyNoteBodyRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(switching, RequestNewNoteRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, BlockContentEdited) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, BlockFocused) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, EditorBlurredAllBlocks) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, TriggerIdleSaveRequested) returns valid { state, commands } [1.00ms]
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, TriggerBlurSaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, RetrySaveRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, DiscardCurrentSessionRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, CancelSwitchRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, CopyNoteBodyRequested) returns valid { state, commands }
+(fail) editorReducer totality (PROP-EDIT-007, REQ-EDIT-019..023) > REQ-EDIT-019..023: reducer(save-failed, RequestNewNoteRequested) returns valid { state, commands }
+(fail) editorReducer purity (PROP-EDIT-008, REQ-EDIT-024) > REQ-EDIT-024: same inputs produce deep-equal outputs (deterministic)
+(fail) editorReducer purity (PROP-EDIT-008, REQ-EDIT-024) > REQ-EDIT-024: original state is not mutated by reducer
+(fail) NoteFileSaved transitions (PROP-EDIT-012, REQ-EDIT-004, REQ-EDIT-013) > REQ-EDIT-004: NoteFileSaved sets isDirty=false
+(fail) NoteFileSaved transitions (PROP-EDIT-012, REQ-EDIT-004, REQ-EDIT-013) > REQ-EDIT-013: saving→editing snapshot emits cancel-idle-timer
+(fail) NoteFileSaved transitions (PROP-EDIT-012, REQ-EDIT-004, REQ-EDIT-013) > REQ-EDIT-004: isDirty remains true on save-failed snapshot
+(fail) EditorBlurredAllBlocks in saving/switching (PROP-EDIT-013, REQ-EDIT-016, EC-EDIT-002) > EC-EDIT-002: EditorBlurredAllBlocks while saving returns commands=[] (no trigger-blur-save)
+(fail) EditorBlurredAllBlocks in saving/switching (PROP-EDIT-013, REQ-EDIT-016, EC-EDIT-002) > EC-EDIT-002: EditorBlurredAllBlocks while switching returns commands=[] (no trigger-blur-save)
+(fail) DomainSnapshotReceived focusedBlockId mirroring (PROP-EDIT-014, REQ-EDIT-001, REQ-EDIT-002) > REQ-EDIT-001: editing snapshot mirrors focusedBlockId
+(fail) DomainSnapshotReceived focusedBlockId mirroring (PROP-EDIT-014, REQ-EDIT-001, REQ-EDIT-002) > REQ-EDIT-002: no action other than DomainSnapshotReceived overwrites focusedBlockId
+(fail) DomainSnapshotReceived focusedBlockId mirroring (PROP-EDIT-014, REQ-EDIT-001, REQ-EDIT-002) > REQ-EDIT-023: save-failed snapshot copies priorFocusedBlockId to focusedBlockId
+
+--- bun test summary ---
+ 1523 pass
+ 170 fail
+Ran 1693 tests across 140 files. [16.89s]
+
+regression-baseline: PASS
+(non-editor tests: 1523 pass, 0 fail outside editor scope)
+
+--- bun run test:dom summary ---
+⎯⎯⎯⎯⎯⎯ Failed Tests 85 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  8 failed | 10 passed (18)
+      Tests  85 failed | 130 passed (215)
+
+--- DOM failures sample (all from new editor tests) ---
+ FAIL  src/lib/editor/__tests__/dom/block-drag-handle.dom.vitest.ts > Block drag handle (PROP-EDIT-031, REQ-EDIT-011) > REQ-EDIT-011: dragging block to new position dispatches MoveBlock{toIndex}
+ FAIL  src/lib/editor/__tests__/dom/block-drag-handle.dom.vitest.ts > Block drag handle (PROP-EDIT-031, REQ-EDIT-011) > REQ-EDIT-011: MoveBlock toIndex is within [0, blocks.length)
+ FAIL  src/lib/editor/__tests__/dom/block-drag-handle.dom.vitest.ts > Block drag handle (PROP-EDIT-031, REQ-EDIT-011) > REQ-EDIT-011: Alt+Shift+Up dispatches MoveBlock for the focused block
+ FAIL  src/lib/editor/__tests__/dom/block-drag-handle.dom.vitest.ts > Block drag handle (PROP-EDIT-031, REQ-EDIT-011) > REQ-EDIT-011: Alt+Shift+Down dispatches MoveBlock for the focused block
+ FAIL  src/lib/editor/__tests__/dom/block-drag-handle.dom.vitest.ts > Block drag handle (PROP-EDIT-031, REQ-EDIT-011) > REQ-EDIT-011: drag preview element is removed from DOM after drop
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Block focus and input dispatch (PROP-EDIT-025, REQ-EDIT-001, REQ-EDIT-003) > REQ-EDIT-001: clicking a block element dispatches FocusBlock once
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Block focus and input dispatch (PROP-EDIT-025, REQ-EDIT-001, REQ-EDIT-003) > REQ-EDIT-003: oninput event in a block dispatches EditBlockContent with full content
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Block focus and input dispatch (PROP-EDIT-025, REQ-EDIT-001, REQ-EDIT-003) > REQ-EDIT-003: each input event dispatches exactly one EditBlockContent
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Enter at end of block (PROP-EDIT-026, REQ-EDIT-006) > REQ-EDIT-006: Enter at end of non-empty block dispatches InsertBlock with atBeginning=false
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Enter at end of block (PROP-EDIT-026, REQ-EDIT-006) > REQ-EDIT-006: InsertBlock carries prevBlockId matching focused block
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Enter mid-block (PROP-EDIT-027, REQ-EDIT-007) > REQ-EDIT-007: Enter mid-block dispatches SplitBlock with caret offset
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Backspace at offset 0 (PROP-EDIT-028, REQ-EDIT-008, EC-EDIT-011) > REQ-EDIT-008: Backspace at offset 0 of non-first block dispatches MergeBlocks
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Backspace at offset 0 (PROP-EDIT-028, REQ-EDIT-008, EC-EDIT-011) > EC-EDIT-011: Backspace at offset 0 of first block dispatches nothing
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Backspace/Delete on empty block (PROP-EDIT-029, REQ-EDIT-009) > REQ-EDIT-009: Backspace on empty non-last block dispatches RemoveBlock
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Backspace/Delete on empty block (PROP-EDIT-029, REQ-EDIT-009) > REQ-EDIT-009: Backspace on the only block dispatches nothing
+ FAIL  src/lib/editor/__tests__/dom/block-element.dom.vitest.ts > Backspace/Delete on empty block (PROP-EDIT-029, REQ-EDIT-009) > REQ-EDIT-009: Delete on empty non-last block dispatches RemoveBlock
+ FAIL  src/lib/editor/__tests__/dom/editor-accessibility.dom.vitest.ts > Keyboard reachability (PROP-EDIT-044, NFR-EDIT-001) > NFR-EDIT-001: block elements have non-negative tabIndex when enabled
+ FAIL  src/lib/editor/__tests__/dom/editor-accessibility.dom.vitest.ts > Keyboard reachability (PROP-EDIT-044, NFR-EDIT-001) > NFR-EDIT-001: copy button is keyboard-reachable (tabIndex >= 0) when enabled
+ FAIL  src/lib/editor/__tests__/dom/editor-accessibility.dom.vitest.ts > Keyboard reachability (PROP-EDIT-044, NFR-EDIT-001) > NFR-EDIT-001: new-note button is keyboard-reachable when enabled
+ FAIL  src/lib/editor/__tests__/dom/editor-accessibility.dom.vitest.ts > ARIA roles and live regions (PROP-EDIT-044, NFR-EDIT-002) > NFR-EDIT-002: save indicator has role=status in saving state
+
+--- svelte-check (acceptable Red phase failures scoped to EditorPane.svelte legacy component) ---
+EditorPane.svelte: legacy component references removed fields (body, lastError, old action kinds)
+Failure is contained to editor scope. Pre-existing feed-preview errors unrelated to Sprint 7.

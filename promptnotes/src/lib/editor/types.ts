@@ -1,9 +1,16 @@
 /**
- * types.ts — ui-editor Sprint 1 pure-core type definitions
+ * types.ts — ui-editor Sprint 7 type definitions (block-based)
  *
- * All types here are compile-time only (no runtime logic). They constitute
- * the contract between editorReducer, editorPredicates, debounceSchedule, and
- * the effectful shell (Sprint 2).
+ * Type-only file: no runtime logic. Defines the contracts between the pure
+ * editorReducer, editorPredicates, debounceSchedule, and the effectful shell.
+ *
+ * Source of truth:
+ *   - behavioral-spec.md §3.6a, §10, §11
+ *   - verification-architecture.md §2, §10
+ *   - docs/domain/code/ts/src/shared/value-objects.ts (BlockType)
+ *   - docs/domain/code/ts/src/shared/errors.ts (SaveError, FsError, SaveValidationError)
+ *   - docs/domain/code/ts/src/capture/commands.ts (CaptureCommand shapes)
+ *   - docs/domain/code/ts/src/capture/states.ts (EditingSessionState)
  *
  * NO forbidden APIs may appear here:
  * Math.random, crypto, performance, window, globalThis, self, document,
@@ -12,6 +19,23 @@
  * clearTimeout, clearInterval, Date.now, Date(, new Date, $state, $effect,
  * $derived, import.meta, invoke(, @tauri-apps/api
  */
+
+// ── BlockType ─────────────────────────────────────────────────────────────────
+
+/**
+ * The 9 BlockType literals from shared/value-objects.ts.
+ * Re-exported here for UI-layer use.
+ */
+export type BlockType =
+  | 'paragraph'
+  | 'heading-1'
+  | 'heading-2'
+  | 'heading-3'
+  | 'bullet'
+  | 'numbered'
+  | 'code'
+  | 'quote'
+  | 'divider';
 
 // ── Status enum ───────────────────────────────────────────────────────────────
 
@@ -24,38 +48,34 @@ export type EditingSessionStatus =
 
 // ── Source literals ──────────────────────────────────────────────────────────
 
-/** Domain enum values for save-trigger origin (domain-events.md:115). */
-export type SaveSource = 'capture-idle' | 'capture-blur';
+/** Domain enum subset for save-trigger origin (shared/events.ts SaveNoteSource). */
+export type EditorCommandSaveSource = 'capture-idle' | 'capture-blur';
 
-/** Source alias re-exported for use in PROP-EDIT-002/009 assertions. */
-export type EditorCommandSaveSource = SaveSource;
-
-/** Source for new-note requests (ui-fields.md §1A source discriminant). */
+/** Source for new-note requests (capture/commands.ts RequestNewNote.source). */
 export type NewNoteSource = 'explicit-button' | 'ctrl-N';
 
 // ── SaveError ────────────────────────────────────────────────────────────────
 
 /**
- * FsError variants matching behavioral-spec.md REQ-EDIT-016 and
- * workflows.md §Workflow 2 エラーカタログ.
+ * FsError variants matching shared/errors.ts.
+ * 5 variants: permission, disk-full, lock, not-found, unknown.
  */
 export type FsError =
   | { kind: 'permission' }
   | { kind: 'disk-full' }
   | { kind: 'lock' }
+  | { kind: 'not-found' }
   | { kind: 'unknown' };
 
 /**
- * SaveValidationError variants from behavioral-spec.md REQ-EDIT-016 and
- * verification-architecture.md §3 Tier 0 (exhaustive switch obligation).
- * Also matches aggregates.md SaveError references.
+ * SaveValidationError variants from shared/errors.ts.
  */
 export type SaveValidationError =
   | { kind: 'empty-body-on-idle' }
   | { kind: 'invariant-violated' };
 
 /**
- * SaveError discriminated union.
+ * SaveError discriminated union (shared/errors.ts).
  * - `{ kind: 'fs', reason: FsError }` — file-system error; banner shown.
  * - `{ kind: 'validation', reason: SaveValidationError }` — silent; no banner.
  */
@@ -63,206 +83,202 @@ export type SaveError =
   | { kind: 'fs'; reason: FsError }
   | { kind: 'validation'; reason: SaveValidationError };
 
+// ── PendingNextFocus ──────────────────────────────────────────────────────────
+
+/** capture/states.ts PendingNextFocus equivalent. */
+export type PendingNextFocus = {
+  noteId: string;
+  blockId: string;
+};
+
+// ── EditingSessionStateDto ────────────────────────────────────────────────────
+
+/**
+ * 5-arm discriminated union DTO for the inbound EditingSessionState snapshot.
+ * behavioral-spec.md §10; PROP-EDIT-040.
+ *
+ * Per-variant field sets (from §10):
+ * - 'idle': only status
+ * - 'editing': status, currentNoteId, focusedBlockId, isDirty, isNoteEmpty, lastSaveResult
+ * - 'saving': status, currentNoteId, isNoteEmpty
+ * - 'switching': status, currentNoteId, pendingNextFocus, isNoteEmpty
+ * - 'save-failed': status, currentNoteId, priorFocusedBlockId, pendingNextFocus, lastSaveError, isNoteEmpty
+ *
+ * Note: priorFocusedBlockId is a DTO-only projection field on the save-failed arm
+ * (behavioral-spec.md §10, §3.6a, PROP-EDIT-014).
+ */
+export type EditingSessionStateDto =
+  | { status: 'idle' }
+  | {
+      status: 'editing';
+      currentNoteId: string;
+      focusedBlockId: string | null;
+      isDirty: boolean;
+      isNoteEmpty: boolean;
+      lastSaveResult: 'success' | null;
+    }
+  | {
+      status: 'saving';
+      currentNoteId: string;
+      isNoteEmpty: boolean;
+    }
+  | {
+      status: 'switching';
+      currentNoteId: string;
+      pendingNextFocus: PendingNextFocus;
+      isNoteEmpty: boolean;
+    }
+  | {
+      status: 'save-failed';
+      currentNoteId: string;
+      /** DTO-only projection: the focusedBlockId at the moment the save failed. */
+      priorFocusedBlockId: string | null;
+      pendingNextFocus: PendingNextFocus | null;
+      lastSaveError: SaveError;
+      isNoteEmpty: boolean;
+    };
+
 // ── EditorViewState ──────────────────────────────────────────────────────────
 
 /**
- * UI-side projection of EditingSessionState (behavioral-spec.md §3.4a).
- * Owned by the pure editorReducer; never mutated directly by components.
- * Always converges to the domain's EditingSessionState within one inbound
- * event cycle.
+ * UI-side projection of EditingSessionState (behavioral-spec.md §3.6a).
+ * Owned exclusively by the pure editorReducer; never mutated directly by components.
+ * Converges to the domain's EditingSessionState within one inbound event cycle.
+ *
+ * Fields per behavioral-spec.md §3.6a and verification-architecture.md §2.
  */
 export type EditorViewState = {
   /** Maps 1:1 to EditingSessionState.status. */
   status: EditingSessionStatus;
-  /** True when body has unsaved changes. Cleared on NoteFileSaved. */
+  /** True when blocks have unsaved changes. Cleared on NoteFileSaved. */
   isDirty: boolean;
   /** NoteId of the currently active note; null when idle. */
   currentNoteId: string | null;
-  /** Raw string body for the textarea; '' when idle. */
-  body: string;
-  /** NoteId of a pending next note (during switching/save-failed). */
-  pendingNextNoteId: string | null;
-  /** Last save error; non-null only when status === 'save-failed'. */
-  lastError: SaveError | null;
   /**
-   * REQ-EDIT-025: Deferred new-note intent set when +新規 / Ctrl+N fires while
-   * saving. Drained by the reducer when DomainSnapshotReceived shows the domain
-   * has left 'saving'. Null when no intent is pending.
+   * focusedBlockId: from editing.focusedBlockId or save-failed.priorFocusedBlockId
+   * per PROP-EDIT-014. Null when idle/saving/switching.
    */
-  pendingNewNoteIntent: { source: NewNoteSource; issuedAt: string } | null;
-};
-
-// ── EditingSessionState ──────────────────────────────────────────────────────
-
-/**
- * Rust-domain canonical state (aggregates.md §CaptureSession).
- * The TypeScript layer never constructs this — it arrives via the inbound
- * editorStateChannel as a DomainSnapshotReceived payload.
- *
- * Only the fields mirrored by EditorViewState are typed here; the Rust
- * domain may carry additional fields that the UI ignores.
- */
-export type EditingSessionState = {
-  status: EditingSessionStatus;
-  isDirty: boolean;
-  currentNoteId: string | null;
-  pendingNextNoteId: string | null;
-  lastError: SaveError | null;
-  body: string;
+  focusedBlockId: string | null;
+  /** Pending next focus target (switching/save-failed states). */
+  pendingNextFocus: PendingNextFocus | null;
+  /** True when the note has only one empty paragraph block. */
+  isNoteEmpty: boolean;
+  /** Last save error; non-null only when status === 'save-failed'. */
+  lastSaveError: SaveError | null;
+  /**
+   * Last save result from editing arm DTO. null for all other statuses.
+   * Informs the dirty indicator and post-save banner UX.
+   */
+  lastSaveResult: 'success' | null;
 };
 
 // ── EditorAction ─────────────────────────────────────────────────────────────
 
 /**
- * Closed 11-variant discriminated union accepted by editorReducer.
- * The reducer must be TOTAL over EditorAction.kind × EditingSessionStatus
- * (11 × 5 = 55 cells). Adding a variant without handling it in the reducer
- * switch is a TypeScript compile error (exhaustive never branch required).
+ * Discriminated union accepted by editorReducer (verification-architecture.md §3 Tier 0).
  *
- * Source: sprint-1 contract §2, behavioral-spec.md §3.
+ * Block-level action set for the block-based editor model.
+ * The reducer must be total over EditorAction.kind × EditingSessionStatus.
  */
 export type EditorAction =
-  /**
-   * REQ-EDIT-001: User keystroke — carries new body string.
-   * Produced by the textarea oninput handler in EditorPanel.svelte (Sprint 2).
-   * noteId and issuedAt are supplied by the impure shell (pure modules must
-   * not call Date.now()).
-   */
-  | { kind: 'NoteBodyEdited'; payload: { newBody: string; noteId: string; issuedAt: string } }
-
-  /**
-   * REQ-EDIT-006: Textarea blur event while isDirty === true.
-   * Produced by EditorPanel.svelte onblur handler (Sprint 2).
-   * noteId, body, issuedAt supplied by the impure shell.
-   */
-  | { kind: 'BlurEvent'; payload: { noteId: string; body: string; issuedAt: string } }
-
-  /**
-   * REQ-EDIT-004: Idle debounce timer fired.
-   * Produced by timerModule.ts callback (Sprint 2).
-   * nowMs is the current clock time (supplied by the impure shell).
-   */
-  | { kind: 'IdleTimerFired'; payload: { nowMs: number; noteId: string; body: string; issuedAt: string } }
-
-  /**
-   * REQ-EDIT-014: Inbound domain state snapshot.
-   * Produced by editorStateChannel.ts listen callback (Sprint 2).
-   */
-  | { kind: 'DomainSnapshotReceived'; snapshot: EditingSessionState }
-
-  /**
-   * REQ-EDIT-002, REQ-EDIT-005: Domain signals successful save.
-   * Produced by the save result handler in the impure shell (Sprint 2).
-   */
-  | { kind: 'NoteFileSaved'; payload: { noteId: string; savedAt: string } }
-
-  /**
-   * REQ-EDIT-002 (failed path): Domain signals save failure.
-   * Produced by the save result handler in the impure shell (Sprint 2).
-   */
-  | { kind: 'NoteSaveFailed'; payload: { noteId: string; error: SaveError } }
-
-  /**
-   * REQ-EDIT-017: Retry button click in save-failed state.
-   * Produced by SaveFailureBanner.svelte (Sprint 2).
-   * issuedAt is supplied by the impure shell (pure modules must not call Date.now()).
-   */
-  | { kind: 'RetryClicked'; payload: { issuedAt: string } }
-
-  /**
-   * REQ-EDIT-018: Discard button click in save-failed state.
-   * Produced by SaveFailureBanner.svelte (Sprint 2).
-   */
-  | { kind: 'DiscardClicked' }
-
-  /**
-   * REQ-EDIT-019: Cancel button click in save-failed state.
-   * Produced by SaveFailureBanner.svelte (Sprint 2).
-   */
-  | { kind: 'CancelClicked' }
-
-  /**
-   * REQ-EDIT-021: Copy button click.
-   * Produced by EditorPanel.svelte (Sprint 2).
-   * noteId and body are supplied by the impure shell.
-   */
-  | { kind: 'CopyClicked'; payload: { noteId: string; body: string } }
-
-  /**
-   * REQ-EDIT-023, REQ-EDIT-024: New Note button or Ctrl+N shortcut.
-   * Produced by EditorPanel.svelte (Sprint 2).
-   * issuedAt is supplied by the impure shell.
-   */
-  | { kind: 'NewNoteClicked'; payload: { source: NewNoteSource; issuedAt: string } };
+  // Block content actions
+  | { kind: 'BlockContentEdited';   payload: { noteId: string; blockId: string; content: string; issuedAt: string } }
+  | { kind: 'BlockInserted';        payload: { noteId: string; blockId: string; issuedAt: string } }
+  | { kind: 'BlockRemoved';         payload: { noteId: string; blockId: string; issuedAt: string } }
+  | { kind: 'BlocksMerged';         payload: { noteId: string; survivorBlockId: string; issuedAt: string } }
+  | { kind: 'BlockSplit';           payload: { noteId: string; newBlockId: string; issuedAt: string } }
+  | { kind: 'BlockTypeChanged';     payload: { noteId: string; blockId: string; newType: BlockType; issuedAt: string } }
+  | { kind: 'BlockMoved';           payload: { noteId: string; blockId: string; toIndex: number; issuedAt: string } }
+  // Focus actions
+  | { kind: 'BlockFocused';         payload: { noteId: string; blockId: string; issuedAt: string } }
+  | { kind: 'BlockBlurred';         payload: { noteId: string; blockId: string; issuedAt: string } }
+  | { kind: 'EditorBlurredAllBlocks'; payload: { noteId: string; issuedAt: string } }
+  // Domain snapshot
+  | { kind: 'DomainSnapshotReceived'; snapshot: EditingSessionStateDto }
+  // Save actions
+  | { kind: 'TriggerIdleSaveRequested';   payload: { noteId: string; issuedAt: string } }
+  | { kind: 'TriggerBlurSaveRequested';   payload: { noteId: string; issuedAt: string } }
+  | { kind: 'RetrySaveRequested';         payload: { noteId: string; issuedAt: string } }
+  | { kind: 'DiscardCurrentSessionRequested'; payload: { noteId: string; issuedAt: string } }
+  | { kind: 'CancelSwitchRequested';      payload: { noteId: string; issuedAt: string } }
+  // Copy and new-note
+  | { kind: 'CopyNoteBodyRequested';      payload: { noteId: string; issuedAt: string } }
+  | { kind: 'RequestNewNoteRequested';    payload: { source: NewNoteSource; issuedAt: string } };
 
 // ── EditorCommand ─────────────────────────────────────────────────────────────
 
 /**
- * Closed 9-variant discriminated union output by editorReducer.
- * Consumed exclusively by the impure shell (Sprint 2).
+ * 17-variant discriminated union output by editorReducer (verification-architecture.md §10).
+ * Consumed exclusively by the impure shell.
+ *
+ * 16 IPC variants + 1 local-effect variant (cancel-idle-timer).
  * The shell must handle every variant via an exhaustive switch on kind.
- *
- * Source: verification-architecture.md §10 (FIND-023 augmented payloads).
- *
- * Pure modules MUST NOT call Date.now() — issuedAt is supplied by the
- * impure shell in the inbound EditorAction payload and passed through here.
  */
 export type EditorCommand =
-  /**
-   * Dispatch EditNoteBody to the domain.
-   * noteId and issuedAt come from the triggering NoteBodyEdited action payload.
-   */
-  | { kind: 'edit-note-body'; payload: { noteId: string; newBody: string; issuedAt: string; dirty: true } }
-
-  /**
-   * Dispatch TriggerIdleSave to the domain.
-   * source is always 'capture-idle' (classifySource('idle')).
-   */
-  | { kind: 'trigger-idle-save'; payload: { source: 'capture-idle'; noteId: string; body: string; issuedAt: string } }
-
-  /**
-   * Dispatch TriggerBlurSave to the domain.
-   * source is always 'capture-blur' (classifySource('blur')).
-   */
-  | { kind: 'trigger-blur-save'; payload: { source: 'capture-blur'; noteId: string; body: string; issuedAt: string } }
-
-  /**
-   * Signal to the impure shell: call clearTimeout on the pending idle timer.
-   * Emitted when NoteFileSaved is received (PROP-EDIT-010 / CRIT-008).
-   */
+  | { kind: 'focus-block';               payload: { noteId: string; blockId: string; issuedAt: string } }
+  | { kind: 'edit-block-content';        payload: { noteId: string; blockId: string; content: string; issuedAt: string } }
+  | { kind: 'insert-block-after';        payload: { noteId: string; prevBlockId: string; type: BlockType; content: string; issuedAt: string } }
+  | { kind: 'insert-block-at-beginning'; payload: { noteId: string; type: BlockType; content: string; issuedAt: string } }
+  | { kind: 'remove-block';              payload: { noteId: string; blockId: string; issuedAt: string } }
+  | { kind: 'merge-blocks';              payload: { noteId: string; blockId: string; issuedAt: string } }
+  | { kind: 'split-block';              payload: { noteId: string; blockId: string; offset: number; issuedAt: string } }
+  | { kind: 'change-block-type';         payload: { noteId: string; blockId: string; newType: BlockType; issuedAt: string } }
+  | { kind: 'move-block';               payload: { noteId: string; blockId: string; toIndex: number; issuedAt: string } }
   | { kind: 'cancel-idle-timer' }
+  | { kind: 'trigger-idle-save';         payload: { source: 'capture-idle'; noteId: string; issuedAt: string } }
+  | { kind: 'trigger-blur-save';         payload: { source: 'capture-blur'; noteId: string; issuedAt: string } }
+  | { kind: 'retry-save';               payload: { noteId: string; issuedAt: string } }
+  | { kind: 'discard-current-session';   payload: { noteId: string; issuedAt: string } }
+  | { kind: 'cancel-switch';             payload: { noteId: string; issuedAt: string } }
+  | { kind: 'copy-note-body';            payload: { noteId: string; issuedAt: string } }
+  | { kind: 'request-new-note';          payload: { source: NewNoteSource; issuedAt: string } };
 
-  /**
-   * Dispatch RetrySave to the domain.
-   */
-  | { kind: 'retry-save'; payload: { noteId: string; body: string; issuedAt: string } }
+// ── EditorIpcAdapter ──────────────────────────────────────────────────────────
 
-  /**
-   * Dispatch DiscardCurrentSession to the domain.
-   */
-  | { kind: 'discard-current-session'; payload: { noteId: string } }
+/**
+ * Outbound adapter interface (behavioral-spec.md §10, verification-architecture.md §2).
+ * 16 dispatchXxx methods (all IPC variants except cancel-idle-timer).
+ * Pure modules must not import this interface.
+ */
+export interface EditorIpcAdapter {
+  dispatchFocusBlock(payload: { noteId: string; blockId: string; issuedAt: string }): Promise<void>;
+  dispatchEditBlockContent(payload: { noteId: string; blockId: string; content: string; issuedAt: string }): Promise<void>;
+  dispatchInsertBlockAfter(payload: { noteId: string; prevBlockId: string; type: BlockType; content: string; issuedAt: string }): Promise<void>;
+  dispatchInsertBlockAtBeginning(payload: { noteId: string; type: BlockType; content: string; issuedAt: string }): Promise<void>;
+  dispatchRemoveBlock(payload: { noteId: string; blockId: string; issuedAt: string }): Promise<void>;
+  dispatchMergeBlocks(payload: { noteId: string; blockId: string; issuedAt: string }): Promise<void>;
+  dispatchSplitBlock(payload: { noteId: string; blockId: string; offset: number; issuedAt: string }): Promise<void>;
+  dispatchChangeBlockType(payload: { noteId: string; blockId: string; newType: BlockType; issuedAt: string }): Promise<void>;
+  dispatchMoveBlock(payload: { noteId: string; blockId: string; toIndex: number; issuedAt: string }): Promise<void>;
+  dispatchTriggerIdleSave(payload: { source: 'capture-idle'; noteId: string; issuedAt: string }): Promise<void>;
+  dispatchTriggerBlurSave(payload: { source: 'capture-blur'; noteId: string; issuedAt: string }): Promise<void>;
+  dispatchRetrySave(payload: { noteId: string; issuedAt: string }): Promise<void>;
+  dispatchDiscardCurrentSession(payload: { noteId: string; issuedAt: string }): Promise<void>;
+  dispatchCancelSwitch(payload: { noteId: string; issuedAt: string }): Promise<void>;
+  dispatchCopyNoteBody(payload: { noteId: string; issuedAt: string }): Promise<void>;
+  dispatchRequestNewNote(payload: { source: NewNoteSource; issuedAt: string }): Promise<void>;
+  /** Inbound subscription for state change events. */
+  subscribeToState(handler: (state: EditingSessionStateDto) => void): () => void;
+}
 
-  /**
-   * Dispatch CancelSwitch to the domain.
-   */
-  | { kind: 'cancel-switch'; payload: { noteId: string } }
+// ── Spec constants ────────────────────────────────────────────────────────────
 
-  /**
-   * Dispatch CopyNoteBody to the domain / clipboard adapter.
-   * noteId comes from the triggering CopyClicked action payload.
-   */
-  | { kind: 'copy-note-body'; payload: { noteId: string; body: string } }
+/**
+ * REQ-EDIT-012: Idle-save debounce window in milliseconds.
+ * Named export so tests can reference it via vi.useFakeTimers().
+ */
+export const IDLE_SAVE_DEBOUNCE_MS = 2000;
 
-  /**
-   * Dispatch RequestNewNote to the domain.
-   */
-  | { kind: 'request-new-note'; payload: { source: NewNoteSource; issuedAt: string } };
+// ── Tier 0 structural-conformance assertions ──────────────────────────────────
 
-// ── Tier 0 structural-conformance aliases ─────────────────────────────────────
-// These are audited by the impure shell in Sprint 2 (§10 Tier 0 obligations).
+export type _AssertEditBlockContentShape =
+  (EditorCommand & { kind: 'edit-block-content' })['payload'] extends
+  { noteId: string; blockId: string; content: string; issuedAt: string } ? true : never;
 
-export type _AssertEditNoteBodyShape = (EditorCommand & { kind: 'edit-note-body' })['payload'] extends
-  { noteId: string; newBody: string; issuedAt: string; dirty: true } ? true : never;
+export type _AssertSplitBlockShape =
+  (EditorCommand & { kind: 'split-block' })['payload'] extends
+  { noteId: string; blockId: string; offset: number; issuedAt: string } ? true : never;
 
-export type _AssertCopyNoteBodyShape = (EditorCommand & { kind: 'copy-note-body' })['payload'] extends
-  { noteId: string; body: string } ? true : never;
+export type _AssertCopyNoteBodyShape =
+  (EditorCommand & { kind: 'copy-note-body' })['payload'] extends
+  { noteId: string; issuedAt: string } ? true : never;

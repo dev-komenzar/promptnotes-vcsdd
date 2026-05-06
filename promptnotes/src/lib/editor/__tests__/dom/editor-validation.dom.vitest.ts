@@ -1,36 +1,35 @@
 /**
- * editor-validation.dom.vitest.ts — PROP-EDIT-032
+ * editor-validation.dom.vitest.ts — Integration tests (vitest + jsdom + Svelte 5 mount API)
  *
- * REQ-EDIT-027, REQ-EDIT-016 (validation paths)
+ * Sprint 7 Red phase. Tests FAIL because editor components do not exist yet.
  *
- * Verifies:
- * - PROP-EDIT-032: SaveValidationError.invariant-violated → console.error logged,
- *   NO inline UI message shown (silent).
- * - PROP-EDIT-032: SaveValidationError.empty-body-on-idle → no banner shown,
- *   successor state is editing+isDirty=false.
- * - FIND-009: issuedAt values match ISO-8601 format (not millisecond integer strings).
- *
- * RED phase: issuedAt is clock.now().toString() (numeric string), not ISO-8601.
+ * Coverage:
+ *   PROP-EDIT-043 (REQ-EDIT-038, REQ-EDIT-026):
+ *     - incompatible-content-for-type shows inline hint near block
+ *     - control-character shows inline hint
+ *     - SaveValidationError.invariant-violated → console.error only, no banner
+ *     - SaveValidationError.empty-body-on-idle → editing state, isDirty=false, isNoteEmpty=true
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { flushSync, mount, unmount } from 'svelte';
-import type { EditingSessionState } from '../../types.js';
+import { flushSync } from 'svelte';
+import type { EditorIpcAdapter, EditingSessionStateDto, SaveError } from '$lib/editor/types';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 
-import EditorPane from '../../EditorPane.svelte';
-import type { TauriEditorAdapter } from '../../tauriEditorAdapter.js';
-import type { EditorStateChannel } from '../../editorStateChannel.js';
-import type { DebounceTimer } from '../../debounceTimer.js';
-import type { ClipboardAdapter } from '../../clipboardAdapter.js';
-
-const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
-
-function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeof vi.fn>> {
+function createMockAdapter() {
+  let _stateHandler: ((s: EditingSessionStateDto) => void) | null = null;
   return {
-    dispatchEditNoteBody: vi.fn().mockResolvedValue(undefined),
+    dispatchFocusBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchEditBlockContent: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAfter: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAtBeginning: vi.fn().mockResolvedValue(undefined),
+    dispatchRemoveBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchMergeBlocks: vi.fn().mockResolvedValue(undefined),
+    dispatchSplitBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchChangeBlockType: vi.fn().mockResolvedValue(undefined),
+    dispatchMoveBlock: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerIdleSave: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerBlurSave: vi.fn().mockResolvedValue(undefined),
     dispatchRetrySave: vi.fn().mockResolvedValue(undefined),
@@ -38,251 +37,117 @@ function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeo
     dispatchCancelSwitch: vi.fn().mockResolvedValue(undefined),
     dispatchCopyNoteBody: vi.fn().mockResolvedValue(undefined),
     dispatchRequestNewNote: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
-type MockStateChannel = EditorStateChannel & { emit: (state: EditingSessionState) => void };
-
-function makeMockStateChannel(): MockStateChannel {
-  let _handler: ((s: EditingSessionState) => void) | null = null;
-  return {
-    subscribe(handler) {
-      _handler = handler;
-      return () => { _handler = null; };
-    },
-    emit(state) {
-      _handler?.(state);
+    subscribeToState: vi.fn((handler: (s: EditingSessionStateDto) => void) => {
+      _stateHandler = handler;
+      return () => { _stateHandler = null; };
+    }),
+    _emitState(state: EditingSessionStateDto) {
+      if (_stateHandler) _stateHandler(state);
     },
   };
 }
 
-function makeMockTimer(): DebounceTimer {
-  return { scheduleIdleSave: vi.fn(), cancel: vi.fn() };
-}
+let target: HTMLDivElement;
+let adapter: ReturnType<typeof createMockAdapter>;
 
-function makeMockClipboard(): ClipboardAdapter {
-  return { write: vi.fn().mockResolvedValue(undefined) };
-}
+beforeEach(() => {
+  target = document.createElement('div');
+  document.body.appendChild(target);
+  adapter = createMockAdapter();
+});
 
-const editingSnapshot: EditingSessionState = {
-  status: 'editing',
-  isDirty: false,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: null,
-  lastError: null,
-  body: '',
-};
+afterEach(() => {
+  target.remove();
+  vi.clearAllMocks();
+});
 
-describe('editor-validation — PROP-EDIT-032', () => {
-  let target: HTMLDivElement;
-  let adapter: ReturnType<typeof makeMockAdapter>;
-  let stateChannel: MockStateChannel;
+// ── PROP-EDIT-043 (REQ-EDIT-038, REQ-EDIT-026) ───────────────────────────────
 
-  beforeEach(() => {
-    target = document.createElement('div');
-    document.body.appendChild(target);
-    adapter = makeMockAdapter();
-    stateChannel = makeMockStateChannel();
-  });
-
-  afterEach(() => {
-    document.body.innerHTML = '';
-    vi.restoreAllMocks();
-  });
-
-  // ── PROP-EDIT-032: validation.invariant-violated — silent, no banner ──
-
-  test('PROP-EDIT-032: invariant-violated SaveError does NOT show save-failure banner', () => {
-    const invariantViolatedSnapshot: EditingSessionState = {
-      status: 'save-failed',
-      isDirty: true,
-      currentNoteId: 'note-001',
-      pendingNextNoteId: null,
-      lastError: { kind: 'validation', reason: { kind: 'invariant-violated' } },
-      body: 'some content',
-    };
-
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(invariantViolatedSnapshot);
-    flushSync();
-
-    // Per REQ-EDIT-016: validation.invariant-violated is silent — no banner
-    // The status IS save-failed in the snapshot, so the banner may conditionally render
-    // But if it does render, the message must not show a user-facing text for this case
-    // Per spec: "内部バグ：エラーログ + サイレント"
-    // The component should handle this via bannerMessageFor returning null → no banner message
-    const bannerMessage = target.querySelector('[data-testid="save-failure-message"]');
-    if (bannerMessage) {
-      // If a message element exists, it must be empty or null for invariant-violated
-      expect(bannerMessage.textContent?.trim()).toBe('');
-    }
-    // No explicit banner is mandatory for invariant-violated per spec
-
-    unmount(app);
-  });
-
-  // ── PROP-EDIT-032: empty-body-on-idle — silent, successor is editing+isDirty=false ──
-
-  test('PROP-EDIT-032: empty-body-on-idle successor state is editing with isDirty=false', () => {
-    const emptyBodyDiscardedSnapshot: EditingSessionState = {
+describe('Block validation error display (PROP-EDIT-043, REQ-EDIT-038, REQ-EDIT-026)', () => {
+  test('REQ-EDIT-038: incompatible-content-for-type snapshot shows inline hint このブロック種別に変換できません', () => {
+    // Simulate an editing snapshot where lastSaveError contains a block error hint
+    // The domain might surface this via the snapshot or via a rejected command response
+    adapter._emitState({
       status: 'editing',
-      isDirty: false,
-      currentNoteId: 'note-001',
-      pendingNextNoteId: null,
-      lastError: null,
-      body: '',
-    };
-
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: true,
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
+    // Inline hint element should be rendered near block-1
+    const hint = target.querySelector('[data-testid="block-validation-hint"]');
+    expect(hint).not.toBeNull(); // FAILS: no component rendered
+    expect(hint?.textContent).toContain('このブロック種別に変換できません');
+  });
 
-    stateChannel.emit(emptyBodyDiscardedSnapshot);
+  test('REQ-EDIT-038: control-character block error shows 制御文字は入力できません', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: true,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+    });
     flushSync();
+    const hint = target.querySelector('[data-testid="block-validation-hint"][data-error-kind="control-character"]');
+    expect(hint).not.toBeNull(); // FAILS
+    expect(hint?.textContent).toContain('制御文字は入力できません');
+  });
 
-    // No banner in editing state
+  test('REQ-EDIT-026: SaveValidationError.invariant-violated → no banner rendered', () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Emit a save-failed snapshot with validation invariant-violated
+    // (invariant-violated is silent — no banner, only console.error)
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: { kind: 'validation', reason: { kind: 'invariant-violated' } },
+      isNoteEmpty: false,
+    });
+    flushSync();
+    // No banner should be rendered for invariant-violated
+    const banner = target.querySelector('[data-testid="save-failure-banner"]');
+    expect(banner).toBeNull(); // FAILS (no component, but the assertion is the expected behavior)
+    consoleSpy.mockRestore();
+  });
+
+  test('REQ-EDIT-026: SaveValidationError.empty-body-on-idle → editing state with isDirty=false, isNoteEmpty=true', () => {
+    // The successor state after empty-body-on-idle error
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: true,
+      lastSaveResult: null,
+    });
+    flushSync();
+    // No banner should be shown for this validation error path
     const banner = target.querySelector('[data-testid="save-failure-banner"]');
     expect(banner).toBeNull();
-
-    // Textarea is editable (editing state)
-    const textarea = target.querySelector<HTMLTextAreaElement>('[data-testid="editor-body"]');
-    expect(textarea).not.toBeNull();
-    expect(textarea!.disabled).toBe(false);
-    expect(textarea!.readOnly).toBe(false);
-
-    // No dirty indicator (isDirty=false)
-    const dirtyIndicator = target.querySelector('[data-testid="dirty-indicator"]');
-    expect(dirtyIndicator).toBeNull();
-
-    unmount(app);
+    // Editor should show placeholder state for empty note
+    const emptyIndicator = target.querySelector('[data-testid="note-empty-indicator"]');
+    expect(emptyIndicator).not.toBeNull(); // FAILS
   });
 
-  // ── FIND-009: issuedAt must be ISO-8601, not numeric string ──
-
-  test('FIND-009: EditNoteBody issuedAt is ISO-8601 format', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(editingSnapshot);
-    flushSync();
-
-    const textarea = target.querySelector<HTMLTextAreaElement>('[data-testid="editor-body"]');
-    expect(textarea).not.toBeNull();
-
-    textarea!.value = 'some content';
-    textarea!.dispatchEvent(new Event('input', { bubbles: true }));
-    flushSync();
-
-    expect(adapter.dispatchEditNoteBody).toHaveBeenCalledOnce();
-    const a = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    const [payload] = a['dispatchEditNoteBody'].mock.calls[0] as [{ noteId: string; body: string; issuedAt: string; dirty: true }];
-    expect(payload.issuedAt).toMatch(ISO_8601_REGEX);
-
-    unmount(app);
-  });
-
-  test('FIND-009: RequestNewNote issuedAt is ISO-8601 format', () => {
-    const idleSnapshot: EditingSessionState = {
-      status: 'idle',
-      isDirty: false,
-      currentNoteId: null,
-      pendingNextNoteId: null,
-      lastError: null,
-      body: '',
-    };
-
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(idleSnapshot);
-    flushSync();
-
-    const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-testid="new-note-button"]');
-    expect(newNoteBtn).not.toBeNull();
-
-    newNoteBtn!.click();
-    flushSync();
-
-    expect(adapter.dispatchRequestNewNote).toHaveBeenCalledOnce();
-    const a2 = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    const [payload2] = a2['dispatchRequestNewNote'].mock.calls[0] as [{ source: string; issuedAt: string }];
-    expect(payload2.issuedAt).toMatch(ISO_8601_REGEX);
-
-    unmount(app);
-  });
-
-  test('FIND-009: TriggerBlurSave issuedAt (via NoteBodyEdited then blur) produces ISO-8601', () => {
-    const editingDirtySnapshot: EditingSessionState = {
+  test('REQ-EDIT-038: block remains contenteditable even when validation hint is shown', () => {
+    adapter._emitState({
       status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
       isDirty: true,
-      currentNoteId: 'note-001',
-      pendingNextNoteId: null,
-      lastError: null,
-      body: 'content',
-    };
-
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
-
-    stateChannel.emit(editingDirtySnapshot);
-    flushSync();
-
-    const textarea = target.querySelector<HTMLTextAreaElement>('[data-testid="editor-body"]');
-    expect(textarea).not.toBeNull();
-
-    // The blur event produces a trigger-blur-save command with issuedAt from clock
-    textarea!.dispatchEvent(new Event('blur', { bubbles: true }));
-    flushSync();
-
-    expect(adapter.dispatchTriggerBlurSave).toHaveBeenCalledOnce();
-    // dispatchTriggerBlurSave now receives the full EditorCommand payload (FIND-010 fix).
-    // Verify source and that issuedAt is ISO-8601.
-    const a3 = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    const [blurPayload] = a3['dispatchTriggerBlurSave'].mock.calls[0] as [{ source: string; noteId: string; body: string; issuedAt: string }];
-    expect(blurPayload.source).toBe('capture-blur');
-    expect(blurPayload.issuedAt).toMatch(ISO_8601_REGEX);
-
-    unmount(app);
+    const blockEl = target.querySelector('[data-testid="block-element"]');
+    expect(blockEl).not.toBeNull(); // FAILS
+    // Even with validation hint, block must NOT be locked
+    expect(blockEl?.getAttribute('contenteditable')).not.toBe('false');
   });
 });
