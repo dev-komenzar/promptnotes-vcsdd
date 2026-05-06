@@ -1,0 +1,712 @@
+bun test v1.3.11 (af24e281)
+grep: /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/searchPredicate.ts: そのようなファイルやディレクトリはありません
+grep: /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/sortByUpdatedAt.ts: そのようなファイルやディレクトリはありません
+grep: /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/computeVisible.ts: そのようなファイルやディレクトリはありません
+
+src/lib/feed/__tests__/searchPredicate.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/feed/searchPredicate' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/searchPredicate.test.ts'
+-------------------------------
+
+
+src/lib/feed/__tests__/feedReducer.search.test.ts:
+74 | describe('PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005)', () => {
+75 |   test('PROP-FILTER-002a: SearchApplied sets searchQuery to action.query', () => {
+76 |     const state = makeState({ allNoteIds: ['note-1', 'note-2'], noteMetadata: {} });
+77 |     const action = { kind: 'SearchApplied' as const, query: 'hello' };
+78 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+79 |     expect((result.state as unknown as SearchFeedViewState).searchQuery).toBe('hello');
+                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "hello"
+Received: ""
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:79:74)
+(fail) PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005) > PROP-FILTER-002a: SearchApplied sets searchQuery to action.query [1.00ms]
+94 |         'note-b': makeMetadata('Goodbye', []),
+95 |       },
+96 |     });
+97 |     const action = { kind: 'SearchApplied' as const, query: 'hello' };
+98 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+99 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                             ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:99:41)
+(fail) PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005) > PROP-FILTER-002c: SearchApplied("hello") filters notes by case-insensitive substring
+108 |         'note-b': makeMetadata('Goodbye', []),
+109 |       },
+110 |     });
+111 |     const action = { kind: 'SearchApplied' as const, query: '' };
+112 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+113 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:113:41)
+(fail) PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005) > PROP-FILTER-002d: SearchApplied("") shows all notes (no search predicate applied)
+121 |         'note-a': makeMetadata('No relevant body', ['draft']),
+122 |       },
+123 |     });
+124 |     const action = { kind: 'SearchApplied' as const, query: 'draft' };
+125 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+126 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:126:41)
+(fail) PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005) > PROP-FILTER-002e: SearchApplied matches by tag name (EC-S-008)
+133 |         'note-a': makeMetadata('', ['draft']),
+134 |       },
+135 |     });
+136 |     const action = { kind: 'SearchApplied' as const, query: 'dra' };
+137 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+138 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:138:41)
+(fail) PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005) > PROP-FILTER-002f: SearchApplied with partial tag match (EC-S-008)
+145 |         'note-a': makeMetadata('テスト', []),
+146 |       },
+147 |     });
+148 |     const action = { kind: 'SearchApplied' as const, query: 'テスト' };
+149 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+150 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:150:41)
+(fail) PROP-FILTER-002: SearchApplied (REQ-FILTER-002, REQ-FILTER-005) > PROP-FILTER-002g: SearchApplied with Japanese (EC-S-009, no case change)
+160 |       allNoteIds: ['note-a'],
+161 |       noteMetadata: { 'note-a': makeMetadata('Hello', []) },
+162 |     });
+163 |     const action = { kind: 'SearchCleared' as const };
+164 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+165 |     expect((result.state as unknown as SearchFeedViewState).searchQuery).toBe('');
+                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: ""
+Received: "hello"
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:165:74)
+(fail) PROP-FILTER-003 / PROP-FILTER-008: SearchCleared (REQ-FILTER-003) > PROP-FILTER-003a: SearchCleared sets searchQuery to empty string
+182 |         'note-b': makeMetadata('World', []),
+183 |       },
+184 |     });
+185 |     const action = { kind: 'SearchCleared' as const };
+186 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+187 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:187:41)
+(fail) PROP-FILTER-003 / PROP-FILTER-008: SearchCleared (REQ-FILTER-003) > PROP-FILTER-008: SearchCleared immediately recomputes visibleNoteIds without search
+194 | describe('PROP-FILTER-004: SortDirectionToggled (REQ-FILTER-007)', () => {
+195 |   test('PROP-FILTER-004a: SortDirectionToggled from desc → asc', () => {
+196 |     const state = makeState({ sortDirection: 'desc' });
+197 |     const action = { kind: 'SortDirectionToggled' as const };
+198 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+199 |     expect((result.state as unknown as SearchFeedViewState).sortDirection).toBe('asc');
+                                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "asc"
+Received: "desc"
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:199:76)
+(fail) PROP-FILTER-004: SortDirectionToggled (REQ-FILTER-007) > PROP-FILTER-004a: SortDirectionToggled from desc → asc
+201 | 
+202 |   test('PROP-FILTER-004b: SortDirectionToggled from asc → desc', () => {
+203 |     const state = makeState({ sortDirection: 'asc' });
+204 |     const action = { kind: 'SortDirectionToggled' as const };
+205 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+206 |     expect((result.state as unknown as SearchFeedViewState).sortDirection).toBe('desc');
+                                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "desc"
+Received: "asc"
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:206:76)
+(fail) PROP-FILTER-004: SortDirectionToggled (REQ-FILTER-007) > PROP-FILTER-004b: SortDirectionToggled from asc → desc
+229 |       visibleNoteIds: ['note-a', 'note-c', 'note-b'],
+230 |     });
+231 |     const action = { kind: 'SortDirectionToggled' as const };
+232 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+233 |     // asc: oldest first → note-b(1000), note-c(2000), note-a(3000)
+234 |     expect(Array.from(result.state.visibleNoteIds)).toEqual(['note-b', 'note-c', 'note-a']);
+                                                          ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "note-b",
+-   "note-c",
+    "note-a",
++   "note-c",
++   "note-b",
+  ]
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:234:53)
+(fail) PROP-FILTER-009: Sort recomputes visibleNoteIds in new order (REQ-FILTER-007) > PROP-FILTER-009a: SortDirectionToggled desc→asc reorders notes (oldest first)
+246 |       visibleNoteIds: ['note-b', 'note-c', 'note-a'],
+247 |     });
+248 |     const action = { kind: 'SortDirectionToggled' as const };
+249 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+250 |     // desc: newest first → note-a(3000), note-c(2000), note-b(1000)
+251 |     expect(Array.from(result.state.visibleNoteIds)).toEqual(['note-a', 'note-c', 'note-b']);
+                                                          ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "note-a",
+-   "note-c",
+    "note-b",
++   "note-c",
++   "note-a",
+  ]
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:251:53)
+(fail) PROP-FILTER-009: Sort recomputes visibleNoteIds in new order (REQ-FILTER-007) > PROP-FILTER-009b: SortDirectionToggled asc→desc reorders notes (newest first)
+265 |       },
+266 |     });
+267 |     const action = { kind: 'SearchApplied' as const, query: '' };
+268 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+269 |     // Tiebreak: desc → note-b comes before note-a (b > a lexicographic, reversed)
+270 |     expect(Array.from(result.state.visibleNoteIds)).toEqual(['note-b', 'note-a']);
+                                                          ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "note-b",
+-   "note-a",
+- ]
++ []
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:270:53)
+(fail) PROP-FILTER-014: Sort tiebreak by noteId lexicographic (REQ-FILTER-009, EC-T-001) > PROP-FILTER-014a: Two notes with equal updatedAt sorted by noteId desc
+280 |       },
+281 |     });
+282 |     const action = { kind: 'SearchApplied' as const, query: '' };
+283 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+284 |     // Tiebreak: asc → note-a comes before note-b (a < b lexicographic)
+285 |     expect(Array.from(result.state.visibleNoteIds)).toEqual(['note-a', 'note-b']);
+                                                          ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "note-a",
+-   "note-b",
+- ]
++ []
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:285:53)
+(fail) PROP-FILTER-014: Sort tiebreak by noteId lexicographic (REQ-FILTER-009, EC-T-001) > PROP-FILTER-014b: Two notes with equal updatedAt sorted by noteId asc [1.00ms]
+294 |         'note-legacy': makeMetadata('', [], 0),
+295 |       },
+296 |     });
+297 |     const action = { kind: 'SearchApplied' as const, query: '' };
+298 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+299 |     expect(Array.from(result.state.visibleNoteIds)).toEqual(['note-modern', 'note-legacy']);
+                                                          ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "note-modern",
+-   "note-legacy",
+- ]
++ []
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:299:53)
+(fail) PROP-FILTER-014: Sort tiebreak by noteId lexicographic (REQ-FILTER-009, EC-T-001) > PROP-FILTER-014c: updatedAt=0 (legacy notes) sorted correctly (EC-T-002)
+306 |   test('PROP-FILTER-006a: searchQuery preserved across DomainSnapshotReceived', () => {
+307 |     const state = makeState({ searchQuery: 'hello', sortDirection: 'asc' });
+308 |     const snapshot = makeSnapshot({ feed: { visibleNoteIds: ['note-1'], filterApplied: false } });
+309 |     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+310 |     const result = feedReducer(state as unknown as FeedViewState, action);
+311 |     expect((result.state as unknown as SearchFeedViewState).searchQuery).toBe('hello');
+                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: "hello"
+Received: undefined
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:311:74)
+(fail) PROP-FILTER-006: DomainSnapshotReceived preserves search state (REQ-FILTER-010) > PROP-FILTER-006a: searchQuery preserved across DomainSnapshotReceived
+314 |   test('PROP-FILTER-006b: sortDirection preserved across DomainSnapshotReceived', () => {
+315 |     const state = makeState({ searchQuery: '', sortDirection: 'asc' });
+316 |     const snapshot = makeSnapshot({ feed: { visibleNoteIds: [], filterApplied: false } });
+317 |     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+318 |     const result = feedReducer(state as unknown as FeedViewState, action);
+319 |     expect((result.state as unknown as SearchFeedViewState).sortDirection).toBe('asc');
+                                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "asc"
+Received: undefined
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:319:76)
+(fail) PROP-FILTER-006: DomainSnapshotReceived preserves search state (REQ-FILTER-010) > PROP-FILTER-006b: sortDirection preserved across DomainSnapshotReceived
+333 |       },
+334 |     });
+335 |     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+336 |     const result = feedReducer(state as unknown as FeedViewState, action);
+337 |     expect(result.state.visibleNoteIds).toContain('note-a');
+338 |     expect(result.state.visibleNoteIds).not.toContain('note-b');
+                                                  ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "note-b"
+Received: [ "note-a", "note-b" ]
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:338:45)
+(fail) PROP-FILTER-007: DomainSnapshotReceived + search active (REQ-FILTER-012) > PROP-FILTER-007a: snapshot with searchQuery active filters visibleNoteIds
+365 |         'note-3': makeMetadata('Gamma', []),
+366 |       },
+367 |     });
+368 |     const action = { kind: 'SearchApplied' as const, query: '' };
+369 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+370 |     expect(result.state.visibleNoteIds).toHaveLength(3);
+                                              ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 3
+Received length: 0
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:370:41)
+(fail) PROP-FILTER-011: searchPredicate empty needle (REQ-FILTER-005) > PROP-FILTER-011: SearchApplied("") shows all notes in allNoteIds
+383 |         'note-b': makeMetadata('hello world', ['personal']),
+384 |       },
+385 |     });
+386 |     const action = { kind: 'SearchApplied' as const, query: 'hello' };
+387 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+388 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:388:41)
+(fail) PROP-FILTER-012: AND composition tag filter + search (REQ-FILTER-008) > PROP-FILTER-012a: tag "work" AND search "hello" → only Note A
+431 |       },
+432 |     });
+433 |     const action = { kind: 'SearchCleared' as const };
+434 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+435 |     // Tag filter still active: only note-a (tag "work") should be visible
+436 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:436:41)
+(fail) PROP-FILTER-013: Tag filter preserved after SearchCleared (REQ-FILTER-008, EC-C-003) > PROP-FILTER-013: After SearchCleared, activeFilterTags still applies
+451 |       },
+452 |     });
+453 |     const action = { kind: 'SearchApplied' as const, query: '   ' };
+454 |     const result = feedReducer(state as unknown as FeedViewState, action as unknown as FeedAction);
+455 |     // note-a has spaces; note-b does not → only note-a should match
+456 |     expect(result.state.visibleNoteIds).toContain('note-a');
+                                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "note-a"
+Received: []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:456:41)
+(fail) PROP-FILTER-023: Whitespace-only query (REQ-FILTER-016, EC-S-002) > PROP-FILTER-023a: "   " is NOT treated as empty — applies searchPredicate literally
+465 |     // Empty → shows all
+466 |     const r1 = feedReducer(
+467 |       state as unknown as FeedViewState,
+468 |       { kind: 'SearchApplied', query: '' } as unknown as FeedAction
+469 |     );
+470 |     expect(r1.state.visibleNoteIds).toHaveLength(1);
+                                          ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:470:37)
+(fail) PROP-FILTER-023: Whitespace-only query (REQ-FILTER-016, EC-S-002) > PROP-FILTER-023b: empty string "" triggers no-search; "   " does apply search
+504 |       },
+505 |     });
+506 |     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+507 |     const result = feedReducer(state as unknown as FeedViewState, action);
+508 |     // note-b doesn't match "hello" → visibleNoteIds is empty
+509 |     expect(result.state.visibleNoteIds).toHaveLength(0);
+                                              ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 0
+Received length: 1
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:509:41)
+(fail) REQ-FILTER-012: Snapshot preserves + recomputes (EC-S-007) > EC-S-007: Note deleted while search active — removed from visibleNoteIds
+549 |     expect(set1.size).toBe(set2.size);
+550 |     for (const id of set1) {
+551 |       expect(set2.has(id)).toBe(true);
+552 |     }
+553 |     // But orders differ
+554 |     expect(Array.from(r1.state.visibleNoteIds)).not.toEqual(Array.from(r2.state.visibleNoteIds));
+                                                          ^
+error: expect(received).not.toEqual(expected)
+
+Expected: not []
+
+      at <anonymous> (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/feedReducer.search.test.ts:554:53)
+(fail) EC-C-006: Sort varies order; set of visible notes unchanged > EC-C-006: toggling sort direction does not change the set of notes, only their order
+
+src/lib/feed/__tests__/computeVisible.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/feed/computeVisible' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/computeVisible.test.ts'
+-------------------------------
+
+
+src/lib/feed/__tests__/sortByUpdatedAt.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/feed/sortByUpdatedAt' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/sortByUpdatedAt.test.ts'
+-------------------------------
+
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+[perf] applyFilterOrSearch median: 0.663ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.003ms (advisory bound: 5ms)
+
+src/lib/feed/__tests__/prop/searchPredicate.prop.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/feed/searchPredicate' from '/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/prop/searchPredicate.prop.test.ts'
+-------------------------------
+
+
+ 1573 pass
+ 29 fail
+ 4 errors
+ 22865 expect() calls
+Ran 1602 tests across 140 files. [13.56s]
+$ vitest run
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes
+
+ ❯ src/lib/feed/__tests__/dom/SortToggle.dom.vitest.ts (0 test)
+ ❯ src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts (0 test)
+13:28:35 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:219:14 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+13:28:35 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:253:20 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+13:28:35 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:275:10 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+stderr | src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-009: TagFilterSidebar renders tags sorted by usageCount descending > Tags are rendered in usageCount descending order (RED: FAILS)
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-012: "すべて解除" button calls onClear > Clicking "すべて解除" calls onClear (RED: FAILS)
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-012: "すべて解除" button calls onClear > "すべて解除" button is rendered when tags exist (RED: FAILS)
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-019: Zero-filter state — no tags highlighted > After clearing filters, no tags are highlighted (RED: FAILS)
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > Integration: multiple toggle + clear interactions > Toggling multiple tags then clearing resets all (RED: FAILS)
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+ ❯ src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts (15 tests | 5 failed) 108ms
+     × Tags are rendered in usageCount descending order (RED: FAILS) 15ms
+     × Clicking "すべて解除" calls onClear (RED: FAILS) 4ms
+     × "すべて解除" button is rendered when tags exist (RED: FAILS) 4ms
+     × After clearing filters, no tags are highlighted (RED: FAILS) 4ms
+     × Toggling multiple tags then clearing resets all (RED: FAILS) 5ms
+stderr | src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > feed-search-empty-state shown when visibleNoteIds empty and searchQuery is non-empty
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > feed-search-empty-state shown when visibleNoteIds empty and activeFilterTags non-empty
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > feed-search-empty-state text is "検索条件に一致するノートがありません"
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > EC-C-004: tag filter + search both produce empty → feed-search-empty-state
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+stderr | src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-016: feed-empty-state (REQ-FILTER-004) > feed-empty-state NOT shown when searchQuery is active
+[svelte] lifecycle_double_unmount
+Tried to unmount a component that was not mounted
+https://svelte.dev/e/lifecycle_double_unmount
+
+ ❯ src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts (8 tests | 5 failed) 125ms
+     × feed-search-empty-state shown when visibleNoteIds empty and searchQuery is non-empty 51ms
+     × feed-search-empty-state shown when visibleNoteIds empty and activeFilterTags non-empty 5ms
+     × feed-search-empty-state text is "検索条件に一致するノートがありません" 5ms
+     × EC-C-004: tag filter + search both produce empty → feed-search-empty-state 3ms
+     × feed-empty-state NOT shown when searchQuery is active 9ms
+ ❯ src/lib/feed/__tests__/dom/FeedList.dom.vitest.ts (13 tests | 1 failed) 248ms
+     × tag-chip count equals tags.length and order preserved (REQ-FEED-003 / PROP-FEED-034) 20ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts [ src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts ]
+Error: Failed to resolve import "../../SearchInput.svelte" from "src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/dom/SearchInput.dom.vitest.ts:25:0
+  2  |  vi.mock("@tauri-apps/api/event", () => ({ listen: vi.fn() }));
+  3  |  const __vi_import_0__ = await import("svelte");
+  4  |  const __vi_import_1__ = await import("../../SearchInput.svelte");
+     |                                       ^
+  5  |  import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+  6  |  
+ ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23
+ ❯ node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7
+ ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/SortToggle.dom.vitest.ts [ src/lib/feed/__tests__/dom/SortToggle.dom.vitest.ts ]
+Error: Failed to resolve import "../../SortToggle.svelte" from "src/lib/feed/__tests__/dom/SortToggle.dom.vitest.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src/lib/feed/__tests__/dom/SortToggle.dom.vitest.ts:21:0
+  2  |  vi.mock("@tauri-apps/api/event", () => ({ listen: vi.fn() }));
+  3  |  const __vi_import_0__ = await import("svelte");
+  4  |  const __vi_import_1__ = await import("../../SortToggle.svelte");
+     |                                       ^
+  5  |  import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+  6  |  
+ ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23
+ ❯ node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7
+ ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/feed/__tests__/dom/FeedList.dom.vitest.ts > REQ-FEED-001/002/003/017 / FIND-014: FeedList renders real metadata from snapshot > tag-chip count equals tags.length and order preserved (REQ-FEED-003 / PROP-FEED-034)
+AssertionError: expected 'typescript ×' to be 'typescript' // Object.is equality
+
+Expected: "typescript"
+Received: "typescript ×"
+
+ ❯ src/lib/feed/__tests__/dom/FeedList.dom.vitest.ts:327:35
+    325|     const chips = target.querySelectorAll('[data-testid="tag-chip"]');
+    326|     expect(chips.length).toBe(TAGS.length);
+    327|     expect(chips[0]!.textContent).toBe(TAGS[0]);
+       |                                   ^
+    328|     expect(chips[1]!.textContent).toBe(TAGS[1]);
+    329|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > feed-search-empty-state shown when visibleNoteIds empty and searchQuery is non-empty
+AssertionError: expected null not to be null
+ ❯ src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts:119:20
+    117|
+    118|     const el = target.querySelector('[data-testid="feed-search-empty-s…
+    119|     expect(el).not.toBeNull();
+       |                    ^
+    120|   });
+    121|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > feed-search-empty-state shown when visibleNoteIds empty and activeFilterTags non-empty
+AssertionError: expected null not to be null
+ ❯ src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts:131:20
+    129|
+    130|     const el = target.querySelector('[data-testid="feed-search-empty-s…
+    131|     expect(el).not.toBeNull();
+       |                    ^
+    132|   });
+    133|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > feed-search-empty-state text is "検索条件に一致するノートがありません"
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts:143:29
+    141|
+    142|     const el = target.querySelector('[data-testid="feed-search-empty-s…
+    143|     expect(el?.textContent).toContain('検索条件に一致するノートがありません');
+       |                             ^
+    144|   });
+    145|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-015: feed-search-empty-state (REQ-FILTER-004) > EC-C-004: tag filter + search both produce empty → feed-search-empty-state
+AssertionError: expected null not to be null
+ ❯ src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts:155:20
+    153|
+    154|     const el = target.querySelector('[data-testid="feed-search-empty-s…
+    155|     expect(el).not.toBeNull();
+       |                    ^
+    156|   });
+    157|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts > PROP-FILTER-016: feed-empty-state (REQ-FILTER-004) > feed-empty-state NOT shown when searchQuery is active
+AssertionError: expected <div …(2)></div> to be null
+
+- Expected:
+null
+
++ Received:
+<div
+  class="feed-empty svelte-1rmwoi8"
+  data-testid="feed-empty-state"
+>
+  ノートがありません
+</div>
+
+ ❯ src/lib/feed/__tests__/dom/FeedList.search-empty.dom.vitest.ts:196:16
+    194|
+    195|     const el = target.querySelector('[data-testid="feed-empty-state"]'…
+    196|     expect(el).toBeNull();
+       |                ^
+    197|   });
+    198|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-009: TagFilterSidebar renders tags sorted by usageCount descending > Tags are rendered in usageCount descending order (RED: FAILS)
+AssertionError: expected '#rare (1)' to contain 'common'
+
+Expected: "common"
+Received: "#rare (1)"
+
+ ❯ src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts:124:23
+    122|     // Should be sorted: common(10), medium(5), rare(1)
+    123|     const firstText = tagElements[0]?.textContent ?? '';
+    124|     expect(firstText).toContain('common');
+       |                       ^
+    125|     expect(firstText).toContain('(10)');
+    126|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-012: "すべて解除" button calls onClear > Clicking "すべて解除" calls onClear (RED: FAILS)
+AssertionError: expected null not to be null
+ ❯ src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts:276:29
+    274|
+    275|     const clearButton = target.querySelector('[data-testid="tag-filter…
+    276|     expect(clearButton).not.toBeNull();
+       |                             ^
+    277|
+    278|     (clearButton as HTMLElement).click();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-012: "すべて解除" button calls onClear > "すべて解除" button is rendered when tags exist (RED: FAILS)
+AssertionError: expected null not to be null
+ ❯ src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts:292:29
+    290|
+    291|     const clearButton = target.querySelector('[data-testid="tag-filter…
+    292|     expect(clearButton).not.toBeNull();
+       |                             ^
+    293|     expect(clearButton?.textContent).toContain('解除');
+    294|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > REQ-TAG-019: Zero-filter state — no tags highlighted > After clearing filters, no tags are highlighted (RED: FAILS)
+TypeError: Cannot read properties of null (reading 'click')
+ ❯ src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts:356:34
+    354|     // Click clear
+    355|     const clearButton = target.querySelector('[data-testid="tag-filter…
+    356|     (clearButton as HTMLElement).click();
+       |                                  ^
+    357|     expect(onClear).toHaveBeenCalledTimes(1);
+    358|     // After clear, the component re-renders with new activeFilterTags
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts > Integration: multiple toggle + clear interactions > Toggling multiple tags then clearing resets all (RED: FAILS)
+TypeError: Cannot read properties of null (reading 'click')
+ ❯ src/lib/feed/__tests__/dom/TagFilterSidebar.dom.vitest.ts:393:34
+    391|     // Click clear
+    392|     const clearButton = target.querySelector('[data-testid="tag-filter…
+    393|     (clearButton as HTMLElement).click();
+       |                                  ^
+    394|     expect(onClear).toHaveBeenCalledTimes(1);
+    395|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  5 failed | 23 passed (28)
+      Tests  11 failed | 220 passed (231)
+   Start at  13:28:32
+   Duration  4.31s (transform 10.61s, setup 962ms, import 17.09s, tests 2.75s, environment 31.77s)
+
+error: script "test:dom" exited with code 1

@@ -30,6 +30,10 @@ const PURE_MODULES = [
   'feedRowPredicates.ts',
   'feedReducer.ts',
   'deleteConfirmPredicates.ts',
+  // ui-filter-search Phase 2a — new pure modules
+  'searchPredicate.ts',
+  'sortByUpdatedAt.ts',
+  'computeVisible.ts',
 ];
 
 // ── PROP-FEED-030: No svelte/store imports ────────────────────────────────────
