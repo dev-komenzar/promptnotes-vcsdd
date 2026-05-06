@@ -7,7 +7,7 @@
 統合方式の選択：
 - **In-process Domain Event（イベントバス）** を主軸にする → 結合度を最小化
 - **直接呼び出し** は同期完結が必要な処理（vault スキャン結果の取得等）に限定
-- **Shared Kernel** は型定義レベルで共有（`Note` の id/body/frontmatter 構造）
+- **Shared Kernel** は型定義レベルで共有（`Note` の id / blocks / frontmatter 構造、`Block` / `BlockType` / `BlockContent` / `BlockId`、純粋関数 `serializeBlocksToMarkdown` / `parseMarkdownToBlocks`）
 
 ## Context Map 図
 
@@ -70,7 +70,7 @@ graph LR
   - **タグチップ操作等の編集セッション外メタデータ更新**：`SaveNoteRequested` を Curate が発行（Capture と同一の Event を共有）。エディタを開かずに行う軽量更新で、debounce 不要・即時保存
   - 編集セッション内の本文/frontmatter 編集による保存は **Capture → Vault** 側に属し、Curate は関与しない
 - **統合方式**: 起動時は同期 Direct Call、運用中は Domain Event
-- **ACL の有無**: あり。Curate 側に「`NoteFileSnapshot` → `Note` Aggregate」変換層を置く。Markdown ファイル表現と Curate のドメインモデルを分離。
+- **ACL の有無**: あり。Curate 側に「`NoteFileSnapshot` → `Note` Aggregate」変換層を置く。**この変換層に `parseMarkdownToBlocks` を組み込み**、Markdown 本文 → `Block[]` 化を Hydration の一部として行う。Markdown ファイル表現と Curate のドメインモデル（ブロック構造）を分離。
 - **エラーパス**:
   - 削除失敗 → `NoteDeletionFailed` を Curate に通知 → UI で警告
   - スキャン失敗（vault 未設定など）→ `VaultDirectoryNotConfigured` イベント → Curate は空フィードで継続、設定誘導 UI
@@ -80,21 +80,32 @@ graph LR
 - **共有する型定義**:
   ```ts
   type NoteId = string;        // ISO timestamp + suffix（衝突回避は Phase 5 で確定）
-  type Body = string;          // Markdown 本文
+  type BlockId = string;       // Note 内ローカル ID（永続化されない、再採番）
+  type BlockType =
+    | "paragraph" | "heading-1" | "heading-2" | "heading-3"
+    | "bullet" | "numbered" | "code" | "quote" | "divider";
+  type BlockContent = string;  // Smart Constructor で正規化（制御文字拒否等）
+  type Block = { id: BlockId; type: BlockType; content: BlockContent };
+  type Body = string;          // serializeBlocksToMarkdown(blocks) の派生（Markdown 文字列）
   type Frontmatter = {
     tags: string[];
     createdAt: string;
     updatedAt: string;
     // MVP は固定スキーマ
   };
-  type Note = { id: NoteId; body: Body; frontmatter: Frontmatter };
+  type Note = { id: NoteId; blocks: Block[]; frontmatter: Frontmatter };
+
+  // 共有純粋関数
+  declare const serializeBlocksToMarkdown: (blocks: Block[]) => string;
+  declare const parseMarkdownToBlocks: (md: string) => Result<Block[], BlockParseError>;
   ```
-- **理由**: 同一画面でユーザーがフォーカスを Capture（新規ノート）→ Curate（過去ノート）→ Capture（新規ノート）と切り替えるとき、`Note` の id・本文構造が一致していないと UX が破綻する。
+- **理由**: 同一画面でユーザーがフォーカスを Capture（新規ノートのブロック）→ Curate（フィードスクロール）→ Capture（過去ノートのブロック）と切り替えるとき、`Note` の id・ブロック構造が一致していないと UX が破綻する。`Block` も Note の構成要素として共有が必須。
 - **管理ルール**: Shared Kernel は変更コストが高いため、変更は両 Context の合意で行う。MVP では同一開発者が両 Context を担当するため軽量に運用、将来チーム分割時は変更レビューを義務化。
 - **共有しないもの**:
-  - 編集中状態（`isDirty`, `idleTimerToken` など）は Capture 専用
+  - 編集中状態（`isDirty`, `focusedBlockId`, `idleTimerToken` など）は Capture 専用
   - フィード上の選択状態・フィルタ条件は Curate 専用
   - 表示用派生値（タグの使用回数など）は Curate 専用
+  - Inline Editor Library のインスタンス（CodeMirror 等）は Capture 専用の UI 実装詳細
 
 ### 4. Vault → Curate（Conformist, MVP のみ）
 
