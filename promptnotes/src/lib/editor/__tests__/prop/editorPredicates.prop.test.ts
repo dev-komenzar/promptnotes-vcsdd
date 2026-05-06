@@ -250,9 +250,12 @@ describe("PROP-EDIT-010: 'markdown-prefix-totality' (REQ-EDIT-010, EC-EDIT-013)"
   });
 
   test('PROP-EDIT-010c: EC-EDIT-013 divider exact-match — strings starting with --- but not === --- return null (≥100 runs)', () => {
+    // Use efficient generation: '---' + suffix where suffix is non-empty guarantees
+    // the result starts with '---' and is never exactly '---'. This avoids the low
+    // acceptance rate of fc.string().filter(...) which causes timeouts.
     fc.assert(
       fc.property(
-        fc.string().filter(s => s.startsWith('---') && s !== '---'),
+        fc.string({ minLength: 1 }).map(suffix => '---' + suffix),
         (content) => {
           return classifyMarkdownPrefix(content) === null;
         }
