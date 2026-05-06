@@ -21,6 +21,17 @@ const REFRESH_TRIGGER_CAUSES: ReadonlySet<string> = new Set(['NoteFileSaved', 'N
 const MAX_TAG_LENGTH = 100;
 
 /**
+ * Reads searchQuery and sortDirection from state with ?? defaults.
+ * Guards against pre-extension state shapes that lack these fields.
+ */
+function searchSortOf(state: FeedViewState): { searchQuery: string; sortDirection: 'asc' | 'desc' } {
+  return {
+    searchQuery: state.searchQuery ?? '',
+    sortDirection: state.sortDirection ?? 'desc',
+  };
+}
+
+/**
  * REQ-FEED-005..018 / PROP-FEED-005..007d / PROP-FEED-035
  * Pure mirror reducer: maps (state, action) → { state, commands }.
  * Total over all (FeedViewState, FeedAction) pairs.
@@ -34,9 +45,7 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       const unfilteredIds = snapshot.feed.visibleNoteIds;
 
       // Compute visibleNoteIds via computeVisible (tag filter + search + sort)
-      // Use ?? defaults for backward compatibility with pre-extension state shapes
-      const currentSearchQuery = state.searchQuery ?? '';
-      const currentSortDirection = state.sortDirection ?? 'desc';
+      const { searchQuery: currentSearchQuery, sortDirection: currentSortDirection } = searchSortOf(state);
       const visibleIds = computeVisible(
         unfilteredIds,
         snapshot.noteMetadata,
@@ -268,12 +277,13 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       }
 
       // Compute visibleNoteIds via computeVisible (tag + search + sort)
+      const { searchQuery, sortDirection } = searchSortOf(state);
       const visibleIds = computeVisible(
         state.allNoteIds,
         state.noteMetadata,
         nextActive,
-        state.searchQuery ?? '',
-        state.sortDirection ?? 'desc',
+        searchQuery,
+        sortDirection,
       );
 
       const nextState: FeedViewState = {
@@ -286,6 +296,7 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
 
     // ── ui-tag-chip: TagFilterCleared ────────────────────────────────────
     case 'TagFilterCleared': {
+      const { searchQuery, sortDirection } = searchSortOf(state);
       const nextState: FeedViewState = {
         ...state,
         activeFilterTags: [],
@@ -293,8 +304,8 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
           state.allNoteIds,
           state.noteMetadata,
           [],
-          state.searchQuery ?? '',
-          state.sortDirection ?? 'desc',
+          searchQuery,
+          sortDirection,
         ),
       };
       return { state: nextState, commands: [{ kind: 'clear-filter' }] };
@@ -302,56 +313,43 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
 
     // ── ui-filter-search: SearchApplied ──────────────────────────────────
     case 'SearchApplied': {
+      const { sortDirection } = searchSortOf(state);
       const nextSearchQuery = action.query;
       const nextVisible = computeVisible(
         state.allNoteIds,
         state.noteMetadata,
         state.activeFilterTags,
         nextSearchQuery,
-        state.sortDirection ?? 'desc',
+        sortDirection,
       );
-      const nextState: FeedViewState = {
-        ...state,
-        searchQuery: nextSearchQuery,
-        visibleNoteIds: nextVisible,
-      };
-      return { state: nextState, commands: [] };
+      return { state: { ...state, searchQuery: nextSearchQuery, visibleNoteIds: nextVisible }, commands: [] };
     }
 
     // ── ui-filter-search: SearchCleared ──────────────────────────────────
     case 'SearchCleared': {
+      const { sortDirection } = searchSortOf(state);
       const nextVisible = computeVisible(
         state.allNoteIds,
         state.noteMetadata,
         state.activeFilterTags,
         '',
-        state.sortDirection ?? 'desc',
+        sortDirection,
       );
-      const nextState: FeedViewState = {
-        ...state,
-        searchQuery: '',
-        visibleNoteIds: nextVisible,
-      };
-      return { state: nextState, commands: [] };
+      return { state: { ...state, searchQuery: '', visibleNoteIds: nextVisible }, commands: [] };
     }
 
     // ── ui-filter-search: SortDirectionToggled ────────────────────────────
     case 'SortDirectionToggled': {
-      const prevDir = state.sortDirection ?? 'desc';
+      const { searchQuery, sortDirection: prevDir } = searchSortOf(state);
       const nextDir: 'asc' | 'desc' = prevDir === 'desc' ? 'asc' : 'desc';
       const nextVisible = computeVisible(
         state.allNoteIds,
         state.noteMetadata,
         state.activeFilterTags,
-        state.searchQuery ?? '',
+        searchQuery,
         nextDir,
       );
-      const nextState: FeedViewState = {
-        ...state,
-        sortDirection: nextDir,
-        visibleNoteIds: nextVisible,
-      };
-      return { state: nextState, commands: [] };
+      return { state: { ...state, sortDirection: nextDir, visibleNoteIds: nextVisible }, commands: [] };
     }
 
     default: {

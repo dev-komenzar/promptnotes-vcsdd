@@ -31,11 +31,8 @@
   import { onDestroy, untrack } from 'svelte';
   import { nowIso } from './clockHelpers.js';
 
-  /** Extended prop type that allows filterApplied to be passed alongside viewState. */
-  type FeedListViewState = FeedViewState & { filterApplied?: boolean };
-
   interface Props {
-    viewState: FeedListViewState;
+    viewState: FeedViewState;
     adapter: TauriFeedAdapter;
     stateChannel: FeedStateChannel;
     /** FIND-S2-01/05/06: vault directory path, forwarded to Rust commands. */
@@ -46,14 +43,12 @@
 
   const _initial = untrack(() => initialViewState);
   let currentViewState = $state<FeedViewState>({ ..._initial });
-  let filterApplied = $state(_initial.filterApplied ?? false);
 
   const _channel = untrack(() => stateChannel);
 
   const unsubscribe = _channel.subscribe((snapshot) => {
     const result = feedReducer(currentViewState, { kind: 'DomainSnapshotReceived', snapshot });
     currentViewState = result.state;
-    filterApplied = snapshot.feed.filterApplied;
     // Consume commands emitted by the reducer (FIND-008: reducer→shell command bus)
     for (const cmd of result.commands) {
       dispatchCommand(cmd);

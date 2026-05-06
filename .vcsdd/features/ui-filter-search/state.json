@@ -2,7 +2,7 @@
   "featureName": "ui-filter-search",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "ready-for-3",
   "phaseHistory": [
     {
       "from": "init",
@@ -74,6 +74,12 @@
       "to": "2c",
       "timestamp": "2026-05-06T13:45:00.000Z",
       "reason": "green phase PASS — 1650 bun tests pass, 248 DOM tests pass; all ui-filter-search target tests green; entering refactor phase"
+    },
+    {
+      "from": "2c",
+      "to": "ready-for-3",
+      "timestamp": "2026-05-06T13:50:00.000Z",
+      "reason": "refactor PASS — extracted searchSortOf helper in feedReducer, removed dead filterApplied state in FeedList; all 1650 bun tests and 248 DOM tests remain green"
     }
   ],
   "iterations": {
@@ -81,7 +87,8 @@
     "1b": 4,
     "1c": 1,
     "2a": 1,
-    "2b": 1
+    "2b": 1,
+    "2c": 1
   },
   "proofObligations": [
     { "id": "PROP-FILTER-001", "tier": 0, "status": "asserted" },
@@ -231,9 +238,17 @@
         "regressionBaseline": "PASS",
         "evidencePath": ".vcsdd/features/ui-filter-search/evidence/green-phase.txt"
       }
+    },
+    "2c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-06T13:50:00.000Z",
+      "details": {
+        "testsAfterRefactor": "PASS (1650/1650 bun + 248 DOM)",
+        "evidencePath": ".vcsdd/features/ui-filter-search/evidence/refactor-phase.txt"
+      }
     }
   },
   "sprintCount": 1,
   "createdAt": "2026-05-06T03:38:06.107Z",
-  "updatedAt": "2026-05-06T13:45:00.000Z"
+  "updatedAt": "2026-05-06T13:50:00.000Z"
 }
