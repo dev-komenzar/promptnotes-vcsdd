@@ -4,7 +4,7 @@ Feature: `ui-filter-search`
 Mode: strict
 Language: typescript
 Phase: 1a
-Iteration: 3
+Iteration: 4
 
 ## 1. Feature Overview
 
@@ -138,7 +138,11 @@ feedReducer (pure):
       // ── preserved from previous state (not overwritten by snapshot) ──
       loadingStatus:             state.loadingStatus,
       activeFilterTags:          state.activeFilterTags,
-      tagAutocompleteVisibleFor: state.tagAutocompleteVisibleFor,
+      tagAutocompleteVisibleFor:
+        state.tagAutocompleteVisibleFor !== null &&
+        snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined
+          ? state.tagAutocompleteVisibleFor
+          : null,  // guard: null if the note was deleted from snapshot (inherited from ui-tag-chip)
       searchQuery:               state.searchQuery,               // NEW — ui-filter-search
       sortDirection:             state.sortDirection,             // NEW — ui-filter-search
       // ── derived ──
@@ -193,7 +197,7 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
 | `lastDeletionError` | `null` if cause is `NoteFileDeleted`, else `snapshot.delete.lastDeletionError` | Replaced on every snapshot |
 | `loadingStatus` | `state.loadingStatus` | Preserved from previous state |
 | `activeFilterTags` | `state.activeFilterTags` | Preserved from previous state |
-| `tagAutocompleteVisibleFor` | `state.tagAutocompleteVisibleFor` | Preserved from previous state |
+| `tagAutocompleteVisibleFor` | `derived (state + snapshot)` | Preserved if the referenced note still exists in `snapshot.noteMetadata`; set to `null` if the note was deleted. Guard: `state.tagAutocompleteVisibleFor !== null && snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined ? state.tagAutocompleteVisibleFor : null`. Inherited from ui-tag-chip; ui-filter-search must not regress this. |
 | `searchQuery` | `state.searchQuery` | Preserved — NEW for ui-filter-search |
 | `sortDirection` | `state.sortDirection` | Preserved — NEW for ui-filter-search |
 | `visibleNoteIds` | `computeVisible(...)` | Derived: re-run on every snapshot |
@@ -501,6 +505,7 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
 | EC-S-013 | RTL characters in query | Substring match only. No directional difference. |
 | EC-S-014 | Multiple consecutive Esc presses | Second+ press: `SearchCleared` with already-empty query. No-op. |
 | EC-S-015 | Special regex chars in query | Treated as literal characters. |
+| EC-S-016 | Rapid keystrokes within debounce window | Multiple keystrokes arriving within the 200ms window: only one `SearchApplied` is dispatched, 200ms after the LAST keystroke. Each new keystroke resets the debounce timer. REQ link: REQ-FILTER-002. |
 
 ### 4.2 Sort Edge Cases
 
@@ -545,6 +550,7 @@ Each EC ID appears exactly once in §4.1–§4.3 (the single source of truth). R
 | EC-S-013 | Search input | REQ-FILTER-017 |
 | EC-S-014 | Search input | REQ-FILTER-017 |
 | EC-S-015 | Search input | REQ-FILTER-017 |
+| EC-S-016 | Search input | REQ-FILTER-002 / PROP-FILTER-022 |
 | EC-T-001 | Sort timing | REQ-FILTER-007, REQ-FILTER-009 |
 | EC-T-002 | Sort timing | REQ-FILTER-007, REQ-FILTER-009 |
 | EC-T-003 | Sort timing | REQ-FILTER-007, REQ-FILTER-008 |
