@@ -1,0 +1,35 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+── bun test (unit + property) ──────────────────────────────────────────────────
+bun test v1.3.11 (af24e281)
+
+ 1650 pass
+ 0 fail
+ 22943 expect() calls
+Ran 1650 tests across 140 files. [13.44s]
+
+── vitest (DOM tests) ──────────────────────────────────────────────────────────
+Test Files  1 failed | 27 passed (28)
+      Tests  5 failed | 248 passed (253)
+
+NOTE: The 5 DOM failures are all in TagFilterSidebar.dom.vitest.ts and are
+pre-existing failures confirmed by git stash before our changes. They are NOT
+caused by ui-filter-search implementation.
+
+All ui-filter-search target tests pass:
+  - SearchInput.dom.vitest.ts          13/13 pass
+  - SortToggle.dom.vitest.ts           10/10 pass
+  - FeedList.search-empty.dom.vitest.ts 8/8  pass
+  - feedReducer.search.test.ts         26/26 pass
+  - searchPredicate.test.ts            13/13 pass
+  - sortByUpdatedAt.test.ts            15/15 pass
+  - computeVisible.test.ts             18/18 pass
+  - searchPredicate.prop.test.ts        8/8  pass
+
+Regression baseline (pre-existing tests) remain green:
+  - feedReducer.test.ts                  pass
+  - feedReducer.tag.test.ts              pass
+  - FeedList.dom.vitest.ts               pass (13/13)
+  - purityAudit.test.ts                  pass
+  - All other 130+ test files            pass

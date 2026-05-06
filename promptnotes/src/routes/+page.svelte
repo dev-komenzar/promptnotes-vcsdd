@@ -48,6 +48,9 @@
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
     allNoteIds: [],
+    // ui-filter-search initial values (REQ-FILTER-010)
+    searchQuery: "",
+    sortDirection: "desc",
   });
 
   // FIND-S2-01/05/06: Current vault path, resolved once on mount and passed to
@@ -83,6 +86,9 @@
             noteMetadata: snapshot.noteMetadata,
             tagAutocompleteVisibleFor: feedViewState.tagAutocompleteVisibleFor,
             activeFilterTags: feedViewState.activeFilterTags,
+            // ui-filter-search: preserve in-memory search/sort state across initial load
+            searchQuery: feedViewState.searchQuery,
+            sortDirection: feedViewState.sortDirection,
           };
         } else {
           // Unconfigured: show empty feed as ready (AppShell will redirect to modal)

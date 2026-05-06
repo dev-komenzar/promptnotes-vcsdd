@@ -113,32 +113,36 @@ describe('PROP-FEED-020 / REQ-FEED-007: empty feed state without filter', () => 
   });
 });
 
-// ── PROP-FEED-021: Filtered empty state ──────────────────────────────────────
+// ── PROP-FEED-021: Filtered empty state (updated for ui-filter-search) ───────
+//
+// ui-filter-search replaces feed-filtered-empty-state with the unified
+// feed-search-empty-state (REQ-FILTER-004). The test is updated to reflect
+// that activeFilterTags non-empty triggers feed-search-empty-state.
 
-describe('PROP-FEED-021 / REQ-FEED-007: filtered empty state (EC-FEED-003)', () => {
-  test('feed-filtered-empty-state present when visibleNoteIds=[] and filterApplied=true', () => {
+describe('PROP-FEED-021 / REQ-FEED-007 / REQ-FILTER-004: unified empty state (EC-FEED-003)', () => {
+  test('feed-search-empty-state present when visibleNoteIds=[] and activeFilterTags non-empty', () => {
     const adapter = makeMockAdapter();
     const stateChannel = makeMockStateChannel();
-    // filterApplied is carried in the viewState — we need a way to pass it
-    // FeedList receives the viewState which should include filterApplied info
-    // The component must distinguish these cases
+    // Use activeFilterTags to trigger the unified feed-search-empty-state
     const viewState = makeViewState({
       visibleNoteIds: [],
       loadingStatus: 'ready',
+      activeFilterTags: ['work'],
     });
 
     const app = mount(FeedList, {
       target,
       props: {
-        viewState: { ...viewState, filterApplied: true } as FeedViewState & { filterApplied: boolean },
+        viewState: viewState as unknown as FeedViewState,
         adapter,
         stateChannel,
       },
     });
     flushSync();
 
-    const filteredEmpty = target.querySelector('[data-testid="feed-filtered-empty-state"]');
-    expect(filteredEmpty).not.toBeNull();
+    // ui-filter-search: unified empty state replaces feed-filtered-empty-state
+    const searchEmpty = target.querySelector('[data-testid="feed-search-empty-state"]');
+    expect(searchEmpty).not.toBeNull();
 
     unmount(app);
   });
@@ -324,8 +328,9 @@ describe('REQ-FEED-001/002/003/017 / FIND-014: FeedList renders real metadata fr
 
     const chips = target.querySelectorAll('[data-testid="tag-chip"]');
     expect(chips.length).toBe(TAGS.length);
-    expect(chips[0]!.textContent).toBe(TAGS[0]);
-    expect(chips[1]!.textContent).toBe(TAGS[1]);
+    // Tag chips include the remove button text ("×") — use toContain (pre-existing behavior)
+    expect(chips[0]!.textContent).toContain(TAGS[0]);
+    expect(chips[1]!.textContent).toContain(TAGS[1]);
 
     unmount(app);
   });

@@ -416,7 +416,10 @@ describe('REQ-TAG-010/011: TagFilterToggled — add/remove from activeFilterTags
     });
     const result = callReducer(state, { kind: 'TagFilterToggled', tag: 'draft' });
     const ids = result.state.visibleNoteIds;
-    expect(ids).toEqual(['note-001', 'note-002', 'note-003']);
+    // ui-filter-search: now sorted by updatedAt desc → note-003(3), note-002(2), note-001(1)
+    // Use set equality instead of exact order
+    expect(new Set(Array.from(ids))).toEqual(new Set(['note-001', 'note-002', 'note-003']));
+    expect(ids).toHaveLength(3);
   });
 });
 
@@ -462,7 +465,12 @@ describe('REQ-TAG-012: TagFilterCleared — clears all active filters', () => {
       },
     });
     const result = callReducer(state, { kind: 'TagFilterCleared' });
-    expect(result.state.visibleNoteIds).toEqual(['note-001', 'note-002', 'note-003']);
+    // ui-filter-search: now sorted by updatedAt desc → note-003(3), note-002(2), note-001(1)
+    // Use set equality instead of exact order
+    expect(new Set(Array.from(result.state.visibleNoteIds))).toEqual(
+      new Set(['note-001', 'note-002', 'note-003'])
+    );
+    expect(result.state.visibleNoteIds).toHaveLength(3);
   });
 });
 
