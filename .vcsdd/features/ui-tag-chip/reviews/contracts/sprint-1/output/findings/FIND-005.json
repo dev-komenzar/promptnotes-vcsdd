@@ -9,5 +9,15 @@
     "lineRange": "50-58",
     "snippet": "{#if hasActive}\n      <button class=\"clear-button\" data-testid=\"tag-filter-clear\" onclick={onClear}>\n        すべて解除\n      </button>\n    {/if}"
   },
-  "routeToPhase": "2b"
+  "routeToPhase": "2b",
+  "resolution": {
+    "status": "resolved",
+    "resolvedAt": "2026-05-06T14:42:00.000Z",
+    "resolutionType": "post-convergence-coherence-fix",
+    "resolutionNotes": "Render guard switched from `hasActive` to `hasTags` so the 'すべて解除' button is shown ubiquitously while a non-empty tag inventory exists, matching REQ-TAG-012. data-testid renamed to 'tag-filter-clear-all' as part of the same coherence pass (see FIND-007 resolution).",
+    "evidence": {
+      "filePath": "promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+      "snippet": "{#if hasTags}\n      <button class=\"clear-button\" data-testid=\"tag-filter-clear-all\" onclick={onClear}>\n        すべて解除\n      </button>\n    {/if}"
+    }
+  }
 }

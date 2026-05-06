@@ -1,0 +1,56 @@
+Post-convergence coherence fix — TagFilterSidebar regression baseline
+=====================================================================
+Date: 2026-05-06T14:40:31Z
+Trigger: User-reported `bun run test:dom` failures (5 in TagFilterSidebar.dom.vitest.ts)
+Scope: Inherited regression debt from ui-tag-chip sprint-1; both ui-tag-chip
+       and ui-filter-search were already in `complete` phase.
+
+Defects addressed (rooted in ui-tag-chip)
+-----------------------------------------
+1. TagFilterSidebar.svelte rendered `entries` in caller-supplied order, but
+   REQ-TAG-009 / PROP-TAG-012 specify "entries sorted by usageCount descending"
+   as a property of THE SYSTEM (the sidebar component itself). Tests passed
+   un-sorted input expecting the component to enforce ordering.
+2. The clear-all button's data-testid was `tag-filter-clear` while the DOM
+   test fixture queried `tag-filter-clear-all`. The rendered button never
+   matched, causing 4 of the 5 failures.
+
+Coherence resolution
+--------------------
+- Component (promptnotes/src/lib/feed/TagFilterSidebar.svelte):
+    * Added `sortedEntries = $derived([...entries].sort((a,b) => b.usageCount - a.usageCount))`
+    * Iterated `sortedEntries` in the {#each} block instead of `entries`
+    * Renamed clear button data-testid: `tag-filter-clear` → `tag-filter-clear-all`
+- Findings annotated with resolution metadata:
+    * .vcsdd/features/ui-tag-chip/reviews/contracts/sprint-1/output/findings/FIND-005.json
+    * .vcsdd/features/ui-tag-chip/reviews/contracts/sprint-1/output/findings/FIND-007.json
+    * .vcsdd/features/ui-filter-search/reviews/contracts/sprint-1/output/findings/FIND-CONTRACT-006.json
+- Spec / verification-architecture artifacts: NO CHANGE.
+  Both REQ-TAG-009 and PROP-TAG-012 already encoded the canonical truth.
+  The implementation simply wasn't honoring it.
+- Sprint contracts: NO CHANGE. NC-IC-001 in ui-filter-search/contracts/sprint-1.md
+  referred to evidence/regression-baseline.json (forward-looking),
+  not to the inline 5-failure allow-list that FIND-CONTRACT-006 critiqued.
+- state.json gate verdicts: NO CHANGE.
+  Phase 2b/2c PASS records remain accurate for the moment they were issued.
+  The 248/253 DOM count documented at that time is now historical.
+
+Verification
+------------
+$ bun run test:dom
+ Test Files  28 passed (28)
+      Tests  253 passed (253)
+
+Delta vs prior baseline:
+  bun unit tests:  unchanged (1650 passing — not re-counted, not affected by this fix)
+  DOM tests:       248 → 253 (+5 — the 5 previously failing TagFilterSidebar tests)
+  No regressions in any other suite.
+
+Coherence status
+----------------
+Open findings rooted in this defect:    0
+Stale "pre-existing failures" allow-lists: now obsolete (see resolutions above)
+Convergence dimensions impacted (Phase 6): none — the four convergence
+  dimensions (finding diminishment, specificity, criteria coverage,
+  duplicate detection) remain PASS. This was a regression-baseline
+  cleanup, not a re-opened obligation.

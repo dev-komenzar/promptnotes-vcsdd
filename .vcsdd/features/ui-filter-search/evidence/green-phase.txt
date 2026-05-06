@@ -17,6 +17,11 @@ NOTE: The 5 DOM failures are all in TagFilterSidebar.dom.vitest.ts and are
 pre-existing failures confirmed by git stash before our changes. They are NOT
 caused by ui-filter-search implementation.
 
+[POST-CONVERGENCE UPDATE — 2026-05-06T14:40:31Z]
+Those 5 pre-existing failures have since been resolved upstream by a
+coherence fix to TagFilterSidebar.svelte (sort + testid rename). The
+DOM suite is now 253/253. See evidence/post-convergence-tagfilter-fix.txt.
+
 All ui-filter-search target tests pass:
   - SearchInput.dom.vitest.ts          13/13 pass
   - SortToggle.dom.vitest.ts           10/10 pass
