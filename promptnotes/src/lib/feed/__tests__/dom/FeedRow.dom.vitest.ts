@@ -13,6 +13,10 @@
  * REQ coverage: REQ-FEED-005, REQ-FEED-006, REQ-FEED-009, REQ-FEED-010, REQ-FEED-011
  * EC coverage: EC-FEED-002, EC-FEED-004, EC-FEED-005, EC-FEED-006, EC-FEED-013
  *
+ * Sprint 3 additions:
+ *   REQ-TAG-005 (ArrowUp/Down keyboard navigation in autocomplete)
+ *   EC-021 (Arrow Up/Down to move through suggestions, Enter to select, Escape to close)
+ *
  * RED PHASE: FeedRow.svelte renders nothing (<!-- not implemented -->) so all
  * querySelector assertions will fail (return null).
  */
@@ -26,6 +30,7 @@ vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 import FeedRow from '../../FeedRow.svelte';
 import type { TauriFeedAdapter } from '../../tauriFeedAdapter.js';
 import type { FeedViewState } from '../../types.js';
+import type { TagEntry } from '../../tagInventory.js';
 
 // ── Mock factory ──────────────────────────────────────────────────────────────
 
@@ -47,7 +52,7 @@ function makeViewState(overrides: Partial<FeedViewState> = {}): FeedViewState {
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
-    noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [],
+    noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [], allNoteIds: [],
     ...overrides,
   };
 }
@@ -422,5 +427,286 @@ describe('FIND-006 / REQ-FEED-009: showPendingSwitch requires editingStatus guar
     expect(indicator).not.toBeNull();
 
     unmount(app);
+  });
+});
+
+// ── Sprint 3: REQ-TAG-005 / EC-021 Arrow key navigation in autocomplete ───────
+
+function makeTagInventory(overrides: Partial<TagEntry>[] = []): TagEntry[] {
+  return [
+    { name: 'react', usageCount: 10 },
+    { name: 'redux', usageCount: 8 },
+    { name: 'rest', usageCount: 5 },
+    ...overrides as TagEntry[],
+  ];
+}
+
+function makeViewStateWithTagInput(overrides: Partial<FeedViewState> = {}): FeedViewState {
+  return {
+    editingStatus: 'idle',
+    editingNoteId: null,
+    pendingNextNoteId: null,
+    visibleNoteIds: ['note-001'],
+    allNoteIds: ['note-001'],
+    loadingStatus: 'ready',
+    activeDeleteModalNoteId: null,
+    lastDeletionError: null,
+    noteMetadata: {},
+    tagAutocompleteVisibleFor: 'note-001',
+    activeFilterTags: [],
+    ...overrides,
+  };
+}
+
+const TAG_INPUT_BASE_PROPS = {
+  noteId: 'note-001',
+  body: 'Some content',
+  createdAt: 1746352800000,
+  updatedAt: 1746352800000,
+  tags: ['typescript'],
+};
+
+function assertHighlightedItem(target: HTMLElement, tagName: string): void {
+  const items = target.querySelectorAll('[data-testid="autocomplete-item"]');
+  for (const item of items) {
+    const nameEl = item.querySelector('.autocomplete-name');
+    if (nameEl?.textContent === `#${tagName}`) {
+      expect(item.classList.contains('autocomplete-item--highlighted')).toBe(true);
+      return;
+    }
+  }
+  throw new Error(`Item for tag "${tagName}" not found in autocomplete list`);
+}
+
+function assertNoHighlightedItem(target: HTMLElement): void {
+  const items = target.querySelectorAll('[data-testid="autocomplete-item"]');
+  for (const item of items) {
+    expect(item.classList.contains('autocomplete-item--highlighted')).toBe(false);
+  }
+}
+
+function fireKeydown(targetEl: Element, key: string, options: Partial<KeyboardEventInit> = {}): void {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...options });
+  targetEl.dispatchEvent(event);
+}
+
+async function setupTagInputWithSuggestions(
+  overrides: { text?: string; inventory?: TagEntry[]; viewState?: Partial<FeedViewState> } = {},
+) {
+  const adapter = makeMockAdapter();
+  const tagInventory = overrides.inventory ?? makeTagInventory();
+  const viewState = makeViewStateWithTagInput(overrides.viewState ?? {});
+  const onTagInputCommit = vi.fn();
+  const onTagInputCancel = vi.fn();
+
+  const app = mount(FeedRow, {
+    target,
+    props: {
+      ...TAG_INPUT_BASE_PROPS,
+      viewState,
+      adapter,
+      tagInventory,
+      onTagInputCommit,
+      onTagInputCancel,
+      onTagRemove: vi.fn(),
+      onTagAddClick: vi.fn(),
+    },
+  });
+  flushSync();
+
+  const input = target.querySelector('[data-testid="tag-input"]') as HTMLInputElement | null;
+  expect(input).not.toBeNull();
+
+  // Type text to show autocomplete suggestions
+  const text = overrides.text ?? 're';
+  input!.value = text;
+  input!.dispatchEvent(new Event('input', { bubbles: true }));
+  flushSync();
+
+  return { adapter, onTagInputCommit, onTagInputCancel, input, app };
+}
+
+describe('REQ-TAG-005 / EC-021: Arrow key navigation in autocomplete', () => {
+  test('ArrowDown highlights the first suggestion', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+
+    assertHighlightedItem(target, 'react');
+  });
+
+  test('ArrowDown twice highlights the second suggestion', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+
+    assertHighlightedItem(target, 'redux');
+  });
+
+  test('ArrowDown wraps to first after last suggestion', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    // Go to last suggestion
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+
+    assertHighlightedItem(target, 'rest');
+
+    // One more ArrowDown wraps to first
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+
+    assertHighlightedItem(target, 'react');
+  });
+
+  test('ArrowDown continues to wrap correctly across multiple full cycles', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    // Cycle to last
+    for (let i = 0; i < 3; i++) { fireKeydown(input!, 'ArrowDown'); flushSync(); }
+    // Wrap to first
+    fireKeydown(input!, 'ArrowDown'); flushSync();
+
+    assertHighlightedItem(target, 'react');
+
+    // Cycle to last again
+    for (let i = 0; i < 2; i++) { fireKeydown(input!, 'ArrowDown'); flushSync(); }
+    assertHighlightedItem(target, 'rest');
+
+    // Wrap to first again
+    fireKeydown(input!, 'ArrowDown'); flushSync();
+    assertHighlightedItem(target, 'react');
+  });
+
+  test('ArrowUp highlights the last suggestion when no highlight', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'ArrowUp');
+    flushSync();
+
+    assertHighlightedItem(target, 'rest');
+  });
+
+  test('ArrowUp after ArrowDown moves highlight back', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+
+    assertHighlightedItem(target, 'redux');
+
+    fireKeydown(input!, 'ArrowUp');
+    flushSync();
+
+    assertHighlightedItem(target, 'react');
+  });
+
+  test('ArrowUp from first wraps to last', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    assertHighlightedItem(target, 'react');
+
+    fireKeydown(input!, 'ArrowUp');
+    flushSync();
+    assertHighlightedItem(target, 'rest');
+  });
+
+  test('Enter without highlight commits typed text (existing behavior)', async () => {
+    const { input, onTagInputCommit } = await setupTagInputWithSuggestions({ text: 'redux' });
+
+    fireKeydown(input!, 'Enter');
+    flushSync();
+
+    expect(onTagInputCommit).toHaveBeenCalledWith('note-001', 'redux');
+  });
+
+  test('Enter with highlighted suggestion selects that suggestion', async () => {
+    const { input, onTagInputCommit } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+
+    assertHighlightedItem(target, 'redux');
+
+    fireKeydown(input!, 'Enter');
+    flushSync();
+
+    expect(onTagInputCommit).toHaveBeenCalledWith('note-001', 'redux');
+  });
+
+  test('Escape closes input (already working, regression guard)', async () => {
+    const { input, onTagInputCancel } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'Escape');
+    flushSync();
+
+    expect(onTagInputCancel).toHaveBeenCalled();
+  });
+
+  test('Arrow keys do nothing when autocomplete list is empty', async () => {
+    const { input } = await setupTagInputWithSuggestions({ text: 'zzzz', inventory: [] });
+
+    // No autocomplete list visible
+    const list = target.querySelector('[data-testid="autocomplete-list"]');
+    expect(list).toBeNull();
+
+    // ArrowDown should not throw
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+
+    // Still no list
+    expect(target.querySelector('[data-testid="autocomplete-list"]')).toBeNull();
+
+    // ArrowUp should not throw
+    fireKeydown(input!, 'ArrowUp');
+    flushSync();
+
+    expect(target.querySelector('[data-testid="autocomplete-list"]')).toBeNull();
+  });
+
+  test('highlight resets when input text changes', async () => {
+    const { input } = await setupTagInputWithSuggestions();
+
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    assertHighlightedItem(target, 'react');
+
+    // Change input text
+    input!.value = 'res';
+    input!.dispatchEvent(new Event('input', { bubbles: true }));
+    flushSync();
+
+    assertNoHighlightedItem(target);
+  });
+
+  test('clicking a suggestion selects it and clears highlight', async () => {
+    const { input, onTagInputCommit } = await setupTagInputWithSuggestions();
+
+    // Highlight via keyboard first
+    fireKeydown(input!, 'ArrowDown');
+    flushSync();
+    assertHighlightedItem(target, 'react');
+
+    // Click the second suggestion
+    const items = target.querySelectorAll('[data-testid="autocomplete-item"]');
+    expect(items.length).toBe(3);
+    (items[1] as HTMLButtonElement).dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    flushSync();
+
+    expect(onTagInputCommit).toHaveBeenCalledWith('note-001', 'redux');
   });
 });

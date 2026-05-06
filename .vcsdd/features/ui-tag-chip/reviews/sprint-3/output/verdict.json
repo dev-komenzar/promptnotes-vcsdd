@@ -1,0 +1,91 @@
+{
+  "sprintNumber": 3,
+  "featureName": "ui-tag-chip",
+  "overallVerdict": "PASS",
+  "timestamp": "2026-05-06T12:00:00Z",
+  "iteration": 1,
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "findings": ["FIND-S3-001"],
+      "details": "Keyboard navigation (ArrowUp/Down, Enter-to-select, Escape-to-close) in handleTagInputKeydown (FeedRow.svelte:118-149) matches REQ-TAG-005 line 86 and EC-021 exactly. ArrowDown from no-highlight selects first (line 139), wraps correctly via modulo. ArrowUp from no-highlight selects last (lines 143-144), wraps via safe-modulo (line 146). Enter with highlight calls handleSuggestionClick with the suggestion name (lines 126-128), not the typed text. Escape retains existing behavior (lines 119-123). One pre-existing discrepancy noted: autocomplete filtering uses .includes() (substring match, line 74) rather than the prefix matching specified by REQ-TAG-005 line 78 — this predates sprint 3 and is captured as FIND-S3-001.",
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/feed/FeedRow.svelte", "description": "handleTagInputKeydown lines 118-149, handleSuggestionClick lines 167-173, resetHighlight lines 79-81"},
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts", "description": "REQ-TAG-005 / EC-021 test suite lines 528-704"}
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "PASS",
+      "findings": ["FIND-S3-002"],
+      "details": "EC-021 (Arrow Up/Down navigation, Enter to select, Escape to close) is fully covered by 12 tests (lines 528-704). Edge cases tested: empty suggestions list with ArrowDown (line 659), highlight reset on text input change (line 674), Enter without highlight (line 625), Enter with highlight (line 634), clicking suggestion while keyboard-highlighted (line 689), wrapping behavior (lines 549, 588, 613, 569). Guard against empty autocomplete list via early return (lines 138, 142). Missing: ArrowUp on empty suggestion list is not tested (only ArrowDown tested at line 666). Captured as FIND-S3-002.",
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts", "description": "Tests at lines 528-704 covering: highlight, wrap, enter-select, escape, empty-list, reset-on-input, click-during-highlight"}
+      ]
+    },
+    "implementation_correctness": {
+      "verdict": "PASS",
+      "findings": [],
+      "details": "Arrow key logic is correct. ArrowDown (line 139): (highlightedIndex + 1) % length — from -1 produces 0 (first item), from last wraps to 0. ArrowUp (lines 143-147): special-cases -1 to set last index; otherwise (index - 1 + length) % length ensures safe wrapping. Enter handler (lines 124-135): guards highlightedIndex range before accessing autocompleteSuggestions array (line 126), calls handleSuggestionClick with suggestion.name not typed text, falls through to typed-text commit when no highlight and text non-empty. resetHighlight (line 80) sets highlightedIndex = -1, called via oninput binding (line 243) which runs before bind:value updates tagInputText — ordering is benign since resetHighlight only touches highlightedIndex. handleSuggestionClick (lines 167-173) sets suggestionClicked flag used by blur guard (line 152) to prevent double-commit. No off-by-one errors, no null pointer risks, no infinite loops.",
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/feed/FeedRow.svelte", "description": "Lines 68 (highlightedIndex init), 79-81 (resetHighlight), 118-149 (handleTagInputKeydown), 151-165 (handleTagInputBlur), 167-173 (handleSuggestionClick), 243 (oninput binding)"}
+      ]
+    },
+    "structural_integrity": {
+      "verdict": "PASS",
+      "findings": [],
+      "details": "Sprint 3 additions follow existing FeedRow.svelte patterns: Svelte 5 $state for highlightedIndex (line 68), $derived.by for autocompleteSuggestions (lines 70-77), plain function declarations for handlers. Component structure unchanged — handlers remain co-located with template bindings. new CSS class autocomplete-item--highlighted (line 502) follows existing BEM-like naming. No dead code: resetHighlight is referenced by oninput (line 243), highlightedIndex is read in keyboard handlers and template (line 255). suggestionClicked remains a plain let variable (line 67) consistent with its synchronous-event-guard usage pattern. Names are clear: highlightedIndex, resetHighlight, handleSuggestionClick, autocomplete-item--highlighted.",
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/feed/FeedRow.svelte", "description": "Lines 67-68 (state), 70-77 (derived), 79-81 (function), 118-149 (keydown handler), 243 (binding), 255 (template class), 502 (CSS)"}
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "findings": ["FIND-S3-003"],
+      "details": "Tests use DOM-level integration testing (vitest + jsdom + svelte mount/flushSync). 12 tests in the REQ-TAG-005/EC-021 suite. Assertions check actual DOM state (classList.contains for highlight, aria-selected attribute, onTagInputCommit/onTagInputCancel mock calls). Tests verify: initial highlight state, forward/backward navigation, wrapping, Enter selection of highlighted vs typed text, Escape close, empty-list guard, highlight reset on input, and mouse-click-during-keyboard-highlight. The helper functions (assertHighlightedItem, assertNoHighlightedItem, fireKeydown, setupTagInputWithSuggestions) are well-structured. One test has a misleading name: line 569 'wraps from last to no highlight on second wrap' never asserts any 'no highlight' state. Captured as FIND-S3-003.",
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts", "description": "Lines 435-526 (helpers), 528-704 (test suite)"}
+      ]
+    }
+  },
+  "contractCriteria": {
+    "CRIT-030": {
+      "verdict": "PASS",
+      "details": "ArrowDown from no highlight (−1) produces index 0 via modulo (line 139): (−1+1)%N = 0%N = 0, highlighting first suggestion. Verified by test at line 529. Wrapping from last to first: (N−1+1)%N = N%N = 0. Verified by test at line 549."
+    },
+    "CRIT-031": {
+      "verdict": "PASS",
+      "details": "ArrowUp from no highlight: special-case sets highlightedIndex = autocompleteSuggestions.length − 1 (line 144), highlighting last suggestion. Verified by test at line 588. Wrapping from first to last: (0−1+N)%N = (N−1)%N = N−1. Verified by test at line 613."
+    },
+    "CRIT-032": {
+      "verdict": "PASS",
+      "details": "Enter with valid highlightedIndex (line 126 guard) calls handleSuggestionClick with autocompleteSuggestions[highlightedIndex].name (line 127), which commits the suggestion name via onTagInputCommit (line 169), not the typed text. Verified by test at line 634: onTagInputCommit called with 'redux' (suggestion name), not 're' (typed prefix)."
+    },
+    "CRIT-033": {
+      "verdict": "PASS",
+      "details": "Escape handler (lines 119-123) unchanged: clears text/error/highlight, calls onTagInputCancel. Enter-without-highlight handler (lines 130-135) unchanged: commits typed text when non-empty. Both verified by regression-guard tests at lines 625 and 650."
+    },
+    "CRIT-034": {
+      "verdict": "PASS",
+      "details": "oninput={resetHighlight} on the input element (line 243) calls resetHighlight() (line 80) which sets highlightedIndex = −1 synchronously before the derived autocompleteSuggestions recomputes. Verified by test at line 674: ArrowDown highlights react, then input text changed to 'res', then assertNoHighlightedItem confirms no item has highlighted class."
+    }
+  },
+  "convergenceSignals": {
+    "findingCount": 3,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-030", "CRIT-031", "CRIT-032", "CRIT-033", "CRIT-034"],
+    "duplicateFindings": []
+  },
+  "summary": "Sprint 3 implements REQ-TAG-005 arrow key navigation (ArrowUp/Down) and EC-021 correctly. All 5 contract criteria (CRIT-030 through CRIT-034) pass. The implementation uses safe modulo arithmetic for wrapping, guards against empty suggestion lists, correctly distinguishes Enter-with-highlight (selects suggestion name) from Enter-without-highlight (commits typed text), and resets highlight on text input change. Three findings emitted: one pre-existing spec mismatch (substring vs prefix filtering in autocomplete), one test coverage gap (ArrowUp on empty list untested), and one test quality issue (misleading test name). None block the sprint gate.",
+  "reviewContext": {
+    "reviewType": "implementation",
+    "featureName": "ui-tag-chip",
+    "sprintNumber": 3,
+    "contractPath": "contracts/sprint-3.md",
+    "focusRequirements": ["REQ-TAG-005", "EC-021"],
+    "artifactsReviewed": [
+      "specs/behavioral-spec.md",
+      "src/lib/feed/FeedRow.svelte",
+      "src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts"
+    ]
+  }
+}

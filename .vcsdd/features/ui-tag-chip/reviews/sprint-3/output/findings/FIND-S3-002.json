@@ -1,0 +1,17 @@
+{
+  "findingId": "FIND-S3-002",
+  "severity": "minor",
+  "dimension": "edge_case_coverage",
+  "criterion": null,
+  "category": "test_coverage",
+  "description": "The test 'Arrow keys do nothing when autocomplete list is empty' (FeedRow.dom.vitest.ts:659) only tests ArrowDown on an empty suggestion list. ArrowUp on an empty list is not tested. While the implementation guards both ArrowDown (line 138) and ArrowUp (line 142) with the same `if (autocompleteSuggestions.length === 0) return;` check, the ArrowUp path is not exercised in this edge case, creating a coverage gap. If a future refactor modifies the ArrowUp guard independently, this missing test would not catch a regression.",
+  "expected": "Both ArrowDown and ArrowUp should be tested when the autocomplete list is empty, verifying neither throws an error and the DOM remains unchanged.",
+  "actual": "Only ArrowDown is tested (line 666: `fireKeydown(input!, 'ArrowDown');`). ArrowUp is not tested for the empty-list case.",
+  "recommendation": "Add an assertion to the existing test at line 659 that also fires ArrowUp and verifies no error and no autocomplete list appears. Alternatively, add a separate test: `test('ArrowUp does nothing when autocomplete list is empty', async () => { ... fireKeydown(input!, 'ArrowUp'); ... })`.",
+  "routeToPhase": "2a",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+    "lineRange": "659-672",
+    "snippet": "test('Arrow keys do nothing when autocomplete list is empty', async () => {\n    const { input } = await setupTagInputWithSuggestions({ text: 'zzzz', inventory: [] });\n    const list = target.querySelector('[data-testid=\"autocomplete-list\"]');\n    expect(list).toBeNull();\n    fireKeydown(input!, 'ArrowDown');\n    flushSync();\n    expect(target.querySelector('[data-testid=\"autocomplete-list\"]')).toBeNull();\n  });"
+  }
+}

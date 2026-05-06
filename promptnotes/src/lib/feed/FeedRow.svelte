@@ -65,6 +65,7 @@
   let tagInputText = $state('');
   let tagErrorText = $state<string | null>(null);
   let suggestionClicked = false;
+  let highlightedIndex = $state(-1);
 
   const autocompleteSuggestions = $derived.by(() => {
     if (!isTagInputOpen || tagInputText.trim().length === 0) return [];
@@ -74,6 +75,10 @@
       .sort((a, b) => b.usageCount - a.usageCount)
       .slice(0, 10);
   });
+
+  function resetHighlight(): void {
+    highlightedIndex = -1;
+  }
 
   const rowDisabled = $derived(
     isFeedRowClickBlocked(viewState.editingStatus, viewState.loadingStatus)
@@ -114,13 +119,31 @@
     if (e.key === 'Escape') {
       tagInputText = '';
       tagErrorText = null;
+      highlightedIndex = -1;
       onTagInputCancel?.();
     } else if (e.key === 'Enter') {
       e.preventDefault();
+      if (highlightedIndex >= 0 && highlightedIndex < autocompleteSuggestions.length) {
+        handleSuggestionClick(autocompleteSuggestions[highlightedIndex].name);
+        return;
+      }
       if (tagInputText.trim().length > 0) {
         onTagInputCommit?.(noteId, tagInputText);
         tagInputText = '';
         tagErrorText = null;
+        highlightedIndex = -1;
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (autocompleteSuggestions.length === 0) return;
+      highlightedIndex = (highlightedIndex + 1) % autocompleteSuggestions.length;
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (autocompleteSuggestions.length === 0) return;
+      if (highlightedIndex === -1) {
+        highlightedIndex = autocompleteSuggestions.length - 1;
+      } else {
+        highlightedIndex = (highlightedIndex - 1 + autocompleteSuggestions.length) % autocompleteSuggestions.length;
       }
     }
   }
@@ -128,6 +151,7 @@
   function handleTagInputBlur(): void {
     if (suggestionClicked) {
       suggestionClicked = false;
+      highlightedIndex = -1;
       return;
     }
     if (tagInputText.trim().length > 0) {
@@ -137,6 +161,7 @@
     }
     tagInputText = '';
     tagErrorText = null;
+    highlightedIndex = -1;
   }
 
   function handleSuggestionClick(tagName: string): void {
@@ -144,6 +169,7 @@
     onTagInputCommit?.(noteId, tagName);
     tagInputText = '';
     tagErrorText = null;
+    highlightedIndex = -1;
   }
 </script>
 
@@ -214,6 +240,7 @@
               placeholder="タグを入力..."
               bind:value={tagInputText}
               onkeydown={handleTagInputKeydown}
+              oninput={resetHighlight}
               onblur={handleTagInputBlur}
             />
             {#if tagErrorText !== null}
@@ -221,12 +248,14 @@
             {/if}
             {#if autocompleteSuggestions.length > 0}
               <ul class="autocomplete-list" data-testid="autocomplete-list" role="listbox">
-                {#each autocompleteSuggestions as suggestion (suggestion.name)}
+                {#each autocompleteSuggestions as suggestion, index (suggestion.name)}
                   <li>
                     <button
                       class="autocomplete-item"
+                      class:autocomplete-item--highlighted={index === highlightedIndex}
                       data-testid="autocomplete-item"
                       role="option"
+                      aria-selected={index === highlightedIndex}
                       onmousedown={(e: MouseEvent) => {
                         e.preventDefault();
                         handleSuggestionClick(suggestion.name);
@@ -469,7 +498,8 @@
   }
 
   .autocomplete-item:hover,
-  .autocomplete-item:focus-visible {
+  .autocomplete-item:focus-visible,
+  .autocomplete-item--highlighted {
     background-color: #f6f5f4;
   }
 

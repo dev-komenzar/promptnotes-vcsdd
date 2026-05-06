@@ -1,0 +1,22 @@
+{
+  "findingId": "FIND-S3-001",
+  "severity": "major",
+  "dimension": "spec_fidelity",
+  "criterion": null,
+  "category": "requirement_mismatch",
+  "description": "Autocomplete filtering uses String.prototype.includes() (substring matching) instead of prefix matching as specified by REQ-TAG-005. The spec states 'filtered by user-typed prefix, case-insensitive' (behavioral-spec.md line 78). The implementation at FeedRow.svelte:74 uses `e.name.includes(prefix)` which matches substrings anywhere in the tag name — e.g., typing 'es' would match 'rest' even though 'es' is not a prefix of 'rest'. Correct implementation should use `e.name.startsWith(prefix)`.",
+  "expected": "`e.name.startsWith(prefix)` — only tags whose names begin with the typed prefix should appear in suggestions.",
+  "actual": "`e.name.includes(prefix)` — any tag containing the typed text as a substring anywhere in its name appears in suggestions.",
+  "recommendation": "Change line 74 from `.filter((e) => e.name.includes(prefix))` to `.filter((e) => e.name.startsWith(prefix))`. Alternatively, if substring matching is intentionally desired, update REQ-TAG-005 line 78 to say 'filtered by user-typed substring' instead of 'prefix'. Add a test case that distinguishes behavior: with tags ['react', 'rest', 'forest'], typing 'es' should not match 'forest' with prefix matching, but would with substring matching. Note: this is a pre-existing issue (filtering logic implemented in sprint 1-2), not introduced by sprint 3. Route to Phase 2b for implementation fix or Phase 1a for spec clarification.",
+  "routeToPhase": "2b",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "70-77",
+    "snippet": "const autocompleteSuggestions = $derived.by(() => {\n    if (!isTagInputOpen || tagInputText.trim().length === 0) return [];\n    const prefix = tagInputText.trim().toLowerCase();\n    return tagInventory\n      .filter((e) => e.name.includes(prefix))\n      .sort((a, b) => b.usageCount - a.usageCount)\n      .slice(0, 10);\n  });"
+  },
+  "specReference": {
+    "filePath": ".vcsdd/features/ui-tag-chip/specs/behavioral-spec.md",
+    "lineRange": "76-78",
+    "snippet": "**State-driven**: WHILE the tag input is focused, THE SYSTEM SHALL show a dropdown list of matching `TagInventory.entries` (filtered by user-typed prefix, case-insensitive), ordered by `usageCount` descending."
+  }
+}
