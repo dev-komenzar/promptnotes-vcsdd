@@ -14,16 +14,11 @@ coherence:
       relation: derives_from
     - id: "governance:design-system"
       relation: depends_on
-    - id: "req:ui-app-shell"
-      relation: depends_on
-    - id: "req:capture-auto-save"
-      relation: depends_on
-    - id: "req:copy-body"
-      relation: depends_on
-    - id: "req:handle-save-failure"
-      relation: depends_on
   modules:
     - "ui-editor"
+    - "capture-auto-save"
+    - "copy-body"
+    - "handle-save-failure"
   source_files:
     - "promptnotes/src/lib/editor"
 ---

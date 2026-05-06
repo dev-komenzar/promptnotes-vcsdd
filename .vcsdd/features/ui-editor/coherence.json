@@ -33,31 +33,29 @@
       "type": "governance",
       "placeholder": true
     },
-    "req:ui-app-shell": {
-      "id": "req:ui-app-shell",
-      "type": "requirement",
-      "placeholder": true
-    },
-    "req:capture-auto-save": {
-      "id": "req:capture-auto-save",
-      "type": "requirement",
-      "placeholder": true
-    },
-    "req:copy-body": {
-      "id": "req:copy-body",
-      "type": "requirement",
-      "placeholder": true
-    },
-    "req:handle-save-failure": {
-      "id": "req:handle-save-failure",
-      "type": "requirement",
-      "placeholder": true
-    },
     "module:ui-editor": {
       "id": "module:ui-editor",
       "type": "module",
       "placeholder": false,
       "name": "ui-editor"
+    },
+    "module:capture-auto-save": {
+      "id": "module:capture-auto-save",
+      "type": "module",
+      "placeholder": false,
+      "name": "capture-auto-save"
+    },
+    "module:copy-body": {
+      "id": "module:copy-body",
+      "type": "module",
+      "placeholder": false,
+      "name": "copy-body"
+    },
+    "module:handle-save-failure": {
+      "id": "module:handle-save-failure",
+      "type": "module",
+      "placeholder": false,
+      "name": "handle-save-failure"
     },
     "file:promptnotes/src/lib/editor": {
       "id": "file:promptnotes/src/lib/editor",
@@ -177,78 +175,6 @@
     },
     {
       "id": 6,
-      "sourceId": "req:ui-editor",
-      "targetId": "req:ui-app-shell",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 7,
-      "sourceId": "req:ui-editor",
-      "targetId": "req:capture-auto-save",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 8,
-      "sourceId": "req:ui-editor",
-      "targetId": "req:copy-body",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 9,
-      "sourceId": "req:ui-editor",
-      "targetId": "req:handle-save-failure",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 10,
       "sourceId": "module:ui-editor",
       "targetId": "req:ui-editor",
       "relation": "implements",
@@ -266,7 +192,61 @@
       ]
     },
     {
-      "id": 11,
+      "id": 7,
+      "sourceId": "module:capture-auto-save",
+      "targetId": "req:ui-editor",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "module:copy-body",
+      "targetId": "req:ui-editor",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "module:handle-save-failure",
+      "targetId": "req:ui-editor",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
       "sourceId": "req:ui-editor",
       "targetId": "file:promptnotes/src/lib/editor",
       "relation": "extracted_from",
@@ -284,7 +264,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 11,
       "sourceId": "design:ui-editor-verification",
       "targetId": "req:ui-editor",
       "relation": "derives_from",
@@ -302,7 +282,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 12,
       "sourceId": "design:ui-editor-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
@@ -320,7 +300,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 13,
       "sourceId": "design:ui-editor-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
@@ -338,7 +318,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 14,
       "sourceId": "module:ui-editor",
       "targetId": "design:ui-editor-verification",
       "relation": "implements",
@@ -356,7 +336,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 15,
       "sourceId": "design:ui-editor-verification",
       "targetId": "file:promptnotes/src/lib/editor/__tests__",
       "relation": "extracted_from",
@@ -374,5 +354,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-06T06:21:49.245Z"
+  "lastScanAt": "2026-05-06T06:29:21.150Z"
 }

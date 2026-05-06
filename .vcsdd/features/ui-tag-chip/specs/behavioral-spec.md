@@ -16,14 +16,10 @@ coherence:
       relation: specifies
     - id: "governance:design-system"
       relation: depends_on
-    - id: "req:ui-feed-list-actions"
-      relation: depends_on
-    - id: "req:tag-chip-update"
-      relation: depends_on
-    - id: "req:apply-filter-or-search"
-      relation: depends_on
   modules:
     - "ui-tag-chip"
+    - "tag-chip-update"
+    - "apply-filter-or-search"
   source_files:
     - "promptnotes/src/lib/feed/TagFilterSidebar.svelte"
     - "promptnotes/src/lib/feed/FeedRow.svelte"

@@ -14,16 +14,10 @@ coherence:
       relation: derives_from
     - id: "governance:design-system"
       relation: depends_on
-    - id: "req:ui-app-shell"
-      relation: depends_on
-    - id: "req:ui-editor"
-      relation: depends_on
-    - id: "req:edit-past-note-start"
-      relation: depends_on
-    - id: "req:delete-note"
-      relation: depends_on
   modules:
     - "ui-feed-list-actions"
+    - "edit-past-note-start"
+    - "delete-note"
   source_files:
     - "promptnotes/src/lib/feed/FeedList.svelte"
     - "promptnotes/src/lib/feed/FeedRow.svelte"

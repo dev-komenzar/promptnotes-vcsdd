@@ -28,21 +28,23 @@
       "type": "governance",
       "placeholder": true
     },
-    "req:app-startup": {
-      "id": "req:app-startup",
-      "type": "requirement",
-      "placeholder": true
-    },
-    "req:configure-vault": {
-      "id": "req:configure-vault",
-      "type": "requirement",
-      "placeholder": true
-    },
     "module:ui-app-shell": {
       "id": "module:ui-app-shell",
       "type": "module",
       "placeholder": false,
       "name": "ui-app-shell"
+    },
+    "module:app-startup": {
+      "id": "module:app-startup",
+      "type": "module",
+      "placeholder": false,
+      "name": "app-startup"
+    },
+    "module:configure-vault": {
+      "id": "module:configure-vault",
+      "type": "module",
+      "placeholder": false,
+      "name": "configure-vault"
     },
     "file:promptnotes/src/lib/ui/app-shell": {
       "id": "file:promptnotes/src/lib/ui/app-shell",
@@ -161,43 +163,43 @@
     },
     {
       "id": 5,
-      "sourceId": "req:ui-app-shell",
-      "targetId": "req:app-startup",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
+      "sourceId": "module:ui-app-shell",
+      "targetId": "req:ui-app-shell",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
       "isActive": true,
       "evidence": [
         {
           "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
       "id": 6,
-      "sourceId": "req:ui-app-shell",
-      "targetId": "req:configure-vault",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
+      "sourceId": "module:app-startup",
+      "targetId": "req:ui-app-shell",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
       "isActive": true,
       "evidence": [
         {
           "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
       "id": 7,
-      "sourceId": "module:ui-app-shell",
+      "sourceId": "module:configure-vault",
       "targetId": "req:ui-app-shell",
       "relation": "implements",
       "semantic": "technical",
@@ -358,5 +360,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-06T06:21:49.242Z"
+  "lastScanAt": "2026-05-06T06:29:21.147Z"
 }

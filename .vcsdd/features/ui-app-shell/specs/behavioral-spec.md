@@ -12,12 +12,10 @@ coherence:
       relation: derives_from
     - id: "governance:design-system"
       relation: depends_on
-    - id: "req:app-startup"
-      relation: depends_on
-    - id: "req:configure-vault"
-      relation: depends_on
   modules:
     - "ui-app-shell"
+    - "app-startup"
+    - "configure-vault"
   source_files:
     - "promptnotes/src/lib/ui/app-shell"
     - "promptnotes/src/routes/+page.svelte"

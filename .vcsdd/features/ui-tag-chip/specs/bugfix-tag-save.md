@@ -8,10 +8,9 @@ coherence:
       relation: refines
     - id: "design:ui-tag-chip-verification"
       relation: depends_on
-    - id: "req:tag-chip-update"
-      relation: depends_on
   modules:
     - "ui-tag-chip"
+    - "tag-chip-update"
   source_files:
     - "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
     - "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
