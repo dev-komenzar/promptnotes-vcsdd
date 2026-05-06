@@ -1,3 +1,43 @@
+---
+coherence:
+  node_id: "req:ui-feed-list-actions"
+  type: req
+  name: "ui-feed-list-actions 行動仕様"
+  depends_on:
+    - id: "governance:implement-mapping"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "governance:design-system"
+      relation: depends_on
+    - id: "req:ui-app-shell"
+      relation: depends_on
+    - id: "req:ui-editor"
+      relation: depends_on
+    - id: "req:edit-past-note-start"
+      relation: depends_on
+    - id: "req:delete-note"
+      relation: depends_on
+  modules:
+    - "ui-feed-list-actions"
+  source_files:
+    - "promptnotes/src/lib/feed/FeedList.svelte"
+    - "promptnotes/src/lib/feed/FeedRow.svelte"
+    - "promptnotes/src/lib/feed/DeleteConfirmModal.svelte"
+    - "promptnotes/src/lib/feed/DeletionFailureBanner.svelte"
+    - "promptnotes/src/lib/feed/feedReducer.ts"
+    - "promptnotes/src/lib/feed/feedRowPredicates.ts"
+    - "promptnotes/src/lib/feed/deleteConfirmPredicates.ts"
+    - "promptnotes/src/lib/feed/feedStateChannel.ts"
+    - "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
+    - "promptnotes/src/lib/feed/types.ts"
+    - "promptnotes/src/lib/feed/clockHelpers.ts"
+---
+
 # Behavioral Specification: ui-feed-list-actions
 
 **Feature**: `ui-feed-list-actions`

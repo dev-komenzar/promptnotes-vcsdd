@@ -1,12 +1,12 @@
 {
   "version": 1,
   "nodes": {
-    "req:ui-tag-chip": {
-      "id": "req:ui-tag-chip",
+    "req:ui-feed-list-actions": {
+      "id": "req:ui-feed-list-actions",
       "type": "req",
       "placeholder": false,
       "path": "specs/behavioral-spec.md",
-      "name": "ui-tag-chip 行動仕様"
+      "name": "ui-feed-list-actions 行動仕様"
     },
     "governance:implement-mapping": {
       "id": "governance:implement-mapping",
@@ -28,42 +28,42 @@
       "type": "design",
       "placeholder": true
     },
-    "governance:glossary": {
-      "id": "governance:glossary",
-      "type": "governance",
-      "placeholder": true
-    },
     "governance:design-system": {
       "id": "governance:design-system",
       "type": "governance",
       "placeholder": true
     },
-    "req:ui-feed-list-actions": {
-      "id": "req:ui-feed-list-actions",
+    "req:ui-app-shell": {
+      "id": "req:ui-app-shell",
       "type": "requirement",
       "placeholder": true
     },
-    "req:tag-chip-update": {
-      "id": "req:tag-chip-update",
+    "req:ui-editor": {
+      "id": "req:ui-editor",
       "type": "requirement",
       "placeholder": true
     },
-    "req:apply-filter-or-search": {
-      "id": "req:apply-filter-or-search",
+    "req:edit-past-note-start": {
+      "id": "req:edit-past-note-start",
       "type": "requirement",
       "placeholder": true
     },
-    "module:ui-tag-chip": {
-      "id": "module:ui-tag-chip",
+    "req:delete-note": {
+      "id": "req:delete-note",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "module:ui-feed-list-actions": {
+      "id": "module:ui-feed-list-actions",
       "type": "module",
       "placeholder": false,
-      "name": "ui-tag-chip"
+      "name": "ui-feed-list-actions"
     },
-    "file:promptnotes/src/lib/feed/TagFilterSidebar.svelte": {
-      "id": "file:promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+    "file:promptnotes/src/lib/feed/FeedList.svelte": {
+      "id": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/feed/TagFilterSidebar.svelte"
+      "path": "promptnotes/src/lib/feed/FeedList.svelte"
     },
     "file:promptnotes/src/lib/feed/FeedRow.svelte": {
       "id": "file:promptnotes/src/lib/feed/FeedRow.svelte",
@@ -71,17 +71,41 @@
       "placeholder": false,
       "path": "promptnotes/src/lib/feed/FeedRow.svelte"
     },
+    "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte": {
+      "id": "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/DeleteConfirmModal.svelte"
+    },
+    "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte": {
+      "id": "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/DeletionFailureBanner.svelte"
+    },
     "file:promptnotes/src/lib/feed/feedReducer.ts": {
       "id": "file:promptnotes/src/lib/feed/feedReducer.ts",
       "type": "file",
       "placeholder": false,
       "path": "promptnotes/src/lib/feed/feedReducer.ts"
     },
-    "file:promptnotes/src/lib/feed/tagInventory.ts": {
-      "id": "file:promptnotes/src/lib/feed/tagInventory.ts",
+    "file:promptnotes/src/lib/feed/feedRowPredicates.ts": {
+      "id": "file:promptnotes/src/lib/feed/feedRowPredicates.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/feed/tagInventory.ts"
+      "path": "promptnotes/src/lib/feed/feedRowPredicates.ts"
+    },
+    "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts": {
+      "id": "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/deleteConfirmPredicates.ts"
+    },
+    "file:promptnotes/src/lib/feed/feedStateChannel.ts": {
+      "id": "file:promptnotes/src/lib/feed/feedStateChannel.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/feedStateChannel.ts"
     },
     "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts": {
       "id": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
@@ -89,37 +113,24 @@
       "placeholder": false,
       "path": "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
     },
-    "file:promptnotes/src/lib/domain/tag-chip-update": {
-      "id": "file:promptnotes/src/lib/domain/tag-chip-update",
+    "file:promptnotes/src/lib/feed/types.ts": {
+      "id": "file:promptnotes/src/lib/feed/types.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/tag-chip-update"
+      "path": "promptnotes/src/lib/feed/types.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search",
+    "file:promptnotes/src/lib/feed/clockHelpers.ts": {
+      "id": "file:promptnotes/src/lib/feed/clockHelpers.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search"
+      "path": "promptnotes/src/lib/feed/clockHelpers.ts"
     },
-    "req:ui-tag-chip-bugfix-tag-save": {
-      "id": "req:ui-tag-chip-bugfix-tag-save",
-      "type": "req",
-      "placeholder": false,
-      "path": "specs/bugfix-tag-save.md",
-      "name": "ui-tag-chip Sprint 2 bugfix — タグチップ入力が保存されない"
-    },
-    "design:ui-tag-chip-verification": {
-      "id": "design:ui-tag-chip-verification",
+    "design:ui-feed-list-actions-verification": {
+      "id": "design:ui-feed-list-actions-verification",
       "type": "design",
       "placeholder": false,
       "path": "specs/verification-architecture.md",
-      "name": "ui-tag-chip 検証アーキテクチャ（純粋性境界・証明義務）"
-    },
-    "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts": {
-      "id": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
-      "type": "file",
-      "placeholder": false,
-      "path": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
+      "name": "ui-feed-list-actions 検証アーキテクチャ（純粋性境界・証明義務）"
     },
     "design:type-contracts": {
       "id": "design:type-contracts",
@@ -131,24 +142,12 @@
       "type": "file",
       "placeholder": false,
       "path": "promptnotes/src/lib/feed/__tests__"
-    },
-    "file:promptnotes/src/lib/domain/__tests__/tag-chip-update": {
-      "id": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
-      "type": "file",
-      "placeholder": false,
-      "path": "promptnotes/src/lib/domain/__tests__/tag-chip-update"
-    },
-    "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search": {
-      "id": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
-      "type": "file",
-      "placeholder": false,
-      "path": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
     }
   },
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:ui-tag-chip",
+      "sourceId": "req:ui-feed-list-actions",
       "targetId": "governance:implement-mapping",
       "relation": "derives_from",
       "semantic": "governance",
@@ -166,7 +165,7 @@
     },
     {
       "id": 2,
-      "sourceId": "req:ui-tag-chip",
+      "sourceId": "req:ui-feed-list-actions",
       "targetId": "design:ui-fields",
       "relation": "derives_from",
       "semantic": "governance",
@@ -184,7 +183,7 @@
     },
     {
       "id": 3,
-      "sourceId": "req:ui-tag-chip",
+      "sourceId": "req:ui-feed-list-actions",
       "targetId": "design:workflows",
       "relation": "derives_from",
       "semantic": "governance",
@@ -202,7 +201,7 @@
     },
     {
       "id": 4,
-      "sourceId": "req:ui-tag-chip",
+      "sourceId": "req:ui-feed-list-actions",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -220,25 +219,7 @@
     },
     {
       "id": 5,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "sourceId": "req:ui-tag-chip",
+      "sourceId": "req:ui-feed-list-actions",
       "targetId": "governance:design-system",
       "relation": "depends_on",
       "semantic": "governance",
@@ -255,9 +236,27 @@
       ]
     },
     {
+      "id": 6,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "req:ui-app-shell",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
       "id": 7,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "req:ui-feed-list-actions",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "req:ui-editor",
       "relation": "depends_on",
       "semantic": "governance",
       "confidence": 0.9,
@@ -274,8 +273,8 @@
     },
     {
       "id": 8,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "req:tag-chip-update",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "req:edit-past-note-start",
       "relation": "depends_on",
       "semantic": "governance",
       "confidence": 0.9,
@@ -292,8 +291,8 @@
     },
     {
       "id": 9,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "req:apply-filter-or-search",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "req:delete-note",
       "relation": "depends_on",
       "semantic": "governance",
       "confidence": 0.9,
@@ -310,8 +309,8 @@
     },
     {
       "id": 10,
-      "sourceId": "module:ui-tag-chip",
-      "targetId": "req:ui-tag-chip",
+      "sourceId": "module:ui-feed-list-actions",
+      "targetId": "req:ui-feed-list-actions",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -328,8 +327,8 @@
     },
     {
       "id": 11,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "file:promptnotes/src/lib/feed/TagFilterSidebar.svelte",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -346,7 +345,7 @@
     },
     {
       "id": 12,
-      "sourceId": "req:ui-tag-chip",
+      "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -364,8 +363,8 @@
     },
     {
       "id": 13,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -382,8 +381,8 @@
     },
     {
       "id": 14,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "file:promptnotes/src/lib/feed/tagInventory.ts",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -400,8 +399,8 @@
     },
     {
       "id": 15,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -418,8 +417,8 @@
     },
     {
       "id": 16,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/feedRowPredicates.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -436,8 +435,8 @@
     },
     {
       "id": 17,
-      "sourceId": "req:ui-tag-chip",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -454,79 +453,25 @@
     },
     {
       "id": 18,
-      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
-      "targetId": "req:ui-tag-chip",
-      "relation": "refines",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/bugfix-tag-save.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 19,
-      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
-      "targetId": "design:ui-tag-chip-verification",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/bugfix-tag-save.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 20,
-      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
-      "targetId": "req:tag-chip-update",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/bugfix-tag-save.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 21,
-      "sourceId": "module:ui-tag-chip",
-      "targetId": "req:ui-tag-chip-bugfix-tag-save",
-      "relation": "implements",
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/feedStateChannel.ts",
+      "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
       "isActive": true,
       "evidence": [
         {
           "sourceType": "frontmatter",
-          "method": "modules",
+          "method": "source_files",
           "score": 0.85,
-          "detail": "Module declared in specs/bugfix-tag-save.md",
+          "detail": "Source file declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
-      "id": 22,
-      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
+      "id": 19,
+      "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -537,15 +482,15 @@
           "sourceType": "frontmatter",
           "method": "source_files",
           "score": 0.85,
-          "detail": "Source file declared in specs/bugfix-tag-save.md",
+          "detail": "Source file declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
-      "id": 23,
-      "sourceId": "req:ui-tag-chip-bugfix-tag-save",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
+      "id": 20,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/types.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -555,15 +500,33 @@
           "sourceType": "frontmatter",
           "method": "source_files",
           "score": 0.85,
-          "detail": "Source file declared in specs/bugfix-tag-save.md",
+          "detail": "Source file declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
-      "id": 24,
-      "sourceId": "design:ui-tag-chip-verification",
-      "targetId": "req:ui-tag-chip",
+      "id": 21,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/clockHelpers.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "sourceId": "design:ui-feed-list-actions-verification",
+      "targetId": "req:ui-feed-list-actions",
       "relation": "derives_from",
       "semantic": "governance",
       "confidence": 0.9,
@@ -579,8 +542,8 @@
       ]
     },
     {
-      "id": 25,
-      "sourceId": "design:ui-tag-chip-verification",
+      "id": 23,
+      "sourceId": "design:ui-feed-list-actions-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -597,8 +560,8 @@
       ]
     },
     {
-      "id": 26,
-      "sourceId": "design:ui-tag-chip-verification",
+      "id": 24,
+      "sourceId": "design:ui-feed-list-actions-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
       "semantic": "governance",
@@ -615,9 +578,9 @@
       ]
     },
     {
-      "id": 27,
-      "sourceId": "module:ui-tag-chip",
-      "targetId": "design:ui-tag-chip-verification",
+      "id": 25,
+      "sourceId": "module:ui-feed-list-actions",
+      "targetId": "design:ui-feed-list-actions-verification",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -633,45 +596,9 @@
       ]
     },
     {
-      "id": 28,
-      "sourceId": "design:ui-tag-chip-verification",
+      "id": 26,
+      "sourceId": "design:ui-feed-list-actions-verification",
       "targetId": "file:promptnotes/src/lib/feed/__tests__",
-      "relation": "extracted_from",
-      "semantic": "technical",
-      "confidence": 0.85,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "source_files",
-          "score": 0.85,
-          "detail": "Source file declared in specs/verification-architecture.md",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 29,
-      "sourceId": "design:ui-tag-chip-verification",
-      "targetId": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
-      "relation": "extracted_from",
-      "semantic": "technical",
-      "confidence": 0.85,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "source_files",
-          "score": 0.85,
-          "detail": "Source file declared in specs/verification-architecture.md",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 30,
-      "sourceId": "design:ui-tag-chip-verification",
-      "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -687,5 +614,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-06T06:21:49.248Z"
+  "lastScanAt": "2026-05-06T06:21:49.247Z"
 }

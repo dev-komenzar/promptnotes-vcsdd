@@ -1,3 +1,29 @@
+---
+coherence:
+  node_id: "req:ui-app-shell"
+  type: req
+  name: "ui-app-shell 行動仕様"
+  depends_on:
+    - id: "governance:implement-mapping"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "governance:design-system"
+      relation: depends_on
+    - id: "req:app-startup"
+      relation: depends_on
+    - id: "req:configure-vault"
+      relation: depends_on
+  modules:
+    - "ui-app-shell"
+  source_files:
+    - "promptnotes/src/lib/ui/app-shell"
+    - "promptnotes/src/routes/+page.svelte"
+    - "promptnotes/src/routes/+layout.ts"
+---
+
 # Behavioral Specification: ui-app-shell
 
 **Feature**: `ui-app-shell`

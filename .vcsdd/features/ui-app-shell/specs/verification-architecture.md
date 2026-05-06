@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:ui-app-shell-verification"
+  type: design
+  name: "ui-app-shell 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:ui-app-shell"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "ui-app-shell"
+  source_files:
+    - "promptnotes/src/lib/ui/app-shell/__tests__"
+---
+
 # Verification Architecture: ui-app-shell
 
 **Feature**: `ui-app-shell`

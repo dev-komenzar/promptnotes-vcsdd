@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:ui-editor-verification"
+  type: design
+  name: "ui-editor 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:ui-editor"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "ui-editor"
+  source_files:
+    - "promptnotes/src/lib/editor/__tests__"
+---
+
 # Verification Architecture: ui-editor
 
 **Feature**: `ui-editor`

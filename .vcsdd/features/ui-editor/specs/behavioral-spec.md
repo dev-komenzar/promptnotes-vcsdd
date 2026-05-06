@@ -1,3 +1,33 @@
+---
+coherence:
+  node_id: "req:ui-editor"
+  type: req
+  name: "ui-editor 行動仕様"
+  depends_on:
+    - id: "governance:implement-mapping"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "governance:design-system"
+      relation: depends_on
+    - id: "req:ui-app-shell"
+      relation: depends_on
+    - id: "req:capture-auto-save"
+      relation: depends_on
+    - id: "req:copy-body"
+      relation: depends_on
+    - id: "req:handle-save-failure"
+      relation: depends_on
+  modules:
+    - "ui-editor"
+  source_files:
+    - "promptnotes/src/lib/editor"
+---
+
 # Behavioral Specification: ui-editor
 
 **Feature**: `ui-editor`

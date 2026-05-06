@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:ui-feed-list-actions-verification"
+  type: design
+  name: "ui-feed-list-actions 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:ui-feed-list-actions"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "ui-feed-list-actions"
+  source_files:
+    - "promptnotes/src/lib/feed/__tests__"
+---
+
 # Verification Architecture: ui-feed-list-actions
 
 **Feature**: `ui-feed-list-actions`

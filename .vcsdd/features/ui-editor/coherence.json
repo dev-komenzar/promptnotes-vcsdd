@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "nodes": {
+    "req:ui-editor": {
+      "id": "req:ui-editor",
+      "type": "req",
+      "placeholder": false,
+      "path": "specs/behavioral-spec.md",
+      "name": "ui-editor 行動仕様"
+    },
+    "governance:implement-mapping": {
+      "id": "governance:implement-mapping",
+      "type": "governance",
+      "placeholder": true
+    },
+    "design:ui-fields": {
+      "id": "design:ui-fields",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:workflows": {
+      "id": "design:workflows",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:aggregates": {
+      "id": "design:aggregates",
+      "type": "design",
+      "placeholder": true
+    },
+    "governance:design-system": {
+      "id": "governance:design-system",
+      "type": "governance",
+      "placeholder": true
+    },
+    "req:ui-app-shell": {
+      "id": "req:ui-app-shell",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "req:capture-auto-save": {
+      "id": "req:capture-auto-save",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "req:copy-body": {
+      "id": "req:copy-body",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "req:handle-save-failure": {
+      "id": "req:handle-save-failure",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "module:ui-editor": {
+      "id": "module:ui-editor",
+      "type": "module",
+      "placeholder": false,
+      "name": "ui-editor"
+    },
+    "file:promptnotes/src/lib/editor": {
+      "id": "file:promptnotes/src/lib/editor",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/editor"
+    },
+    "design:ui-editor-verification": {
+      "id": "design:ui-editor-verification",
+      "type": "design",
+      "placeholder": false,
+      "path": "specs/verification-architecture.md",
+      "name": "ui-editor 検証アーキテクチャ（純粋性境界・証明義務）"
+    },
+    "design:type-contracts": {
+      "id": "design:type-contracts",
+      "type": "design",
+      "placeholder": true
+    },
+    "file:promptnotes/src/lib/editor/__tests__": {
+      "id": "file:promptnotes/src/lib/editor/__tests__",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/editor/__tests__"
+    }
+  },
+  "edges": [
+    {
+      "id": 1,
+      "sourceId": "req:ui-editor",
+      "targetId": "governance:implement-mapping",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "sourceId": "req:ui-editor",
+      "targetId": "design:ui-fields",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:ui-editor",
+      "targetId": "design:workflows",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:ui-editor",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:ui-editor",
+      "targetId": "governance:design-system",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:ui-editor",
+      "targetId": "req:ui-app-shell",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:ui-editor",
+      "targetId": "req:capture-auto-save",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:ui-editor",
+      "targetId": "req:copy-body",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:ui-editor",
+      "targetId": "req:handle-save-failure",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "module:ui-editor",
+      "targetId": "req:ui-editor",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:ui-editor",
+      "targetId": "file:promptnotes/src/lib/editor",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "design:ui-editor-verification",
+      "targetId": "req:ui-editor",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "design:ui-editor-verification",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "design:ui-editor-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "module:ui-editor",
+      "targetId": "design:ui-editor-verification",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "design:ui-editor-verification",
+      "targetId": "file:promptnotes/src/lib/editor/__tests__",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    }
+  ],
+  "lastScanAt": "2026-05-06T06:21:49.245Z"
+}
