@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-051",
+  "dimension": "contract_validity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "CRIT-708 passThreshold `grep -r \"#dd5b00\" promptnotes/src/lib/editor/SaveFailureBanner.svelte returns exactly one hit` is unsatisfiable. SaveFailureBanner.svelte contains the literal `#dd5b00` on TWO lines: line 36 `data-accent-color=\"#dd5b00\"` (DOM data attribute used for testing) and line 70 `border-left: 4px solid #dd5b00;` (CSS rule per DESIGN.md token). `grep -r \"#dd5b00\"` reports both, so the count is 2, not 1. Either the threshold must be loosened to `>= 1` or `>= 2`, or the data-accent-color attribute must be reworded.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/SaveFailureBanner.svelte",
+    "lineRange": "30-77",
+    "snippet": "Line 36: data-accent-color=\"#dd5b00\"; Line 70: border-left: 4px solid #dd5b00;"
+  },
+  "routeToPhase": "contract-revision"
+}

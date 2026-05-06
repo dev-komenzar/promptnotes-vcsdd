@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-043",
+  "dimension": "contract_validity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "CRIT-704 cites exact assertion-name strings that do not match the actual test names. Examples: contract requires assertion `'NoteFileSaved sets isDirty=false and emits cancel-idle-timer'` (single assertion), but the actual editorReducer.test.ts at lines 171-188 splits this into `'REQ-EDIT-004: NoteFileSaved sets isDirty=false'` and at lines 190-207 `'REQ-EDIT-013: saving→editing snapshot emits cancel-idle-timer'`. The contract requires `'EditorBlurredAllBlocks while saving returns commands=[]'` but the actual name is `'EC-EDIT-002: EditorBlurredAllBlocks while saving returns commands=[] (no trigger-blur-save)'`. The contract's `'DomainSnapshotReceived editing arm mirrors focusedBlockId'` does not match `'REQ-EDIT-001: editing snapshot mirrors focusedBlockId'`. PassThreshold strings must match observable test names; otherwise reviewers cannot mechanically verify the criterion.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts",
+    "lineRange": "168-297",
+    "snippet": "test('REQ-EDIT-004: NoteFileSaved sets isDirty=false', ...); test('REQ-EDIT-013: saving→editing snapshot emits cancel-idle-timer', ...); test('EC-EDIT-002: EditorBlurredAllBlocks while saving returns commands=[] (no trigger-blur-save)', ...); test('REQ-EDIT-001: editing snapshot mirrors focusedBlockId', ...)"
+  },
+  "routeToPhase": "contract-revision"
+}

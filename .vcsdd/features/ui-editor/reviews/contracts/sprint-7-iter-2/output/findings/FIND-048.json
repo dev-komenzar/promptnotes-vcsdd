@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-048",
+  "dimension": "contract_validity",
+  "category": "verification_tool_mismatch",
+  "severity": "critical",
+  "description": "Test-runner architecture mismatch — multiple passThresholds rely on `bun run test:dom inside promptnotes/ exits 0` to verify pure-tier and Tier-1 unit/property tests, but `bun run test:dom` runs ONLY `*.dom.vitest.ts` files per `vitest.config.ts` line 22-25 (`include: ['src/lib/**/__tests__/dom/**/*.vitest.ts', 'src/routes/__tests__/**/*.vitest.ts']`). The actual property and unit tests cited by CRIT-703/704/705/714 live at `__tests__/{prop/*.prop.test.ts, editorReducer.test.ts, editorPredicates.test.ts, debounceSchedule.test.ts}` and use `import { describe, test } from 'bun:test'` (not vitest). These files are deliberately excluded from vitest by the `*.vitest.ts`-only include pattern. So `bun run test:dom` will not exercise them at all — its exit code is independent of whether those properties pass. The contract requires both that `bun run test:dom exits 0` AND that named bun:test/fast-check properties pass, but those two conditions are checked by different commands and the contract names only the former. CRIT-703 in particular requires `bun run test:dom exits 0; promptnotes/.../prop/editorPredicates.prop.test.ts properties ... each pass at least the fast-check default run count` — this is unverifiable as written because vitest never runs the prop file.",
+  "evidence": {
+    "filePath": "promptnotes/vitest.config.ts",
+    "lineRange": "16-27",
+    "snippet": "test: { environment: 'jsdom', globals: false, include: [ 'src/lib/**/__tests__/dom/**/*.vitest.ts', 'src/routes/__tests__/**/*.vitest.ts' ], setupFiles: ['./src/lib/__tests__/setup/vitest-setup.ts'] } — and prop/unit test files use 'bun:test' not vitest"
+  },
+  "routeToPhase": "contract-revision"
+}

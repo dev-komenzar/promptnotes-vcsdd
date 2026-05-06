@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-044",
+  "dimension": "contract_alignment",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "CRIT-700 passThreshold runs `tsc --noEmit --strict --noUncheckedIndexedAccess inside promptnotes/`, but the project has no `tsc` script in package.json and the actual quality gate is `bun run check` (svelte-check). The Phase 2c green log explicitly states: `bun run check: 0 errors and 0 warnings in src/lib/editor/ scope (179 errors total project-wide are pre-existing)`. Pre-existing errors exist in `src/lib/feed/*` and feed-preview routes. A raw `tsc --noEmit` run inside `promptnotes/` will exit non-zero due to the 179 pre-existing project-wide errors and so the criterion fails despite the editor-scope being clean. Either the threshold must scope to `src/lib/editor/**` files (e.g., via `--project` or `tsc --noEmit -p tsconfig.editor.json`) or it must accept `bun run check` with a editor-scope filter.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/evidence/sprint-7-green-phase.log",
+    "lineRange": "3-5",
+    "snippet": "bun run check: 0 errors and 0 warnings in src/lib/editor/ scope (179 errors total project-wide are pre-existing in src/lib/feed/* and feed-preview routes; pre-Sprint-7 baseline was 242 errors, so Sprint 7 net-reduced errors by 63)"
+  },
+  "routeToPhase": "contract-revision"
+}

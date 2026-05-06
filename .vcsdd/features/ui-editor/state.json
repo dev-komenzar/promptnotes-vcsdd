@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -275,10 +275,45 @@
       "timestamp": "2026-05-06T11:30:00Z",
       "reason": "Sprint 7 Green phase — 215/215 vitest pass; 0 editor-scope check errors; routes wired; EditorPane.svelte deleted",
       "sprint": 7
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-06T11:35:00Z",
+      "reason": "Sprint 7 Phase 2c — refactor keeps green; pure-tier purity audit passes",
+      "sprint": 7
+    },
+    {
+      "from": "2c",
+      "to": "2c",
+      "timestamp": "2026-05-07T00:00:00Z",
+      "reason": "Sprint 7 contract revision iter-1: 13 contract findings resolved (FIND-035..047)",
+      "sprint": 7
+    },
+    {
+      "from": "2c",
+      "to": "2c",
+      "timestamp": "2026-05-07T00:30:00Z",
+      "reason": "Sprint 7 contract revision iter-2: 7 contract findings resolved (FIND-048..054); switched bun run test→bun test for pure tier",
+      "sprint": 7
+    },
+    {
+      "from": "2c",
+      "to": "2c",
+      "timestamp": "2026-05-07T00:40:00Z",
+      "reason": "Sprint 7 contract revision iter-3: DoD #2/#3 + CRIT-713 description aligned with bun test (pure) + bun run test:dom (DOM) split",
+      "sprint": 7
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-07T00:50:00Z",
+      "reason": "Sprint 7 strict-mode contract review PASS (iter-4); Phase 3 may proceed",
+      "sprint": 7
     }
   ],
   "iterations": {
-    "3": 5,
+    "3": 6,
     "4": 3,
     "5": 2,
     "6": 2,
@@ -288,7 +323,8 @@
     "2a": 5,
     "2b": 6,
     "2c": 5,
-    "complete": 2
+    "complete": 2,
+    "contract-review": 3
   },
   "proofObligations": [
     {
@@ -1995,6 +2031,259 @@
         "externalId": "FIND-034",
         "sprint": 7,
         "iteration": 4
+      },
+      {
+        "beadId": "BEAD-139",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-035.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-035",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-140",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-036.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-036",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-141",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-037.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-037",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-142",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-038.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-038",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-143",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-039.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-039",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-144",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-040.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-040",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-145",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-041.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-041",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-146",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-042.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-042",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-147",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-043.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-043",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-148",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-044.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-044",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-149",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-045.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-045",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-150",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-046.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-046",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-151",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7/output/findings/FIND-047.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-06T11:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-047",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-152",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-2/output/findings/FIND-048.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:10:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-048",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-153",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-2/output/findings/FIND-049.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:10:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-049",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-154",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-2/output/findings/FIND-050.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:10:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-050",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-155",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-2/output/findings/FIND-051.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:10:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-051",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-156",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-2/output/findings/FIND-052.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:10:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-052",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-157",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-2/output/findings/FIND-053.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:10:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-053",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-158",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-2/output/findings/FIND-054.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:10:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-054",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-159",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-3/output/findings/FIND-055.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-055",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-160",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-3/output/findings/FIND-056.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-056",
+        "sprint": 7
+      },
+      {
+        "beadId": "BEAD-161",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/contracts/sprint-7-iter-3/output/findings/FIND-057.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T00:40:00Z",
+        "createdInPhase": "contract-review",
+        "externalId": "FIND-057",
+        "sprint": 7
       }
     ]
   },
@@ -2107,9 +2396,57 @@
       "humanApprovalPending": false,
       "humanApprovedAt": "2026-05-06T09:10:00Z",
       "humanVerdict": "PASS"
+    },
+    "contract-review-sprint-7": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T00:50:00Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 7,
+        "iteration": 4,
+        "findingsCount": 0,
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "iter1Resolved": "FIND-035..047",
+        "iter2Resolved": "FIND-048..054",
+        "iter3Resolved": "FIND-055..057"
+      }
+    },
+    "contract-review-sprint-7-iter-2": {
+      "verdict": "FAIL",
+      "timestamp": "2026-05-07T00:10:00Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 7,
+        "iteration": 2,
+        "findingsCount": 7,
+        "critical": 3,
+        "major": 4,
+        "minor": 0,
+        "iter1Resolved": "9 of 13",
+        "iter1Partial": "FIND-039,043,046",
+        "iter1Unresolved": "FIND-042"
+      }
+    },
+    "contract-review-sprint-7-iter-4": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T00:50:00Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 7,
+        "iteration": 4,
+        "findingsCount": 0,
+        "critical": 0,
+        "major": 0,
+        "minor": 0,
+        "iter1Resolved": "FIND-035..047",
+        "iter2Resolved": "FIND-048..054",
+        "iter3Resolved": "FIND-055..057"
+      }
     }
   },
   "sprintCount": 7,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-06T11:30:00Z"
+  "updatedAt": "2026-05-07T00:50:00Z"
 }

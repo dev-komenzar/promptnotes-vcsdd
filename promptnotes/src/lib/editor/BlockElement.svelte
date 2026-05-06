@@ -201,9 +201,9 @@
     }
 
     if (event.key === 'Delete') {
-      const content2 = getTextContent();
       // Delete on empty block (non-sole block) → RemoveBlock
-      if (content2 === '' && totalBlocks > 1) {
+      // NOTE: `content` is already read at the top of handleKeyDown; no re-read needed.
+      if (content === '' && totalBlocks > 1) {
         event.preventDefault();
         adapter.dispatchRemoveBlock({
           noteId,

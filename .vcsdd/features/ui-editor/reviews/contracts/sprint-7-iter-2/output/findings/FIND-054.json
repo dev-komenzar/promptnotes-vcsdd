@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-054",
+  "dimension": "contract_alignment",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "CRIT-713 declares the coverage gate uses `bun run test:dom -- --coverage` but vitest.config.ts has no `coverage` configuration block at all (no provider, no reporter, no exclude). The DoD line 4 (\"Branch coverage: bun run test:dom -- --coverage reports branch coverage >= 95% per file for the three pure modules\") is unsatisfied because (a) without `coverage.provider: 'v8'` and `coverage.reporter: ['json-summary']` the JSON file `coverage/coverage-summary.json` is not produced; (b) even if produced, the coverage exclude pattern is missing so test files would be measured against themselves; (c) compounding with FIND-048, the pure-tier code paths are exercised primarily by bun:test files which `bun run test:dom -- --coverage` does not execute. The contract assumes vitest config will be modified at sprint-execution time but does not list that mutation as in-scope, and Phase 5 reviewers cannot verify coverage from the configuration as-is.",
+  "evidence": {
+    "filePath": "promptnotes/vitest.config.ts",
+    "lineRange": "1-29",
+    "snippet": "defineConfig({ plugins: [svelte({ hot: false })], resolve: {...}, test: { environment: 'jsdom', globals: false, include: [...], setupFiles: [...] } }) — no `coverage` key present"
+  },
+  "routeToPhase": "contract-revision"
+}

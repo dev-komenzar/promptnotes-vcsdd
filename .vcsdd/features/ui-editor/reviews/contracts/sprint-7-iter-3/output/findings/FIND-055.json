@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-055",
+  "dimension": "contract_validity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "Definition of Done #2 contradicts the iter-3 test-runner architecture. The contract states `bun run test:dom (pure + property + integration) inside promptnotes/ exits 0 with zero failures`. However, `bun run test:dom` resolves to `vitest run` (per promptnotes/package.json line 12), and vitest's include pattern (vitest.config.ts lines 22-25) is restricted to `src/lib/**/__tests__/dom/**/*.vitest.ts` and `src/routes/__tests__/**/*.vitest.ts`. Therefore vitest does NOT discover any `*.test.ts` (pure-tier unit tests with `import from 'bun:test'`) or `*.prop.test.ts` (property tests). The CRIT-703..705 / CRIT-714 passThresholds correctly use `bun test ...` for pure-tier and prop-tier work, but DoD #2 still claims a single `bun run test:dom` invocation covers all three tiers. A Builder or CI agent following DoD #2 verbatim would mark Green-phase complete after running only the integration tier, leaving 100+ pure/property tests un-executed.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "lineRange": "378",
+    "snippet": "2. Green phase: `bun run test:dom` (pure + property + integration) inside `promptnotes/` exits 0 with zero failures."
+  },
+  "suggestedFix": "Replace DoD #2 with two separate gates: (a) `cd promptnotes && bun test src/lib/editor/__tests__/` exits 0 (covers `*.test.ts` + `*.prop.test.ts` via Bun native runner); (b) `cd promptnotes && bun run test:dom` exits 0 (covers `*.dom.vitest.ts` via vitest). The iter-3 CRIT-703..705/CRIT-714 already use this split — DoD must mirror it.",
+  "routeToPhase": "1c"
+}

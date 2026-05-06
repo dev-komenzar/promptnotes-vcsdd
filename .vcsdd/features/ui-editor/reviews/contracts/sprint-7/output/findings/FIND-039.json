@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-039",
+  "dimension": "contract_alignment",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "CRIT-702 passThreshold `grep -c \"kind:\" promptnotes/src/lib/editor/types.ts outputs exactly 17` is unsatisfiable. types.ts contains `kind:` literal occurrences in many disjoint unions: EditorAction (~19 variants), EditorCommand (17 variants), FsError (5), SaveValidationError (2), SaveError (2 + nested), the Tier 0 structural assertions, JSDoc references, etc. The actual `kind:` count far exceeds 17 (rough manual count > 50). The intended check is presumably `kind:` occurrences only inside the EditorCommand union, but the threshold as written checks the whole file and will return a number unrelated to the 17-variant invariant, providing no useful signal in either direction.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/types.ts",
+    "lineRange": "183-234",
+    "snippet": "EditorAction has 19 `kind:` arms; EditorCommand has 17 `kind:` arms; FsError has 5 `kind:` arms; SaveValidationError has 2 `kind:` arms; plus nested kinds in SaveError. Total `kind:` lexical occurrences in the file substantially exceed 17."
+  },
+  "routeToPhase": "contract-revision"
+}

@@ -1,0 +1,42 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "mode": "strict",
+  "sprint": 7,
+  "iteration": 1,
+  "reviewedAt": "2026-05-06T00:00:00Z",
+  "reviewType": "contract",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "contract_validity",
+      "verdict": "FAIL",
+      "findings": ["FIND-035", "FIND-036", "FIND-037", "FIND-040", "FIND-041", "FIND-042", "FIND-043"],
+      "evidence": []
+    },
+    {
+      "name": "contract_alignment",
+      "verdict": "FAIL",
+      "findings": ["FIND-038", "FIND-039", "FIND-044", "FIND-045", "FIND-046", "FIND-047"],
+      "evidence": []
+    }
+  ],
+  "summary": "Contract is unfit for grading. The declared weight total (1.00) is arithmetically wrong (actual 1.10). Multiple passThresholds invoke a `bun run test` script that does not exist in promptnotes/package.json. Several CRITs cite property-test files (editorReducer.property.test.ts, editorPredicates.property.test.ts, debounceSchedule.property.test.ts) that are absent from the repository. DOM vitest tests live in `__tests__/dom/` but the contract addresses them at `__tests__/`. Passive grep thresholds (`grep -c \"kind:\" types.ts == 17`, `grep -c \"dispatch\" tauriEditorAdapter.ts == 16`, exact-string shadow grep, `branchCoverage.pct` JSON key) cannot evaluate to true against the actual sources. Phase 3 cannot proceed against this contract.",
+  "convergenceSignals": {
+    "findingCount": 13,
+    "criticalCount": 6,
+    "majorCount": 7,
+    "minorCount": 0,
+    "evaluatedCriteria": [
+      "CRIT-700", "CRIT-701", "CRIT-702", "CRIT-703", "CRIT-704",
+      "CRIT-705", "CRIT-706", "CRIT-707", "CRIT-708", "CRIT-709",
+      "CRIT-710", "CRIT-711", "CRIT-712", "CRIT-713", "CRIT-714"
+    ],
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "contractDigest": null
+  }
+}

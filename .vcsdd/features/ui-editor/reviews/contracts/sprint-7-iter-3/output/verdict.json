@@ -1,0 +1,61 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "mode": "strict",
+  "sprint": 7,
+  "iteration": 3,
+  "reviewedAt": "2026-05-06T00:00:00Z",
+  "reviewType": "contract",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "contract_validity",
+      "verdict": "FAIL",
+      "findings": ["FIND-055", "FIND-056", "FIND-057"],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-editor/contracts/sprint-7.md", "description": "Weight Total still sums to 1.00 (verified by adding line 390 components: 0.14+0.08+0.05+0.12+0.09+0.06+0.07+0.06+0.04+0.05+0.04+0.04+0.04+0.06+0.06=1.00). Criterion IDs CRIT-700..CRIT-714 are unique. Iter-3 successfully replaced `bun run test` with `bun test` for pure-tier (CRIT-703/704/705/714 passThresholds use `bun test src/lib/editor/__tests__/...`). Iter-3 also replaced exact-test-name match thresholds with ID-string-presence grep thresholds (e.g. CRIT-703 uses `grep -E \"PROP-EDIT-(001|...|040)\"`, CRIT-704 uses `grep -E \"PROP-EDIT-042|REQ-EDIT-004|...\"`). The CRIT-702 per-name grep loop with single-quote-wrapped literals (`grep -q \"'$k'\"`) eliminates the iter-2 over-counting defect from `_Assert*` types. The CRIT-708 `>=1 hit` accent-color check is satisfiable (verified: SaveFailureBanner.svelte lines 36 and 70 both contain `#dd5b00`). However, the Definition of Done section at lines 377-384 was NOT updated to match the corrected criteria: DoD #2 still claims `bun run test:dom (pure + property + integration)` is a single-command gate, and DoD #3 still claims `bun run test:dom -- --coverage` covers the pure modules — both are unachievable by vitest's include pattern and contradict CRIT-703..705/CRIT-713/CRIT-714. CRIT-713 itself contains an internal description-vs-passThreshold disagreement on the coverage tooling."}
+      ]
+    },
+    {
+      "name": "contract_alignment",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts", "description": "Pure-tier unit tests use `import from 'bun:test'` (line 17). All cited REQ/EC IDs in CRIT-704 passThreshold are grep-verifiable: REQ-EDIT-004 (lines 171, 209), REQ-EDIT-013 (line 190), EC-EDIT-002 (lines 230-231, 242), REQ-EDIT-001 (line 257), REQ-EDIT-017 (lines 301-302, 312), REQ-EDIT-018 (line 325), REQ-EDIT-023 (line 283)."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/prop/editorReducer.prop.test.ts", "description": "Property tests use `import from 'bun:test'` (line 17) — discoverable by `bun test src/lib/editor/__tests__/prop/`. CRIT-714 grep `PROP-EDIT-040` is satisfiable: header line 10 plus six explicit test names PROP-EDIT-040a..040f (lines 278, 289, 307, 323, 339, 351) yield grep -c output >= 7 (≥5 required). `priorFocusedBlockId` appears at lines 101, 339, 345 — grep yields >=1 (CRIT-714 satisfied). PROP-EDIT-002/007/008/040 IDs all present."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts", "description": "Header (lines 7-11) cites PROP-EDIT-001/005/006/010/011 — grep -c on the OR-regex in CRIT-703 is non-zero. PROP-EDIT-040 cited in editorReducer.prop.test.ts; PROP-EDIT-002/003/004/007/008 distributed across the two prop files."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/editor-panel.dom.vitest.ts", "description": "PROP-EDIT-024a/024b/024c each appear in the file header (lines 13, 14, 15) — grep -c \"PROP-EDIT-024[abc]\" yields ≥3 satisfying CRIT-712. All EC-EDIT-002 / REQ-EDIT-035 references present."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/block-element.dom.vitest.ts", "description": "Header (line 11) explicitly cites PROP-EDIT-028 (REQ-EDIT-008, EC-EDIT-011) — first-block backspace gating asserted by file existence and content. CRIT-709 alignment passes."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/slash-menu.dom.vitest.ts", "description": "Header (lines 7-10) cites PROP-EDIT-030 (REQ-EDIT-010, EC-EDIT-013) and explicitly mentions divider exact-match rule. CRIT-710 alignment passes."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/types.ts", "description": "All 17 EditorCommand kebab-case literals are present in single-quoted form: 'focus-block' (line 218), 'edit-block-content' (line 219), 'insert-block-after' (line 220), 'insert-block-at-beginning' (line 221), 'remove-block' (line 222), 'merge-blocks' (line 223), 'split-block' (line 224), 'change-block-type' (line 225), 'move-block' (line 226), 'cancel-idle-timer' (line 227), 'trigger-idle-save' (line 228), 'trigger-blur-save' (line 229), 'retry-save' (line 230), 'discard-current-session' (line 231), 'cancel-switch' (line 232), 'copy-note-body' (line 233), 'request-new-note' (line 234). The CRIT-702 per-name grep -q loop succeeds for all 17. No 'edit-note-body' literal present (CRIT-702 negative grep passes)."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/SaveFailureBanner.svelte", "description": "5-layer Deep Shadow string `0px 23px 52px` present at line 77 (CRIT-708 ≥1 hit). `#dd5b00` present at lines 36 and 70 (CRIT-708 ≥1 hit). All font-weight values (lines 88, 104) are within {400,500,600,700} (CRIT-708 negative grep passes)."},
+        {"type": "file", "location": "promptnotes/package.json", "description": "Confirmed scripts: `test:dom`: `vitest run` (line 12). No `test` script exists, consistent with CRIT-703..705 using `bun test` (Bun native runner) directly rather than `bun run test`."},
+        {"type": "file", "location": "promptnotes/vitest.config.ts", "description": "include pattern (lines 22-25) is `src/lib/**/__tests__/dom/**/*.vitest.ts` and `src/routes/__tests__/**/*.vitest.ts` — confirms vitest does NOT pick up `*.test.ts` or `*.prop.test.ts`. The split-runner architecture in iter-3 is consistent with this."},
+        {"type": "file", "location": ".vcsdd/features/ui-editor/evidence/sprint-7-green-phase.log", "description": "Evidence reports `bun run test:dom: 215/215 pass, 0 fail (18 test files)` — consistent with vitest discovering only `*.dom.vitest.ts` files (test files in __tests__/dom/)."}
+      ]
+    }
+  ],
+  "summary": "Iter-3 cleanly resolves all 7 iter-2 findings (FIND-048..054) at the per-criterion (CRIT-700..CRIT-714) level: `bun test` is now used for pure-tier and property-tier; `bun run test:dom` is restricted to DOM tier; per-name grep loops with single-quote literals replaced the over-counting `kind:` aggregate; the coverage gate at CRIT-713 was rewritten to use Bun-native coverage with a documented purity-grep + property-test fallback; the `#dd5b00` >=1 hit threshold is satisfiable. However, three new defects appear in this iteration's package: (a) DoD #2 was not updated to mirror the per-criterion split — it still asserts `bun run test:dom (pure + property + integration)` is a single-command gate, which is impossible under vitest's include pattern; (b) DoD #3 retains `bun run test:dom -- --coverage` as the branch-coverage gate for the three pure modules, which is unachievable because vitest does not run `*.test.ts` or `*.prop.test.ts`; (c) CRIT-713's description itself is internally inconsistent with its own passThreshold (description says vitest does the coverage; passThreshold says Bun does it). The criterion-level alignment with the actual test files is correct (contract_alignment PASSES), but the contract_validity dimension fails because the Definition of Done section creates a self-contradicting authority within the same contract document. Phase 3 should NOT proceed against this contract: DoD inconsistencies will cause the Builder/CI to either run an incomplete test set or fail to produce the required coverage gate.",
+  "convergenceSignals": {
+    "findingCount": 3,
+    "criticalCount": 2,
+    "majorCount": 1,
+    "minorCount": 0,
+    "evaluatedCriteria": [
+      "CRIT-700", "CRIT-701", "CRIT-702", "CRIT-703", "CRIT-704",
+      "CRIT-705", "CRIT-706", "CRIT-707", "CRIT-708", "CRIT-709",
+      "CRIT-710", "CRIT-711", "CRIT-712", "CRIT-713", "CRIT-714"
+    ],
+    "duplicateFindings": [],
+    "iter2FindingsResolved": [
+      "FIND-048", "FIND-049", "FIND-050", "FIND-051", "FIND-052", "FIND-053", "FIND-054"
+    ],
+    "iter2FindingsPartiallyResolved": [],
+    "iter2FindingsUnresolved": []
+  },
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "contractDigest": null
+  }
+}

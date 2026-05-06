@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-053",
+  "dimension": "contract_alignment",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "CRIT-710 cites slash-menu.dom.vitest.ts assertion names with single-quoted divider literals: \"EC-EDIT-013: content === '---' exactly dispatches ChangeBlockType{newType:divider}\" and \"EC-EDIT-013: content === '--- ' (trailing space) does NOT dispatch ChangeBlockType\". The actual test descriptions at slash-menu.dom.vitest.ts lines 110 and 121 use double-quoted `\"---\"` and `\"--- \"` instead: `'EC-EDIT-013: content === \"---\" exactly dispatches ChangeBlockType{newType:divider}'` and `'EC-EDIT-013: content === \"--- \" (trailing space) does NOT dispatch ChangeBlockType'`. Reviewers performing exact-string grep on the contract-cited names will report no match.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/dom/slash-menu.dom.vitest.ts",
+    "lineRange": "110-121",
+    "snippet": "test('EC-EDIT-013: content === \"---\" exactly dispatches ChangeBlockType{newType:divider}', ...); test('EC-EDIT-013: content === \"--- \" (trailing space) does NOT dispatch ChangeBlockType', ...)"
+  },
+  "routeToPhase": "contract-revision"
+}

@@ -3,6 +3,12 @@
  *
  * Receives an injected clock: { now(): number } so tests can use deterministic
  * timestamps without vi.useFakeTimers() at the module level.
+ *
+ * NOTE: As of Sprint 7 this module is not imported by any editor component.
+ * The Sprint 7 implementation uses the simpler timerModule.ts (scheduleIdleSave /
+ * cancelIdleSave) paired with the pure computeNextFireAt from debounceSchedule.ts.
+ * This module's clock-injection approach is more test-friendly for absolute-time
+ * scheduling; retained if a future sprint requires absolute-epoch timer scheduling.
  */
 
 export interface DebounceTimer {

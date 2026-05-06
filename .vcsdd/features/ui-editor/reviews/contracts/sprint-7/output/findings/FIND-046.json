@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-046",
+  "dimension": "contract_alignment",
+  "category": "spec_gap",
+  "severity": "major",
+  "description": "Multiple CRITs cite specific named test paths that do not exist anywhere in the repository, with the actual test layout already finalised in Phase 2c. CRIT-707 mentions OUTBOUND/INBOUND adapter split but the contract description says editorStateChannel.ts `contains only subscribeToState(handler)`. The actual file exports `subscribeToEditorState` and `createEditorStateChannel` — neither named exactly `subscribeToState`. CRIT-712 names the assertion `'RequestNewNote while editing+dirty dispatches TriggerBlurSave first'` etc. — these names are aspirational; they cannot be verified via grep against the actual `__tests__/dom/editor-panel.dom.vitest.ts` file without first confirming the test names match. Reviewers will be unable to mechanically tie CRIT names to actual assertions, making strict-mode binary evaluation impossible.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/editorStateChannel.ts",
+    "lineRange": "22-51",
+    "snippet": "export function subscribeToEditorState(handler: ...): () => void { ... } export function createEditorStateChannel(): { subscribeToState: ... } { return { subscribeToState: subscribeToEditorState }; }"
+  },
+  "routeToPhase": "contract-revision"
+}

@@ -1,0 +1,15 @@
+refactor: PASS
+- bun run test:dom: 215/215 pass (no behaviour regression)
+- bun run check: 0 editor-scope errors
+- canonical purity-audit grep on pure tier: 0 hits (non-comment lines)
+
+changes summary:
+- editorReducer.ts: extracted markDirty() and passThrough() helpers; collapsed 7 identical block-mutation cases into a fall-through; collapsed BlockFocused/BlockBlurred into a fall-through; simplified EditorBlurredAllBlocks no-op branches; inlined single-command return objects for all save/copy/new-note actions (removed interim const cmd); improved spec-reference NOTE comments
+- BlockElement.svelte: removed redundant `content2` re-read inside the Delete handler; replaced with already-read `content` variable from top of handleKeyDown
+- keyboardListener.ts: added NOTE comment explaining it is a Sprint 2 legacy module, not wired in Sprint 7 (logic is inlined in EditorPanel $effect); cited REQ-EDIT-035 / REQ-EDIT-036
+- clipboardAdapter.ts: added NOTE comment explaining legacy status and the reason (Rust-side bodyForClipboard per verification-architecture.md §2)
+- debounceTimer.ts: added NOTE comment explaining the Sprint 2 clock-injection approach and why timerModule.ts is preferred in Sprint 7
+
+phase: 2c
+sprint: 7
+iteration: 1

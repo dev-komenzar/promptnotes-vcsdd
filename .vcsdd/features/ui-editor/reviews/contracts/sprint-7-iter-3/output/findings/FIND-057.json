@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-057",
+  "dimension": "contract_validity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "CRIT-713's description and passThreshold contradict each other within the same criterion. The description (lines 284-288) asserts `@vitest/coverage-v8 reports >=95% branch coverage per file on the three pure modules ... The coverage run uses 'bun run test:dom -- --coverage' with provider: 'v8'`. The passThreshold (lines 290-301) then acknowledges this is impossible: `Note: pure tests run via bun test (Bun native); vitest covers the DOM tier only` and switches the actual gate to `bun test --coverage`. A reader applying the description literally would attempt the impossible vitest path; a reader applying the passThreshold would use the correct Bun path. The criterion's own internal disagreement makes it ambiguous which gate is authoritative for Phase 5 hardening.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "lineRange": "281-301",
+    "snippet": "description: ... The coverage run uses 'bun run test:dom -- --coverage' with provider: 'v8'. ... passThreshold: ... Note: pure tests run via bun test (Bun native); vitest covers the DOM tier only."
+  },
+  "suggestedFix": "Rewrite CRIT-713's description to state the coverage measurement uses `bun test --coverage` for the pure tier, with the documented equivalent-rigour fallback (CRIT-703 + purity grep + tsc strict) when Bun's stdout coverage is unavailable. Remove the obsolete `bun run test:dom -- --coverage` reference from the description so it agrees with the passThreshold.",
+  "routeToPhase": "1c"
+}

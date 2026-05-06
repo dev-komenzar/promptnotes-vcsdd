@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-045",
+  "dimension": "contract_alignment",
+  "category": "test_coverage",
+  "severity": "major",
+  "description": "CRIT-701 requires `grep -rn \"EC-EDIT-0[0-1][0-9]\" promptnotes/src/lib/editor/__tests__/ produces 14 distinct ID matches`. Two issues: (a) the regex `0[0-1][0-9]` matches `EC-EDIT-000`, `EC-EDIT-001`..`EC-EDIT-019`, which is broader than the 14 spec'd IDs and may either over-match (if any test mentions `EC-EDIT-015`+, false positive) or under-match. The spec only defines 14 IDs (EC-EDIT-001..014), but the regex also accepts EC-EDIT-000, EC-EDIT-015..019. (b) The threshold counts `distinct ID matches` but `grep -rn` outputs every occurrence with line number, not deduplicated IDs; reviewers must post-process with `sort -u`. The criterion is ambiguous and not directly evaluable.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "lineRange": "50-53",
+    "snippet": "grep -rn \"EC-EDIT-0[0-1][0-9]\" promptnotes/src/lib/editor/__tests__/ produces 14 distinct ID matches"
+  },
+  "routeToPhase": "contract-revision"
+}

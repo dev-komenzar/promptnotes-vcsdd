@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-047",
+  "dimension": "contract_alignment",
+  "category": "test_quality",
+  "severity": "major",
+  "description": "CRIT-703 demands fast-check property tests `each pass >=100 fast-check runs`, but the actual reducer/predicates/debounce tests in the repository are example-based bun:test assertions, not fast-check properties. For instance `editorReducer.test.ts` line 17 imports `from 'bun:test'`; line 109-140 enumerates a small fixed cross-product (5 statuses × 10 sample actions = 50 cases), not a randomised property exploration. There are no `fc.assert` invocations, no `fc.property` declarations, no `numRuns: 100` configuration anywhere in the editor `__tests__/`. The CRIT-703 quantitative requirement (>=100 fast-check runs) cannot be satisfied by the present implementation; either fast-check files must actually be authored, or the criterion must be relaxed to example-based coverage with a fixed argument cross-product.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts",
+    "lineRange": "17-17",
+    "snippet": "import { describe, test, expect } from 'bun:test';"
+  },
+  "routeToPhase": "contract-revision"
+}
