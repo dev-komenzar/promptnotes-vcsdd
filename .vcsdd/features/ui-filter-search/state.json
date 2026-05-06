@@ -13,11 +13,23 @@
       "from": "1a",
       "to": "1b",
       "timestamp": "2026-05-06T04:05:00.000Z"
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "timestamp": "2026-05-06T05:00:00.000Z",
+      "reason": "adversary findings FIND-SPEC-FILTER-001..011 — spec revision required"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-06T05:05:00.000Z",
+      "reason": "spec revision complete (iteration 2); verification architecture updated"
     }
   ],
   "iterations": {
-    "1a": 1,
-    "1b": 1
+    "1a": 2,
+    "1b": 2
   },
   "proofObligations": [
     { "id": "PROP-FILTER-001", "tier": 0, "status": "pending" },
@@ -43,7 +55,8 @@
     { "id": "PROP-FILTER-021", "tier": 0, "status": "pending" },
     { "id": "PROP-FILTER-022", "tier": 1, "status": "pending" },
     { "id": "PROP-FILTER-023", "tier": 1, "status": "pending" },
-    { "id": "PROP-FILTER-024", "tier": 1, "status": "pending" }
+    { "id": "PROP-FILTER-024", "tier": 1, "status": "pending" },
+    { "id": "PROP-FILTER-025", "tier": 1, "status": "pending" }
   ],
   "traceability": {
     "epicId": "VCSDD-ui-filter-search-1778038686107",
@@ -67,5 +80,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-05-06T03:38:06.107Z",
-  "updatedAt": "2026-05-06T04:05:00.000Z"
+  "updatedAt": "2026-05-06T05:05:00.000Z"
 }

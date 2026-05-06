@@ -1,0 +1,116 @@
+{
+  "feature": "ui-filter-search",
+  "phase": "1c",
+  "iteration": 1,
+  "timestamp": "2026-05-06T04:30:00.000Z",
+  "reviewType": "spec",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "specification_crystallization",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-SPEC-FILTER-001",
+        "FIND-SPEC-FILTER-002",
+        "FIND-SPEC-FILTER-003",
+        "FIND-SPEC-FILTER-005",
+        "FIND-SPEC-FILTER-007"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/behavioral-spec.md:90-94,228-242,56,259",
+          "description": "Multiple internal contradictions about who emits the post-debounce 'apply-search' command and where applyFilterOrSearch is called."
+        }
+      ]
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-SPEC-FILTER-002",
+        "FIND-SPEC-FILTER-004",
+        "FIND-SPEC-FILTER-008"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/verification-architecture.md:50-65,73-96",
+          "description": "Pure-core vs effectful-shell boundary for applyFilterOrSearch and searchPredicate is double-claimed; existing FilterApplied/FilterCleared actions in feedReducer.ts not reconciled with the new flow."
+        }
+      ]
+    },
+    {
+      "name": "adversarial_refinement",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-SPEC-FILTER-006",
+        "FIND-SPEC-FILTER-007",
+        "FIND-SPEC-FILTER-009",
+        "FIND-SPEC-FILTER-010"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/behavioral-spec.md:296-331,308,302,264-271",
+          "description": "Unicode toLowerCase claim is wrong for FULLWIDTH/Turkish/German cases; debounce-vs-snapshot races, malicious / pathological inputs, and a11y are unenumerated."
+        }
+      ]
+    },
+    {
+      "name": "formal_hardening_readiness",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-SPEC-FILTER-006",
+        "FIND-SPEC-FILTER-011"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/verification-architecture.md:171-172",
+          "description": "PROP-FILTER-010 (case-insensitive substring property) is under-specified for non-ASCII inputs; spec's claimed search semantics will not survive fast-check generators on Unicode strings."
+        }
+      ]
+    },
+    {
+      "name": "convergence_setup",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-SPEC-FILTER-007",
+        "FIND-SPEC-FILTER-011"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "specs/behavioral-spec.md:391-406",
+          "description": "Done definition items 11-12 are circular ('Phase 3 PASS', 'Phase 6 PASS') and not directly verifiable from artefacts. Race-condition edge cases are missing, blocking a stable acceptance criterion."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 11,
+    "allCriteriaEvaluated": true,
+    "evaluatedDimensions": [
+      "specification_crystallization",
+      "verification_architecture",
+      "adversarial_refinement",
+      "formal_hardening_readiness",
+      "convergence_setup"
+    ],
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "spec",
+    "specPath": "specs/behavioral-spec.md",
+    "verificationArchitecturePath": "specs/verification-architecture.md",
+    "filesReviewed": [
+      "specs/behavioral-spec.md",
+      "specs/verification-architecture.md",
+      "promptnotes/src/lib/feed/feedReducer.ts",
+      "promptnotes/src/lib/feed/types.ts",
+      "docs/domain/ui-fields.md",
+      "docs/domain/workflows.md"
+    ]
+  }
+}
