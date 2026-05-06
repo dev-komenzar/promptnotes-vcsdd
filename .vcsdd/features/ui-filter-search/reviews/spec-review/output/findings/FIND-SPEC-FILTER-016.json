@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-SPEC-FILTER-016",
+  "iteration": 3,
+  "dimension": "verification_architecture",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "title": "PROP-FILTER-022 still cross-references the wrong edge cases (EC-T-001..EC-T-005)",
+  "description": "Iteration 3 attempted to fix FIND-SPEC-FILTER-014 by repointing PROP-FILTER-022 from EC-S-001 to 'EC-T-001..EC-T-005'. This is still wrong.\n\nverification-architecture.md §2 line 119 now reads:\n  `PROP-FILTER-022 | Rapid keystrokes: SearchApplied dispatched only after last keystroke + 200ms silence | REQ-FILTER-002 / EC-T-001..EC-T-005 | 1 | true | vitest with fake timers`\n\nbehavioral-spec.md §4.2 (lines 506-513) defines EC-T-001..EC-T-005 exclusively as Sort edge cases:\n  - EC-T-001: Two notes with identical updatedAt (tiebreak)\n  - EC-T-002: updatedAt === 0 (legacy)\n  - EC-T-003: Toggle sort while search is active\n  - EC-T-004: Toggle sort while debounce is pending\n  - EC-T-005: Toggle sort with no notes in feed\n\nNone of these describes 'multiple keystrokes within 200ms coalesce into a single SearchApplied dispatch', which is the exact behavior PROP-FILTER-022 is meant to verify. EC-T-004 mentions a debounce timer, but only as a precondition for testing sort-toggle behavior, NOT for testing keystroke coalescing.\n\nThe §4.4 reverse-lookup index (lines 548-552) confirms this misalignment: EC-T-001..EC-T-005 are linked only to REQ-FILTER-007 / REQ-FILTER-008 / REQ-FILTER-009 / REQ-FILTER-010 — never to REQ-FILTER-002 (the search debounce requirement that PROP-FILTER-022 claims to verify).\n\nFIND-SPEC-FILTER-014's remediation explicitly required either (a) introducing a new EC ID for 'rapid keystrokes coalesced into single SearchApplied' or (b) repointing to an existing EC that genuinely covers rapid keystrokes. Iteration 3 did neither — it picked EC IDs from a different category entirely. A test author following PROP-FILTER-022's edge-case anchor would land on Sort edge cases that have nothing to do with debounce coalescing, leaving keystroke-coalescing behavior unverified.",
+  "evidence": {
+    "filePath": "specs/verification-architecture.md",
+    "lineRange": "119",
+    "snippet": "PROP-FILTER-022 | Rapid keystrokes: SearchApplied dispatched only after last keystroke + 200ms silence | REQ-FILTER-002 / EC-T-001..EC-T-005 | 1 | true | vitest with fake timers"
+  },
+  "remediation": "Add a new edge case in §4.1 (Search Input Edge Cases), e.g. EC-S-016 = 'Multiple keystrokes within 200ms window: only one SearchApplied dispatched 200ms after the LAST keystroke'. Update §4.4 reverse-lookup to link EC-S-016 to REQ-FILTER-002. Then update PROP-FILTER-022 cross-reference to `REQ-FILTER-002 / EC-S-016`. Do NOT alias to Sort EC-T-* — those describe orthogonal behavior.",
+  "routeToPhase": "1b"
+}
