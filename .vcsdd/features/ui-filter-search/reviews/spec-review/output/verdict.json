@@ -1,51 +1,52 @@
 {
   "feature": "ui-filter-search",
   "phase": "1c",
-  "iteration": 3,
-  "timestamp": "2026-05-06T07:00:00.000Z",
+  "iteration": 4,
+  "timestamp": "2026-05-06T07:30:00.000Z",
   "reviewType": "spec",
-  "overallVerdict": "FAIL",
+  "overallVerdict": "PASS",
   "dimensions": [
     {
       "name": "specification_crystallization",
-      "verdict": "FAIL",
-      "findings": [
-        "FIND-SPEC-FILTER-017"
-      ],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:485-559",
-          "description": "FIND-SPEC-FILTER-012 RESOLVED — §4.1 catalog now contains exactly one definition each for EC-S-005 (rapid keystroke + Esc before debounce) and EC-S-010 (Esc with no pending debounce). REQ-FILTER-003 inline references at lines 246-248 are now cross-references to §4.1, not redefinitions. §4.4 reverse-lookup index lists every EC ID exactly once."
+          "location": "specs/behavioral-spec.md:141-145,200",
+          "description": "FIND-SPEC-FILTER-017 RESOLVED — §2 DomainSnapshotReceived pseudocode now contains the stale-reference guard `state.tagAutocompleteVisibleFor !== null && snapshot.noteMetadata[state.tagAutocompleteVisibleFor] !== undefined ? state.tagAutocompleteVisibleFor : null`, byte-for-byte equivalent to feedReducer.ts:62-66 (modulo formatting). Provenance table row at line 200 reclassifies provenance as `derived (state + snapshot)` and embeds the full guard expression plus the explicit ui-tag-chip inheritance note ('inherited from ui-tag-chip; ui-filter-search must not regress this'). Phase 2c regression risk for ui-tag-chip eliminated."
         },
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:65,149-174",
-          "description": "FIND-SPEC-FILTER-013 RESOLVED — sortByUpdatedAt is now a curried factory with consistent signature: `(direction: 'asc'|'desc') => (a: { noteId, updatedAt }, b: { noteId, updatedAt }) => number`. §1.5, §2 pseudocode, and verification-architecture.md §1 lines 63-68 all agree. computeVisible projects noteIds to {noteId, updatedAt} pairs before sorting; noteMetadata is no longer a parameter to sortByUpdatedAt."
+          "location": "specs/behavioral-spec.md:489-509,532-565",
+          "description": "FIND-SPEC-FILTER-012 (iter 2) and FIND-SPEC-FILTER-016 (iter 3) jointly resolved — §4.1 catalog rows define EC-S-005 (rapid keystroke + Esc before debounce, line 497), EC-S-010 (Esc with no pending debounce, line 502), and the new EC-S-016 (rapid keystrokes within debounce window, line 508). Each EC-S id is defined exactly once. The §4.4 reverse-lookup index spans 28 unique IDs with explicit REQ linkages; EC-S-016 row at line 553 anchors to REQ-FILTER-002 / PROP-FILTER-022."
         },
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:122-147,184-199",
-          "description": "FIND-SPEC-FILTER-015 PARTIALLY RESOLVED — `reconstructedState` shorthand is gone; pseudocode now lists every FeedViewState field explicitly. Provenance table at lines 184-199 enumerates 13 fields with snapshot/preserved/derived classification. HOWEVER a new defect was introduced: `tagAutocompleteVisibleFor` is prescribed as straight pass-through, contradicting feedReducer.ts:62-66's stale-reference guard from ui-tag-chip. See FIND-SPEC-FILTER-017."
+          "location": "specs/behavioral-spec.md:65,153-178,187-203",
+          "description": "FIND-SPEC-FILTER-013 (sortByUpdatedAt curried-factory shape) and FIND-SPEC-FILTER-015 (DomainSnapshotReceived field provenance) remain consistently resolved without regression. §1.5 line 65 declares the curried factory `sortByUpdatedAt(direction): (a, b) => number` operating on `{ noteId, updatedAt }` records; §2 lines 173-177 call it as `const cmp = sortByUpdatedAt(sortDir)` after projecting noteIds to `{noteId, updatedAt}` pairs; §2 provenance table at lines 187-203 enumerates all 13 FeedViewState fields with snapshot/preserved/derived classification."
         }
       ]
     },
     {
       "name": "verification_architecture",
-      "verdict": "FAIL",
-      "findings": [
-        "FIND-SPEC-FILTER-016"
-      ],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/verification-architecture.md:119",
-          "description": "FIND-SPEC-FILTER-014 NOT RESOLVED. PROP-FILTER-022 cross-reference was changed from EC-S-001 to EC-T-001..EC-T-005, but EC-T-* are Sort edge cases per §4.2. None describes rapid-keystroke debounce coalescing. The §4.4 reverse-lookup confirms EC-T-* link only to REQ-FILTER-007/008/009/010, never to REQ-FILTER-002 (the requirement PROP-FILTER-022 verifies)."
+          "location": "specs/verification-architecture.md:119,269",
+          "description": "FIND-SPEC-FILTER-014 (iter 2) and FIND-SPEC-FILTER-016 (iter 3) jointly resolved — §2 row at line 119 and §6 summary row at line 269 both anchor PROP-FILTER-022 to `REQ-FILTER-002 / EC-S-016`. EC-S-016 in behavioral-spec.md §4.1 defines the exact 'multiple keystrokes within 200ms window: only one SearchApplied dispatched' behavior PROP-FILTER-022 must verify, and §4.4 reverse-lookup confirms EC-S-016 → REQ-FILTER-002 / PROP-FILTER-022. Test-author traceability path is now coherent: PROP-FILTER-022 → REQ-FILTER-002 + EC-S-016 → §4.1 row 16 (rapid keystroke coalescing)."
         },
         {
           "type": "file",
           "location": "specs/verification-architecture.md:63-68",
-          "description": "sortByUpdatedAt signature in verification-architecture is now consistent with behavioral-spec §1.5 / §2 (curried factory over {noteId, updatedAt})."
+          "description": "sortByUpdatedAt signature in §1 (curried factory over `{noteId,updatedAt}` records) is byte-consistent with behavioral-spec §1.5 / §2. No regression to FIND-SPEC-FILTER-013."
+        },
+        {
+          "type": "file",
+          "location": "specs/verification-architecture.md:96-122,247-272",
+          "description": "All 25 PROP-FILTER obligations (PROP-FILTER-001..025) appear in both §2 detailed table and §6 summary table with consistent tier/required/tool columns. Tier partition (0 grep, 1 vitest/jsdom, 2 fast-check, 3 reserved) is consistent. PROP-FILTER-021 still requires `SearchInputChanged` ABSENT from the FeedAction union, locking REQ-FILTER-011's negative invariant into a Tier 0 tsc check."
         }
       ]
     },
@@ -56,8 +57,8 @@
       "evidence": [
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:283-301,418-428,468-503",
-          "description": "Iteration 2's adversarial coverage is preserved without regression: REQ-FILTER-005 enumerates Unicode behavior (toLowerCase ASCII fold only, toLocaleLowerCase prohibited, kana/kanji unchanged); REQ-FILTER-013 pins aria-labels and Tab order; REQ-FILTER-017 enumerates pathological inputs (control chars, 10k length, RTL, regex metacharacters, repeat Esc); EC-C-007 and EC-T-004 enumerate debounce-vs-snapshot and toggle-vs-debounce races."
+          "location": "specs/behavioral-spec.md:283-303,420-432,471-485",
+          "description": "Adversarial coverage from prior iterations preserved — REQ-FILTER-005 enforces toLowerCase() over toLocaleLowerCase() and pins Unicode behavior; REQ-FILTER-013 pins `aria-label='ノート検索'` and `aria-label='ソート方向（新しい順/古い順）'` plus Tab order; REQ-FILTER-017 enumerates pathological inputs (control chars, 10k length, RTL, regex metacharacters, repeat Esc). EC-C-007 (debounce-vs-snapshot race) and EC-T-004 (sort-toggle-vs-debounce race) remain explicit. No regression."
         }
       ]
     },
@@ -68,29 +69,27 @@
       "evidence": [
         {
           "type": "file",
-          "location": "specs/verification-architecture.md:107,202-213",
-          "description": "Iteration 2's formal-tier setup preserved: PROP-FILTER-010 limits the case-insensitive equivalence claim to ASCII printable strings; arbitrary Unicode requires only no-throw. PROP-FILTER-005 frames feedReducer totality over arbitrary FeedAction including 0..10000-character SearchApplied.query. fast-check generators pinned to these boundaries. Tier 0/1/2/3 partition unchanged."
+          "location": "specs/verification-architecture.md:107,119,202-213",
+          "description": "Formal-tier setup preserved without regression: PROP-FILTER-010 limits the case-insensitive equivalence claim to ASCII printable strings with no-throw fallback for arbitrary Unicode; PROP-FILTER-005 frames feedReducer totality over arbitrary FeedAction including 0..10000-character SearchApplied.query; PROP-FILTER-022 (debounce coalescing) anchored to deterministic vitest fake-timers tier with EC-S-016 as the named edge case. Tier 0/1/2/3 partition unchanged."
         }
       ]
     },
     {
       "name": "convergence_setup",
-      "verdict": "FAIL",
-      "findings": [
-        "FIND-SPEC-FILTER-016",
-        "FIND-SPEC-FILTER-017"
-      ],
+      "verdict": "PASS",
+      "findings": [],
       "evidence": [
         {
           "type": "file",
-          "location": "specs/behavioral-spec.md:619-632",
-          "description": "Done definition items 1-10 remain artifact-verifiable. Items 7 (REQ-FILTER-001..017 ↔ test) and 8 (PROP-FILTER-001..025 ↔ proof) are still blocked: PROP-FILTER-022 has no valid edge-case anchor (FIND-016) and Done item 4 implicitly demands DomainSnapshotReceived behavior that contradicts the existing reducer's tagAutocompleteVisibleFor logic (FIND-017). Convergence target remains unstable."
+          "location": "specs/behavioral-spec.md:626-639",
+          "description": "Done definition items 1-10 are artifact-verifiable. Item 4 ('FeedViewState contains searchQuery and sortDirection; both are preserved across DomainSnapshotReceived') is unblocked now that the §2 pseudocode and §2 provenance table both accurately reflect feedReducer.ts:62-66's tagAutocompleteVisibleFor guard. Item 7 (REQ-FILTER-001..017 ↔ test) and item 8 (PROP-FILTER-001..025 ↔ proof) have a coherent traceability path: every REQ has at least one Acceptance Criteria pointing at a named test file, every PROP has a tier/tool/required column plus a §3 test-table row, every EC has a §4.4 reverse-lookup row anchoring it to a REQ and (where applicable) a PROP. Convergence target is stable."
         }
       ]
     }
   ],
   "convergenceSignals": {
-    "findingCount": 2,
+    "findingCount": 0,
+    "previousFindingCount": 2,
     "allCriteriaEvaluated": true,
     "evaluatedDimensions": [
       "specification_crystallization",
@@ -109,8 +108,9 @@
       "specs/behavioral-spec.md",
       "specs/verification-architecture.md",
       "promptnotes/src/lib/feed/feedReducer.ts",
-      "docs/domain/ui-fields.md",
-      ".vcsdd/features/ui-filter-search/reviews/spec-review/output/verdict.json (iteration 2)",
+      ".vcsdd/features/ui-filter-search/reviews/spec-review/output/verdict.json (iteration 3)",
+      ".vcsdd/features/ui-filter-search/reviews/spec-review/output/findings/FIND-SPEC-FILTER-016.json",
+      ".vcsdd/features/ui-filter-search/reviews/spec-review/output/findings/FIND-SPEC-FILTER-017.json",
       ".vcsdd/features/ui-filter-search/reviews/spec-review/output/findings/FIND-SPEC-FILTER-012.json",
       ".vcsdd/features/ui-filter-search/reviews/spec-review/output/findings/FIND-SPEC-FILTER-013.json",
       ".vcsdd/features/ui-filter-search/reviews/spec-review/output/findings/FIND-SPEC-FILTER-014.json",
@@ -127,11 +127,13 @@
       "FIND-SPEC-FILTER-008": "RESOLVED (iter 2)",
       "FIND-SPEC-FILTER-009": "RESOLVED (iter 2)",
       "FIND-SPEC-FILTER-010": "RESOLVED (iter 2)",
-      "FIND-SPEC-FILTER-011": "RESOLVED (iter 3) — Done items 1-10 are artifact-verifiable; the new defects are about DomainSnapshotReceived field provenance and PROP-FILTER-022 traceability, not about Done definition framing.",
-      "FIND-SPEC-FILTER-012": "RESOLVED (iter 3) — §4.1 catalog is single source of truth; each EC-S-NNN ID appears exactly once; §4.4 reverse-lookup index added.",
-      "FIND-SPEC-FILTER-013": "RESOLVED (iter 3) — sortByUpdatedAt curried-factory signature unified across §1.5, §2 pseudocode, and verification-architecture.md §1.",
-      "FIND-SPEC-FILTER-014": "NOT RESOLVED — see FIND-SPEC-FILTER-016. PROP-FILTER-022 is now anchored to EC-T-001..EC-T-005 which are Sort edge cases, not search-debounce coalescing.",
-      "FIND-SPEC-FILTER-015": "PARTIALLY RESOLVED — reconstructedState removed and provenance table added, but tagAutocompleteVisibleFor row regresses ui-tag-chip's stale-reference guard. See FIND-SPEC-FILTER-017."
+      "FIND-SPEC-FILTER-011": "RESOLVED (iter 3)",
+      "FIND-SPEC-FILTER-012": "RESOLVED (iter 3)",
+      "FIND-SPEC-FILTER-013": "RESOLVED (iter 3)",
+      "FIND-SPEC-FILTER-014": "RESOLVED (iter 4) — superseded by FIND-016, then resolved when PROP-FILTER-022 was repointed to EC-S-016 in iteration 4.",
+      "FIND-SPEC-FILTER-015": "RESOLVED (iter 4) — provenance table now classifies tagAutocompleteVisibleFor as `derived (state + snapshot)` with the explicit guard inherited from ui-tag-chip.",
+      "FIND-SPEC-FILTER-016": "RESOLVED (iter 4) — EC-S-016 added to §4.1; PROP-FILTER-022 anchored to REQ-FILTER-002 / EC-S-016; §4.4 reverse-lookup added.",
+      "FIND-SPEC-FILTER-017": "RESOLVED (iter 4) — §2 pseudocode and §2 provenance table both restore the stale-reference guard from feedReducer.ts:62-66."
     }
   }
 }

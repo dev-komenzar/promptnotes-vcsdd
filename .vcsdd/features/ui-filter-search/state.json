@@ -2,7 +2,7 @@
   "featureName": "ui-filter-search",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -49,11 +49,26 @@
       "to": "1b",
       "timestamp": "2026-05-06T07:10:00.000Z",
       "reason": "spec revision complete (iteration 4): added EC-S-016 for debounce coalescing, fixed PROP-FILTER-022 to EC-S-016, restored tagAutocompleteVisibleFor stale-reference guard in pseudocode and provenance table"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-06T07:30:00.000Z",
+      "reason": "spec review iteration 4 entering 1c gate"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-06T07:30:01.000Z",
+      "reason": "spec review PASS (iteration 4); entering test-generation phase for sprint 1",
+      "sprint": 1
     }
   ],
   "iterations": {
     "1a": 4,
-    "1b": 4
+    "1b": 4,
+    "1c": 1,
+    "2a": 1
   },
   "proofObligations": [
     { "id": "PROP-FILTER-001", "tier": 0, "status": "pending" },
@@ -98,11 +113,33 @@
         "artifactPath": "specs/verification-architecture.md",
         "linkedBeads": ["BEAD-001"],
         "status": "active"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "review-spec",
+        "artifactPath": ".vcsdd/features/ui-filter-search/reviews/spec-review/output/verdict.json",
+        "linkedBeads": ["BEAD-001", "BEAD-002"],
+        "status": "active"
       }
     ]
   },
-  "gates": {},
-  "sprintCount": 0,
+  "gates": {
+    "1c": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-06T07:30:00.500Z",
+      "reviewedBy": "human",
+      "details": {
+        "approvedBy": "user-auto-mode",
+        "reason": "User instructed advance to phase 2a after adversary PASS"
+      },
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-06T07:30:00.000Z",
+      "humanVerdict": "PASS",
+      "humanApproved": true,
+      "humanApprovedAt": "2026-05-06T07:30:00.500Z"
+    }
+  },
+  "sprintCount": 1,
   "createdAt": "2026-05-06T03:38:06.107Z",
-  "updatedAt": "2026-05-06T07:10:00.000Z"
+  "updatedAt": "2026-05-06T07:30:01.000Z"
 }

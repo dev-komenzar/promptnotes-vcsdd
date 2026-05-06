@@ -565,3 +565,9 @@
 {"timestamp":"2026-05-05T12:55:24.790Z","event":"phase_transition","featureName":"ui-tag-chip","from":"complete","to":"3","iteration":2,"phase":"3"}
 {"timestamp":"2026-05-05T12:55:24.790Z","event":"sprint_boundary","featureName":"ui-tag-chip","nextSprintHint":2,"phase":"3"}
 {"timestamp":"2026-05-06T03:38:06.110Z","event":"feature_created","featureName":"ui-filter-search","mode":"strict","language":"typescript"}
+{"timestamp":"2026-05-06T07:30:00.000Z","event":"phase_transition","featureName":"ui-filter-search","from":"1b","to":"1c","iteration":1,"phase":"1c"}
+{"timestamp":"2026-05-06T07:30:00.000Z","event":"gate_recorded","featureName":"ui-filter-search","phase":"1c","verdict":"PASS","reviewedBy":"adversary"}
+{"timestamp":"2026-05-06T07:30:00.500Z","event":"gate_recorded","featureName":"ui-filter-search","phase":"1c","verdict":"PASS","reviewedBy":"human"}
+{"timestamp":"2026-05-06T07:30:01.000Z","event":"phase_transition","featureName":"ui-filter-search","from":"1c","to":"2a","iteration":1,"phase":"2a"}
+{"timestamp":"2026-05-06T07:30:01.000Z","event":"sprint_started","featureName":"ui-filter-search","sprintNumber":1,"phase":"2a"}
+{"timestamp":"2026-05-06T07:30:01.500Z","event":"bead_added","featureName":"ui-filter-search","beadId":"BEAD-003","type":"review-spec"}
