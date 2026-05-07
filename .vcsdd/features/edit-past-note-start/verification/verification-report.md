@@ -1,67 +1,120 @@
 # Verification Report: EditPastNoteStart
 
 **Feature**: edit-past-note-start
-**Phase**: 5
+**Phase**: 5 (Sprint 2)
+**Date**: 2026-05-07
+**Mode**: lean
+**Spec revision**: Revision 7
 
-## Proof Obligations Status
+---
 
-| ID | Description | Tier | Required | Status | Evidence |
-|----|-------------|------|----------|--------|----------|
-| PROP-EPNS-001 | classifyCurrentSession purity | 1 | **true** | **PROVED** | fast-check 1000 runs, 0 failures |
-| PROP-EPNS-002 | idle → no-current | 1 | **true** | **PROVED** | fast-check 1000 runs, 0 failures |
-| PROP-EPNS-003 | editing: isEmpty↔empty, !isEmpty↔dirty | 1 | **true** | **PROVED** | fast-check 1000 runs (2 properties), 0 failures |
-| PROP-EPNS-004 | save-failed → dirty | 1 | **true** | **PROVED** | fast-check 1000 runs, 0 failures |
-| PROP-EPNS-005 | SwitchError exhaustiveness | 0 | **true** | **PROVED** | TypeScript compile-time (never branch) |
-| PROP-EPNS-006 | Happy path no-current | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-007 | Happy path empty | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-008 | Happy path dirty-success | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-009 | Error path dirty-fail | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-010 | Same-note re-selection | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-011 | Save-failed → new note, save succeeds | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-012 | Save-failed → new note, save fails | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-013 | Clock.now() budget per path | 1 | false | PROVED | 5 path-specific tests |
-| PROP-EPNS-014 | Clock.now() on error path = 1 | 2 | false | PROVED | Example-based test |
-| PROP-EPNS-015 | Event type membership | 0 | false | PROVED | TypeScript Extract + _IsNever |
-| PROP-EPNS-016 | Event ordering empty path | 2 | false | PROVED | Ordered emit spy |
-| PROP-EPNS-017 | Event ordering dirty-success | 2 | false | PROVED | Ordered emit spy |
-| PROP-EPNS-018 | Full integration | 3 | false | DEFERRED | Pipeline returns NewSession, not EditingSessionState |
-| PROP-EPNS-019 | Same-note Clock sourcing | 2 | false | PROVED | Example-based test |
+## Proof Obligations
 
-**Required obligations**: 5/5 PROVED (PROP-EPNS-001 through PROP-EPNS-005)
-**Total**: 18/19 PROVED, 1 DEFERRED (PROP-EPNS-018, Tier 3, not required)
+| ID | Tier | Required | Status | Tool | Artifact |
+|----|------|----------|--------|------|---------|
+| PROP-EPNS-001 | 1 | **true** | **proved** | bun test + fast-check | `__verify__/prop-001-classify-purity.harness.test.ts` |
+| PROP-EPNS-002 | 1 | **true** | **proved** | bun test + fast-check | `__verify__/prop-002-classify-idle.harness.test.ts` |
+| PROP-EPNS-003 | 1 | **true** | **proved** | bun test + fast-check | `__verify__/prop-003-classify-editing.harness.test.ts` |
+| PROP-EPNS-004 | 1 | **true** | **proved** | bun test + fast-check | `__verify__/prop-004-classify-save-failed.harness.test.ts` |
+| PROP-EPNS-005 | 0 | **true** | **proved** | bun test (TypeScript type exhaustiveness) | `__verify__/prop-005-switch-error-exhaustive.harness.test.ts` |
+| PROP-EPNS-006 | 2 | false | verified-via-test | bun test | `step3-start-new-session.test.ts` |
+| PROP-EPNS-007 | 2 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-008 | 2 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-009 | 2 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-010 | 2 | false | verified-via-test | bun test | `step1-classify-current-session.test.ts` |
+| PROP-EPNS-011 | 2 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-012 | 2 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-013 | 1 | false | verified-via-test | bun test | `step1-classify-current-session.test.ts` |
+| PROP-EPNS-014 | 2 | false | verified-via-test | bun test | `step1-classify-current-session.test.ts` |
+| PROP-EPNS-015 | 2 | false | verified-via-test | bun test | `step3-start-new-session.test.ts` |
+| PROP-EPNS-016 | 0 | false | verified-via-test | bun test | `step3-start-new-session.test.ts` |
+| PROP-EPNS-017 | 3 | false | verified-via-test | bun test | `pipeline.test.ts` |
+| PROP-EPNS-018 | 2 | false | verified-via-test | bun test | `pipeline.test.ts` |
+| PROP-EPNS-019 | 1 | false | verified-via-test | bun test | `step1-classify-current-session.test.ts` |
+| PROP-EPNS-020 | 1 | false | verified-via-test | bun test | `step3-start-new-session.test.ts` |
+| PROP-EPNS-021 | 1 | false | verified-via-test | bun test | `step3-start-new-session.test.ts` |
+| PROP-EPNS-022 | 2 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-023 | 2 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-024 | 1 | false | verified-via-test | bun test | `step2-flush-current-session.test.ts` |
+| PROP-EPNS-025 | 2 | false | verified-via-test | bun test | `step3-start-new-session.test.ts` |
+| PROP-EPNS-026 | 1 | false | verified-via-test | bun test | `__verify__/prop-026-save-error-mapping.harness.test.ts` |
+| PROP-EPNS-027 | 2 | false | verified-via-test | bun test | `__verify__/prop-027-precondition-throws.harness.test.ts` |
+| PROP-EPNS-028 | 2 | false | verified-via-test | bun test | `__verify__/prop-028-idempotent-refocus.harness.test.ts` |
 
-## Test Results
+---
 
-```
-bun test src/lib/domain/__tests__/edit-past-note-start/
-52 pass, 0 fail, 10201 expect() calls
-9 files, [224ms]
+## Test Execution
 
-Property-based tests (__verify__/):
-8 pass, 0 fail, 10102 expect() calls
-5 files, [163ms]
-```
+### Required proof harnesses (`__verify__/` — PROP-EPNS-001 through PROP-EPNS-005)
 
-## Purity Audit
+Command: `bun test src/lib/domain/__tests__/edit-past-note-start/__verify__/`
+Result: **38 pass, 0 fail**, 14460 expect() calls (8 files, 390ms)
+Log: `verification/fuzz-results/sprint2-all-props.log`
 
-| Function | Classification | Verified |
-|----------|---------------|----------|
-| classifyCurrentSession | Pure core | PROP-EPNS-001 (fast-check 1000 runs, Date.now spy = 0 calls) |
-| isEmpty (internal) | Pure | Internal to classifyCurrentSession, covered by PROP-EPNS-001 |
-| snapshot → Note hydration | Pure core | Via hydrateSnapshot port (pure function passed in) |
-| flushCurrentSession (no-current) | Pure shell (no-op) | Tested: 0 Clock calls, 0 events |
-| flushCurrentSession (empty) | Effectful | Clock.now + emit |
-| flushCurrentSession (dirty) | Effectful | blurSave + emit |
-| startNewSession | Effectful | Clock.now + emit |
+### Full feature test suite
 
-## Summary
+Command: `bun test src/lib/domain/__tests__/edit-past-note-start/`
+Result: **119 pass, 0 fail**, 14628 expect() calls (12 files, 405ms)
+Log: `verification/fuzz-results/sprint2-full-suite.log`
 
-All 5 required proof obligations (PROP-EPNS-001 through PROP-EPNS-005) are PROVED. 18/19 total obligations are PROVED; 1 deferred (PROP-EPNS-018, Tier 3, not required). The pure core (classifyCurrentSession) is verified for referential transparency via 1000 fast-check runs per property. The effectful shell is covered by example-based tests with emit spies, Clock budget tracking, and event ordering assertions. No security vulnerabilities identified.
+---
 
-## Security Assessment
+## Results — Required Obligations
 
-- No external input processing (internal domain workflow)
-- No file I/O in pure core
-- Branded types prevent raw string injection
-- Error types are exhaustive (SwitchError: never branch)
-- No prototype pollution risk (readonly types)
+### PROP-EPNS-001: classifyCurrentSession purity (referential transparency)
+- **Tool**: bun test + fast-check
+- **Command**: `bun test src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-001-classify-purity.harness.test.ts`
+- **Result**: VERIFIED — 3 pass, 0 fail, 1101 expect() calls
+- **Property**: For all `(EditingSessionState, BlockFocusRequest, Note | null)` tuples, `classifyCurrentSession(s,r,n)` deepEquals `classifyCurrentSession(s,r,n)` called twice. Generated via fast-check arbitrary combinators. numRuns sufficient to cover all 5 state variants (idle, editing, save-failed, saving, switching).
+- **Verdict**: proved
+
+### PROP-EPNS-002: idle → no-current
+- **Tool**: bun test + fast-check
+- **Command**: `bun test src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-002-classify-idle.harness.test.ts`
+- **Result**: VERIFIED — 2 pass, 0 fail, 1100 expect() calls
+- **Property**: For all `(IdleState, request, null)` inputs, result.kind === 'no-current' invariant holds across 100+ generated requests with arbitrary noteId values.
+- **Verdict**: proved
+
+### PROP-EPNS-003: editing: isEmpty↔empty, !isEmpty↔dirty (cross-note)
+- **Tool**: bun test + fast-check
+- **Command**: `bun test src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-003-classify-editing.harness.test.ts`
+- **Result**: VERIFIED — 2 pass, 0 fail, 5000 expect() calls
+- **Property 1**: For all EditingState + cross-noteId requests where `isEmptyNote(currentNote)` is true, result.kind === 'empty'. Property 2: where `!isEmptyNote(currentNote)` (non-empty note), result.kind === 'dirty'. Uses the canonical NoteOps.isEmpty predicate (single paragraph, whitespace-only content).
+- **Verdict**: proved
+
+### PROP-EPNS-004: same-noteId → same-note for EditingState/SaveFailedState
+- **Tool**: bun test + fast-check
+- **Command**: `bun test src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-004-classify-save-failed.harness.test.ts`
+- **Result**: VERIFIED — 3 pass, 0 fail, 7000 expect() calls
+- **Property**: For all (EditingState | SaveFailedState) where request.noteId === state.currentNoteId, result.kind === 'same-note' and result.noteId === state.currentNoteId and result.note === currentNote. Generated across both state variants and arbitrary noteId pairs.
+- **Verdict**: proved
+
+### PROP-EPNS-005: SwitchError exhaustiveness + pendingNextFocus shape
+- **Tool**: bun test (TypeScript type-level + runtime structural check)
+- **Command**: `bun test src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts`
+- **Result**: VERIFIED — 2 pass, 0 fail, 5 expect() calls
+- **Check 1**: TypeScript `never` branch in switch over `SwitchError.kind` — compile-time proof that no unhandled variant exists. **Check 2**: Runtime structural assertion that `SwitchError.pendingNextFocus` has exactly `{ noteId, blockId }` fields (not the Sprint 1 `pendingNextNoteId` shape).
+- **Verdict**: proved
+
+---
+
+## Non-Required Obligations Summary
+
+All 23 non-required obligations (PROP-EPNS-006..028) are covered by the feature test suite (119 tests, 12 files). Status: `verified-via-test`. No obligation is `pending` or `skipped`.
+
+Notable Sprint 2 additions:
+- PROP-EPNS-026 (SaveError → NoteSaveFailureReason mapping): covered by `prop-026-save-error-mapping.harness.test.ts` — all 6 SaveError variants enumerated.
+- PROP-EPNS-027 (precondition throw behavior): covered by `prop-027-precondition-throws.harness.test.ts` — all 5 sub-cases (a)–(e) verified, including PC-004 idle+non-null (FIND-EPNS-S2-P3-001), clock-after-parse ordering for PC-002 (FIND-EPNS-S2-P3-004).
+- PROP-EPNS-028 (idempotent re-focus): covered by `prop-028-idempotent-refocus.harness.test.ts` — sub-case (c) uses `r1.toEqual(r2)` for workflow output equality (state-mutation idempotency deferred to upstream reducer per REQ-EPNS-008 scope note).
+
+---
+
+## Overall Verdict
+
+**PASS**
+
+- Required obligations proved: 5/5
+- Total test suite: 119/119 pass (0 fail)
+- Harness suite: 38/38 pass (0 fail)
+- Tool: fast-check (property-based) + bun test (TypeScript type exhaustiveness)
+- Degradation: none (fast-check available via node_modules)

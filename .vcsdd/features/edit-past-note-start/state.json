@@ -2,7 +2,7 @@
   "featureName": "edit-past-note-start",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -190,12 +190,24 @@
       "timestamp": "2026-05-07T03:31:00.000Z",
       "sprint": 2,
       "reason": "Bundled refactor complete — step2 test file fully async-migrated; no structural changes beyond async migration; all 119 feature tests remain green"
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-07T03:55:00.000Z",
+      "sprint": 2
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-07T04:00:00.000Z",
+      "sprint": 2
     }
   ],
   "iterations": {
     "3": 2,
-    "5": 1,
-    "6": 1,
+    "5": 2,
+    "6": 2,
     "1a": 7,
     "1b": 5,
     "1c": 2,
@@ -427,7 +439,7 @@
         "beadId": "BEAD-014",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-001",
-        "status": "pending",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-007",
           "BEAD-012"
@@ -440,7 +452,7 @@
         "beadId": "BEAD-015",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-002",
-        "status": "pending",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-001",
           "BEAD-007"
@@ -453,7 +465,7 @@
         "beadId": "BEAD-016",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-003",
-        "status": "pending",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-003",
@@ -467,7 +479,7 @@
         "beadId": "BEAD-017",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-004",
-        "status": "pending",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-005",
           "BEAD-007"
@@ -480,7 +492,7 @@
         "beadId": "BEAD-018",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-005",
-        "status": "pending",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-011"
         ],
@@ -492,7 +504,7 @@
         "beadId": "BEAD-019",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-006",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-001",
           "BEAD-009",
@@ -506,7 +518,7 @@
         "beadId": "BEAD-020",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-007",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-009",
@@ -520,7 +532,7 @@
         "beadId": "BEAD-021",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-008",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-003",
           "BEAD-010"
@@ -533,7 +545,7 @@
         "beadId": "BEAD-022",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-009",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-004",
           "BEAD-013"
@@ -546,7 +558,7 @@
         "beadId": "BEAD-023",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-010",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-005",
           "BEAD-008"
@@ -559,7 +571,7 @@
         "beadId": "BEAD-024",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-011",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-006"
         ],
@@ -571,7 +583,7 @@
         "beadId": "BEAD-025",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-012",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-006"
         ],
@@ -583,7 +595,7 @@
         "beadId": "BEAD-026",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-013",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-006",
           "BEAD-007"
@@ -596,7 +608,7 @@
         "beadId": "BEAD-027",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-014",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-009"
@@ -609,7 +621,7 @@
         "beadId": "BEAD-028",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-015",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-003",
           "BEAD-010"
@@ -622,7 +634,7 @@
         "beadId": "BEAD-029",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-016",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-009",
           "BEAD-010"
@@ -635,7 +647,7 @@
         "beadId": "BEAD-030",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-017",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-001",
           "BEAD-002",
@@ -650,7 +662,7 @@
         "beadId": "BEAD-031",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-018",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-005",
           "BEAD-008"
@@ -663,7 +675,7 @@
         "beadId": "BEAD-032",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-019",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-007",
           "BEAD-012"
@@ -676,7 +688,7 @@
         "beadId": "BEAD-033",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-020",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-010"
         ],
@@ -688,7 +700,7 @@
         "beadId": "BEAD-034",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-021",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-008"
         ],
@@ -700,7 +712,7 @@
         "beadId": "BEAD-035",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-022",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-005",
           "BEAD-012"
@@ -713,7 +725,7 @@
         "beadId": "BEAD-036",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-023",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-004",
           "BEAD-011"
@@ -726,7 +738,7 @@
         "beadId": "BEAD-037",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-024",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-004",
           "BEAD-008",
@@ -740,7 +752,7 @@
         "beadId": "BEAD-038",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-025",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-008"
         ],
@@ -752,7 +764,7 @@
         "beadId": "BEAD-039",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-026",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-004"
         ],
@@ -764,7 +776,7 @@
         "beadId": "BEAD-040",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-027",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-013",
           "BEAD-076"
@@ -777,7 +789,7 @@
         "beadId": "BEAD-041",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/edit-past-note-start/specs/verification-architecture.md#PROP-EPNS-028",
-        "status": "pending",
+        "status": "verified-via-test",
         "linkedBeads": [
           "BEAD-005",
           "BEAD-008",
@@ -1408,6 +1420,18 @@
     ]
   },
   "gates": {
+    "5_sprint2_iter2": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T04:00:00.000Z",
+      "reviewedBy": "vcsdd-verifier",
+      "iteration": 2,
+      "sprint": 2,
+      "evidencePath": ".vcsdd/features/edit-past-note-start/verification/",
+      "requiredProved": 5,
+      "requiredTotal": 5,
+      "totalTests": 119,
+      "totalFail": 0
+    },
     "3_sprint2_iter2": {
       "verdict": "FAIL",
       "timestamp": "2026-05-07T02:45:00.000Z",
@@ -1467,5 +1491,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T14:11:31.604Z",
-  "updatedAt": "2026-05-07T03:45:00.000Z"
+  "updatedAt": "2026-05-07T04:00:00.000Z"
 }
