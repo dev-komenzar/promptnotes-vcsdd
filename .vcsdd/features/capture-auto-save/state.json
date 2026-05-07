@@ -84,15 +84,27 @@
       "to": "1b",
       "timestamp": "2026-05-07T08:22:30.000Z",
       "reason": "Revision 4 — 8 findings addressed (FIND-012..019): isEmpty broader rule (aggregates.md L120/L142), factory-pattern convention for ValidatedSaveRequest, isEmptyOrWhitespaceContent precise predicate, pipeline scope clarification (Step 4 out of scope), empty-Note variants table, SaveNoteRequested timing consistency, PROP-027/PROP-028 added"
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "timestamp": "2026-05-07T05:31:00.000Z",
+      "reason": "Phase 4 — FIND-020 (REQ-004 acceptance contradicts divider variants)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-07T05:35:00.000Z",
+      "reason": "Revision 4.1 — FIND-020 resolved"
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
     "6": 1,
-    "1a": 3,
-    "1b": 3,
-    "1c": 1,
+    "1a": 4,
+    "1b": 4,
+    "1c": 2,
     "2a": 1,
     "2b": 1,
     "2c": 1,
@@ -228,7 +240,8 @@
           "BEAD-022",
           "BEAD-045",
           "BEAD-047",
-          "BEAD-049"
+          "BEAD-049",
+          "BEAD-055"
         ],
         "createdAt": "2026-05-07T04:08:07.643Z",
         "createdInPhase": "1a",
@@ -478,7 +491,8 @@
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-004",
         "status": "active",
         "linkedBeads": [
-          "BEAD-004"
+          "BEAD-004",
+          "BEAD-055"
         ],
         "createdAt": "2026-05-07T04:08:07.659Z",
         "createdInPhase": "1b",
@@ -898,6 +912,19 @@
         "createdAt": "2026-05-07T08:22:21.106Z",
         "createdInPhase": "1b",
         "externalId": "PROP-028"
+      },
+      {
+        "beadId": "BEAD-055",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-4/output/findings/FIND-020.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-004",
+          "BEAD-022"
+        ],
+        "createdAt": "2026-05-07T08:27:40.018Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-020"
       }
     ]
   },
@@ -919,27 +946,21 @@
     },
     "1c": {
       "verdict": "FAIL",
-      "timestamp": "2026-05-07T04:30:00.000Z",
+      "timestamp": "2026-05-07T05:30:00.000Z",
       "reviewedBy": "adversary",
       "adversaryVerdict": "FAIL",
-      "adversaryReviewedAt": "2026-05-07T04:30:00.000Z",
+      "adversaryReviewedAt": "2026-05-07T05:30:00.000Z",
       "details": {
-        "iteration": 3,
-        "findingsPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output",
+        "iteration": 4,
+        "findingsPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-4/output",
         "findingIds": [
-          "FIND-012",
-          "FIND-013",
-          "FIND-014",
-          "FIND-015",
-          "FIND-016",
-          "FIND-017",
-          "FIND-018",
-          "FIND-019"
-        ]
+          "FIND-020"
+        ],
+        "priorResolved": 8
       }
     }
   },
   "sprintCount": 1,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T08:22:32.318Z"
+  "updatedAt": "2026-05-07T08:27:40.021Z"
 }

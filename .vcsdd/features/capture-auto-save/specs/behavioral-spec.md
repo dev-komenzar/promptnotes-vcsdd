@@ -2,7 +2,7 @@
 
 **Feature**: `capture-auto-save`
 **Phase**: 1a
-**Revision**: 4 (FIND-012..019: isEmpty broader rule, factory-pattern convention for ValidatedSaveRequest, pipeline scope clarification, empty-Note variants table, SaveNoteRequested timing consistency)
+**Revision**: 4.1 (FIND-020: REQ-004 acceptance variant disambiguation)
 **Source of truth**: `docs/domain/workflows.md` Workflow 2, `docs/domain/aggregates.md` §1 Note Aggregate（Block Sub-entity）, `docs/domain/domain-events.md`, `docs/domain/glossary.md` §0 Shared Kernel（Block 系語彙）, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/blocks.ts`, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/events.ts`
 **Scope**: CaptureAutoSave pipeline only (idle save and blur save). Excludes: idle timer management (UI concern), debounce logic (UI concern), EditPastNoteStart flush (Workflow 3), HandleSaveFailure (Workflow 8). The pipeline starts when a save trigger fires and ends when `NoteFileSaved` is emitted (success) or `NoteSaveFailed` is emitted / an error occurs (failure). Step 4 (`updateProjections`) is the Curate-side reaction to `NoteFileSaved` — it is part of the wider Workflow 2 narrative but lies OUTSIDE the CaptureAutoSave pipeline boundary. See cross-context post-conditions section (REQ-011/REQ-012) for traceability.
 
@@ -22,6 +22,7 @@
 | 2026-05-07 | 4 | FIND-015 | Scope 文を更新（Step 4 は Curate-side handler の責務と明記）。REQ-011/REQ-012 を cross-context post-conditions サブセクションへ移動。REQ-016 から Step 4 publish 言及を削除。REQ-001 の reconciliation note を修正 |
 | 2026-05-07 | 4 | FIND-016 | REQ-003 に Empty-Note variants テーブルを追加。各形状の idle / blur 動作を明示 |
 | 2026-05-07 | 4 | FIND-018 | REQ-008 / REQ-016 / Event Catalog の SaveNoteRequested 発行タイミング表現を「オーケストレーション境界」で統一 |
+| 2026-05-07 | 4.1 | FIND-020 | REQ-004 acceptance criterion #1: divider-only および divider-and-empty variants では `serializeBlocksToMarkdown` の出力が `---` を含む文字列になるため「typically empty/whitespace-only」という表現を削除し、variant 別の body 形状を明示 |
 
 ---
 
@@ -152,7 +153,7 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 **Rationale** (source: `workflows.md` Step 1): Blur save preserves user intent — the user may return to the note later. Only idle save discards empty notes.
 
 **Acceptance Criteria**:
-- A `ValidatedSaveRequest` is produced with `isEmpty(note) === true` blocks and `body === serializeBlocksToMarkdown(blocks)` (typically the empty string or whitespace-only string per `serializeBlocksToMarkdown` semantics).
+- A `ValidatedSaveRequest` is produced with `isEmpty(note) === true` blocks and `body === serializeBlocksToMarkdown(blocks)` (REQ-018 invariant). The resulting body string depends on the variant: for paragraph-only variants (single-empty-para, multi-empty-para, whitespace-para), `body` is the empty string or a whitespace-only string; for divider-bearing variants (divider-only, divider-and-empty), `body` contains the literal `---` per the `divider` block Markdown form (`aggregates.md` L78). All cases proceed to Steps 2 and 3.
 - The pipeline continues through Steps 2, 3.
 - `EmptyNoteDiscarded` is NOT emitted.
 - All five true-isEmpty variants in the empty-Note variants table (single-empty-para, multi-empty-para, whitespace-para, divider-only, divider-and-empty) proceed to save on blur trigger.

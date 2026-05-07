@@ -2,7 +2,7 @@
 
 **Feature**: `capture-auto-save`
 **Phase**: 1b
-**Revision**: 4 (FIND-014: isEmptyOrWhitespaceContent precise definition; FIND-017: PROP-027 cross-context traceability note; FIND-019: PROP-028 Tier-0 signature assertion; PROP-025 updated for broader isEmpty rule and all empty-note variants)
+**Revision**: 4.1 (FIND-020: REQ-004 acceptance variant disambiguation)
 **Mode**: lean
 **Source**: `docs/domain/workflows.md` Workflow 2, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/blocks.ts`, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/ports.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/events.ts`, `docs/domain/aggregates.md` §1
 
@@ -154,7 +154,7 @@ function mapFsErrorToReason(err: FsError): NoteSaveFailureReason {
 | PROP-001 | `serializeNote` is pure: same `ValidatedSaveRequest` (with `blocks` + derived `body`) input always produces identical `SerializedMarkdown` output. Equivalently, `serializeBlocksToMarkdown` (the inner pure-core helper) is pure: `∀ blocks, serializeBlocksToMarkdown(blocks) === serializeBlocksToMarkdown(blocks)`. | REQ-006, REQ-016 | 1 | **true** | fast-check (property: `∀ input, fn(input) === fn(input)`); generator produces `Block[]` sequences via `aggregates.md` §1 invariants (length ≥ 1, content/type compatible) |
 | PROP-002 | `serializeNote` output matches Obsidian format: starts with `---\n`, contains YAML, then `---\n`, then `serializeBlocksToMarkdown(request.blocks)` body | REQ-006 | 1 | **true** | fast-check (property: output matches `/^---\n[\s\S]*\n---\n[\s\S]*$/` AND `output.split("---\n")[2] === serializeBlocksToMarkdown(request.blocks)`) |
 | PROP-003 | Empty body on idle trigger returns EmptyNoteDiscarded, NOT a SaveError — for ALL isEmpty=true variants (single-empty-para, multi-empty-para, whitespace-para, divider-only, divider-and-empty) | REQ-003, REQ-004 | 1 | **true** | fast-check (property: `∀ note where isEmpty(note), trigger="idle" → result.kind === "empty-discarded"`) |
-| PROP-004 | Empty body on blur trigger proceeds to ValidatedSaveRequest (does NOT discard) — for ALL isEmpty=true variants | REQ-004 | 1 | **true** | fast-check (property: `∀ note where isEmpty(note), trigger="blur" → result.kind === "validated"`) |
+| PROP-004 | Empty body on blur trigger proceeds to ValidatedSaveRequest (does NOT discard) — for ALL isEmpty=true variants. (Note: this PROP asserts pipeline routing only — `result.kind === 'validated'`; body bytes vary by variant — see REQ-004 acceptance and PROP-024 for body coherence.) | REQ-004 | 1 | **true** | fast-check (property: `∀ note where isEmpty(note), trigger="blur" → result.kind === "validated"`) |
 | PROP-005 | `SaveError` type is exhaustive: only `'validation'` or `'fs'` kind values exist | REQ-013 | 0 | **true** | TypeScript type exhaustiveness (never branch in switch) |
 | PROP-006 | `SaveValidationError` type is exhaustive: only `'empty-body-on-idle'` or `'invariant-violated'` | REQ-013 | 0 | false | TypeScript type exhaustiveness |
 | PROP-007 | Trigger-to-source mapping: `"idle"` → `"capture-idle"`, `"blur"` → `"capture-blur"`, exhaustive | REQ-014 | 1 | false | fast-check (property: mapping is total over `{"idle","blur"}`) |
@@ -238,3 +238,4 @@ Every requirement has at least one proof obligation. Eight `required: true` obli
 | 2026-05-07 | 4 | FIND-015 | Purity Boundary Map から `updateProjections` を "Out of scope" に変更。PROP-012/PROP-013 の description に "Curate handler" コンテキストを明記 |
 | 2026-05-07 | 4 | FIND-017 | PROP-027 を追加（cross-context traceability プレースホルダー、Tier 3, required: false）。Coverage Matrix REQ-011 行を PROP-012/PROP-013 から PROP-027 に更新 |
 | 2026-05-07 | 4 | FIND-019 | PROP-028 を追加（CaptureAutoSave 型シグネチャ Tier 0 compile-time assertion, required: true）。Coverage Matrix REQ-017 行に PROP-028 を追加。Required-true 義務を 7 → 8 に増加 |
+| 2026-05-07 | 4.1 | FIND-020 | PROP-004 description に注記を追加: このPROPはパイプラインルーティング（`result.kind === 'validated'`）のみを検証する。body の値は variant によって異なる（REQ-004 acceptance 参照）。body の不変条件は REQ-018 / PROP-024 がカバーする |
