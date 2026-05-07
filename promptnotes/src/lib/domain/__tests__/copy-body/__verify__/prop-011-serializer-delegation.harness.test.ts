@@ -96,19 +96,13 @@ describe("PROP-011 (A): pipeline calls bodyForClipboard port exactly once", () =
   });
 });
 
-// ── PROP-011 (B): Direct unit test of bodyForClipboard module ─────────────
+// ── PROP-011 (B): Output-equality contract on bodyForClipboard module ─────
 //
-// This sub-claim verifies that `bodyForClipboard(note)` from `body-for-clipboard.ts`
-// delegates to `serializeBlocksToMarkdown` rather than doing its own block-to-markdown
-// conversion or reading `note.body`.
-//
-// Phase 2a RED condition: the current implementation reads `note.body` (sprint 2 impl),
-// which is `undefined` for block-shaped notes. The test fails because:
-//   - `bodyForClipboard(note)` returns `undefined` (note.body is undefined)
-//   - the assertion `=== serializeBlocksToMarkdown(note.blocks)` fails
-//
-// Phase 2b GREEN condition: the impl calls `serializeBlocksToMarkdown(note.blocks)`,
-// making this test pass.
+// Sub-claim B asserts `bodyForClipboard(note) === serializeBlocksToMarkdown(note.blocks)`
+// for ≥500 random block-shaped notes. Combined with sub-claim A (the DI port spy
+// asserting call count === 1), this pair is the lean-mode equivalent of a
+// module-level call-spy on the canonical serializer (see verification-architecture.md
+// PROP-011 row).
 
 describe("PROP-011 (B): bodyForClipboard module delegates to serializeBlocksToMarkdown", () => {
   test("bodyForClipboard(note) === serializeBlocksToMarkdown(note.blocks) for a concrete block-shaped note", () => {

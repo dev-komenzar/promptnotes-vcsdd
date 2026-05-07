@@ -2,7 +2,7 @@
   "featureName": "copy-body",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -130,10 +130,17 @@
       "reason": "sprint 3 refactor done",
       "timestamp": "2026-05-07T15:40:00.000Z",
       "sprint": 3
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "reason": "sprint 3 phase 3 PASS; advancing to formal hardening",
+      "timestamp": "2026-05-07T15:55:00.000Z",
+      "sprint": 3
     }
   ],
   "iterations": {
-    "3": 1,
+    "3": 2,
     "5": 1,
     "6": 1,
     "1a": 3,
@@ -630,12 +637,24 @@
   "gates": {
     "3": {
       "verdict": "PASS",
-      "timestamp": "2026-05-01T08:48:31.066Z",
+      "timestamp": "2026-05-07T15:50:00.000Z",
       "reviewedBy": "adversary",
+      "sprint": 3,
       "details": {
-        "reason": "Adversary review PASS; 4 minor findings (FIND-001..004) identified and resolved in-place: vacuous publish=0 assertion replaced with type-level guarantee (CopyBodyDeps narrows to clockNow+clipboardWrite), tautological reference test fixed, unsound CaptureDeps cast removed, deep-freeze added to PROP-007.",
-        "adversaryVerdict": "PASS"
-      }
+        "reason": "sprint 3 impl review PASS; 1 minor (FIND-001 PROP-011 wording vs DI-spy pragmatic equivalent) + 1 nit (FIND-002 stale RED-condition comment) resolved in-place",
+        "adversaryVerdict": "PASS",
+        "verdictPath": ".vcsdd/features/copy-body/reviews/phase-3/sprint-3/output/verdict.md",
+        "findingsPath": ".vcsdd/features/copy-body/reviews/phase-3/sprint-3/output/findings.md",
+        "testEvidence": "66 pass / 4 skip / 0 fail (535 expect calls, 14 files)"
+      },
+      "history": [
+        {
+          "verdict": "PASS",
+          "timestamp": "2026-05-01T08:48:31.066Z",
+          "sprint": 2,
+          "reason": "sprint 2 adversary review PASS; 4 minor findings (FIND-001..004) resolved in-place"
+        }
+      ]
     },
     "6": {
       "verdict": "PASS",
