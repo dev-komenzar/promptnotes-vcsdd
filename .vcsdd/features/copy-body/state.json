@@ -2,7 +2,7 @@
   "featureName": "copy-body",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -109,6 +109,27 @@
       "reason": "sprint 3 phase 1c PASS (iter 2); advancing to red phase",
       "timestamp": "2026-05-07T14:35:00.000Z",
       "sprint": 3
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "reason": "sprint 3 red→green",
+      "timestamp": "2026-05-07T15:30:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "reason": "sprint 3 green PASS; refactor",
+      "timestamp": "2026-05-07T15:35:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "reason": "sprint 3 refactor done",
+      "timestamp": "2026-05-07T15:40:00.000Z",
+      "sprint": 3
     }
   ],
   "iterations": {
@@ -119,8 +140,8 @@
     "1b": 3,
     "1c": 2,
     "2a": 2,
-    "2b": 1,
-    "2c": 1,
+    "2b": 2,
+    "2c": 2,
     "complete": 1
   },
   "proofObligations": [
@@ -198,20 +219,20 @@
       "id": "PROP-011",
       "tier": 1,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-011-serializer-delegation.harness.test.ts"
     },
     {
       "id": "PROP-012",
       "tier": 0,
       "required": true,
-      "status": "pending",
+      "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-012-pipeline-shape.types.test.ts"
     }
   ],
   "traceability": {
     "epicId": "VCSDD-copy-body-1777624308740",
-    "lastBeadId": "BEAD-026",
+    "lastBeadId": "BEAD-039",
     "beads": [
       {
         "beadId": "BEAD-001",
@@ -472,6 +493,137 @@
         "createdAt": "2026-05-07T14:00:00.000Z",
         "createdInPhase": "1b",
         "externalId": "PROP-012"
+      },
+      {
+        "beadId": "BEAD-027",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-001-body-for-clipboard-purity.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-015"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-001-test"
+      },
+      {
+        "beadId": "BEAD-028",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-002-body-equals-note-body.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-016", "BEAD-002", "BEAD-013"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-002-test"
+      },
+      {
+        "beadId": "BEAD-029",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-003-frontmatter-exclusion.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-017", "BEAD-002"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-003-test"
+      },
+      {
+        "beadId": "BEAD-030",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-004-success-io-budget.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-018", "BEAD-001", "BEAD-005"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-004-test"
+      },
+      {
+        "beadId": "BEAD-031",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-005-failure-io-budget.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-019", "BEAD-003", "BEAD-009"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-005-test"
+      },
+      {
+        "beadId": "BEAD-032",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-006-save-error-exhaustive.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-020", "BEAD-004", "BEAD-010"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-006-test"
+      },
+      {
+        "beadId": "BEAD-033",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-007-read-only-inputs.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-021", "BEAD-006"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-007-test"
+      },
+      {
+        "beadId": "BEAD-034",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-008-empty-body-copy.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-022", "BEAD-007"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-008-test"
+      },
+      {
+        "beadId": "BEAD-035",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-009-pass-through.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-023", "BEAD-012"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-009-test"
+      },
+      {
+        "beadId": "BEAD-036",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-010-fserror-pass-through.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-024", "BEAD-004"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-010-test"
+      },
+      {
+        "beadId": "BEAD-037",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-011-serializer-delegation.harness.test.ts",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-025", "BEAD-013", "BEAD-014"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-011-test"
+      },
+      {
+        "beadId": "BEAD-038",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-012-pipeline-shape.types.test.ts",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-026", "BEAD-008"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-012-test"
+      },
+      {
+        "beadId": "BEAD-039",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts",
+        "status": "sprint-3-rewrite",
+        "linkedBeads": ["BEAD-013", "BEAD-014", "BEAD-025", "BEAD-037"],
+        "createdAt": "2026-05-07T15:35:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "BEAD-039",
+        "note": "sprint 3 rewrite: delegates to serializeBlocksToMarkdown(note.blocks); stale note.body access removed; PROP-001..PROP-011 re-verified under blocks-shaped arbitraries"
       }
     ]
   },
@@ -526,5 +678,5 @@
   },
   "sprintCount": 3,
   "createdAt": "2026-05-01T08:31:48.740Z",
-  "updatedAt": "2026-05-07T14:05:00.000Z"
+  "updatedAt": "2026-05-07T15:40:00.000Z"
 }
