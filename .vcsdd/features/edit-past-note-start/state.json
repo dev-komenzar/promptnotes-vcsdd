@@ -126,24 +126,17 @@
       "reviewedBy": "adversary"
     },
     "1c": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-07T01:00:00.000Z",
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T01:30:00.000Z",
       "reviewedBy": "adversary",
-      "iteration": 3,
+      "iteration": 4,
       "sprint": 2,
-      "revision": 5,
-      "findingsCount": 1,
-      "criticalCount": 1,
+      "revision": 6,
+      "findingsCount": 3,
+      "criticalCount": 0,
       "majorCount": 0,
-      "minorCount": 0,
-      "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-5/",
-      "sprint1Verdict": {
-        "verdict": "PASS",
-        "timestamp": "2026-04-30T14:38:00.995Z",
-        "reviewedBy": "adversary",
-        "adversaryVerdict": "PASS",
-        "adversaryReviewedAt": "2026-04-30T14:38:00.995Z"
-      }
+      "minorCount": 3,
+      "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-6/"
     }
   },
   "sprintCount": 2,

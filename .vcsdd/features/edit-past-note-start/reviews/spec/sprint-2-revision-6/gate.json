@@ -1,0 +1,82 @@
+{
+  "feature": "edit-past-note-start",
+  "phase": "1c",
+  "sprint": 2,
+  "revision": 6,
+  "iteration": 4,
+  "mode": "lean",
+  "verdict": "PASS",
+  "timestamp": "2026-05-07T01:30:00.000Z",
+  "reviewedBy": "adversary",
+  "freshContext": true,
+  "dimensions": {
+    "spec_fidelity": "PASS",
+    "edge_case_coverage": "PASS",
+    "verification_readiness": "PASS",
+    "purity_boundary_clarity": "PASS",
+    "internal_consistency": "PASS"
+  },
+  "contractViolationErrorPurge": {
+    "verified": true,
+    "liveReferences": 0,
+    "historicalChangelogReferences": 5,
+    "resultTypePreserved": "Result<NewSession, SwitchError>"
+  },
+  "findings": [
+    {
+      "id": "FIND-EPNS-S2-R6-001",
+      "severity": "minor",
+      "dimension": "edge_case_coverage",
+      "category": "spec_gap",
+      "description": "PC-001 asymmetric sub-case 'same-note + non-null snapshot is silently ignored' is documented in the Preconditions section (behavioral-spec line 181) but absent from the Edge Case Catalog (lines 615-629) and uncovered by any PROP-EPNS-NNN. Builder rationalized the asymmetry; recommendation is to add (a) a dedicated Edge Case Catalog row and (b) a PROP enforcing 'same-note + non-null snapshot does not invoke parseMarkdownToBlocks and does not error'. Non-blocking for Phase 2a entry.",
+      "evidence": {
+        "behavioral_spec_lines": [181, 615, 628],
+        "verification_architecture_lines": []
+      }
+    },
+    {
+      "id": "FIND-EPNS-S2-R6-002",
+      "severity": "minor",
+      "dimension": "verification_readiness",
+      "category": "test_coverage",
+      "description": "PROP-EPNS-027 enumerates only 4 sub-cases (a) PC-001 cross-note+null-snapshot, (b) PC-002 parse failure, (c) PC-004 editing+null, (d) PC-004 save-failed+null. The PC-004 sub-case 'idle + currentNote !== null' is mandated by REQ-EPNS-013 acceptance criterion at behavioral-spec line 578 but not enumerated as an explicit (e) sub-case in PROP-EPNS-027. Add it to ensure the property test exercises all defined precondition violations.",
+      "evidence": {
+        "behavioral_spec_lines": [571, 578],
+        "verification_architecture_lines": [199]
+      }
+    },
+    {
+      "id": "FIND-EPNS-S2-R6-003",
+      "severity": "minor",
+      "dimension": "verification_readiness",
+      "category": "internal_consistency",
+      "description": "PROP-EPNS-027 (verification-architecture.md line 199) and REQ-EPNS-013 acceptance criterion (behavioral-spec.md line 574) instruct the test to spy on a port named `hydrateSnapshot`. The Port Contracts section uses `ParseMarkdownToBlocks` (verification-architecture.md line 143) — `hydrateSnapshot` was renamed during the Revision 4 block-based migration (changelog row at line 42). Replace `hydrateSnapshot` with `parseMarkdownToBlocks` in the two stale references for internal consistency.",
+      "evidence": {
+        "behavioral_spec_lines": [574],
+        "verification_architecture_lines": [42, 143, 199]
+      }
+    }
+  ],
+  "findingsCount": 3,
+  "criticalCount": 0,
+  "majorCount": 0,
+  "minorCount": 3,
+  "preEmptiveConcernsAdjudicated": [
+    {
+      "concern": "PC-004 idle + non-null currentNote sub-case message is implementation-defined",
+      "verdict": "ACCEPTED",
+      "rationale": "REQ-EPNS-013 acceptance line 578 explicitly permits distinct message; the test gap is captured separately as FIND-EPNS-S2-R6-002."
+    },
+    {
+      "concern": "PC-002 message is implementation-defined",
+      "verdict": "ACCEPTED",
+      "rationale": "PROP-EPNS-027 (b) explicitly allows implementation-defined message; appropriate for a programming-error path."
+    },
+    {
+      "concern": "PC-001 same-note + non-null snapshot is silently ignored — asymmetric vs cross-note + null snapshot (throws)",
+      "verdict": "ACCEPTED_WITH_RESERVATION",
+      "rationale": "The asymmetry is rationally consistent (cross-note has no recovery path; same-note has a trivial recovery path = ignore extra data). The lack of a dedicated Edge Case Catalog entry and PROP coverage is captured separately as FIND-EPNS-S2-R6-001."
+    }
+  ],
+  "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-6/"
+}
