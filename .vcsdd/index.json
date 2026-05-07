@@ -14,8 +14,8 @@
       "createdAt": "2026-04-30T12:29:51.428Z",
       "mode": "lean",
       "language": "typescript",
-      "currentPhase": "complete",
-      "updatedAt": "2026-04-30T13:58:31.772Z"
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-07T03:50:00.000Z"
     },
     "edit-past-note-start": {
       "status": "active",
@@ -114,5 +114,5 @@
       "updatedAt": "2026-05-06T07:30:01.000Z"
     }
   },
-  "activeFeature": "ui-editor"
+  "activeFeature": "capture-auto-save"
 }

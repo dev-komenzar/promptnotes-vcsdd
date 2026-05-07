@@ -2,7 +2,7 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "complete",
+  "currentPhase": "1b",
   "phaseHistory": [
     {
       "from": "init",
@@ -60,14 +60,26 @@
       "to": "complete",
       "timestamp": "2026-04-30T13:58:31.772Z",
       "sprint": 1
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-07T03:45:00.000Z",
+      "reason": "Re-spec for block-based ValidatedSaveRequest per docs/tasks/feature-impact.md"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-07T03:50:00.000Z",
+      "reason": "Revision 3 — block-based migration: behavioral-spec and verification-architecture both updated"
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
     "6": 1,
-    "1a": 1,
-    "1b": 1,
+    "1a": 2,
+    "1b": 2,
     "1c": 1,
     "2a": 1,
     "2b": 1,
@@ -116,6 +128,27 @@
       "required": true,
       "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-014-clock-now-budget.harness.test.ts"
+    },
+    {
+      "id": "PROP-024",
+      "tier": 1,
+      "required": true,
+      "status": "pending",
+      "note": "Revision 3 (block-migration): body === serializeBlocksToMarkdown(blocks) coherence at every carrier site. Re-verification required after implementation update."
+    },
+    {
+      "id": "PROP-025",
+      "tier": 1,
+      "required": false,
+      "status": "pending",
+      "note": "Revision 3 (block-migration): Note.isEmpty block-based definition (blocks.length === 1 && first block is empty paragraph)."
+    },
+    {
+      "id": "PROP-026",
+      "tier": 1,
+      "required": false,
+      "status": "pending",
+      "note": "Revision 3 (block-migration): serializeBlocksToMarkdown ↔ parseMarkdownToBlocks structural roundtrip on Block[]."
     }
   ],
   "traceability": {
@@ -148,5 +181,5 @@
   },
   "sprintCount": 1,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-04-30T13:58:31.772Z"
+  "updatedAt": "2026-05-07T03:50:00.000Z"
 }

@@ -2,8 +2,8 @@
 
 **Feature**: `capture-auto-save`
 **Phase**: 1a
-**Revision**: 2 (iteration-1 spec review FAIL: FIND-001 return type, FIND-002 EmptyNoteDiscarded channel, FIND-003 serializeNote purity, FIND-004 SaveNoteRequested timing)
-**Source of truth**: `docs/domain/workflows.md` Workflow 2, `docs/domain/aggregates.md`, `docs/domain/domain-events.md`, `docs/domain/glossary.md`, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/events.ts`
+**Revision**: 3 (block-based type contract migration: ValidatedSaveRequest/SaveNoteRequested/NoteFileSaved 派生 body 化、Note.isEmpty 再定義、serializeBlocksToMarkdown 純粋核追加)
+**Source of truth**: `docs/domain/workflows.md` Workflow 2, `docs/domain/aggregates.md` §1 Note Aggregate（Block Sub-entity）, `docs/domain/domain-events.md`, `docs/domain/glossary.md` §0 Shared Kernel（Block 系語彙）, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/blocks.ts`, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/events.ts`
 **Scope**: CaptureAutoSave pipeline only (idle save and blur save). Excludes: idle timer management (UI concern), debounce logic (UI concern), EditPastNoteStart flush (Workflow 3), HandleSaveFailure (Workflow 8). The pipeline starts when a save trigger fires and ends when `NoteFileSaved` is returned or an error/early-exit occurs.
 
 ---
@@ -16,16 +16,23 @@
 | 2026-04-30 | 2 | FIND-002 | REQ-003: EmptyNoteDiscarded は success チャネル（`PrepareSaveRequest` の戻り値）であり `SaveError` ではないことを明示。Error Catalog から `empty-body-on-idle` の UI mapping 行を EmptyNoteDiscarded ルートとして再分類 |
 | 2026-04-30 | 2 | FIND-003 | REQ-006: `FrontmatterSerializer.toYaml` は外部ポートではなくモジュール内部の純粋関数として位置づけ。`serializeNote` が依存するのはこの内部関数のみであり、`CaptureDeps` のポートは呼ばない |
 | 2026-04-30 | 2 | FIND-004 | REQ-008: `SaveNoteRequested` の発行タイミングを「Step 3 の write 前」から「Step 1 完了直後、状態遷移 `editing → saving` と同時」に修正（canonical `EmitSaveAndTransition` に準拠） |
+| 2026-05-07 | 3 | block-migration | 型契約のブロックベース化に伴う再仕様化。`ValidatedSaveRequest` / `SaveNoteRequested` / `NoteFileSaved` の payload に `blocks: ReadonlyArray<Block>` を追加し、`body: Body` は `serializeBlocksToMarkdown(blocks)` 派生フィールドとして両持ち化（domain-events.md L55–56 / L115–116 と整合）。`Note.isEmpty()` 定義を「blocks が `[empty paragraph]` のみ」に再定義。Step 2 `serializeNote` を「`serializeBlocksToMarkdown(blocks)` で本文を、内部 YAML 関数で frontmatter を直列化する合成関数」と再定義し、新たな pure core ターゲットとして `serializeBlocksToMarkdown` を追加。新規 REQ-018（body/blocks 整合不変条件）を追加 |
 
 ---
 
 ## Pipeline Overview
 
 ```
-DirtyEditingSession → ValidatedSaveRequest → SerializedMarkdown → PersistedNote → IndexedNote
+DirtyEditingSession (note.blocks)
+  → ValidatedSaveRequest (blocks + derived body)
+  → SerializedMarkdown
+  → PersistedNote
+  → IndexedNote
 ```
 
 Each intermediate type carries stronger guarantees than the previous. The pipeline has a Capture-side front half (Steps 1–2, TypeScript) and a Vault-side back half (Step 3, Rust/Tauri). Step 4 (`updateProjections`) runs in the Curate context (TypeScript, in-memory).
+
+**Block-based primary representation** (Revision 3): the editor maintains state as `Note.blocks: ReadonlyArray<Block>`. `body: Body` is a **derived field** computed via `serializeBlocksToMarkdown(blocks)`. The pipeline carries both representations through `ValidatedSaveRequest`, `SaveNoteRequested`, and `NoteFileSaved` — `blocks` for downstream Block-aware consumers (Curate, EditPastNoteStart re-hydration), `body` for the file-bytes boundary and search/legacy compatibility. The implementation MUST guarantee `body === serializeBlocksToMarkdown(blocks)` at every carrier site (REQ-018).
 
 **Trigger sources**: `NoteAutoSavedAfterIdle` (debounce ~2s) maps to `trigger: "idle"`; `NoteAutoSavedOnBlur` (focus out) maps to `trigger: "blur"`. Both enter the same pipeline.
 
@@ -49,6 +56,7 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 **Acceptance Criteria**:
 - The pipeline returns `{ ok: true, value: NoteFileSaved }` on the happy path.
+- `NoteFileSaved.blocks` carries the full `ReadonlyArray<Block>` of the saved note and `NoteFileSaved.body === serializeBlocksToMarkdown(NoteFileSaved.blocks)`.
 - `NoteFileSaved` public domain event is emitted exactly once (see REQ-009).
 - `EditingSessionState` transitions through `editing → saving → editing` with `isDirty=false` and `lastSaveResult='success'` on return.
 - `SaveNoteRequested` public domain event is emitted at state transition time (see REQ-008).
@@ -57,15 +65,19 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 ### REQ-002: Step 1 — prepareSaveRequest validates and produces ValidatedSaveRequest
 
-**EARS**: WHEN a `DirtyEditingSession` is provided with `trigger: "idle" | "blur"` THEN the system SHALL call `Clock.now()` to obtain a `Timestamp`, update `Note.frontmatter.updatedAt` to that timestamp, and produce a `ValidatedSaveRequest` containing `noteId`, `body`, `frontmatter` (with updated `updatedAt`), `previousFrontmatter`, `trigger`, and `requestedAt`.
+**EARS**: WHEN a `DirtyEditingSession` is provided with `trigger: "idle" | "blur"` THEN the system SHALL call `Clock.now()` to obtain a `Timestamp`, update `Note.frontmatter.updatedAt` to that timestamp, and produce a `ValidatedSaveRequest` containing `noteId`, `blocks`, `body` (= `serializeBlocksToMarkdown(blocks)`), `frontmatter` (with updated `updatedAt`), `previousFrontmatter`, `trigger`, and `requestedAt`.
 
-**Validation rules** (source: `workflows.md` Step 1):
+**Validation rules** (source: `workflows.md` Step 1; `stages.ts` `ValidatedSaveRequest`):
 - `updatedAt >= createdAt` — enforced by Note aggregate invariant.
 - Tag deduplication — enforced by Frontmatter VO.
-- Empty body check — handled separately (REQ-003, REQ-004).
+- Block invariants — enforced by Note aggregate (blocks.length ≥ 1; per-Block content/type compatibility per `aggregates.md` §1).
+- Empty body check — handled separately via `Note.isEmpty()` (REQ-003, REQ-004).
+- Body/blocks coherence — `body === serializeBlocksToMarkdown(blocks)` (REQ-018).
 
 **Acceptance Criteria**:
 - `ValidatedSaveRequest.kind === "ValidatedSaveRequest"`.
+- `ValidatedSaveRequest.blocks` is the same `ReadonlyArray<Block>` reference as `note.blocks` from the input session (block content is not re-edited at this step).
+- `ValidatedSaveRequest.body` equals `serializeBlocksToMarkdown(ValidatedSaveRequest.blocks)` (the derived-body invariant; see REQ-018).
 - `ValidatedSaveRequest.requestedAt` equals the `Timestamp` from `Clock.now()`.
 - `ValidatedSaveRequest.frontmatter.updatedAt` equals `requestedAt`.
 - `ValidatedSaveRequest.previousFrontmatter` carries the frontmatter state before this save operation (may be `null` for a never-saved note).
@@ -77,7 +89,9 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 **EARS**: WHEN a `DirtyEditingSession` has `trigger: "idle"` AND `Note.isEmpty(note)` returns `true` THEN the system SHALL NOT proceed to Step 2 but SHALL emit `EmptyNoteDiscarded { noteId, occurredOn }` and return `Err(SaveError { kind: 'validation', reason: { kind: 'empty-body-on-idle' } })`.
 
-**Source**: `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`; `errors.ts` `SaveValidationError`.
+**`Note.isEmpty` definition** (Revision 3 — block-based): `isEmpty(note)` returns `true` iff `note.blocks.length === 1` AND `note.blocks[0].type === "paragraph"` AND `note.blocks[0].content` is the empty/whitespace-only `BlockContent`. This is the block-aware reformulation of the legacy "body is empty" check; it preserves the `errors.ts` `SaveValidationError.kind === "empty-body-on-idle"` semantics ("派生 body が空") per `errors.ts` L40–43.
+
+**Source**: `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`; `errors.ts` `SaveValidationError`; `note.ts` `NoteOps.isEmpty`; `aggregates.md` §1 Note invariants.
 
 **Two-layer channel design** (Sprint 4 reconciliation with canonical `CaptureAutoSave` type):
 
@@ -107,7 +121,7 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 **Rationale** (source: `workflows.md` Step 1): Blur save preserves user intent — the user may return to the note later. Only idle save discards empty notes.
 
 **Acceptance Criteria**:
-- A `ValidatedSaveRequest` is produced with empty `Body`.
+- A `ValidatedSaveRequest` is produced with `blocks = [empty paragraph]` and `body === serializeBlocksToMarkdown(blocks)` (typically the empty string or a single-newline string per `serializeBlocksToMarkdown` semantics).
 - The pipeline continues through Steps 2, 3, 4.
 - `EmptyNoteDiscarded` is NOT emitted.
 
@@ -128,13 +142,20 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 
 ### REQ-006: Step 2 — serializeNote produces Obsidian-compatible markdown
 
-**EARS**: WHEN a `ValidatedSaveRequest` is provided THEN the system SHALL serialize the frontmatter to YAML and produce a `SerializedMarkdown` string in the format `---\n{yaml}\n---\n{body}`.
+**EARS**: WHEN a `ValidatedSaveRequest` is provided THEN the system SHALL serialize the frontmatter to YAML and the blocks to a Markdown body via `serializeBlocksToMarkdown(blocks)`, and produce a `SerializedMarkdown` string in the format `---\n{yaml}\n---\n{body}`.
 
-**Source**: `workflows.md` Step 2 — `FrontmatterSerializer.toYaml(fm)`.
+**Source**: `workflows.md` Step 2 — `FrontmatterSerializer.toYaml(fm)`; `blocks.ts` `SerializeBlocksToMarkdown`.
+
+**Composition** (Revision 3): `serializeNote` is a composition of two pure functions:
+1. `frontmatterToYaml(frontmatter)` — internal YAML serializer (resolved per FIND-003 / FIND-006: a module-level pure function, NOT a `CaptureDeps` port).
+2. `serializeBlocksToMarkdown(blocks)` — Shared Kernel pure function from `blocks.ts`. Used by Vault (file write), Capture (clipboard via `bodyForClipboard`), and Curate (search index). The same function is used to derive `ValidatedSaveRequest.body` in Step 1, so when `serializeNote` reads `request.body`, the result is identical to recomputing `serializeBlocksToMarkdown(request.blocks)` (REQ-018).
+
+`serializeNote` MAY consume `request.body` directly (since REQ-018 guarantees it equals `serializeBlocksToMarkdown(request.blocks)`) OR recompute from `request.blocks`. Both are observationally equivalent.
 
 **Purity clarification** (resolves FIND-003):
 - `serializeNote` is a **pure function** that takes only a `ValidatedSaveRequest` as input and returns `SerializedMarkdown`.
 - `FrontmatterSerializer.toYaml` is listed in `workflows.md` as a dependency, but it is an **internal pure function** (module-level helper), NOT an external port injected via `CaptureDeps`. The canonical `CaptureDeps` in `ports.ts` does not include it.
+- `SerializeBlocksToMarkdown` (`blocks.ts`) is a Shared Kernel pure function — also NOT a `CaptureDeps` port. It is depended upon directly at module import time.
 - `serializeNote` has **zero `CaptureDeps` port calls**. It may internally use a YAML serialization library (e.g., `js-yaml`), but this is a build-time dependency, not a runtime port.
 
 **Acceptance Criteria**:
@@ -142,7 +163,7 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 - `serializeNote` is a **pure function**: no I/O, no `CaptureDeps` port calls, deterministic.
 - `serializeNote` function signature has no `deps` parameter — it takes only `ValidatedSaveRequest`.
 - The YAML section contains `tags`, `createdAt`, `updatedAt` fields from the frontmatter.
-- The body section is the raw `Body` string (no transformation).
+- The body section equals `serializeBlocksToMarkdown(request.blocks)` (and equivalently `request.body` per REQ-018).
 - This step never fails (the VO invariants guarantee valid input; source: `workflows.md` Step 2 error column: "なし").
 
 ---
@@ -174,7 +195,9 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 **Acceptance Criteria**:
 - `SaveNoteRequested.kind === "save-note-requested"`.
 - `SaveNoteRequested.noteId` matches the note being saved.
-- `SaveNoteRequested.body` and `SaveNoteRequested.frontmatter` match the `ValidatedSaveRequest`.
+- `SaveNoteRequested.blocks` equals `ValidatedSaveRequest.blocks` (same `ReadonlyArray<Block>`).
+- `SaveNoteRequested.body` equals `ValidatedSaveRequest.body` and `serializeBlocksToMarkdown(SaveNoteRequested.blocks)` (REQ-018).
+- `SaveNoteRequested.frontmatter` matches the `ValidatedSaveRequest.frontmatter`.
 - `SaveNoteRequested.previousFrontmatter` carries the pre-save frontmatter (may be `null`).
 - `SaveNoteRequested.source` is `"capture-idle"` or `"capture-blur"` per the trigger.
 - `SaveNoteRequested` is emitted at the `editing → saving` transition, BEFORE `NoteFileSaved` or `NoteSaveFailed`.
@@ -190,7 +213,8 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 
 **Acceptance Criteria**:
 - `NoteFileSaved.kind === "note-file-saved"`.
-- `NoteFileSaved.noteId`, `.body`, `.frontmatter`, `.previousFrontmatter` match the saved note.
+- `NoteFileSaved.noteId`, `.blocks`, `.body`, `.frontmatter`, `.previousFrontmatter` match the saved note.
+- `NoteFileSaved.body === serializeBlocksToMarkdown(NoteFileSaved.blocks)` (REQ-018).
 - `NoteFileSaved.occurredOn` is a valid `Timestamp`.
 - `NoteFileSaved` is emitted exactly once per successful save.
 - `NoteFileSaved` is emitted AFTER `SaveNoteRequested`.
@@ -307,10 +331,11 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 - Step 3: `FileSystem.writeFileAtomic()` (one call), event emission.
 - Step 4: in-memory projection update (no file I/O).
 
-Step 2 (`serializeNote`) SHALL be a pure function with zero I/O.
+Step 2 (`serializeNote`) SHALL be a pure function with zero I/O. The same applies to `serializeBlocksToMarkdown` (Shared Kernel pure function used to derive `body`).
 
 **Acceptance Criteria**:
 - `serializeNote` calls no ports and has no side effects.
+- `serializeBlocksToMarkdown` calls no ports and has no side effects (Shared Kernel pure function, `blocks.ts`).
 - `Clock.now()` is called exactly once in the pipeline (in Step 1, `prepareSaveRequest`).
 - `FileSystem.writeFileAtomic()` is called exactly once (in Step 3, `writeMarkdown`).
 - Event emission (`publish`) occurs in Step 3 (SaveNoteRequested, NoteFileSaved/NoteSaveFailed) and optionally in Step 4 (TagInventoryUpdated).
@@ -335,16 +360,36 @@ The `CaptureAutoSave` top-level type returns `Result<NoteFileSaved, SaveError>`.
 
 ---
 
+### REQ-018: Body/blocks coherence invariant (Revision 3 — block-based migration)
+
+**EARS**: WHENEVER a stage type or public domain event in the CaptureAutoSave pipeline carries both a `blocks: ReadonlyArray<Block>` field and a `body: Body` field — namely `ValidatedSaveRequest`, `SaveNoteRequested`, and `NoteFileSaved` — THEN the implementation SHALL guarantee `body === serializeBlocksToMarkdown(blocks)`.
+
+**Source**: `stages.ts` `ValidatedSaveRequest` L36–50 ("実装側で常に `body === serializeBlocksToMarkdown(blocks)` を保証する"); `events.ts` `NoteFileSaved` L52–66 / `SaveNoteRequested` L110–125 ("`serializeBlocksToMarkdown(blocks)` の派生"); `domain-events.md` L55–56 / L115–116.
+
+**Rationale**: `blocks` is the primary state for editor and downstream Block-aware consumers (Curate Hydration via `parseMarkdownToBlocks`, EditPastNoteStart re-focus). `body` exists for the file-bytes boundary (Vault writes the string), search index input (Curate `SearchScope`), and legacy compatibility. Carrying both representations risks drift; this invariant pins the relationship to a single pure function.
+
+**Acceptance Criteria**:
+- At every construction site of `ValidatedSaveRequest`, the producer SHALL compute `body = serializeBlocksToMarkdown(blocks)` and assign both fields atomically. There is no public constructor that accepts `blocks` and `body` independently.
+- `SaveNoteRequested` MUST be built by `BuildSaveNoteRequested(request: ValidatedSaveRequest) → SaveNoteRequested` (`workflows.ts` L145–147), which propagates `blocks` and `body` directly from `request`. No site MAY synthesize `body` from any source other than `serializeBlocksToMarkdown(blocks)`.
+- `NoteFileSaved.blocks` and `NoteFileSaved.body` carry the same `blocks` and the same `serializeBlocksToMarkdown(blocks)` value as the originating `SaveNoteRequested`. The Vault-side write does not transform `body`.
+- For test purposes, the equation `event.body === serializeBlocksToMarkdown(event.blocks)` SHALL hold for every emitted `SaveNoteRequested` and `NoteFileSaved` (verified by PROP-024 in Phase 1b).
+
+**Failure mode** (informational): If implementation accidentally produces `body !== serializeBlocksToMarkdown(blocks)` (e.g., by mutating `blocks` after deriving `body`, or by reading a stale cached `body`), the spec considers this a Tier-1 invariant violation. There is no defined error variant in `SaveError` for this case — the invariant is an internal correctness property, not a user-visible failure.
+
+---
+
 ## Purity Boundary Candidates (Preview for Phase 1b)
 
 | Step | Classification | Rationale |
 |------|---------------|-----------|
-| Step 1: `prepareSaveRequest` | Mixed | `Clock.now()` is the only effectful call; validation logic is pure |
-| Step 2: `serializeNote` | **Pure core** | No ports, no I/O, deterministic YAML serialization |
+| Step 1: `prepareSaveRequest` | Mixed | `Clock.now()` is the only effectful call; validation logic and `serializeBlocksToMarkdown(blocks)` (called to derive `body`) are pure |
+| Step 1 (derive body): `serializeBlocksToMarkdown` | **Pure core** | Shared Kernel pure function (`blocks.ts`); deterministic, no ports |
+| Step 1 (empty check): `Note.isEmpty(note)` | **Pure core** | Pure structural check on `blocks` (`blocks.length === 1` && first block is empty paragraph) |
+| Step 2: `serializeNote` | **Pure core** | Composition of `serializeBlocksToMarkdown(blocks)` + internal YAML serializer; no ports, no I/O |
 | Step 3: `writeMarkdown` | **Effectful shell** | `FileSystem.writeFileAtomic` + event emission |
 | Step 4: `updateProjections` | In-memory write | Curate Read Model update; no file I/O |
 
-The pure core target is `serializeNote`. Property-testable claims: deterministic serialization, Obsidian-compatible format, roundtrip with parser.
+The pure core targets are `serializeBlocksToMarkdown` and `serializeNote`. Property-testable claims: deterministic serialization (purity), structural roundtrip with `parseMarkdownToBlocks` (`blocks.ts` invariant `parseMarkdownToBlocks(serializeBlocksToMarkdown(b)) ≈ b` modulo new BlockId), Obsidian-compatible format, body/blocks coherence invariant (REQ-018).
 
 ---
 
@@ -383,10 +428,10 @@ UI mapping:
 
 ## Event Catalog (consolidated)
 
-| Event | Step | Emitter Context | Type | Condition |
-|-------|------|----------------|------|-----------|
-| `EmptyNoteDiscarded` | 1 | Capture | Public | idle trigger + empty body |
-| `SaveNoteRequested` | 3 (pre-write) | Capture | Public | always (on validated save) |
-| `NoteFileSaved` | 3 (post-write) | Vault | Public | write success |
-| `NoteSaveFailed` | 3 (post-write) | Vault | Public | write failure |
-| `TagInventoryUpdated` | 4 | Curate | Internal | tag delta detected |
+| Event | Step | Emitter Context | Type | Condition | Block-related payload |
+|-------|------|----------------|------|-----------|----------------------|
+| `EmptyNoteDiscarded` | 1 | Capture | Public | idle trigger + `Note.isEmpty(note)` (= blocks 列が `[empty paragraph]` のみ) | `noteId` のみ（blocks/body は載せない） |
+| `SaveNoteRequested` | 3 (pre-write, at `editing → saving`) | Capture | Public | always (on validated save) | `blocks: ReadonlyArray<Block>` + `body = serializeBlocksToMarkdown(blocks)`（REQ-018） |
+| `NoteFileSaved` | 3 (post-write) | Vault | Public | write success | `blocks: ReadonlyArray<Block>` + `body`（REQ-018 同上） |
+| `NoteSaveFailed` | 3 (post-write) | Vault | Public | write failure | `noteId` + `reason`（blocks/body は載せない） |
+| `TagInventoryUpdated` | 4 | Curate | Internal | tag delta detected | tag delta のみ（blocks 非依存） |

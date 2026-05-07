@@ -1,1 +1,1 @@
-ui-editor
+capture-auto-save
