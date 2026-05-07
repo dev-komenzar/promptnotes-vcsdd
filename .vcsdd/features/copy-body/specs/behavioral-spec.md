@@ -2,7 +2,8 @@
 
 **Feature**: `copy-body`
 **Phase**: 1a
-**Revision**: 1
+**Revision**: 2
+**Sprint 3 revision** — block-based migration (sprint 2 baseline preserved unchanged where possible).
 **Source of truth**:
 - `docs/domain/workflows.md` Workflow 6 (CopyBody)
 - `docs/domain/code/ts/src/capture/workflows.ts` (`CopyBody` type, line 107–109)
@@ -11,8 +12,10 @@
 - `docs/domain/code/ts/src/capture/internal-events.ts` (`NoteBodyCopiedToClipboard`)
 - `docs/domain/code/ts/src/capture/commands.ts` (`CopyNoteBody`)
 - `docs/domain/code/ts/src/capture/states.ts` (`EditingState`)
-- `docs/domain/code/ts/src/shared/note.ts` (`NoteOps.bodyForClipboard`)
+- `docs/domain/code/ts/src/shared/note.ts` (`NoteOps.bodyForClipboard` — JSDoc: "内部で `serializeBlocksToMarkdown(note.blocks)` を呼ぶ")
+- `docs/domain/code/ts/src/shared/blocks.ts` (`SerializeBlocksToMarkdown` interface and `BlockParseError`)
 - `docs/domain/code/ts/src/shared/errors.ts` (`SaveError`, `FsError`)
+- `docs/tasks/feature-impact.md` (copy-body entry — derivation note: `bodyForClipboard` internally calls `serializeBlocksToMarkdown(note.blocks)`)
 - `docs/domain/event-storming.md`, `domain-events.md`, `glossary.md`, `validation.md`, `ui-fields.md`
 **Scope**: CopyBody pipeline only. The pipeline starts when a `CopyNoteBody` command fires for the currently editing note and ends when `ClipboardText` is returned (success) or a `SaveError` is returned (clipboard failure). Excludes: button rendering / keyboard binding (UI concern), past-note copy from feed (out of MVP).
 
@@ -53,15 +56,31 @@ The pipeline is **Pure-leaning**: all transformation is pure (`Note → string`)
 
 ---
 
-### REQ-002: bodyForClipboard returns body only (frontmatter excluded)
+### REQ-002: bodyForClipboard returns body derived from blocks (frontmatter excluded)
 
-**EARS**: WHEN `bodyForClipboard(note)` is invoked THEN the system SHALL return the raw `Note.body` string with no frontmatter prefix, no `---` fences, and no YAML metadata.
+**EARS**: WHEN `bodyForClipboard(note)` is invoked THEN the system SHALL return `serializeBlocksToMarkdown(note.blocks)` — a string produced by the canonical block serializer — with no frontmatter prefix, no `---` YAML fences, and no YAML metadata.
 
-**Source**: `note.ts` line 65 — `bodyForClipboard(note: Note): string`; `glossary.md` §4 ("frontmatter は除外"); `event-storming.md` row 10 ("frontmatter は除外").
+**Source**: `note.ts` `bodyForClipboard(note: Note): string` (JSDoc: "内部で `serializeBlocksToMarkdown(note.blocks)` を呼ぶ"); `blocks.ts` `SerializeBlocksToMarkdown` interface; `glossary.md` §4 ("frontmatter は除外"); `event-storming.md` row 10 ("frontmatter は除外").
+
+**Block-type → Markdown prefix mapping** (canonical, per `capture-auto-save/serialize-blocks-to-markdown.ts`):
+
+| Block type | Markdown representation |
+|-----------|------------------------|
+| `paragraph` | `content` (no prefix) |
+| `heading-1` | `# content` |
+| `heading-2` | `## content` |
+| `heading-3` | `### content` |
+| `bullet` | `- content` |
+| `numbered` | `1. content` |
+| `code` | `` ``` ``\n`content`\n`` ``` `` |
+| `quote` | `> content` |
+| `divider` | `---` |
+
+Blocks are joined with `"\n"`; no trailing newline. The result is the serializer's output — it is **not** a separately stored `note.body` field (no such field exists on the `Note` type).
 
 **Acceptance Criteria**:
-- The returned string is byte-identical to `note.body` (the `Body` value object as string).
-- The result contains no `---\n` delimiter.
+- The returned string equals `serializeBlocksToMarkdown(note.blocks)` (string equality, not byte-identity to a stored field).
+- The result contains no YAML frontmatter `---\n` delimiter (frontmatter is excluded by construction — `bodyForClipboard` reads only `note.blocks`).
 - The result contains no `tags:`, `createdAt:`, or `updatedAt:` keys originating from frontmatter.
 - The function is **pure**: deterministic, no I/O, no `Clock.now`.
 
@@ -130,19 +149,25 @@ The pipeline is **Pure-leaning**: all transformation is pure (`Note → string`)
 
 ---
 
-### REQ-007: Empty body is copied as-is (whitespace and empty allowed)
+### REQ-007: Empty and minimal block arrangements are copied as-is
 
-**EARS**: WHEN the current note's body is empty (`""`) or whitespace-only THEN the system SHALL still produce `ClipboardText.text` equal to that body string and SHALL still invoke `ClipboardWrite` and emit `NoteBodyCopiedToClipboard` on success.
+**EARS**: WHEN the current note contains only an empty paragraph block (`note.blocks === [{ type: "paragraph", content: "" }]`) or other minimal block arrangements THEN the system SHALL still produce `ClipboardText.text` equal to `serializeBlocksToMarkdown(note.blocks)` and SHALL still invoke `ClipboardWrite` and emit `NoteBodyCopiedToClipboard` on success.
 
-**Rationale**: Unlike `CaptureAutoSave` Workflow 2 which discards empty bodies on idle save, CopyBody has no notion of "empty" being invalid — the user is explicitly asking to copy. The `bodyForClipboard` operation is total (defined for all `Note` values).
+**Rationale**: Unlike `CaptureAutoSave` Workflow 2 which discards empty bodies on idle save, CopyBody has no notion of "empty" being invalid — the user is explicitly asking to copy. The `bodyForClipboard` operation is total (defined for all `Note` values, including minimal block arrangements).
 
-**Source**: `note.ts` `bodyForClipboard(note: Note): string` (no precondition); `workflows.md` Workflow 6 (no empty-body branch).
+**Source**: `note.ts` `bodyForClipboard(note: Note): string` (no precondition); `note.ts` `NoteOps.isEmpty` (definition: "blocks.length === 1 かつ blocks[0] が空 content の paragraph"); `workflows.md` Workflow 6 (no empty-body branch).
+
+**Minimal block fixture examples**:
+- `[{ type: "paragraph", content: "" }]` → serializer returns `""` → `ClipboardWrite("")` is invoked.
+- `[{ type: "divider", content: "" }]` → serializer returns `"---"` → `ClipboardWrite("---")` is invoked.
+- A whitespace-only paragraph `[{ type: "paragraph", content: "   \n" }]` → serializer returns `"   \n"` verbatim (no trimming by the pipeline).
 
 **Acceptance Criteria**:
-- `copyBody` invoked on a note with `body === ""` returns `Ok(ClipboardText { text: "" })`.
-- `copyBody` invoked on a whitespace-only body (`"   \n"`) returns `Ok(ClipboardText { text: "   \n" })`.
-- `ClipboardWrite("")` is invoked (whether the OS clipboard accepts empty strings is the port's concern; the pipeline does not branch on this).
+- `copyBody` invoked on a note with `blocks === [{ type: "paragraph", content: "" }]` returns `Ok(ClipboardText { text: "" })`.
+- `copyBody` invoked on a whitespace-only paragraph block returns `Ok(ClipboardText { text: "   \n" })` (content preserved verbatim).
+- `ClipboardWrite("")` is invoked when the serialized result is `""` (whether the OS clipboard accepts empty strings is the port's concern; the pipeline does not branch on this).
 - `EmptyNoteDiscarded` is **not** emitted (this is a CaptureAutoSave-only event).
+- The pipeline does not branch on block count or content — all `Note` values are treated uniformly.
 
 ---
 
@@ -238,21 +263,51 @@ REQ-003 is now stated directly with this constraint (no amendment paragraph need
 
 ---
 
+### REQ-013: Block serialization invariant
+
+**EARS**: WHEN `bodyForClipboard(note)` is invoked THEN the system SHALL return a value equal to `serializeBlocksToMarkdown(note.blocks)` for all `Note` values; the function MUST NOT carry its own block-type → markdown prefix table.
+
+**Source**: `docs/domain/code/ts/src/shared/note.ts` JSDoc on `bodyForClipboard` ("内部で `serializeBlocksToMarkdown(note.blocks)` を呼ぶ"); `docs/domain/code/ts/src/shared/blocks.ts` `SerializeBlocksToMarkdown` interface.
+
+**Rationale**: The block-type → Markdown prefix table is a shared kernel concern defined in `blocks.ts` and canonically implemented in `capture-auto-save/serialize-blocks-to-markdown.ts`. Duplicating this table in `body-for-clipboard.ts` would create two sources of truth that can diverge. The function must delegate to the canonical serializer.
+
+**Acceptance Criteria**:
+- `bodyForClipboard(note)` returns a string equal to `serializeBlocksToMarkdown(note.blocks)` for every `Note` value tested.
+- The implementation file `body-for-clipboard.ts` does not contain a `switch` or `if`-chain over `block.type` values — it delegates to the canonical serializer.
+- PROP-002 (serializer delegation property test) passes.
+
+---
+
+### REQ-014: Implementation delegates to canonical block serializer
+
+**EARS**: WHEN the `bodyForClipboard` function is implemented THEN it SHALL import and call `serializeBlocksToMarkdown` from the canonical serializer source rather than parsing or recomputing the block-to-markdown mapping internally.
+
+**Source**: `docs/tasks/feature-impact.md` copy-body entry; `capture-auto-save/serialize-blocks-to-markdown.ts` (canonical implementation for this migration sprint).
+
+**Implementation guidance**: Importing `serializeBlocksToMarkdown` from `../capture-auto-save/serialize-blocks-to-markdown.js` is the current canonical source. Cross-feature import is acceptable for this migration sprint and is recorded as a finding for a later "shared kernel extraction" refactor (see Findings to Carry Forward in `verification-architecture.md`). When a shared kernel utility is extracted, the import path will change; the behavioral contract expressed in REQ-013 remains stable.
+
+**Acceptance Criteria**:
+- The import path resolves to the `capture-auto-save` serializer (or a future shared utility that replaces it).
+- PROP-011 (serializer delegation spy test) passes — `serializeBlocksToMarkdown` is called exactly once per `bodyForClipboard` invocation.
+- No duplicate prefix table exists in `copy-body/body-for-clipboard.ts`.
+
+---
+
 ## Purity Boundary Candidates (Preview for Phase 1b)
 
 | Sub-step | Classification | Rationale |
 |----------|----------------|-----------|
 | `getCurrentNote` (infra) | Effectful | Reads from Capture in-memory state |
-| `bodyForClipboard` | **Pure core** | Total function `Note → string`; no ports |
+| `bodyForClipboard` | **Pure core** | Total function via `serializeBlocksToMarkdown(note.blocks)`; pure under the serializer's purity (PROP-001 transitive) |
 | `clipboardWrite` | **Effectful shell** | OS clipboard write |
 | `publish(NoteBodyCopiedToClipboard)` | Effectful shell | Internal event bus |
 | `clockNow` (success only) | Effectful (purity-violating) | OS time read |
 
 The pure core target is `bodyForClipboard`. Property-testable claims:
 
-- **PROP-001**: Determinism — `bodyForClipboard(note)` is referentially transparent.
-- **PROP-002**: Body identity — `bodyForClipboard(note) === note.body` (as string).
-- **PROP-003**: Frontmatter exclusion — for any `note` with non-empty `frontmatter.tags`, the returned string does not contain `tags:` substring originating from frontmatter (a sentinel-tag harness can verify this).
+- **PROP-001**: Determinism — `bodyForClipboard(note)` is referentially transparent (transitive from serializer purity).
+- **PROP-002**: Serializer delegation — `bodyForClipboard(note) === serializeBlocksToMarkdown(note.blocks)` for all valid `Note` values.
+- **PROP-003**: Frontmatter exclusion — for any `note` with non-empty `frontmatter.tags`, the returned string does not contain `tags:` substring originating from frontmatter (a sentinel-tag harness can verify this; exclusion holds by construction since `bodyForClipboard` reads only `note.blocks`).
 
 ---
 
@@ -296,3 +351,27 @@ No `PublicDomainEvent` is emitted by CopyBody.
 - **Past-note copy from feed**: MVP does not support copying a past note from the feed view without first opening it. Only the currently editing note is copyable. (Source: `validation.md` line 434 — only "コピーボタン" in the editor; `ui-fields.md` line 75.)
 - **Idle-timer reset on copy**: Whether copying resets the idle timer is a UI/timer concern, not a pipeline concern. The pipeline does not interact with `EditingState.idleTimerHandle`.
 - **Selection vs. full body**: The MVP `bodyForClipboard` returns the full body. Partial selection copy is OS-level (Cmd+C) and bypasses this pipeline.
+
+---
+
+## Implementation Notes (sprint 3)
+
+### Derivation chain
+
+Sprint 3 migrates `bodyForClipboard` from the sprint 2 implementation (which referenced a now-nonexistent `note.body` stored field) to the block-based derivation:
+
+```
+Note.blocks: ReadonlyArray<Block>
+  → serializeBlocksToMarkdown(note.blocks): string
+  → bodyForClipboard(note): string   [identity — no further transformation]
+```
+
+The function `bodyForClipboard` is a thin wrapper: it calls `serializeBlocksToMarkdown` with `note.blocks` as the sole argument and returns the result directly. No prefix table, no regex, no custom join logic belongs in `body-for-clipboard.ts`.
+
+### Serializer source (sprint 3)
+
+The canonical serializer is `promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts`. For sprint 3, `body-for-clipboard.ts` imports directly from this file (`../capture-auto-save/serialize-blocks-to-markdown.js`). This cross-feature import is a **known non-blocking finding** tracked in `verification-architecture.md` ("Sprint 3 / serializer source"). A future "shared kernel extraction" feature will relocate the serializer to a shared utility and update the import path without changing the behavioral contract.
+
+### Note type shape (sprint 3 vs sprint 2)
+
+Sprint 2 tests used a `Note` shaped as `{ id, body: string, frontmatter }`. Sprint 3 tests must use `{ id, blocks: ReadonlyArray<Block>, frontmatter }`. The test arbitrary generators in `__tests__/copy-body/` must be updated in Phase 2a to construct block-shaped notes. The behavioral pipeline contracts (REQ-001 through REQ-012) are unaffected — only the `Note` construction in test fixtures changes.
