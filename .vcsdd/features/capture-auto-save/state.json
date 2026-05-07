@@ -2,7 +2,7 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -96,6 +96,19 @@
       "to": "1b",
       "timestamp": "2026-05-07T05:35:00.000Z",
       "reason": "Revision 4.1 — FIND-020 resolved"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-07T05:54:00.000Z",
+      "reason": "Phase 1c re-entry for iteration 5 review"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-07T05:56:00.000Z",
+      "reason": "Phase 1c PASS — proceed to Phase 2a (TDD Red)",
+      "sprint": 2
     }
   ],
   "iterations": {
@@ -104,8 +117,8 @@
     "6": 1,
     "1a": 4,
     "1b": 4,
-    "1c": 2,
-    "2a": 1,
+    "1c": 3,
+    "2a": 2,
     "2b": 1,
     "2c": 1,
     "complete": 1
@@ -945,22 +958,18 @@
       "reviewedBy": "adversary"
     },
     "1c": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-07T05:30:00.000Z",
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T05:55:00.000Z",
       "reviewedBy": "adversary",
-      "adversaryVerdict": "FAIL",
-      "adversaryReviewedAt": "2026-05-07T05:30:00.000Z",
+      "adversaryVerdict": "PASS",
+      "adversaryReviewedAt": "2026-05-07T05:55:00.000Z",
       "details": {
-        "iteration": 4,
-        "findingsPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-4/output",
-        "findingIds": [
-          "FIND-020"
-        ],
-        "priorResolved": 8
+        "iteration": 5,
+        "findingsPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-5/output"
       }
     }
   },
-  "sprintCount": 1,
+  "sprintCount": 2,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T08:27:40.021Z"
+  "updatedAt": "2026-05-07T08:32:03.995Z"
 }
