@@ -78,6 +78,8 @@ The pipeline is **Pure-leaning**: all transformation is pure (`Note → string`)
 
 Blocks are joined with `"\n"`; no trailing newline. The result is the serializer's output — it is **not** a separately stored `note.body` field (no such field exists on the `Note` type).
 
+> **Note**: This table is informational; it MUST NOT be reproduced inside `body-for-clipboard.ts` (see REQ-013/REQ-014). The canonical implementation lives in `promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts`.
+
 **Acceptance Criteria**:
 - The returned string equals `serializeBlocksToMarkdown(note.blocks)` (string equality, not byte-identity to a stored field).
 - The result contains no YAML frontmatter `---\n` delimiter (frontmatter is excluded by construction — `bodyForClipboard` reads only `note.blocks`).
@@ -121,7 +123,7 @@ Blocks are joined with `"\n"`; no trailing newline. The result is the serializer
 
 ### REQ-005: NoteBodyCopiedToClipboard emitted on success
 
-**EARS**: WHEN `ClipboardWrite(text)` succeeds THEN the system SHALL publish exactly one `NoteBodyCopiedToClipboard { kind: "note-body-copied-to-clipboard", noteId, occurredOn }` event via `CaptureDeps.publish`.
+**EARS**: WHEN `ClipboardWrite(text)` succeeds THEN the system SHALL publish exactly one `NoteBodyCopiedToClipboard { kind: "note-body-copied-to-clipboard", noteId, occurredOn }` event via the internal Capture event bus (`CopyBodyInfra.emitInternal`), NOT via `CaptureDeps.publish`.
 
 **Source**: `internal-events.ts` line 79–83; `event-storming.md` row 10; `glossary.md` §4 row "NoteBodyCopiedToClipboard | Internal | コピー実行"; `domain-events.md` line 170.
 
@@ -151,19 +153,21 @@ Blocks are joined with `"\n"`; no trailing newline. The result is the serializer
 
 ### REQ-007: Empty and minimal block arrangements are copied as-is
 
-**EARS**: WHEN the current note contains only an empty paragraph block (`note.blocks === [{ type: "paragraph", content: "" }]`) or other minimal block arrangements THEN the system SHALL still produce `ClipboardText.text` equal to `serializeBlocksToMarkdown(note.blocks)` and SHALL still invoke `ClipboardWrite` and emit `NoteBodyCopiedToClipboard` on success.
+**EARS**: WHEN the current note contains only an empty paragraph block (`note.blocks === [{ id: <BlockId>, type: "paragraph", content: "" }]`) or other minimal block arrangements THEN the system SHALL still produce `ClipboardText.text` equal to `serializeBlocksToMarkdown(note.blocks)` and SHALL still invoke `ClipboardWrite` and emit `NoteBodyCopiedToClipboard` on success.
+
+Note: `<BlockId>` denotes any valid `BlockId` value; generators construct fresh IDs per Block invariant 1 (id is unique within the Note).
 
 **Rationale**: Unlike `CaptureAutoSave` Workflow 2 which discards empty bodies on idle save, CopyBody has no notion of "empty" being invalid — the user is explicitly asking to copy. The `bodyForClipboard` operation is total (defined for all `Note` values, including minimal block arrangements).
 
 **Source**: `note.ts` `bodyForClipboard(note: Note): string` (no precondition); `note.ts` `NoteOps.isEmpty` (definition: "blocks.length === 1 かつ blocks[0] が空 content の paragraph"); `workflows.md` Workflow 6 (no empty-body branch).
 
-**Minimal block fixture examples**:
-- `[{ type: "paragraph", content: "" }]` → serializer returns `""` → `ClipboardWrite("")` is invoked.
-- `[{ type: "divider", content: "" }]` → serializer returns `"---"` → `ClipboardWrite("---")` is invoked.
-- A whitespace-only paragraph `[{ type: "paragraph", content: "   \n" }]` → serializer returns `"   \n"` verbatim (no trimming by the pipeline).
+**Minimal block fixture examples** (`<BlockId>` is any valid `BlockId` value; generators construct fresh IDs):
+- `[{ id: <BlockId>, type: "paragraph", content: "" }]` → serializer returns `""` → `ClipboardWrite("")` is invoked.
+- `[{ id: <BlockId>, type: "divider", content: "" }]` → serializer returns `"---"` → `ClipboardWrite("---")` is invoked.
+- A whitespace-only paragraph `[{ id: <BlockId>, type: "paragraph", content: "   \n" }]` → serializer returns `"   \n"` verbatim (no trimming by the pipeline).
 
 **Acceptance Criteria**:
-- `copyBody` invoked on a note with `blocks === [{ type: "paragraph", content: "" }]` returns `Ok(ClipboardText { text: "" })`.
+- `copyBody` invoked on a note with `blocks === [{ id: <BlockId>, type: "paragraph", content: "" }]` returns `Ok(ClipboardText { text: "" })`.
 - `copyBody` invoked on a whitespace-only paragraph block returns `Ok(ClipboardText { text: "   \n" })` (content preserved verbatim).
 - `ClipboardWrite("")` is invoked when the serialized result is `""` (whether the OS clipboard accepts empty strings is the port's concern; the pipeline does not branch on this).
 - `EmptyNoteDiscarded` is **not** emitted (this is a CaptureAutoSave-only event).
@@ -205,13 +209,7 @@ export function makeCopyBodyPipeline(
 
 **Source**: `ports.ts` `ClockNow: () => Timestamp`; `internal-events.ts` `occurredOn: Timestamp`.
 
-**Reconciliation with REQ-003**: REQ-003 forbids `Clock.now` invocation only because workflows.md does not list it as a dependency. However, every internal event with an `occurredOn` field requires a timestamp source, and `CaptureDeps.clockNow` is the canonical way. This spec resolves the apparent contradiction:
-
-- `Clock.now` IS invoked, exactly once, **only on the success path** (immediately before publishing the event).
-- It is NOT invoked on early returns (clipboard-write failure path → no event → no clock read).
-- This budget (≤1 clockNow per success, 0 per failure) is a verifiable property (PROP-006, Phase 1b).
-
-REQ-003 is now stated directly with this constraint (no amendment paragraph needed). The budget property is verified by **PROP-004** (success: exactly 1) and **PROP-005** (failure: exactly 0).
+Timestamp budget is stated directly in REQ-003 and verified by PROP-004 / PROP-005.
 
 **Acceptance Criteria**:
 - On successful copy: `clockNow()` is called exactly once, and its return value is the `occurredOn` of the emitted event.

@@ -108,10 +108,11 @@ type CopyBodyInfra = {
 | **PROP-005** | 1 | yes | I/O budget on failure — exactly 1 `clipboardWrite`, 0 `clockNow`, 0 `emitInternal` | Spy-based test: stub `clipboardWrite` to return `Err(FsError)`, assert counts | REQ-004, REQ-009, REQ-011 |
 | **PROP-006** | 0 | yes | `SaveError` exhaustiveness — only `kind: "fs"` is producible; the `validation` branch is unreachable | TypeScript exhaustiveness compile-check: `switch(err.kind) { case "fs": ...; case "validation": throw ... }` builds without error; runtime test enumerates `FsError` variants | REQ-010 |
 | **PROP-007** | 1 | yes | Read-only invariant — input `EditingState`, `Note`, `Frontmatter` references are not mutated | Spy / structural-equality test: deep-freeze inputs (`Object.freeze`), run `copyBody`, assert no mutation throws | REQ-006 |
-| **PROP-008** | 1 | yes | Empty and minimal block arrangements are copied through — `blocks === [{ type: "paragraph", content: "" }]` and other minimal arrangements still produce `Ok(ClipboardText)` and emit the event | Property test with minimal-block fixtures: `arbitrary<minimalBlocksNote>` using generators for `[{ type: "paragraph", content: "" }]`, `[{ type: "divider", content: "" }]`, whitespace-paragraph, etc. (existing harness file reused; *generators* change to construct `blocks`-shaped notes). Assert `result.ok === true` and event published. | REQ-007 |
+| **PROP-008** | 1 | yes | Empty and minimal block arrangements are copied through — `blocks === [{ id: <BlockId>, type: "paragraph", content: "" }]` and other minimal arrangements still produce `Ok(ClipboardText)` and emit the event (`<BlockId>` is any valid `BlockId`; generators construct fresh IDs per Block invariant 1) | Property test with minimal-block fixtures: `arbitrary<minimalBlocksNote>` using generators for `[{ id: <BlockId>, type: "paragraph", content: "" }]`, `[{ id: <BlockId>, type: "divider", content: "" }]`, whitespace-paragraph, etc. (existing harness file reused; *generators* change to construct `blocks`-shaped notes with full `{ id, type, content }` shapes). Assert `result.ok === true` and event published. | REQ-007 |
 | **PROP-009** | 1 | yes | Pass-through fidelity — `result.value.text === bodyForClipboard(note)` and `result.value.noteId === state.currentNoteId` | Property test over arbitrary `(EditingState, Note)` pairs **constrained to `note.id === state.currentNoteId`** (REQ-012 caller precondition) | REQ-001, REQ-012 |
 | **PROP-010** | 1 | yes | FsError pass-through — for each of 5 `FsError.kind` variants, `result.error.reason` equals the original error verbatim | Parameterized test enumerating all 5 variants | REQ-004, REQ-010 |
 | **PROP-011** | 1 | yes | Serializer delegation — `bodyForClipboard(note)` calls `serializeBlocksToMarkdown` exactly once per invocation, with `note.blocks` as the only argument | Spy/mock the serializer in a unit test: replace `serializeBlocksToMarkdown` with a spy, call `bodyForClipboard(note)`, assert call count === 1 and call argument === `note.blocks`. Artifact: `promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-011-serializer-delegation.harness.test.ts` (will be created in Phase 2a). | REQ-013, REQ-014 |
+| **PROP-012** | 0 | yes | Pipeline shape — `makeCopyBodyPipeline` returns a function whose runtime/type signature matches the canonical `CopyBody` type modulo the narrowed `CopyBodyDeps`; the flat-ports `copyBody` is exported with the documented `CopyBodyPorts` shape; `EditingState` narrowing rejects non-editing states at the call site. | TypeScript exhaustiveness via `tsc --noEmit` plus a type-level test file (`pipeline-shape.types.test.ts` using `tsd` or inline `expectType` assertions) — no runtime assertion required. Artifact: `promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-012-pipeline-shape.types.test.ts`. | REQ-008 |
 
 ### Tier definitions
 
@@ -120,7 +121,7 @@ type CopyBodyInfra = {
 - **Tier 2** — Mutation testing or fuzz-with-coverage (not required at lean mode).
 - **Tier 3** — Formal proof (not required at lean mode).
 
-Lean mode chooses Tier 0/1 only. All eleven props are required because the pipeline is small enough that complete coverage is cheap. (Sprint 3 adds PROP-011; PROP count increased from 10 to 11.)
+Lean mode chooses Tier 0/1 only. All twelve props are required because the pipeline is small enough that complete coverage is cheap. (Sprint 3 adds PROP-011 and PROP-012; PROP count increased from 10 to 12.)
 
 ---
 
@@ -144,6 +145,7 @@ copy-body/
     prop-009-pass-through.harness.test.ts
     prop-010-fserror-pass-through.harness.test.ts
     prop-011-serializer-delegation.harness.test.ts          # NEW — sprint 3
+    prop-012-pipeline-shape.types.test.ts                   # NEW — sprint 3 (type-level only, Tier 0)
 ```
 
 Implementation lives under `promptnotes/src/lib/domain/copy-body/`:
@@ -195,7 +197,7 @@ The `Pick<CaptureDeps, "clockNow" | "clipboardWrite">` makes explicit that CopyB
 
 ## Acceptance Gate (Phase 1c, lean)
 
-- All eleven PROPs above (PROP-001 through PROP-011) have a one-sentence verification plan stated in this document.
-- Behavioral spec REQs are 1:1 covered by PROPs (no orphan REQs). REQ-013 and REQ-014 added in sprint 3 are covered by PROP-002 and PROP-011 respectively.
+- All twelve PROPs above (PROP-001 through PROP-012) have a one-sentence verification plan stated in this document.
+- Behavioral spec REQs are 1:1 covered by PROPs (no orphan REQs). REQ-008 is covered by PROP-012 (Tier 0, type-level). REQ-013 and REQ-014 added in sprint 3 are covered by PROP-002 and PROP-011 respectively.
 - Adversary review (lean) checks for: missing edge cases, mismatched return types, inconsistent purity claims.
 - No human approval required (lean mode default).
