@@ -2,7 +2,7 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -130,11 +130,18 @@
       "timestamp": "2026-05-07T06:55:00.000Z",
       "reason": "Sprint 2 phase 3 adversarial review",
       "sprint": 2
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-07T12:00:00.000Z",
+      "sprint": 2,
+      "reason": "Phase 5 hardening — 10/11 obligations proved, gate PASS"
     }
   ],
   "iterations": {
     "3": 2,
-    "5": 1,
+    "5": 2,
     "6": 1,
     "1a": 4,
     "1b": 4,
@@ -499,7 +506,7 @@
         "beadId": "BEAD-019",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-001",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-006",
           "BEAD-016",
@@ -513,7 +520,7 @@
         "beadId": "BEAD-020",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-002",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-006",
           "BEAD-064"
@@ -526,7 +533,7 @@
         "beadId": "BEAD-021",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-003",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-003",
           "BEAD-004",
@@ -540,7 +547,7 @@
         "beadId": "BEAD-022",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-004",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-004",
           "BEAD-055",
@@ -554,7 +561,7 @@
         "beadId": "BEAD-023",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-005",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-005",
           "BEAD-013"
@@ -667,7 +674,7 @@
         "beadId": "BEAD-032",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-014",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-016"
         ],
@@ -794,7 +801,7 @@
         "beadId": "BEAD-042",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-024",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-008",
@@ -813,7 +820,7 @@
         "beadId": "BEAD-043",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-025",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-003",
           "BEAD-045",
@@ -831,7 +838,7 @@
         "beadId": "BEAD-044",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-026",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-006",
           "BEAD-018",
@@ -966,7 +973,7 @@
         "beadId": "BEAD-054",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-028",
-        "status": "active",
+        "status": "proved",
         "linkedBeads": [
           "BEAD-017",
           "BEAD-060",
@@ -1299,6 +1306,37 @@
         "findingsPath": ".vcsdd/features/capture-auto-save/reviews/sprint-2/output"
       }
     },
+    "5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T12:00:00.000Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "sprint": 2,
+        "propsProved": [
+          "PROP-001",
+          "PROP-002",
+          "PROP-003",
+          "PROP-004",
+          "PROP-005",
+          "PROP-014",
+          "PROP-024",
+          "PROP-025",
+          "PROP-026",
+          "PROP-028"
+        ],
+        "propsPending": [
+          "PROP-027"
+        ],
+        "propsFailed": [],
+        "securityFindings": "none",
+        "purityViolations": "none",
+        "tool": "bun test + fast-check",
+        "totalTests": 97,
+        "totalPassed": 93,
+        "totalTodo": 4,
+        "totalFailed": 0
+      }
+    },
     "6": {
       "verdict": "PASS",
       "timestamp": "2026-04-30T13:55:34.161Z",
@@ -1318,5 +1356,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T09:09:36.031Z"
+  "updatedAt": "2026-05-07T12:00:00.000Z"
 }
