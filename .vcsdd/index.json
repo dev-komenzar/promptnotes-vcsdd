@@ -22,8 +22,8 @@
       "createdAt": "2026-04-30T14:11:31.604Z",
       "mode": "lean",
       "language": "typescript",
-      "currentPhase": "6",
-      "updatedAt": "2026-04-30T21:45:13.327Z"
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-07T00:10:00.000Z"
     },
     "copy-body": {
       "status": "active",
@@ -59,7 +59,7 @@
     },
     "configure-vault": {
       "status": "active",
-      "createdAt": "2026-05-02T02:20:16.178Z",
+      "createdAt": "2026-05-02T02:20:16.182Z",
       "mode": "lean",
       "language": "typescript",
       "currentPhase": "complete",
@@ -114,5 +114,5 @@
       "updatedAt": "2026-05-06T07:30:01.000Z"
     }
   },
-  "activeFeature": "capture-auto-save"
+  "activeFeature": "edit-past-note-start"
 }

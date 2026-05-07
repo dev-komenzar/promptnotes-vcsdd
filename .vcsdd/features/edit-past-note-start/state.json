@@ -2,7 +2,7 @@
   "featureName": "edit-past-note-start",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "6",
+  "currentPhase": "1b",
   "phaseHistory": [
     {
       "from": "init",
@@ -54,14 +54,28 @@
       "to": "6",
       "timestamp": "2026-04-30T21:45:13.327Z",
       "sprint": 1
+    },
+    {
+      "from": "6",
+      "to": "1a",
+      "timestamp": "2026-05-07T00:00:00.000Z",
+      "reason": "Re-spec for block-based BlockFocusRequest input per docs/tasks/feature-impact.md",
+      "sprint": 2
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-07T00:10:00.000Z",
+      "reason": "Revision 4 — Sprint 2 block-based migration: behavioral-spec and verification-architecture both updated",
+      "sprint": 2
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
     "6": 1,
-    "1a": 1,
-    "1b": 1,
+    "1a": 2,
+    "1b": 2,
     "1c": 1,
     "2a": 1,
     "2b": 1,
@@ -91,7 +105,7 @@
       "adversaryReviewedAt": "2026-04-30T14:38:00.995Z"
     }
   },
-  "sprintCount": 1,
+  "sprintCount": 2,
   "createdAt": "2026-04-30T14:11:31.604Z",
-  "updatedAt": "2026-04-30T21:45:41.209Z"
+  "updatedAt": "2026-05-07T00:10:00.000Z"
 }
