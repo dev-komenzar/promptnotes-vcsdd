@@ -10,6 +10,13 @@
  * Safety property: empty notes must NOT persist to disk on idle save.
  * The result must be on the success channel (ok=true) as EmptyNoteDiscarded,
  * not on the error channel as SaveError.
+ *
+ * Sprint 2 update (block-based migration, REQ-003):
+ * - Generator now produces Block[] sequences (all 5 true-isEmpty variants from REQ-003 table).
+ * - Variants: single-empty-para, multi-empty-para, whitespace-para, divider-only, divider-and-empty.
+ * - noteIsEmpty is injected as `() => true` to model these variants (the concrete impl
+ *   is tested separately in PROP-025).
+ * - RED: fails if prepareSaveRequest does not handle the broader isEmpty variants.
  */
 
 import { describe, test, expect } from "bun:test";
@@ -24,8 +31,11 @@ import type {
   NoteId,
   Tag,
   Timestamp,
+  BlockId,
+  BlockType,
+  BlockContent,
 } from "promptnotes-domain-types/shared/value-objects";
-import type { Note } from "promptnotes-domain-types/shared/note";
+import type { Block, Note } from "promptnotes-domain-types/shared/note";
 import type { DirtyEditingSession } from "promptnotes-domain-types/capture/stages";
 
 // ── Arbitraries ────────────────────────────────────────────────────────────
@@ -53,24 +63,91 @@ function arbFrontmatter(): fc.Arbitrary<Frontmatter> {
     .map((fm) => fm as unknown as Frontmatter);
 }
 
-function arbBody(): fc.Arbitrary<Body> {
-  return fc.string({ maxLength: 200 }).map((s) => s as unknown as Body);
-}
-
 function arbNoteId(): fc.Arbitrary<NoteId> {
   return fc
     .stringMatching(/^[a-z0-9-]{10,30}$/)
     .map((s) => s as unknown as NoteId);
 }
 
+function arbBlockId(): fc.Arbitrary<BlockId> {
+  return fc
+    .stringMatching(/^block-[0-9]{1,4}$/)
+    .map((s) => s as unknown as BlockId);
+}
+
+function makeBlockContent(raw: string): BlockContent {
+  return raw as unknown as BlockContent;
+}
+
+// Sprint 2: Block[] generators for the 5 true-isEmpty variants (REQ-003 table)
+
+function arbEmptyParaBlock(): fc.Arbitrary<Block> {
+  return arbBlockId().map((id) => ({
+    id,
+    type: "paragraph" as BlockType,
+    content: makeBlockContent(""),
+  }) as unknown as Block);
+}
+
+function arbWhitespaceParagraphBlock(): fc.Arbitrary<Block> {
+  return fc.record({
+    id: arbBlockId(),
+    content: fc.constantFrom(
+      makeBlockContent(" "),
+      makeBlockContent("\t"),
+      makeBlockContent("   "),
+      makeBlockContent("  \t "),
+    ),
+  }).map(({ id, content }) => ({
+    id,
+    type: "paragraph" as BlockType,
+    content,
+  }) as unknown as Block);
+}
+
+function arbDividerBlock(): fc.Arbitrary<Block> {
+  return arbBlockId().map((id) => ({
+    id,
+    type: "divider" as BlockType,
+    content: makeBlockContent(""),
+  }) as unknown as Block);
+}
+
+/**
+ * Generator for the 5 true-isEmpty variants from REQ-003:
+ * 1. single-empty-para: [paragraph("")]
+ * 2. multi-empty-para: [paragraph(""), paragraph("")]
+ * 3. whitespace-para: [paragraph(" \t")]
+ * 4. divider-only: [divider]
+ * 5. divider-and-empty: [divider, paragraph("")]
+ */
+function arbEmptyNoteBlocks(): fc.Arbitrary<ReadonlyArray<Block>> {
+  return fc.oneof(
+    // variant 1: single empty para
+    arbEmptyParaBlock().map((b) => [b] as ReadonlyArray<Block>),
+    // variant 2: multi empty para
+    fc.tuple(arbEmptyParaBlock(), arbEmptyParaBlock()).map(([a, b]) => [a, b] as ReadonlyArray<Block>),
+    // variant 3: whitespace para
+    arbWhitespaceParagraphBlock().map((b) => [b] as ReadonlyArray<Block>),
+    // variant 4: divider only
+    arbDividerBlock().map((b) => [b] as ReadonlyArray<Block>),
+    // variant 5: divider + empty para
+    fc.tuple(arbDividerBlock(), arbEmptyParaBlock()).map(([d, p]) => [d, p] as ReadonlyArray<Block>),
+  );
+}
+
 function arbNote(fm: fc.Arbitrary<Frontmatter>): fc.Arbitrary<Note> {
   return fc
     .record({
       id: arbNoteId(),
-      body: arbBody(),
+      blocks: arbEmptyNoteBlocks(),
       frontmatter: fm,
     })
-    .map((n) => n as unknown as Note);
+    .map((n) => ({
+      id: n.id,
+      blocks: n.blocks,
+      frontmatter: n.frontmatter,
+    }) as unknown as Note);
 }
 
 function arbDirtyEditingSession(
@@ -81,7 +158,7 @@ function arbDirtyEditingSession(
     (note) =>
       ({
         kind: "DirtyEditingSession",
-        noteId: note.id,
+        noteId: (note as any).id,
         note,
         previousFrontmatter: null,
         trigger,

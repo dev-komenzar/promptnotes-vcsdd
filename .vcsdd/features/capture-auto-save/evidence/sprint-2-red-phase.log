@@ -1,0 +1,130 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+# Sprint 2 Red Phase Evidence
+# Generated: 2026-05-07
+# Feature: capture-auto-save
+# Phase: 2a (TDD Red)
+
+## Summary
+
+new-feature-tests: FAIL
+  - 9 test files fail (module not found / missing exports — correct RED state)
+  - 4 todo entries (PROP-027 cross-context placeholders)
+
+regression-baseline: PASS
+  - 59 unaffected tests pass (pipeline, step2, step3, step4, prop-005, prop-014, prop-027)
+  - All original 86-test baseline maintained on unmodified files
+
+## Full Test Run Output
+
+bun test v1.3.11 (af24e281)
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/serialize-blocks-to-markdown' from '.../step1-prepare-save-request.test.ts'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/factory-build-validated-save-request.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/build-validated-save-request' from '.../factory-build-validated-save-request.test.ts'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-004-empty-blur-save.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/serialize-blocks-to-markdown'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/serialize-blocks-to-markdown'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-028-signature-assertion.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'canonicalCaptureAutoSave' not found in module
+  '.../capture-auto-save/pipeline.ts'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-001-serialize-note-purity.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/serialize-blocks-to-markdown'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-002-serialize-note-format.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/serialize-blocks-to-markdown'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-025-isempty-block-rule.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/note-is-empty'
+-------------------------------
+
+promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-024-body-blocks-coherence.harness.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '$lib/domain/capture-auto-save/build-validated-save-request'
+-------------------------------
+
+ 63 pass
+ 4 todo
+ 9 fail
+ 9 errors
+ 80 expect() calls
+Ran 76 tests across 17 files. [183.00ms]
+
+## Baseline-only Run (unaffected files)
+
+bun test pipeline.test.ts step2-serialize-note.test.ts step3-write-markdown.test.ts
+  step4-update-projections.test.ts prop-005-save-error-exhaustiveness.harness.test.ts
+  prop-014-clock-now-budget.harness.test.ts prop-027-curate-projection.harness.test.ts
+
+ 59 pass
+ 4 todo
+ 0 fail
+ 80 expect() calls
+Ran 63 tests across 7 files. [144.00ms]
+
+## Failing test files (RED — missing implementation artifacts)
+
+Missing modules (must be created in Phase 2b):
+  1. $lib/domain/capture-auto-save/serialize-blocks-to-markdown
+     - serializeBlocksToMarkdown(blocks: ReadonlyArray<Block>): string
+     - Needed by: prop-001, prop-002, prop-004, prop-026, step1 (sprint 2), factory test
+  2. $lib/domain/capture-auto-save/build-validated-save-request
+     - buildValidatedSaveRequest(noteId, blocks, frontmatter, previousFrontmatter, trigger, requestedAt): ValidatedSaveRequest
+     - Needed by: prop-024, factory test
+  3. $lib/domain/capture-auto-save/note-is-empty
+     - noteIsEmpty(note: Note): boolean (uses broader Revision 4 block rule)
+     - Needed by: prop-025
+  4. $lib/domain/capture-auto-save/parse-markdown-to-blocks
+     - parseMarkdownToBlocks(markdown: string): Result<ReadonlyArray<Block>, BlockParseError>
+     - Needed by: prop-026
+
+Missing exports from existing modules (must be added in Phase 2b):
+  5. pipeline.ts: export canonicalCaptureAutoSave (CaptureAutoSave canonical type)
+     - Needed by: prop-028
+
+Structural changes needed in existing implementation (Phase 2b):
+  6. prepare-save-request.ts: set request.blocks = input.note.blocks
+  7. prepare-save-request.ts: set request.body = serializeBlocksToMarkdown(blocks)
+  8. pipeline.ts: include .blocks in SaveNoteRequested emission
+  9. pipeline.ts: include .blocks in NoteFileSaved emission

@@ -631,3 +631,14 @@
 {"timestamp":"2026-05-07T05:31:00.000Z","event":"feedback_routed","from":"1c","to":"1a","findings":["FIND-020"],"iteration":4}
 {"timestamp":"2026-05-07T05:55:00.000Z","event":"gate_passed","feature":"capture-auto-save","phase":"1c","iteration":5,"verdict":"PASS"}
 {"timestamp":"2026-05-07T05:56:00.000Z","event":"phase_transition","from":"1c","to":"2a","sprint":2}
+{"timestamp":"2026-05-07T08:42:34.392Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-056","type":"test-case","phase":"2a","externalId":"TEST-PROP-024"}
+{"timestamp":"2026-05-07T08:42:34.395Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-057","type":"test-case","phase":"2a","externalId":"TEST-PROP-025"}
+{"timestamp":"2026-05-07T08:42:34.397Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-058","type":"test-case","phase":"2a","externalId":"TEST-PROP-026"}
+{"timestamp":"2026-05-07T08:42:34.399Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-059","type":"test-case","phase":"2a","externalId":"TEST-PROP-027"}
+{"timestamp":"2026-05-07T08:42:34.402Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-060","type":"test-case","phase":"2a","externalId":"TEST-PROP-028"}
+{"timestamp":"2026-05-07T08:42:34.403Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-061","type":"test-case","phase":"2a","externalId":"TEST-REQ-018-FACTORY"}
+{"timestamp":"2026-05-07T08:42:46.512Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-062","type":"test-case","phase":"2a","externalId":"TEST-STEP1-SPRINT2"}
+{"timestamp":"2026-05-07T08:42:46.514Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-063","type":"test-case","phase":"2a","externalId":"TEST-PROP-001-SPRINT2"}
+{"timestamp":"2026-05-07T08:42:46.517Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-064","type":"test-case","phase":"2a","externalId":"TEST-PROP-002-SPRINT2"}
+{"timestamp":"2026-05-07T08:42:46.519Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-065","type":"test-case","phase":"2a","externalId":"TEST-PROP-003-SPRINT2"}
+{"timestamp":"2026-05-07T08:42:46.522Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-066","type":"test-case","phase":"2a","externalId":"TEST-PROP-004-SPRINT2"}

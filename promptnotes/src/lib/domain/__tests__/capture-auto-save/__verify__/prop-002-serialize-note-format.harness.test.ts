@@ -15,6 +15,12 @@
  * NOTE: Tags may contain dashes (e.g. "a---"), so we must NOT split the output
  * on every occurrence of "---\n". Instead we parse structure using the regex
  * and locate the YAML/body boundary by finding "\n---\n" after the opening "---\n".
+ *
+ * Sprint 2 update (block-based migration, REQ-006 acceptance):
+ * - Generator now produces Block[] sequences and derives body via serializeBlocksToMarkdown.
+ * - Key new assertion: `output.split("---\n")[2] === serializeBlocksToMarkdown(request.blocks)`
+ *   (per REQ-006 acceptance: body section equals serializeBlocksToMarkdown(request.blocks))
+ * - RED: fails if ValidatedSaveRequest.blocks is not present in the impl.
  */
 
 import { describe, test, expect } from "bun:test";
@@ -26,8 +32,15 @@ import type {
   NoteId,
   Tag,
   Timestamp,
+  BlockId,
+  BlockType,
+  BlockContent,
 } from "promptnotes-domain-types/shared/value-objects";
+import type { Block } from "promptnotes-domain-types/shared/note";
 import type { ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
+
+// Sprint 2: serializeBlocksToMarkdown for both the generator and the new assertion
+import { serializeBlocksToMarkdown } from "$lib/domain/capture-auto-save/serialize-blocks-to-markdown";
 
 // ── Arbitraries ────────────────────────────────────────────────────────────
 
@@ -53,38 +66,77 @@ function arbFrontmatterWithTags(): fc.Arbitrary<Frontmatter> {
     .map((fm) => fm as unknown as Frontmatter);
 }
 
-function arbBody(): fc.Arbitrary<Body> {
-  return fc
-    .string({ maxLength: 500 })
-    .map((s) => s as unknown as Body);
-}
-
 function arbNoteId(): fc.Arbitrary<NoteId> {
   return fc
     .stringMatching(/^[a-z0-9-]{10,30}$/)
     .map((s) => s as unknown as NoteId);
 }
 
+// Sprint 2: Block-based arbitraries
+
+function arbBlockId(): fc.Arbitrary<BlockId> {
+  return fc
+    .stringMatching(/^block-[0-9]{1,4}$/)
+    .map((s) => s as unknown as BlockId);
+}
+
+function arbBlockContent(maxLength = 80): fc.Arbitrary<BlockContent> {
+  return fc
+    .string({ maxLength })
+    .filter((s) => !/[\x00-\x1F\n\r]/.test(s))
+    .map((s) => s as unknown as BlockContent);
+}
+
+function arbInlineBlock(): fc.Arbitrary<Block> {
+  return fc.record({
+    id: arbBlockId(),
+    type: fc.constantFrom<BlockType>("paragraph"),
+    content: arbBlockContent(80),
+  }).map((b) => b as unknown as Block);
+}
+
+function arbDividerBlock(): fc.Arbitrary<Block> {
+  return arbBlockId().map((id) => ({
+    id,
+    type: "divider" as BlockType,
+    content: "" as unknown as BlockContent,
+  }) as unknown as Block);
+}
+
+function arbBlocks(): fc.Arbitrary<ReadonlyArray<Block>> {
+  return fc.array(
+    fc.oneof(arbInlineBlock(), arbDividerBlock()),
+    { minLength: 1, maxLength: 8 },
+  );
+}
+
+/**
+ * Sprint 2: ValidatedSaveRequest generator with blocks + derived body.
+ * body = serializeBlocksToMarkdown(blocks) per REQ-018.
+ */
 function arbValidatedSaveRequest(): fc.Arbitrary<ValidatedSaveRequest> {
   return fc
     .record({
       noteId: arbNoteId(),
-      body: arbBody(),
+      blocks: arbBlocks(),
       frontmatter: arbFrontmatterWithTags(),
       trigger: fc.constantFrom("idle" as const, "blur" as const),
       requestedAt: arbTimestamp(),
     })
     .map(
-      (r) =>
-        ({
+      (r) => {
+        const body = serializeBlocksToMarkdown(r.blocks) as unknown as Body;
+        return {
           kind: "ValidatedSaveRequest",
           noteId: r.noteId,
-          body: r.body,
+          blocks: r.blocks,
+          body,
           frontmatter: r.frontmatter,
           previousFrontmatter: null,
           trigger: r.trigger,
           requestedAt: r.requestedAt,
-        }) as ValidatedSaveRequest,
+        } as ValidatedSaveRequest;
+      },
     );
 }
 
@@ -178,6 +230,37 @@ describe("PROP-002: serializeNote output matches Obsidian format", () => {
         },
       ),
       { numRuns: 100, seed: 99 },
+    );
+  });
+
+  // ── Sprint 2 (REQ-006 acceptance): body section === serializeBlocksToMarkdown(request.blocks) ──
+  // RED: fails if ValidatedSaveRequest.blocks is not present or serializeBlocksToMarkdown is not wired.
+
+  test("∀ input: body section === serializeBlocksToMarkdown(request.blocks) (REQ-006 acceptance, Sprint 2)", () => {
+    fc.assert(
+      fc.property(arbValidatedSaveRequest(), (request) => {
+        const output = serializeNote(request);
+        const parsed = parseObsidianMarkdown(output);
+        if (parsed === null) return false;
+        // REQ-006 acceptance: body section must equal serializeBlocksToMarkdown(request.blocks)
+        const expectedBody = serializeBlocksToMarkdown(request.blocks);
+        return parsed.body === expectedBody;
+      }),
+      { numRuns: 200, seed: 42 },
+    );
+  });
+
+  test("∀ input: body section === request.body (REQ-018: body is derived from blocks)", () => {
+    // Since body = serializeBlocksToMarkdown(blocks) per the generator,
+    // and the body section must match request.body, this also verifies REQ-018.
+    fc.assert(
+      fc.property(arbValidatedSaveRequest(), (request) => {
+        const output = serializeNote(request);
+        const parsed = parseObsidianMarkdown(output);
+        if (parsed === null) return false;
+        return parsed.body === (request.body as unknown as string);
+      }),
+      { numRuns: 100, seed: 13 },
     );
   });
 });

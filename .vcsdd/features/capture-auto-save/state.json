@@ -170,31 +170,36 @@
       "id": "PROP-024",
       "tier": 1,
       "required": true,
-      "status": "pending"
+      "status": "in-progress",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-024-body-blocks-coherence.harness.test.ts"
     },
     {
       "id": "PROP-025",
       "tier": 1,
       "required": false,
-      "status": "pending"
+      "status": "in-progress",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-025-isempty-block-rule.harness.test.ts"
     },
     {
       "id": "PROP-026",
       "tier": 1,
       "required": false,
-      "status": "pending"
+      "status": "in-progress",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts"
     },
     {
       "id": "PROP-027",
       "tier": 3,
       "required": false,
-      "status": "pending"
+      "status": "in-progress",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-027-curate-projection.harness.test.ts"
     },
     {
       "id": "PROP-028",
       "tier": 0,
       "required": true,
-      "status": "pending"
+      "status": "in-progress",
+      "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-028-signature-assertion.harness.test.ts"
     }
   ],
   "traceability": {
@@ -220,7 +225,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-039",
-          "BEAD-042"
+          "BEAD-042",
+          "BEAD-062"
         ],
         "createdAt": "2026-05-07T04:08:07.641Z",
         "createdInPhase": "1a",
@@ -454,7 +460,9 @@
         "linkedBeads": [
           "BEAD-042",
           "BEAD-044",
-          "BEAD-046"
+          "BEAD-046",
+          "BEAD-061",
+          "BEAD-062"
         ],
         "createdAt": "2026-05-07T04:08:07.655Z",
         "createdInPhase": "1a",
@@ -467,7 +475,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-006",
-          "BEAD-016"
+          "BEAD-016",
+          "BEAD-063"
         ],
         "createdAt": "2026-05-07T04:08:07.656Z",
         "createdInPhase": "1b",
@@ -479,7 +488,8 @@
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-002",
         "status": "active",
         "linkedBeads": [
-          "BEAD-006"
+          "BEAD-006",
+          "BEAD-064"
         ],
         "createdAt": "2026-05-07T04:08:07.657Z",
         "createdInPhase": "1b",
@@ -492,7 +502,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-003",
-          "BEAD-004"
+          "BEAD-004",
+          "BEAD-065"
         ],
         "createdAt": "2026-05-07T04:08:07.658Z",
         "createdInPhase": "1b",
@@ -505,7 +516,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-004",
-          "BEAD-055"
+          "BEAD-055",
+          "BEAD-066"
         ],
         "createdAt": "2026-05-07T04:08:07.659Z",
         "createdInPhase": "1b",
@@ -761,7 +773,10 @@
           "BEAD-008",
           "BEAD-009",
           "BEAD-018",
-          "BEAD-046"
+          "BEAD-046",
+          "BEAD-056",
+          "BEAD-061",
+          "BEAD-062"
         ],
         "createdAt": "2026-05-07T04:08:07.682Z",
         "createdInPhase": "1b",
@@ -776,7 +791,8 @@
           "BEAD-003",
           "BEAD-045",
           "BEAD-047",
-          "BEAD-049"
+          "BEAD-049",
+          "BEAD-057"
         ],
         "createdAt": "2026-05-07T04:08:07.683Z",
         "createdInPhase": "1b",
@@ -789,7 +805,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-006",
-          "BEAD-018"
+          "BEAD-018",
+          "BEAD-058"
         ],
         "createdAt": "2026-05-07T04:08:07.685Z",
         "createdInPhase": "1b",
@@ -908,7 +925,8 @@
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-027",
         "status": "active",
         "linkedBeads": [
-          "BEAD-011"
+          "BEAD-011",
+          "BEAD-059"
         ],
         "createdAt": "2026-05-07T08:22:11.140Z",
         "createdInPhase": "1b",
@@ -920,7 +938,8 @@
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-028",
         "status": "active",
         "linkedBeads": [
-          "BEAD-017"
+          "BEAD-017",
+          "BEAD-060"
         ],
         "createdAt": "2026-05-07T08:22:21.106Z",
         "createdInPhase": "1b",
@@ -938,6 +957,141 @@
         "createdAt": "2026-05-07T08:27:40.018Z",
         "createdInPhase": "1c",
         "externalId": "FIND-020"
+      },
+      {
+        "beadId": "BEAD-056",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-024-body-blocks-coherence.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-042"
+        ],
+        "createdAt": "2026-05-07T08:42:34.390Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-024"
+      },
+      {
+        "beadId": "BEAD-057",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-025-isempty-block-rule.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-043"
+        ],
+        "createdAt": "2026-05-07T08:42:34.393Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-025"
+      },
+      {
+        "beadId": "BEAD-058",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-044"
+        ],
+        "createdAt": "2026-05-07T08:42:34.396Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-026"
+      },
+      {
+        "beadId": "BEAD-059",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-027-curate-projection.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-053"
+        ],
+        "createdAt": "2026-05-07T08:42:34.398Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-027"
+      },
+      {
+        "beadId": "BEAD-060",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-028-signature-assertion.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-054"
+        ],
+        "createdAt": "2026-05-07T08:42:34.400Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-028"
+      },
+      {
+        "beadId": "BEAD-061",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/factory-build-validated-save-request.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-018",
+          "BEAD-042"
+        ],
+        "createdAt": "2026-05-07T08:42:34.402Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-REQ-018-FACTORY"
+      },
+      {
+        "beadId": "BEAD-062",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-018",
+          "BEAD-042"
+        ],
+        "createdAt": "2026-05-07T08:42:46.510Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-STEP1-SPRINT2"
+      },
+      {
+        "beadId": "BEAD-063",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-001-serialize-note-purity.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-019"
+        ],
+        "createdAt": "2026-05-07T08:42:46.513Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-001-SPRINT2"
+      },
+      {
+        "beadId": "BEAD-064",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-002-serialize-note-format.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-020"
+        ],
+        "createdAt": "2026-05-07T08:42:46.515Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-002-SPRINT2"
+      },
+      {
+        "beadId": "BEAD-065",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-003-empty-idle-discard.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-021"
+        ],
+        "createdAt": "2026-05-07T08:42:46.518Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-003-SPRINT2"
+      },
+      {
+        "beadId": "BEAD-066",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-004-empty-blur-save.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-022"
+        ],
+        "createdAt": "2026-05-07T08:42:46.520Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-PROP-004-SPRINT2"
       }
     ]
   },
@@ -971,5 +1125,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T08:32:03.995Z"
+  "updatedAt": "2026-05-07T09:00:00.000Z"
 }
