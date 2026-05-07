@@ -1,11 +1,18 @@
 // edit-past-note-start/pipeline.ts
 // Full EditPastNoteStart pipeline — orchestrates the 3-step workflow.
 //
-// REQ-EPNS-001..012: Complete workflow
+// REQ-EPNS-001..013: Complete workflow
 // PROP-EPNS-005: SwitchError exhaustiveness
 // PROP-EPNS-013: Clock.now() budget ≤ 2 per workflow invocation
-// FIND-002: Pass isEmpty port through to classifyCurrentSession
-// FIND-003: Same-note guard returns SameNoteNoOp, not NewSession
+//
+// Sprint 2 (block-based migration):
+// - Input: { request: BlockFocusRequest, currentState, currentNote, previousFrontmatter }
+// - Same-note detection moved to classifyCurrentSession (no pre-pipeline guard)
+// - Pipeline always returns Ok(NewSession) on success (SameNoteNoOp removed)
+// - SwitchError.pendingNextFocus replaces pendingNextNoteId
+// - BlockFocused replaces EditorFocusedOnPastNote
+// - PC-001: cross-note + snapshot=null → throw before any side effect
+// - PC-004: editing/save-failed + currentNote=null → throw before any side effect
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type {
@@ -13,13 +20,12 @@ import type {
   Timestamp,
   Frontmatter,
 } from "promptnotes-domain-types/shared/value-objects";
-import type { Note } from "promptnotes-domain-types/shared/note";
-import type { NoteFileSnapshot } from "promptnotes-domain-types/shared/snapshots";
+import type { Block, Note } from "promptnotes-domain-types/shared/note";
 import type { SaveError, SwitchError } from "promptnotes-domain-types/shared/errors";
 import type { NoteFileSaved } from "promptnotes-domain-types/shared/events";
 import type { EditingSessionState } from "promptnotes-domain-types/capture/states";
 import type {
-  PastNoteSelection,
+  BlockFocusRequest,
   NewSession,
 } from "promptnotes-domain-types/capture/stages";
 
@@ -29,6 +35,9 @@ import { startNewSession } from "./start-new-session.js";
 
 // ── Port definitions ────────────────────────────────────────────────────
 
+/** Structural type for parse errors — avoids importing the unexported shared/blocks module. */
+type BlockParseError = { kind: string; [k: string]: unknown };
+
 export type EditPastNoteStartPorts = {
   readonly clockNow: () => Timestamp;
   readonly blurSave: (
@@ -36,69 +45,73 @@ export type EditPastNoteStartPorts = {
     note: Note,
     previousFrontmatter: Frontmatter | null,
   ) => Result<NoteFileSaved, SaveError>;
-  readonly hydrateSnapshot: (snapshot: NoteFileSnapshot) => Note;
+  readonly parseMarkdownToBlocks: (markdown: string) => Result<ReadonlyArray<Block>, BlockParseError>;
   readonly emit: (event: { kind: string; [k: string]: unknown }) => void;
 };
 
-// ── Pipeline input ──────────────────────────────────────────────────────
+// ── Pipeline input (Revision 5 explicit input struct) ──────────────────
 
 export type EditPastNoteStartInput = {
-  readonly selection: PastNoteSelection;
+  readonly request: BlockFocusRequest;
   readonly currentState: EditingSessionState;
+  /** The in-memory Note currently loaded in the editing buffer.
+   *  null when currentState.status === 'idle' (no active note). */
   readonly currentNote: Note | null;
+  /** The frontmatter of the current note BEFORE any edits in the current session.
+   *  Forwarded to blurSave on the dirty path for TagInventory delta computation. */
   readonly previousFrontmatter: Frontmatter | null;
 };
-
-// ── Result types ────────────────────────────────────────────────────────
-
-/** FIND-003: Same-note re-selection returns this instead of NewSession */
-export type SameNoteNoOp = {
-  readonly kind: "SameNoteNoOp";
-  readonly noteId: NoteId;
-};
-
-export type EditPastNoteStartResult = NewSession | SameNoteNoOp;
 
 // ── Pipeline implementation ─────────────────────────────────────────────
 
 /**
  * Orchestrates the EditPastNoteStart workflow:
  *
- * 1. Pre-pipeline guard: same-note re-selection → emit EditorFocusedOnPastNote, return SameNoteNoOp
- * 2. classifyCurrentSession (pure) → CurrentSessionDecision
- * 3. flushCurrentSession → FlushedCurrentSession or SwitchError
- * 4. startNewSession → NewSession
+ * 0. Precondition checks (PC-001, PC-004) — throw before any side effect
+ * 1. classifyCurrentSession (pure) → CurrentSessionDecision
+ * 2. flushCurrentSession → FlushedCurrentSession or SwitchError (early return on fail)
+ * 3. startNewSession → NewSession + emit BlockFocused
+ *
+ * Returns Ok(NewSession) on all successful paths (including same-note).
+ *
+ * Same-note path note (REQ-EPNS-008):
+ *   For EditingState: caller is responsible for updating EditingSessionState.focusedBlockId.
+ *   For SaveFailedState: SaveFailedState has no focusedBlockId field; state is unchanged.
+ *   In both cases, NewSession is returned as informational output.
  */
 export function runEditPastNoteStartPipeline(
   input: EditPastNoteStartInput,
   ports: EditPastNoteStartPorts,
-): Result<EditPastNoteStartResult, SwitchError> {
-  const { selection, currentState, currentNote, previousFrontmatter } = input;
+): Result<NewSession, SwitchError> {
+  const { request, currentState, currentNote, previousFrontmatter } = input;
 
-  // ── Pre-pipeline guard: same-note re-selection (REQ-EPNS-005) ─────────
-  const currentNoteId = getCurrentNoteId(currentState);
-  if (currentNoteId !== null && currentNoteId === selection.noteId) {
-    // Same note → no-op, just emit focus event
-    // FIND-003: Return SameNoteNoOp instead of NewSession
-    const now = ports.clockNow();
-    ports.emit({
-      kind: "editor-focused-on-past-note",
-      noteId: selection.noteId,
-      occurredOn: now,
-    });
-    return {
-      ok: true,
-      value: { kind: "SameNoteNoOp", noteId: selection.noteId },
-    };
+  // ── PC-001: cross-note + snapshot=null → throw (REQ-EPNS-013) ─────────
+  // Determine cross-note: state has a currentNoteId different from request.noteId,
+  // OR state is idle (no currentNoteId — any focus request is cross-note).
+  const isCrossNote = isCrossNoteRequest(currentState, request);
+  if (isCrossNote && request.snapshot === null) {
+    throw new Error(
+      "EditPastNoteStart: cross-note request requires non-null snapshot"
+    );
+  }
+
+  // ── PC-004: editing/save-failed + currentNote=null → throw (REQ-EPNS-013) ──
+  if (
+    (currentState.status === "editing" || currentState.status === "save-failed") &&
+    currentNote === null
+  ) {
+    throw new Error(
+      "EditPastNoteStart: currentNote must not be null when state.status is 'editing' or 'save-failed'"
+    );
   }
 
   // ── Step 1: classify current session (pure) ───────────────────────────
-  const decision = classifyCurrentSession(currentState, currentNote);
+  const decision = classifyCurrentSession(currentState, request, currentNote);
 
   // ── Step 2: flush current session ─────────────────────────────────────
   const flushResult = flushCurrentSession(
     decision,
-    selection.noteId,
+    request,
     {
       clockNow: ports.clockNow,
       blurSave: ports.blurSave,
@@ -108,21 +121,28 @@ export function runEditPastNoteStartPipeline(
   );
 
   if (!flushResult.ok) {
+    // dirty-fail path: return SwitchError early; startNewSession is NOT reached
     return flushResult;
   }
 
   // ── Step 3: start new session ─────────────────────────────────────────
-  const newSession = startNewSession(selection, {
+  const newSession = startNewSession(request, decision, {
     clockNow: ports.clockNow,
-    hydrateSnapshot: ports.hydrateSnapshot,
+    parseMarkdownToBlocks: ports.parseMarkdownToBlocks,
     emit: ports.emit,
   });
 
   return { ok: true, value: newSession };
 }
 
-/** Extract currentNoteId from state (null for IdleState) */
-function getCurrentNoteId(state: EditingSessionState): NoteId | null {
-  if (state.status === "idle") return null;
-  return state.currentNoteId;
+/**
+ * Determine whether request targets a different note than the current state.
+ * IdleState has no currentNoteId — any request is cross-note from idle.
+ */
+function isCrossNoteRequest(
+  state: EditingSessionState,
+  request: BlockFocusRequest,
+): boolean {
+  if (state.status === "idle") return true;
+  return request.noteId !== state.currentNoteId;
 }

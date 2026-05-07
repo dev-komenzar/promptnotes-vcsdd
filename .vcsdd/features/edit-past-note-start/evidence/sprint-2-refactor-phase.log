@@ -1,0 +1,42 @@
+## Phase 2c Refactor Phase Evidence — edit-past-note-start Sprint 2
+## Date: 2026-05-07T02:35:00.000Z
+## Feature: edit-past-note-start
+## Sprint: 2 (block-based BlockFocusRequest migration)
+## Mode: lean
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+---
+
+## Summary
+
+- Total tests: 1845 (across 149 files)
+- Passing: 1841
+- Failing: 0
+- Todo: 4 (pre-existing, unrelated)
+- edit-past-note-start tests: 113 pass / 0 fail (12 files)
+
+## Refactor changes (2c — no new features, no spec changes)
+
+1. `classify-current-session.ts`: Removed unused `BlockContent` import.
+2. `pipeline.ts`: Removed unused `BlockId` import.
+   Replaced `import type { BlockParseError } from "promptnotes-domain-types/shared/blocks"`
+   with inline structural type — shared/blocks is not exported from the domain types package.
+3. `start-new-session.ts`: Same inline `BlockParseError` structural type replacement.
+
+No new logic added. No spec changes. No test file changes.
+
+## Raw test output (full suite after refactor)
+
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+[perf] applyFilterOrSearch median: 0.685ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.004ms (advisory bound: 5ms)
+
+ 1841 pass
+ 4 todo
+ 0 fail
+ 27653 expect() calls
+Ran 1845 tests across 149 files. [13.79s]

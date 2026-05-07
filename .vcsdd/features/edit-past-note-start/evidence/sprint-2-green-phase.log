@@ -1,0 +1,69 @@
+## Phase 2b Green Phase Evidence — edit-past-note-start Sprint 2
+## Date: 2026-05-07T02:30:00.000Z
+## Feature: edit-past-note-start
+## Sprint: 2 (block-based BlockFocusRequest migration)
+## Mode: lean
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+---
+
+## Summary
+
+- Total tests: 1845 (across 149 files)
+- Passing: 1841
+- Failing: 0
+- Todo: 4 (pre-existing, unrelated)
+- edit-past-note-start tests: 113 pass / 0 fail (12 files)
+
+## Files Changed (implementation-only, per 2b constraints)
+
+1. `promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts`
+   - Signature widened to 3 params: (state, request, currentNote)
+   - Added same-note detection: request.noteId === state.currentNoteId → { kind: 'same-note' }
+   - Fixed isEmpty: block-based (single empty paragraph, NoteOps.isEmpty canonical)
+   - Old body-string isEmpty removed
+
+2. `promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts`
+   - Second param changed from selectedNoteId: NoteId | null to request: BlockFocusRequest
+   - Added same-note case: returns { result: 'same-note-skipped' } with no I/O
+   - SwitchError.pendingNextNoteId → pendingNextFocus: { noteId, blockId }
+   - SaveError mapping updated: fs/not-found and fs/unknown now covered explicitly
+
+3. `promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts`
+   - Complete rewrite: PastNoteSelection → BlockFocusRequest + CurrentSessionDecision
+   - Same-note path: reuses decision.note, no hydration
+   - Cross-note path: hydrates via parseMarkdownToBlocks(snapshot.body)
+   - Emits BlockFocused (replaces EditorFocusedOnPastNote)
+   - NewSession.focusedBlockId = request.blockId
+
+4. `promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts`
+   - Input struct: { request: BlockFocusRequest, currentState, currentNote, previousFrontmatter }
+   - Removed SameNoteNoOp type; pipeline always returns Ok(NewSession) on success
+   - Added PC-001 check: cross-note + snapshot=null → throw
+   - Added PC-004 check: editing/save-failed + currentNote=null → throw
+   - Removed pre-pipeline same-note guard (now handled by classifyCurrentSession)
+   - hydrateSnapshot port removed; parseMarkdownToBlocks port added
+
+## Typecheck status
+
+Implementation files: CLEAN (no errors in the 4 implementation files)
+Test files: 12 pre-existing typecheck errors in 2a test files (body: Frontmatter cast,
+  SwitchError never branch, prop-001 tuple inference) — these are in test files
+  which are the 2a contract and cannot be modified. Runtime tests pass correctly
+  (bun test uses structural type checking at runtime, not TypeScript svelte-check).
+
+## Raw test output (full suite)
+
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+[perf] applyFilterOrSearch median: 0.685ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.004ms (advisory bound: 5ms)
+
+ 1841 pass
+ 4 todo
+ 0 fail
+ 27653 expect() calls
+Ran 1845 tests across 149 files. [13.94s]
