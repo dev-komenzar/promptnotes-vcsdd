@@ -2,15 +2,24 @@
 
 **Feature**: `edit-past-note-start`
 **Phase**: 1a
-**Revision**: 6 (Sprint 2 — addressing FIND-EPNS-S2-R5-001 via throw-on-precondition-violation)
+**Revision**: 7 (Sprint 2 — Phase 3 feedback bundled patch addressing FIND-EPNS-S2-P3-002/003 spec parts)
 **Source of truth**: `docs/domain/workflows.md` Workflow 3 (block-based revision), `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/internal-events.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/events.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/blocks.ts`
 **Scope**: Synchronous workflow in Capture context that handles a Block Focus Request directed at a past note or a different block within the same note. The pipeline is `BlockFocusRequest → CurrentSessionDecision → FlushedCurrentSession → NewSession`. Workflow terminates with `Result<NewSession, SwitchError>`. UI reaction to errors and CaptureAutoSave internals are out of scope.
 
 ---
 
+## Revision 7 Changes (from Revision 6 — addressing FIND-EPNS-S2-P3-002 and FIND-EPNS-S2-P3-003 spec parts)
+
+| Change | Detail |
+|--------|--------|
+| REQ-EPNS-008 preamble added | Added explicit scope clarification: the workflow boundary ends at returning `NewSession`. The path-conditional `EditingSessionState` post-condition table is a contract for the upstream `EditingSessionTransitions` reducer, not for the pipeline itself. See new preamble in REQ-EPNS-008. |
+| `hydrateSnapshot` purged | All remaining references to the stale port name `hydrateSnapshot` replaced with `parseMarkdownToBlocks` (the actual port name used in the implementation and port contracts). Affected locations: REQ-EPNS-013 acceptance criteria. |
+
+---
+
 ## Revision 6 Changes (from Revision 5 — addressing FIND-EPNS-S2-R5-001)
 
-FIND-EPNS-S2-R5-001 resolved by collapsing PC-001/PC-004 violations to `throw` (matches classifyCurrentSession convention from promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts). `ContractViolationError` removed; `Result<NewSession, SwitchError>` return type preserved.
+FIND-EPNS-S2-R5-001 resolved by collapsing PC-001/PC-004 violations to `throw` (matches classifyCurrentSession convention from promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts). `ContractViolationError` removed; `Result<NewSession, SwitchError>` return type preserved. (Now superseded by Revision 7 for scope/name changes.)
 
 | Change | Detail |
 |--------|--------|
@@ -431,6 +440,12 @@ type CurrentSessionDecision =
 
 ### REQ-EPNS-008: In-Memory Step — startNewSession and EditingSessionState post-conditions
 
+> **Scope note (Revision 7)**: REQ-EPNS-008 describes the post-condition contract that the application/state-machine layer must apply when consuming the workflow's `NewSession` result. The `runEditPastNoteStartPipeline` workflow itself returns `Result<NewSession, SwitchError>` only and does NOT mutate `EditingSessionState`. The path-conditional table below is the contract for the upstream `EditingSessionTransitions` reducer (see `docs/domain/code/ts/src/capture/states.ts` `EditingSessionTransitions` interface) when it consumes the workflow's output. Specifically, the callers are:
+> - `EditingSessionTransitions.focusOnBlock` — consumes `NewSession` to transition to `editing(noteId, focusedBlockId, isDirty: false)` on cross-note paths
+> - `EditingSessionTransitions.refocusBlockSameNote` — consumes `NewSession` to update `focusedBlockId` on same-note paths (EditingState only)
+>
+> Verification of REQ-EPNS-008's path-conditional table is deferred to integration tests of the upstream reducer (out of scope for this workflow's unit tests). The workflow boundary ends at returning `NewSession`.
+
 **EARS**: WHEN `FlushedCurrentSession` is available AND the path is cross-note THEN the system SHALL construct a `NewSession { kind, noteId, note, focusedBlockId, startedAt: Clock.now() }`, emit `BlockFocused`, and transition `EditingSessionState` to `editing(noteId, focusedBlockId: blockId, isDirty: false)`. WHEN the path is same-note THEN the system SHALL construct `NewSession` with the existing note and `focusedBlockId: request.blockId`, emit `BlockFocused`, and update `EditingSessionState` as specified by path-conditional post-conditions below.
 
 **Path-conditional `EditingSessionState` post-conditions**:
@@ -571,7 +586,7 @@ type NewSession = {
 | PC-004: currentNote consistency | idle + `currentNote !== null`, or editing/save-failed + `currentNote === null` | `throw Error("EditPastNoteStart: currentNote must not be null when state.status is 'editing' or 'save-failed'")` — synchronous, before any I/O or state read |
 
 **Acceptance Criteria**:
-- PC-001 violation (cross-note + `snapshot === null`): calling the workflow throws `Error` (or the Promise rejects with `Error`) with message prefix `"EditPastNoteStart: cross-note request requires non-null snapshot"`. No port is invoked (verified by spy on `clockNow`, `blurSave`, `hydrateSnapshot`, `emit`). No state-machine field is mutated.
+- PC-001 violation (cross-note + `snapshot === null`): calling the workflow throws `Error` (or the Promise rejects with `Error`) with message prefix `"EditPastNoteStart: cross-note request requires non-null snapshot"`. No port is invoked (verified by spy on `clockNow`, `blurSave`, `parseMarkdownToBlocks`, `emit`). No state-machine field is mutated.
 - PC-002 violation (`parseMarkdownToBlocks` failure): implementation throws `Error` (not returns `Err`); this is a programming error, not a recoverable runtime error. No port is invoked; no state mutation.
 - PC-003 violation (saving/switching state): behavior undefined; no assertion in this spec.
 - PC-004 violation (editing/save-failed + `currentNote === null`): calling the workflow throws `Error` (or the Promise rejects with `Error`) with message prefix `"EditPastNoteStart: currentNote must not be null when state.status is 'editing' or 'save-failed'"`. No port is invoked. No state-machine field is mutated.

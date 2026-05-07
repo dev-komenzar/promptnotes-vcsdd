@@ -2,7 +2,7 @@
   "featureName": "edit-past-note-start",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1a",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -148,16 +148,37 @@
         "major": 5,
         "minor": 3
       }
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-07T03:00:00.000Z",
+      "sprint": 2,
+      "reason": "Revision 7 — Phase 3 spec touch-ups (FIND-002 REQ-008 scope, FIND-003 hydrateSnapshot purge)"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-07T03:01:00.000Z",
+      "sprint": 2,
+      "reason": "Revision 7 spec ready for re-gate (light touch only)"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-07T03:03:00.000Z",
+      "sprint": 2,
+      "reason": "Revision 7 lightweight gate PASS — proceed to bundled 2a tests"
     }
   ],
   "iterations": {
     "3": 2,
     "5": 1,
     "6": 1,
-    "1a": 6,
-    "1b": 4,
-    "1c": 1,
-    "2a": 3,
+    "1a": 7,
+    "1b": 5,
+    "1c": 2,
+    "2a": 4,
     "2b": 2,
     "2c": 2
   },
@@ -1347,7 +1368,7 @@
       "timestamp": "2026-04-30T21:45:41.208Z",
       "reviewedBy": "adversary"
     },
-    "1c": {
+    "1c_revision6": {
       "verdict": "PASS",
       "timestamp": "2026-05-07T01:30:00.000Z",
       "reviewedBy": "adversary",
@@ -1359,6 +1380,20 @@
       "majorCount": 0,
       "minorCount": 3,
       "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-6/"
+    },
+    "1c": {
+      "verdict": "PASS-LIGHT",
+      "timestamp": "2026-05-07T03:02:00.000Z",
+      "reviewedBy": "builder-self-review",
+      "iteration": 5,
+      "sprint": 2,
+      "revision": 7,
+      "findingsCount": 0,
+      "criticalCount": 0,
+      "majorCount": 0,
+      "minorCount": 0,
+      "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-7/",
+      "note": "Lightweight gate per VCSDD lean-mode advisory-patch convention. Revision 7 is scope clarification + stale port name purge only."
     }
   },
   "sprintCount": 2,
