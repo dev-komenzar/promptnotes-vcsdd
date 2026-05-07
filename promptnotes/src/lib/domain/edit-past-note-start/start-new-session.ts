@@ -6,6 +6,10 @@
 // REQ-EPNS-010: Emit BlockFocused (replaces EditorFocusedOnPastNote).
 // REQ-EPNS-012: Clock.now() called exactly once per invocation.
 // PC-002: parseMarkdownToBlocks failure → throw (programming error, not recoverable Err).
+//
+// FIND-EPNS-S2-P3-004: clockNow() is called AFTER parseMarkdownToBlocks (resolveNote).
+//   On PC-002 parse failure, clockNow is NOT invoked — spec says "no port is invoked"
+//   on precondition violation. Reorder enforces this invariant.
 
 import type { Timestamp } from "promptnotes-domain-types/shared/value-objects";
 import type { Block, Note } from "promptnotes-domain-types/shared/note";
@@ -30,17 +34,22 @@ export type StartNewSessionPorts = {
  *
  * Same-note path: reuses the note from the 'same-note' decision payload; no hydration.
  * Cross-note path: hydrates request.snapshot via parseMarkdownToBlocks (PC-002 enforced).
- * Clock.now() called exactly once (for NewSession.startedAt and BlockFocused.occurredOn).
+ *
+ * IMPORTANT (FIND-EPNS-S2-P3-004): clockNow() is called AFTER resolveNote().
+ * If parseMarkdownToBlocks fails (PC-002), we throw before ever calling clockNow.
+ * This satisfies the spec claim "no port is invoked on precondition violation".
  */
 export function startNewSession(
   request: BlockFocusRequest,
   decision: CurrentSessionDecision,
   ports: StartNewSessionPorts,
 ): NewSession {
-  // REQ-EPNS-012: exactly one Clock.now() call per invocation
-  const startedAt = ports.clockNow();
-
+  // Resolve note FIRST (may throw on PC-002 parse failure)
+  // clockNow is called AFTER resolveNote so it's never invoked on parse failure.
   const note = resolveNote(request, decision, ports);
+
+  // REQ-EPNS-012: exactly one Clock.now() call per invocation (after parse, before emit)
+  const startedAt = ports.clockNow();
 
   const newSession: NewSession = {
     kind: "NewSession",

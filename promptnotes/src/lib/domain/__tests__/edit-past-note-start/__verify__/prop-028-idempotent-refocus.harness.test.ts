@@ -65,7 +65,7 @@ function makeEditingState(opts: { noteId: NoteId; blockId: BlockId; isDirty?: bo
 function makePorts(spy: { events: Array<{ kind: string; [k: string]: unknown }> }): EditPastNoteStartPorts {
   return {
     clockNow: () => makeTimestamp(Date.now()),
-    blurSave: (noteId) => ({ ok: true as const, value: { kind: "note-file-saved" as const, noteId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }),
+    blurSave: (noteId) => Promise.resolve({ ok: true as const, value: { kind: "note-file-saved" as const, noteId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }),
     parseMarkdownToBlocks: () => ({ ok: true as const, value: [] }),
     emit: (e) => spy.events.push(e),
   };
@@ -74,7 +74,7 @@ function makePorts(spy: { events: Array<{ kind: string; [k: string]: unknown }> 
 // ── PROP-EPNS-028: idempotent same-note re-focus ─────────────────────────
 
 describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
-  test("(a) both invocations return Ok(NewSession)", () => {
+  test("(a) both invocations return Ok(NewSession)", async () => {
     const noteId = makeNoteId("2026-04-30-120000-028");
     const blockId = makeBlockId("block-same-block");
     const currentNote = makeNote(noteId);
@@ -94,8 +94,8 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
       previousFrontmatter: null,
     };
 
-    const r1 = runEditPastNoteStartPipeline(input, ports);
-    const r2 = runEditPastNoteStartPipeline(input, ports);
+    const r1 = await runEditPastNoteStartPipeline(input, ports);
+    const r2 = await runEditPastNoteStartPipeline(input, ports);
 
     // (a) both return Ok
     expect(r1.ok).toBe(true);
@@ -104,7 +104,7 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
     if (r2.ok) expect(r2.value.kind).toBe("NewSession");
   });
 
-  test("(b) cumulative BlockFocused emit count is exactly 2", () => {
+  test("(b) cumulative BlockFocused emit count is exactly 2", async () => {
     const noteId = makeNoteId("2026-04-30-120000-028b");
     const blockId = makeBlockId("block-same-block-b");
     const currentNote = makeNote(noteId);
@@ -124,14 +124,14 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
       previousFrontmatter: null,
     };
 
-    runEditPastNoteStartPipeline(input, ports);
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
 
     const blockFocusedEvents = spy.events.filter((e) => e.kind === "block-focused");
     expect(blockFocusedEvents).toHaveLength(2);
   });
 
-  test("(b) each BlockFocused event carries correct noteId and blockId", () => {
+  test("(b) each BlockFocused event carries correct noteId and blockId", async () => {
     const noteId = makeNoteId("2026-04-30-120000-028c");
     const blockId = makeBlockId("block-same-block-c");
     const currentNote = makeNote(noteId);
@@ -151,8 +151,8 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
       previousFrontmatter: null,
     };
 
-    runEditPastNoteStartPipeline(input, ports);
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
 
     const blockFocusedEvents = spy.events.filter((e) => e.kind === "block-focused") as BlockFocused[];
     expect(blockFocusedEvents).toHaveLength(2);
@@ -162,7 +162,7 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
     }
   });
 
-  test("(d) isDirty=true is preserved across both calls (same-note path never clears isDirty)", () => {
+  test("(d) isDirty=true is preserved across both calls (same-note path never clears isDirty)", async () => {
     const noteId = makeNoteId("2026-04-30-120000-028d");
     const blockId = makeBlockId("block-same-block-d");
     const currentNote = makeNote(noteId);
@@ -183,8 +183,8 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
       previousFrontmatter: null,
     };
 
-    const r1 = runEditPastNoteStartPipeline(input, ports);
-    const r2 = runEditPastNoteStartPipeline(input, ports);
+    const r1 = await runEditPastNoteStartPipeline(input, ports);
+    const r2 = await runEditPastNoteStartPipeline(input, ports);
 
     // Both succeed — the state isn't modified by the pure pipeline function
     // (state mutation tracking in the pipeline is the caller's responsibility)
@@ -199,7 +199,7 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
     expect(blockFocusedEvents).toHaveLength(2);
   });
 
-  test("no save I/O on either invocation (BlurSave never called)", () => {
+  test("no save I/O on either invocation (BlurSave never called)", async () => {
     const noteId = makeNoteId("2026-04-30-120000-028e");
     const blockId = makeBlockId("block-same-block-e");
     const currentNote = makeNote(noteId);
@@ -208,7 +208,7 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
     const spy = { events: [] as Array<{ kind: string; [k: string]: unknown }> };
     const ports: EditPastNoteStartPorts = {
       ...makePorts(spy),
-      blurSave: () => { blurSaveCalled = true; return { ok: true as const, value: { kind: "note-file-saved" as const, noteId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }; },
+      blurSave: () => { blurSaveCalled = true; return Promise.resolve({ ok: true as const, value: { kind: "note-file-saved" as const, noteId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }); },
     };
 
     const input: EditPastNoteStartInput = {
@@ -223,8 +223,8 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
       previousFrontmatter: null,
     };
 
-    runEditPastNoteStartPipeline(input, ports);
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
 
     expect(blurSaveCalled).toBe(false);
   });
@@ -232,7 +232,7 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
   // (c) FIND-EPNS-S2-P3-008: Structural equality of the two returned NewSession objects
   // Both calls with identical input must produce structurally equal output (idempotent fixed point
   // on workflow output). State-mutation idempotency is deferred to the upstream reducer.
-  test("(c) both invocations return structurally equal NewSession objects", () => {
+  test("(c) both invocations return structurally equal NewSession objects", async () => {
     const noteId = makeNoteId("2026-04-30-120000-028f");
     const blockId = makeBlockId("block-same-block-f");
     const currentNote = makeNote(noteId);
@@ -242,7 +242,7 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
     const spy = { events: [] as Array<{ kind: string; [k: string]: unknown }> };
     const ports: EditPastNoteStartPorts = {
       clockNow: () => fixedTimestamp,
-      blurSave: (nId) => ({ ok: true as const, value: { kind: "note-file-saved" as const, noteId: nId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: fixedTimestamp } }),
+      blurSave: (nId) => Promise.resolve({ ok: true as const, value: { kind: "note-file-saved" as const, noteId: nId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: fixedTimestamp } }),
       parseMarkdownToBlocks: () => ({ ok: true as const, value: [] }),
       emit: (e) => spy.events.push(e),
     };
@@ -259,8 +259,8 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
       previousFrontmatter: null,
     };
 
-    const r1 = runEditPastNoteStartPipeline(input, ports);
-    const r2 = runEditPastNoteStartPipeline(input, ports);
+    const r1 = await runEditPastNoteStartPipeline(input, ports);
+    const r2 = await runEditPastNoteStartPipeline(input, ports);
 
     // Both must succeed
     expect(r1.ok).toBe(true);

@@ -83,7 +83,7 @@ function makeSpyPorts(targetNoteId: NoteId): {
   let parseCalled = false;
   const ports: EditPastNoteStartPorts = {
     clockNow: () => { clockCalled = true; return makeTimestamp(1000); },
-    blurSave: () => { blurSaveCalled = true; return { ok: true as const, value: { kind: "note-file-saved", noteId: targetNoteId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }; },
+    blurSave: () => { blurSaveCalled = true; return Promise.resolve({ ok: true as const, value: { kind: "note-file-saved", noteId: targetNoteId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }); },
     parseMarkdownToBlocks: () => { parseCalled = true; return { ok: true as const, value: [] }; },
     emit: () => { emitCalled = true; },
   };
@@ -120,7 +120,7 @@ function makeSaveFailedState(currentNoteId: NoteId): SaveFailedState {
 // ── (a) PC-001: cross-note + snapshot=null ────────────────────────────────
 
 describe("PROP-EPNS-027 (a): PC-001 — cross-note + snapshot=null → throw", () => {
-  test("throws with message prefix 'EditPastNoteStart: cross-note request requires non-null snapshot'", () => {
+  test("throws with message prefix 'EditPastNoteStart: cross-note request requires non-null snapshot'", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-027");
     const targetId = makeNoteId("2026-04-30-150000-027");  // different from current
     const spy = makeSpyPorts(targetId);
@@ -137,12 +137,12 @@ describe("PROP-EPNS-027 (a): PC-001 — cross-note + snapshot=null → throw", (
       previousFrontmatter: null,
     };
 
-    expect(() => runEditPastNoteStartPipeline(input, spy.ports)).toThrow(
+    await expect(runEditPastNoteStartPipeline(input, spy.ports)).rejects.toThrow(
       "cross-note request requires non-null snapshot"
     );
   });
 
-  test("PC-001 throw: no port is invoked (no emit, no blurSave, no clock, no parse)", () => {
+  test("PC-001 throw: no port is invoked (no emit, no blurSave, no clock, no parse)", async () => {
     const targetId = makeNoteId("2026-04-30-150000-028");
     const spy = makeSpyPorts(targetId);
 
@@ -158,7 +158,7 @@ describe("PROP-EPNS-027 (a): PC-001 — cross-note + snapshot=null → throw", (
       previousFrontmatter: null,
     };
 
-    try { runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
+    try { await runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
 
     expect(spy.blurSaveCalled()).toBe(false);
     expect(spy.clockCalled()).toBe(false);
@@ -166,7 +166,7 @@ describe("PROP-EPNS-027 (a): PC-001 — cross-note + snapshot=null → throw", (
     expect(spy.parseCalled()).toBe(false);
   });
 
-  test("PC-001 throw on EditingState + cross-note + snapshot=null", () => {
+  test("PC-001 throw on EditingState + cross-note + snapshot=null", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-029");
     const targetId = makeNoteId("2026-04-30-150000-029");
     const spy = makeSpyPorts(targetId);
@@ -183,7 +183,7 @@ describe("PROP-EPNS-027 (a): PC-001 — cross-note + snapshot=null → throw", (
       previousFrontmatter: null,
     };
 
-    expect(() => runEditPastNoteStartPipeline(input, spy.ports)).toThrow(
+    await expect(runEditPastNoteStartPipeline(input, spy.ports)).rejects.toThrow(
       "cross-note request requires non-null snapshot"
     );
   });
@@ -192,12 +192,12 @@ describe("PROP-EPNS-027 (a): PC-001 — cross-note + snapshot=null → throw", (
 // ── (b) PC-002: parseMarkdownToBlocks returns Err → throw ─────────────────
 
 describe("PROP-EPNS-027 (b): PC-002 — parseMarkdownToBlocks failure → throw", () => {
-  test("throws when parseMarkdownToBlocks returns Err (programming error, not recoverable)", () => {
+  test("throws when parseMarkdownToBlocks returns Err (programming error, not recoverable)", async () => {
     const targetId = makeNoteId("2026-04-30-150000-030");
     const events: Array<{ kind: string }> = [];
     const ports: EditPastNoteStartPorts = {
       clockNow: () => makeTimestamp(1000),
-      blurSave: () => ({ ok: true as const, value: { kind: "note-file-saved", noteId: targetId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }),
+      blurSave: () => Promise.resolve({ ok: true as const, value: { kind: "note-file-saved", noteId: targetId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }),
       parseMarkdownToBlocks: () => ({
         ok: false as const,
         error: { kind: "malformed-structure", line: 1, detail: "test parse failure" },
@@ -218,7 +218,7 @@ describe("PROP-EPNS-027 (b): PC-002 — parseMarkdownToBlocks failure → throw"
     };
 
     // PC-002 violation: silent fallback to empty Note is PROHIBITED — must throw
-    expect(() => runEditPastNoteStartPipeline(input, ports)).toThrow();
+    await expect(runEditPastNoteStartPipeline(input, ports)).rejects.toThrow();
     // No events should be emitted before the throw
     expect(events).toHaveLength(0);
   });
@@ -227,7 +227,7 @@ describe("PROP-EPNS-027 (b): PC-002 — parseMarkdownToBlocks failure → throw"
 // ── (c) PC-004: editing + currentNote=null → throw ────────────────────────
 
 describe("PROP-EPNS-027 (c): PC-004 — editing + currentNote=null → throw", () => {
-  test("throws with message 'currentNote must not be null when state.status is editing or save-failed'", () => {
+  test("throws with message 'currentNote must not be null when state.status is editing or save-failed'", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-031");
     const targetId = makeNoteId("2026-04-30-150000-031");
     const spy = makeSpyPorts(targetId);
@@ -244,12 +244,12 @@ describe("PROP-EPNS-027 (c): PC-004 — editing + currentNote=null → throw", (
       previousFrontmatter: null,
     };
 
-    expect(() => runEditPastNoteStartPipeline(input, spy.ports)).toThrow(
+    await expect(runEditPastNoteStartPipeline(input, spy.ports)).rejects.toThrow(
       "currentNote must not be null"
     );
   });
 
-  test("PC-004 (editing) throw: no port is invoked", () => {
+  test("PC-004 (editing) throw: no port is invoked", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-032");
     const targetId = makeNoteId("2026-04-30-150000-032");
     const spy = makeSpyPorts(targetId);
@@ -266,7 +266,7 @@ describe("PROP-EPNS-027 (c): PC-004 — editing + currentNote=null → throw", (
       previousFrontmatter: null,
     };
 
-    try { runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
+    try { await runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
 
     expect(spy.blurSaveCalled()).toBe(false);
     expect(spy.clockCalled()).toBe(false);
@@ -278,7 +278,7 @@ describe("PROP-EPNS-027 (c): PC-004 — editing + currentNote=null → throw", (
 // ── (d) PC-004: save-failed + currentNote=null → throw ────────────────────
 
 describe("PROP-EPNS-027 (d): PC-004 — save-failed + currentNote=null → throw", () => {
-  test("throws with message 'currentNote must not be null when state.status is editing or save-failed'", () => {
+  test("throws with message 'currentNote must not be null when state.status is editing or save-failed'", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-033");
     const targetId = makeNoteId("2026-04-30-150000-033");
     const spy = makeSpyPorts(targetId);
@@ -295,12 +295,12 @@ describe("PROP-EPNS-027 (d): PC-004 — save-failed + currentNote=null → throw
       previousFrontmatter: null,
     };
 
-    expect(() => runEditPastNoteStartPipeline(input, spy.ports)).toThrow(
+    await expect(runEditPastNoteStartPipeline(input, spy.ports)).rejects.toThrow(
       "currentNote must not be null"
     );
   });
 
-  test("PC-004 (save-failed) throw: no port is invoked", () => {
+  test("PC-004 (save-failed) throw: no port is invoked", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-034");
     const targetId = makeNoteId("2026-04-30-150000-034");
     const spy = makeSpyPorts(targetId);
@@ -317,7 +317,7 @@ describe("PROP-EPNS-027 (d): PC-004 — save-failed + currentNote=null → throw
       previousFrontmatter: null,
     };
 
-    try { runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
+    try { await runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
 
     expect(spy.blurSaveCalled()).toBe(false);
     expect(spy.clockCalled()).toBe(false);
@@ -329,7 +329,7 @@ describe("PROP-EPNS-027 (d): PC-004 — save-failed + currentNote=null → throw
 // ── (e) PC-004: idle + currentNote !== null → throw (FIND-EPNS-S2-P3-001, R6-002) ──
 
 describe("PROP-EPNS-027 (e): PC-004 — idle + currentNote !== null → throw", () => {
-  test("throws when state is idle but currentNote is non-null (state/note inconsistency)", () => {
+  test("throws when state is idle but currentNote is non-null (state/note inconsistency)", async () => {
     const targetId = makeNoteId("2026-04-30-150000-035");
     const note = makeNote(targetId);
     const spy = makeSpyPorts(targetId);
@@ -346,10 +346,10 @@ describe("PROP-EPNS-027 (e): PC-004 — idle + currentNote !== null → throw", 
       previousFrontmatter: null,
     };
 
-    expect(() => runEditPastNoteStartPipeline(input, spy.ports)).toThrow();
+    await expect(runEditPastNoteStartPipeline(input, spy.ports)).rejects.toThrow();
   });
 
-  test("PC-004 (idle + non-null) throw: no port is invoked (no clockNow, blurSave, emit, parse)", () => {
+  test("PC-004 (idle + non-null) throw: no port is invoked (no clockNow, blurSave, emit, parse)", async () => {
     const targetId = makeNoteId("2026-04-30-150000-036");
     const note = makeNote(targetId);
     const spy = makeSpyPorts(targetId);
@@ -366,7 +366,7 @@ describe("PROP-EPNS-027 (e): PC-004 — idle + currentNote !== null → throw", 
       previousFrontmatter: null,
     };
 
-    try { runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
+    try { await runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
 
     expect(spy.blurSaveCalled()).toBe(false);
     expect(spy.clockCalled()).toBe(false);
@@ -378,13 +378,13 @@ describe("PROP-EPNS-027 (e): PC-004 — idle + currentNote !== null → throw", 
 // ── (b) extended: clockNow NOT called on PC-002 throw (FIND-EPNS-S2-P3-004) ──
 
 describe("PROP-EPNS-027 (b) extended: PC-002 — clockNow must NOT be called before parse fails", () => {
-  test("clockNow is called zero times when parseMarkdownToBlocks fails (clock must come after parse)", () => {
+  test("clockNow is called zero times when parseMarkdownToBlocks fails (clock must come after parse)", async () => {
     const targetId = makeNoteId("2026-04-30-150000-037");
     let clockCallCount = 0;
     const events: Array<{ kind: string }> = [];
     const ports: EditPastNoteStartPorts = {
       clockNow: () => { clockCallCount++; return makeTimestamp(1000); },
-      blurSave: () => ({ ok: true as const, value: { kind: "note-file-saved", noteId: targetId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }),
+      blurSave: () => Promise.resolve({ ok: true as const, value: { kind: "note-file-saved", noteId: targetId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }),
       parseMarkdownToBlocks: () => ({
         ok: false as const,
         error: { kind: "malformed-structure", line: 1, detail: "clock-order test failure" },
@@ -405,7 +405,7 @@ describe("PROP-EPNS-027 (b) extended: PC-002 — clockNow must NOT be called bef
     };
 
     // PC-002: parse failure must throw before clockNow is invoked
-    expect(() => runEditPastNoteStartPipeline(input, ports)).toThrow();
+    await expect(runEditPastNoteStartPipeline(input, ports)).rejects.toThrow();
     // After impl reorder (FIND-004 fix): clockNow must be zero on parse failure
     expect(clockCallCount).toBe(0);
     expect(events).toHaveLength(0);

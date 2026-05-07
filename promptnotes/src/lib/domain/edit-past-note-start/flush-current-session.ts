@@ -8,6 +8,9 @@
 // REQ-EPNS-005: same-note → same-note-skipped (no I/O)
 // REQ-EPNS-012: Clock budget — 1 call on empty path, 1 call on dirty-fail path,
 //               0 calls on no-current, dirty-success, and same-note paths.
+//
+// FIND-EPNS-S2-P3-005: blurSave is async (matches BlurSave port contract in workflows.ts).
+// flushCurrentSession itself is async because the dirty path awaits blurSave.
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type { NoteId, Timestamp, Frontmatter } from "promptnotes-domain-types/shared/value-objects";
@@ -26,7 +29,7 @@ export type FlushCurrentSessionPorts = {
     noteId: NoteId,
     note: Note,
     previousFrontmatter: Frontmatter | null,
-  ) => Result<NoteFileSaved, SaveError>;
+  ) => Promise<Result<NoteFileSaved, SaveError>>;
   readonly emit: (event: { kind: string; [k: string]: unknown }) => void;
 };
 
@@ -35,16 +38,16 @@ export type FlushCurrentSessionPorts = {
  *
  * @param decision - Result from classifyCurrentSession
  * @param request - BlockFocusRequest (carries target noteId+blockId for SwitchError.pendingNextFocus)
- * @param ports - I/O ports
+ * @param ports - I/O ports (blurSave is async)
  * @param previousFrontmatter - forwarded to blurSave on dirty path
- * @returns Ok(FlushedCurrentSession) or Err(SwitchError)
+ * @returns Promise<Ok(FlushedCurrentSession) | Err(SwitchError)>
  */
-export function flushCurrentSession(
+export async function flushCurrentSession(
   decision: CurrentSessionDecision,
   request: BlockFocusRequest,
   ports: FlushCurrentSessionPorts,
   previousFrontmatter: Frontmatter | null,
-): Result<FlushedCurrentSession, SwitchError> {
+): Promise<Result<FlushedCurrentSession, SwitchError>> {
   switch (decision.kind) {
     case "no-current":
       return { ok: true, value: { kind: "FlushedCurrentSession", result: "no-op" } };
@@ -65,8 +68,8 @@ export function flushCurrentSession(
     }
 
     case "dirty": {
-      // REQ-EPNS-003/004: Invoke blur save with note and previousFrontmatter
-      const saveResult = ports.blurSave(
+      // REQ-EPNS-003/004: Invoke blur save with note and previousFrontmatter (async)
+      const saveResult = await ports.blurSave(
         decision.noteId,
         decision.note,
         previousFrontmatter,

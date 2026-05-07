@@ -7,10 +7,13 @@
 // PROP-EPNS-002: IdleState → no-current.
 // PROP-EPNS-003: EditingState → same-note | empty | dirty (based on noteId match + isEmpty).
 // PROP-EPNS-004: EditingState|SaveFailedState + same-noteId → same-note.
+//
+// FIND-EPNS-S2-P3-006: isEmptyNote moved to is-empty-note.ts (canonical shared helper).
 
 import type { Note } from "promptnotes-domain-types/shared/note";
 import type { EditingSessionState } from "promptnotes-domain-types/capture/states";
 import type { BlockFocusRequest, CurrentSessionDecision } from "promptnotes-domain-types/capture/stages";
+import { isEmptyNote } from "./is-empty-note.js";
 
 /**
  * Pure classification of the current editing session.
@@ -72,19 +75,5 @@ export function classifyCurrentSession(
   }
 }
 
-/**
- * Canonical NoteOps.isEmpty:
- *   blocks.length === 1 AND blocks[0].type === 'paragraph'
- *   AND content is empty or whitespace-only.
- *
- * Source: shared/note.ts:174 NoteOps.isEmpty definition.
- * This is the narrow single-empty-paragraph rule — not the broader
- * CaptureAutoSave predicate.
- */
-function isEmptyNote(note: Note): boolean {
-  if (note.blocks.length !== 1) return false;
-  const block = note.blocks[0];
-  if (block.type !== "paragraph") return false;
-  const content = block.content as unknown as string;
-  return content.trim().length === 0;
-}
+// isEmptyNote is now imported from ./is-empty-note.ts (FIND-EPNS-S2-P3-006).
+// See is-empty-note.ts for the canonical NoteOps.isEmpty definition.

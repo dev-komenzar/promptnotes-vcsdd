@@ -1,0 +1,94 @@
+Sprint 2 — Bundled Green Phase Evidence
+Phase 2b: P3 Findings Fix — Implementation Complete
+Date: 2026-05-07
+
+## Phase Summary
+Addressed 8 Phase 3 FAIL findings (FIND-EPNS-S2-P3-001 through FIND-EPNS-S2-P3-008)
+via bundled spec rev 7, new 2a tests, and 2b implementation fixes.
+
+## Gate Evidence
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+## Test Run: edit-past-note-start only
+
+bun test v1.3.11 (af24e281)
+
+ 119 pass
+ 0 fail
+ 14628 expect() calls
+Ran 119 tests across 12 files. [441.00ms]
+
+## Test Run: full suite (regression baseline)
+
+bun test v1.3.11 (af24e281)
+
+ 1847 pass
+ 4 todo
+ 0 fail
+ 27671 expect() calls
+Ran 1851 tests across 149 files. [13.89s]
+
+## Findings Addressed
+
+### FIND-EPNS-S2-P3-001 (PC-004 direction)
+- File: pipeline.ts
+- Guard: idle + non-null currentNote → throw (programming error)
+- Test: prop-027 sub-case (e): 2 new tests
+
+### FIND-EPNS-S2-P3-002 (REQ-EPNS-008 scope ambiguity)
+- File: behavioral-spec.md Revision 7
+- REQ-EPNS-008 scope preamble added; EditingSessionState table scoped to upstream reducer
+
+### FIND-EPNS-S2-P3-003 (stale 'hydrateSnapshot' port name)
+- File: behavioral-spec.md + verification-architecture.md Revision 7
+- All instances of hydrateSnapshot replaced with parseMarkdownToBlocks
+
+### FIND-EPNS-S2-P3-004 (clock called before parse)
+- File: start-new-session.ts
+- Reordered: resolveNote() (parse) called FIRST, clockNow() AFTER
+- Test: prop-027 sub-case (b) extended: clock NOT called on PC-002 violation
+
+### FIND-EPNS-S2-P3-005 (blurSave sync vs async)
+- Files: flush-current-session.ts, pipeline.ts
+- blurSave port declared as async (Promise<Result<...>>)
+- flushCurrentSession made async; pipeline.ts awaits it
+- All test files migrated: async callbacks + Promise.resolve stubs
+
+### FIND-EPNS-S2-P3-006 (duplicate isEmptyNote)
+- Files: is-empty-note.ts (new), classify-current-session.ts
+- Canonical isEmptyNote extracted to is-empty-note.ts
+- classify-current-session.ts imports from is-empty-note.ts
+
+### FIND-EPNS-S2-P3-007 (isCrossNoteRequest pre-empts classifyCurrentSession)
+- File: pipeline.ts
+- isCrossNoteRequest helper removed
+- PC-001 check uses decision.kind after classifyCurrentSession runs
+
+### FIND-EPNS-S2-P3-008 (PROP-028(c) state-mutation vs output equality)
+- File: prop-028-idempotent-refocus.harness.test.ts
+- Sub-case (c) uses r1.toEqual(r2) with fixed clock (workflow output equality)
+- State-mutation idempotency deferred to upstream reducer (documented in spec)
+
+## Files Changed
+
+### New
+- edit-past-note-start/is-empty-note.ts
+
+### Modified (implementation)
+- edit-past-note-start/flush-current-session.ts (async blurSave)
+- edit-past-note-start/pipeline.ts (PC-004 guard, async, isCrossNoteRequest removed)
+- edit-past-note-start/classify-current-session.ts (import isEmptyNote)
+- edit-past-note-start/start-new-session.ts (clock-after-parse reorder)
+
+### Modified (tests)
+- __tests__/edit-past-note-start/step2-flush-current-session.test.ts (async migration)
+- __tests__/edit-past-note-start/pipeline.test.ts (async + R6-001 tests)
+- __tests__/edit-past-note-start/__verify__/prop-026-save-error-mapping.harness.test.ts (async + fc.asyncProperty)
+- __tests__/edit-past-note-start/__verify__/prop-027-precondition-throws.harness.test.ts (sub-case e + async)
+- __tests__/edit-past-note-start/__verify__/prop-028-idempotent-refocus.harness.test.ts (sub-case c + async)
+
+### Modified (specs)
+- .vcsdd/features/edit-past-note-start/specs/behavioral-spec.md (Revision 7)
+- .vcsdd/features/edit-past-note-start/specs/verification-architecture.md (Revision 7)

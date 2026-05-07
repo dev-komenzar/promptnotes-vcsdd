@@ -61,7 +61,7 @@ function makeSnapshot(noteId: NoteId): NoteFileSnapshot {
   } as unknown as NoteFileSnapshot;
 }
 
-function runFlushAndGetReason(saveError: SaveError): NoteSaveFailureReason {
+async function runFlushAndGetReason(saveError: SaveError): Promise<NoteSaveFailureReason> {
   const noteId = makeNoteId("2026-04-30-120000-026");
   const targetId = makeNoteId("2026-04-30-150000-026");
   const note = makeNote(noteId);
@@ -73,12 +73,13 @@ function runFlushAndGetReason(saveError: SaveError): NoteSaveFailureReason {
     snapshot: makeSnapshot(targetId),
   };
   const emittedEvents: Array<{ kind: string; [k: string]: unknown }> = [];
+  // FIND-EPNS-S2-P3-005: blurSave is async — return Promise.resolve
   const ports: FlushCurrentSessionPorts = {
     clockNow: () => makeTimestamp(1000),
-    blurSave: () => ({ ok: false as const, error: saveError }),
+    blurSave: () => Promise.resolve({ ok: false as const, error: saveError }),
     emit: (e) => emittedEvents.push(e),
   };
-  flushCurrentSession(decision, request, ports, null);
+  await flushCurrentSession(decision, request, ports, null);
   const failEvent = emittedEvents.find((e) => e.kind === "note-save-failed") as NoteSaveFailed | undefined;
   if (!failEvent) throw new Error("NoteSaveFailed not emitted");
   return failEvent.reason;
@@ -87,39 +88,39 @@ function runFlushAndGetReason(saveError: SaveError): NoteSaveFailureReason {
 // ── Table-driven: all 6 SaveError discriminants ────────────────────────
 
 describe("PROP-EPNS-026: SaveError → NoteSaveFailureReason mapping (REQ-EPNS-004)", () => {
-  test("fs/permission → 'permission'", () => {
+  test("fs/permission → 'permission'", async () => {
     const error: SaveError = { kind: "fs", reason: { kind: "permission" } };
-    expect(runFlushAndGetReason(error)).toBe("permission");
+    expect(await runFlushAndGetReason(error)).toBe("permission");
   });
 
-  test("fs/disk-full → 'disk-full'", () => {
+  test("fs/disk-full → 'disk-full'", async () => {
     const error: SaveError = { kind: "fs", reason: { kind: "disk-full" } };
-    expect(runFlushAndGetReason(error)).toBe("disk-full");
+    expect(await runFlushAndGetReason(error)).toBe("disk-full");
   });
 
-  test("fs/lock → 'lock'", () => {
+  test("fs/lock → 'lock'", async () => {
     const error: SaveError = { kind: "fs", reason: { kind: "lock" } };
-    expect(runFlushAndGetReason(error)).toBe("lock");
+    expect(await runFlushAndGetReason(error)).toBe("lock");
   });
 
-  test("fs/not-found → 'unknown'", () => {
+  test("fs/not-found → 'unknown'", async () => {
     const error: SaveError = { kind: "fs", reason: { kind: "not-found", path: "/x" } };
-    expect(runFlushAndGetReason(error)).toBe("unknown");
+    expect(await runFlushAndGetReason(error)).toBe("unknown");
   });
 
-  test("fs/unknown → 'unknown'", () => {
+  test("fs/unknown → 'unknown'", async () => {
     const error: SaveError = { kind: "fs", reason: { kind: "unknown", detail: "err" } };
-    expect(runFlushAndGetReason(error)).toBe("unknown");
+    expect(await runFlushAndGetReason(error)).toBe("unknown");
   });
 
-  test("validation/any → 'unknown'", () => {
+  test("validation/any → 'unknown'", async () => {
     const error: SaveError = { kind: "validation", reason: { kind: "empty-body-on-idle" } };
-    expect(runFlushAndGetReason(error)).toBe("unknown");
+    expect(await runFlushAndGetReason(error)).toBe("unknown");
   });
 
-  test("validation/invariant-violated → 'unknown'", () => {
+  test("validation/invariant-violated → 'unknown'", async () => {
     const error: SaveError = { kind: "validation", reason: { kind: "invariant-violated", detail: "bad" } };
-    expect(runFlushAndGetReason(error)).toBe("unknown");
+    expect(await runFlushAndGetReason(error)).toBe("unknown");
   });
 });
 
@@ -138,19 +139,19 @@ describe("PROP-EPNS-026: fast-check property — all SaveError discriminants pro
 
   const validReasons = new Set<NoteSaveFailureReason>(["permission", "disk-full", "lock", "unknown"]);
 
-  test("∀ SaveError variant, emitted reason is a valid NoteSaveFailureReason (200 runs)", () => {
-    fc.assert(
-      fc.property(arbSaveError, (saveError) => {
-        const reason = runFlushAndGetReason(saveError);
+  test("∀ SaveError variant, emitted reason is a valid NoteSaveFailureReason (200 runs)", async () => {
+    await fc.assert(
+      fc.asyncProperty(arbSaveError, async (saveError) => {
+        const reason = await runFlushAndGetReason(saveError);
         expect(validReasons.has(reason)).toBe(true);
       }),
       { numRuns: 200 },
     );
   });
 
-  test("fs/permission always maps to 'permission' (not unknown)", () => {
+  test("fs/permission always maps to 'permission' (not unknown)", async () => {
     const error: SaveError = { kind: "fs", reason: { kind: "permission" } };
-    expect(runFlushAndGetReason(error)).not.toBe("unknown");
-    expect(runFlushAndGetReason(error)).toBe("permission");
+    expect(await runFlushAndGetReason(error)).not.toBe("unknown");
+    expect(await runFlushAndGetReason(error)).toBe("permission");
   });
 });

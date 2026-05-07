@@ -13,6 +13,11 @@
 // - BlockFocused replaces EditorFocusedOnPastNote
 // - PC-001: cross-note + snapshot=null → throw before any side effect
 // - PC-004: editing/save-failed + currentNote=null → throw before any side effect
+// - PC-004: idle + currentNote!=null → throw before any side effect (FIND-EPNS-S2-P3-001)
+//
+// FIND-EPNS-S2-P3-005: pipeline is async to match type contract workflows.ts:114-119.
+// FIND-EPNS-S2-P3-007: isCrossNoteRequest removed; classification is sole decision point
+//   for same-note detection. PC-001 cross-note check uses classifyCurrentSession.kind.
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type {
@@ -40,11 +45,14 @@ type BlockParseError = { kind: string; [k: string]: unknown };
 
 export type EditPastNoteStartPorts = {
   readonly clockNow: () => Timestamp;
+  /** FIND-EPNS-S2-P3-005: blurSave is async to match the published BlurSave port contract
+   *  (workflows.ts BlurSave = Promise<Result<NoteFileSaved, SaveError>>).
+   *  Real CaptureAutoSave implementations perform file I/O and must be async. */
   readonly blurSave: (
     noteId: NoteId,
     note: Note,
     previousFrontmatter: Frontmatter | null,
-  ) => Result<NoteFileSaved, SaveError>;
+  ) => Promise<Result<NoteFileSaved, SaveError>>;
   readonly parseMarkdownToBlocks: (markdown: string) => Result<ReadonlyArray<Block>, BlockParseError>;
   readonly emit: (event: { kind: string; [k: string]: unknown }) => void;
 };
@@ -78,20 +86,21 @@ export type EditPastNoteStartInput = {
  *   For EditingState: caller is responsible for updating EditingSessionState.focusedBlockId.
  *   For SaveFailedState: SaveFailedState has no focusedBlockId field; state is unchanged.
  *   In both cases, NewSession is returned as informational output.
+ *
+ * FIND-EPNS-S2-P3-005: async to match EditPastNoteStart type contract in workflows.ts:114-119.
+ * FIND-EPNS-S2-P3-007: no isCrossNoteRequest helper — classifyCurrentSession is sole decision point.
  */
-export function runEditPastNoteStartPipeline(
+export async function runEditPastNoteStartPipeline(
   input: EditPastNoteStartInput,
   ports: EditPastNoteStartPorts,
-): Result<NewSession, SwitchError> {
+): Promise<Result<NewSession, SwitchError>> {
   const { request, currentState, currentNote, previousFrontmatter } = input;
 
-  // ── PC-001: cross-note + snapshot=null → throw (REQ-EPNS-013) ─────────
-  // Determine cross-note: state has a currentNoteId different from request.noteId,
-  // OR state is idle (no currentNoteId — any focus request is cross-note).
-  const isCrossNote = isCrossNoteRequest(currentState, request);
-  if (isCrossNote && request.snapshot === null) {
+  // ── PC-004: idle + currentNote !== null → throw (FIND-EPNS-S2-P3-001) ──
+  // Must come first so idle state with non-null note is caught before PC-001 check.
+  if (currentState.status === "idle" && currentNote !== null) {
     throw new Error(
-      "EditPastNoteStart: cross-note request requires non-null snapshot"
+      "EditPastNoteStart: currentNote must be null when state.status is 'idle'"
     );
   }
 
@@ -106,10 +115,21 @@ export function runEditPastNoteStartPipeline(
   }
 
   // ── Step 1: classify current session (pure) ───────────────────────────
+  // Classification is the SOLE decision point for same-note detection (FIND-EPNS-S2-P3-007).
   const decision = classifyCurrentSession(currentState, request, currentNote);
 
+  // ── PC-001: cross-note + snapshot=null → throw (REQ-EPNS-013) ─────────
+  // Cross-note means decision is not 'same-note'. Idle is always cross-note (no-current).
+  // Check AFTER classification so classifyCurrentSession is the sole same-note authority.
+  const isCrossNote = decision.kind !== "same-note";
+  if (isCrossNote && request.snapshot === null) {
+    throw new Error(
+      "EditPastNoteStart: cross-note request requires non-null snapshot"
+    );
+  }
+
   // ── Step 2: flush current session ─────────────────────────────────────
-  const flushResult = flushCurrentSession(
+  const flushResult = await flushCurrentSession(
     decision,
     request,
     {
@@ -133,16 +153,4 @@ export function runEditPastNoteStartPipeline(
   });
 
   return { ok: true, value: newSession };
-}
-
-/**
- * Determine whether request targets a different note than the current state.
- * IdleState has no currentNoteId — any request is cross-note from idle.
- */
-function isCrossNoteRequest(
-  state: EditingSessionState,
-  request: BlockFocusRequest,
-): boolean {
-  if (state.status === "idle") return true;
-  return request.noteId !== state.currentNoteId;
 }

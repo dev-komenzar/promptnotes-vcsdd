@@ -2,7 +2,7 @@
   "featureName": "edit-past-note-start",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -176,6 +176,20 @@
       "timestamp": "2026-05-07T03:10:00.000Z",
       "sprint": 2,
       "reason": "Bundled 2a test additions complete — 3 new sub-cases failing (PC-004 idle+non-null: 2, PC-002 clock-order: 1); R6-001 and PROP-028(c) already pass"
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-07T03:30:00.000Z",
+      "sprint": 2,
+      "reason": "Bundled 2b green — 119/119 feature tests pass, 1847/1847 total pass; all 8 P3 findings implemented (PC-004 guard, async blurSave, isEmptyNote extraction, isCrossNoteRequest removal, clock-after-parse reorder, async test migration with fc.asyncProperty)"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-07T03:31:00.000Z",
+      "sprint": 2,
+      "reason": "Bundled refactor complete — step2 test file fully async-migrated; no structural changes beyond async migration; all 119 feature tests remain green"
     }
   ],
   "iterations": {
@@ -186,13 +200,13 @@
     "1b": 5,
     "1c": 2,
     "2a": 4,
-    "2b": 3,
-    "2c": 2
+    "2b": 4,
+    "2c": 3
   },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-edit-past-note-start-1777558291604",
-    "lastBeadId": "BEAD-079",
+    "lastBeadId": "BEAD-080",
     "beads": [
       {
         "beadId": "BEAD-001",
@@ -898,7 +912,9 @@
         "beadId": "BEAD-051",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-6/verdict.md#FIND-EPNS-S2-R6-001",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "pipeline.ts — same-note+non-null snapshot: snapshot silently ignored (classifyCurrentSession is sole authority); R6-001 tests added to pipeline.test.ts",
         "linkedBeads": [
           "BEAD-013",
           "BEAD-040"
@@ -911,7 +927,9 @@
         "beadId": "BEAD-052",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-6/verdict.md#FIND-EPNS-S2-R6-002",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "pipeline.ts — PC-004 idle+non-null guard added; prop-027 sub-case (e) tests added",
         "linkedBeads": [
           "BEAD-013",
           "BEAD-040"
@@ -924,7 +942,9 @@
         "beadId": "BEAD-053",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-6/verdict.md#FIND-EPNS-S2-R6-003",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "verification-architecture.md Rev 7 — PROP-027 sub-case (e) PC-004 idle+non-null added to spec",
         "linkedBeads": [
           "BEAD-013",
           "BEAD-040"
@@ -1241,7 +1261,9 @@
         "beadId": "BEAD-072",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-001",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "pipeline.ts — PC-004: idle+non-null currentNote guard throws before classifyCurrentSession",
         "linkedBeads": [
           "BEAD-013",
           "BEAD-069"
@@ -1255,7 +1277,9 @@
         "beadId": "BEAD-073",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-002",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "1a",
+        "resolvedBy": "behavioral-spec.md Rev 7 — REQ-EPNS-008 scope preamble clarifies workflow boundary vs upstream reducer responsibility",
         "linkedBeads": [
           "BEAD-008",
           "BEAD-069"
@@ -1269,7 +1293,9 @@
         "beadId": "BEAD-074",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-003",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "1a",
+        "resolvedBy": "behavioral-spec.md + verification-architecture.md Rev 7 — all hydrateSnapshot references replaced with parseMarkdownToBlocks",
         "linkedBeads": [
           "BEAD-013",
           "BEAD-051",
@@ -1286,7 +1312,9 @@
         "beadId": "BEAD-075",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-004",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "start-new-session.ts — resolveNote() called BEFORE clockNow(); prop-027 sub-case (b) extended to assert clock not called on parse failure",
         "linkedBeads": [
           "BEAD-013",
           "BEAD-040",
@@ -1302,7 +1330,9 @@
         "beadId": "BEAD-076",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-005",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "flush-current-session.ts + pipeline.ts — blurSave declared async; flushCurrentSession made async; all test files migrated to async/await + Promise.resolve stubs + fc.asyncProperty",
         "linkedBeads": [
           "BEAD-040",
           "BEAD-064",
@@ -1318,7 +1348,9 @@
         "beadId": "BEAD-077",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-006",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "is-empty-note.ts — canonical isEmptyNote extracted; classify-current-session.ts imports from it",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-066"
@@ -1332,7 +1364,9 @@
         "beadId": "BEAD-078",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-007",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2b",
+        "resolvedBy": "pipeline.ts — isCrossNoteRequest helper removed; PC-001 check uses decision.kind after classifyCurrentSession runs (classifier is sole authority)",
         "linkedBeads": [
           "BEAD-069"
         ],
@@ -1345,7 +1379,9 @@
         "beadId": "BEAD-079",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/verdict.md#FIND-EPNS-S2-P3-008",
-        "status": "open",
+        "status": "resolved",
+        "resolvedInPhase": "2a",
+        "resolvedBy": "prop-028 sub-case (c) — r1.toEqual(r2) with fixed clock (workflow output equality); state-mutation idempotency deferred to upstream reducer per spec",
         "linkedBeads": [
           "BEAD-041",
           "BEAD-065"
@@ -1354,11 +1390,25 @@
         "createdInPhase": "3",
         "routedToPhase": "2a",
         "externalId": "FIND-EPNS-S2-P3-008"
+      },
+      {
+        "beadId": "BEAD-080",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts",
+        "status": "green",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-066",
+          "BEAD-077"
+        ],
+        "createdAt": "2026-05-07T03:30:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-EPNS-IS-EMPTY-NOTE"
       }
     ]
   },
   "gates": {
-    "3": {
+    "3_sprint2_iter2": {
       "verdict": "FAIL",
       "timestamp": "2026-05-07T02:45:00.000Z",
       "reviewedBy": "adversary",
@@ -1369,6 +1419,14 @@
       "majorCount": 5,
       "minorCount": 3,
       "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/"
+    },
+    "3": {
+      "verdict": "pending",
+      "timestamp": "2026-05-07T03:31:00.000Z",
+      "reviewedBy": null,
+      "iteration": 3,
+      "sprint": 2,
+      "note": "All 8 P3 findings addressed. Ready for adversarial re-review."
     },
     "6": {
       "verdict": "PASS",
@@ -1405,5 +1463,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T14:11:31.604Z",
-  "updatedAt": "2026-05-07T02:50:00.000Z"
+  "updatedAt": "2026-05-07T03:31:00.000Z"
 }

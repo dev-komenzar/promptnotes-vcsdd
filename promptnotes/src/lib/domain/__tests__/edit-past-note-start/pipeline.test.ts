@@ -202,8 +202,9 @@ function makeHappyPorts(
 ): EditPastNoteStartPorts {
   return {
     clockNow: overrides?.clockNow ?? (() => makeTimestamp(Date.now())),
+    // FIND-EPNS-S2-P3-005: blurSave is async (matches BlurSave port contract)
     blurSave: overrides?.blurSave ??
-      ((noteId) => ({ ok: true as const, value: makeNoteFileSaved(noteId) })),
+      ((noteId) => Promise.resolve({ ok: true as const, value: makeNoteFileSaved(noteId) })),
     parseMarkdownToBlocks: overrides?.parseMarkdownToBlocks ??
       ((_markdown: string) => ({
         ok: true as const,
@@ -237,14 +238,14 @@ function makeCrossNoteInput(
 // ── REQ-EPNS-001: idle state → cross-note → NewSession ───────────────────
 
 describe("pipeline — idle + cross-note (REQ-EPNS-001)", () => {
-  test("idle state → NewSession with correct noteId and focusedBlockId", () => {
+  test("idle state → NewSession with correct noteId and focusedBlockId", async () => {
     const targetId = makeNoteId("2026-04-30-150000-001");
     const targetBlockId = makeBlockId("block-tgt-001");
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy);
 
     const input = makeCrossNoteInput(makeIdleState(), null, targetId, targetBlockId);
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -254,13 +255,13 @@ describe("pipeline — idle + cross-note (REQ-EPNS-001)", () => {
     }
   });
 
-  test("idle state → BlockFocused emitted (no EmptyNoteDiscarded)", () => {
+  test("idle state → BlockFocused emitted (no EmptyNoteDiscarded)", async () => {
     const targetId = makeNoteId("2026-04-30-150000-002");
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy);
 
     const input = makeCrossNoteInput(makeIdleState(), null, targetId);
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
 
     const focusEvents = spy.events.filter((e) => e.kind === "block-focused");
     const discardEvents = spy.events.filter((e) => e.kind === "empty-note-discarded");
@@ -269,7 +270,7 @@ describe("pipeline — idle + cross-note (REQ-EPNS-001)", () => {
   });
 
   // REQ-EPNS-012: idle path → Clock.now() called exactly once (startNewSession)
-  test("idle path: Clock.now() called exactly once", () => {
+  test("idle path: Clock.now() called exactly once", async () => {
     let clockCalls = 0;
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy, {
@@ -277,7 +278,7 @@ describe("pipeline — idle + cross-note (REQ-EPNS-001)", () => {
     });
 
     const input = makeCrossNoteInput(makeIdleState(), null);
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
     expect(clockCalls).toBe(1);
   });
 });
@@ -285,7 +286,7 @@ describe("pipeline — idle + cross-note (REQ-EPNS-001)", () => {
 // ── REQ-EPNS-002: editing + empty note + cross-note ──────────────────────
 
 describe("pipeline — editing + empty note + cross-note (REQ-EPNS-002)", () => {
-  test("empty note → EmptyNoteDiscarded before BlockFocused, result is NewSession", () => {
+  test("empty note → EmptyNoteDiscarded before BlockFocused, result is NewSession", async () => {
     const currentId = makeNoteId("2026-04-30-120000-010");
     const targetId = makeNoteId("2026-04-30-150000-010");
     const emptyNote = makeNote([makeBlock("")], currentId);
@@ -303,7 +304,7 @@ describe("pipeline — editing + empty note + cross-note (REQ-EPNS-002)", () => 
       currentNote: emptyNote,
       previousFrontmatter: null,
     };
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -317,7 +318,7 @@ describe("pipeline — editing + empty note + cross-note (REQ-EPNS-002)", () => 
   });
 
   // REQ-EPNS-012: empty path → Clock.now() called exactly twice
-  test("empty path: Clock.now() called exactly twice (flush + startNewSession)", () => {
+  test("empty path: Clock.now() called exactly twice (flush + startNewSession)", async () => {
     let clockCalls = 0;
     const currentId = makeNoteId("2026-04-30-120000-011");
     const targetId = makeNoteId("2026-04-30-150000-011");
@@ -338,7 +339,7 @@ describe("pipeline — editing + empty note + cross-note (REQ-EPNS-002)", () => 
       currentNote: emptyNote,
       previousFrontmatter: null,
     };
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
     expect(clockCalls).toBe(2);
   });
 });
@@ -346,7 +347,7 @@ describe("pipeline — editing + empty note + cross-note (REQ-EPNS-002)", () => 
 // ── REQ-EPNS-003: editing + dirty note + cross-note, save succeeds ────────
 
 describe("pipeline — editing + dirty note + cross-note, save succeeds (REQ-EPNS-003)", () => {
-  test("dirty note → NoteFileSaved before BlockFocused, result is NewSession", () => {
+  test("dirty note → NoteFileSaved before BlockFocused, result is NewSession", async () => {
     const currentId = makeNoteId("2026-04-30-120000-020");
     const targetId = makeNoteId("2026-04-30-150000-020");
     const dirtyNote = makeNote([makeBlock("dirty content")], currentId);
@@ -364,7 +365,7 @@ describe("pipeline — editing + dirty note + cross-note, save succeeds (REQ-EPN
       currentNote: dirtyNote,
       previousFrontmatter: null,
     };
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -378,7 +379,7 @@ describe("pipeline — editing + dirty note + cross-note, save succeeds (REQ-EPN
   });
 
   // REQ-EPNS-012: dirty-success → Clock.now() called exactly once (startNewSession)
-  test("dirty-success path: Clock.now() called exactly once", () => {
+  test("dirty-success path: Clock.now() called exactly once", async () => {
     let clockCalls = 0;
     const currentId = makeNoteId("2026-04-30-120000-021");
     const targetId = makeNoteId("2026-04-30-150000-021");
@@ -399,12 +400,12 @@ describe("pipeline — editing + dirty note + cross-note, save succeeds (REQ-EPN
       currentNote: dirtyNote,
       previousFrontmatter: null,
     };
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
     expect(clockCalls).toBe(1);
   });
 
   // previousFrontmatter is passed to blurSave
-  test("dirty path: blurSave receives previousFrontmatter from input", () => {
+  test("dirty path: blurSave receives previousFrontmatter from input", async () => {
     const currentId = makeNoteId("2026-04-30-120000-022");
     const targetId = makeNoteId("2026-04-30-150000-022");
     const dirtyNote = makeNote([makeBlock("dirty content")], currentId);
@@ -414,7 +415,7 @@ describe("pipeline — editing + dirty note + cross-note, save succeeds (REQ-EPN
     const ports = makeHappyPorts(spy, {
       blurSave: (noteId, _note, previousFrontmatter) => {
         capturedPrevFm = previousFrontmatter;
-        return { ok: true as const, value: makeNoteFileSaved(noteId) };
+        return Promise.resolve({ ok: true as const, value: makeNoteFileSaved(noteId) });
       },
     });
 
@@ -429,7 +430,7 @@ describe("pipeline — editing + dirty note + cross-note, save succeeds (REQ-EPN
       currentNote: dirtyNote,
       previousFrontmatter: prevFm,
     };
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
     expect(capturedPrevFm).toBe(prevFm);
   });
 });
@@ -437,7 +438,7 @@ describe("pipeline — editing + dirty note + cross-note, save succeeds (REQ-EPN
 // ── REQ-EPNS-004: dirty save fails → SwitchError ─────────────────────────
 
 describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
-  test("dirty save fails → SwitchError with pendingNextFocus { noteId, blockId }", () => {
+  test("dirty save fails → SwitchError with pendingNextFocus { noteId, blockId }", async () => {
     const currentId = makeNoteId("2026-04-30-120000-030");
     const targetId = makeNoteId("2026-04-30-150000-030");
     const targetBlockId = makeBlockId("block-target-030");
@@ -448,7 +449,7 @@ describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
     };
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy, {
-      blurSave: () => ({ ok: false as const, error: saveError }),
+      blurSave: () => Promise.resolve({ ok: false as const, error: saveError }),
     });
 
     const input: EditPastNoteStartInput = {
@@ -462,7 +463,7 @@ describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
       currentNote: dirtyNote,
       previousFrontmatter: null,
     };
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -473,13 +474,13 @@ describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
     }
   });
 
-  test("dirty save fails → NoteSaveFailed emitted + BlockFocused NOT emitted", () => {
+  test("dirty save fails → NoteSaveFailed emitted + BlockFocused NOT emitted", async () => {
     const currentId = makeNoteId("2026-04-30-120000-031");
     const targetId = makeNoteId("2026-04-30-150000-031");
     const dirtyNote = makeNote([makeBlock("content")], currentId);
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy, {
-      blurSave: () => ({ ok: false as const, error: { kind: "fs" as const, reason: { kind: "permission" as const } } }),
+      blurSave: () => Promise.resolve({ ok: false as const, error: { kind: "fs" as const, reason: { kind: "permission" as const } } }),
     });
 
     const input: EditPastNoteStartInput = {
@@ -493,14 +494,14 @@ describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
       currentNote: dirtyNote,
       previousFrontmatter: null,
     };
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
 
     expect(spy.events.some((e) => e.kind === "note-save-failed")).toBe(true);
     expect(spy.events.some((e) => e.kind === "block-focused")).toBe(false);
   });
 
   // REQ-EPNS-012: dirty-fail → Clock.now() called once (for NoteSaveFailed)
-  test("dirty-fail path: Clock.now() called once (for NoteSaveFailed.occurredOn)", () => {
+  test("dirty-fail path: Clock.now() called once (for NoteSaveFailed.occurredOn)", async () => {
     let clockCalls = 0;
     const currentId = makeNoteId("2026-04-30-120000-032");
     const targetId = makeNoteId("2026-04-30-150000-032");
@@ -508,7 +509,7 @@ describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy, {
       clockNow: () => { clockCalls++; return makeTimestamp(Date.now()); },
-      blurSave: () => ({ ok: false as const, error: { kind: "fs" as const, reason: { kind: "lock" as const, path: "/x" } } }),
+      blurSave: () => Promise.resolve({ ok: false as const, error: { kind: "fs" as const, reason: { kind: "lock" as const, path: "/x" } } }),
     });
 
     const input: EditPastNoteStartInput = {
@@ -522,7 +523,7 @@ describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
       currentNote: dirtyNote,
       previousFrontmatter: null,
     };
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
     expect(clockCalls).toBe(1);
   });
 });
@@ -530,14 +531,14 @@ describe("pipeline — dirty save fails (REQ-EPNS-004)", () => {
 // ── REQ-EPNS-005: same-note path ─────────────────────────────────────────
 
 describe("pipeline — same-note path (REQ-EPNS-005)", () => {
-  test("EditingState + same-noteId → Ok(NewSession) with focusedBlockId = request.blockId", () => {
+  test("EditingState + same-noteId → Ok(NewSession) with focusedBlockId = request.blockId", async () => {
     const noteId = makeNoteId("2026-04-30-120000-040");
     const newBlockId = makeBlockId("block-intra-move");
     const currentNote = makeNote([makeBlock("content")], noteId);
     const spy = makeEventSpy();
     let blurSaveCalled = false;
     const ports = makeHappyPorts(spy, {
-      blurSave: () => { blurSaveCalled = true; return { ok: true as const, value: makeNoteFileSaved(noteId) }; },
+      blurSave: () => { blurSaveCalled = true; return Promise.resolve({ ok: true as const, value: makeNoteFileSaved(noteId) }); },
     });
 
     const input: EditPastNoteStartInput = {
@@ -551,7 +552,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
       currentNote,
       previousFrontmatter: null,
     };
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -568,7 +569,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
     expect(spy.events.some((e) => e.kind === "block-focused")).toBe(true);
   });
 
-  test("same-note on EditingState: isDirty preserved (not cleared)", () => {
+  test("same-note on EditingState: isDirty preserved (not cleared)", async () => {
     const noteId = makeNoteId("2026-04-30-120000-041");
     const currentNote = makeNote([makeBlock("content")], noteId);
     const spy = makeEventSpy();
@@ -585,7 +586,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
       currentNote,
       previousFrontmatter: null,
     };
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
     // Pipeline does not mutate state directly; this is tested via startNewSession behavior
     // The key assertion: BlockFocused IS emitted (success path)
     const blockFocusedEvents = spy.events.filter((e) => e.kind === "block-focused");
@@ -595,13 +596,13 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
     expect(bfe.blockId).toEqual(makeBlockId("block-002"));
   });
 
-  test("SaveFailedState + same-noteId → Ok(NewSession) + BlockFocused, no save", () => {
+  test("SaveFailedState + same-noteId → Ok(NewSession) + BlockFocused, no save", async () => {
     const noteId = makeNoteId("2026-04-30-120000-042");
     const currentNote = makeNote([makeBlock("content")], noteId);
     const spy = makeEventSpy();
     let blurSaveCalled = false;
     const ports = makeHappyPorts(spy, {
-      blurSave: () => { blurSaveCalled = true; return { ok: true as const, value: makeNoteFileSaved(noteId) }; },
+      blurSave: () => { blurSaveCalled = true; return Promise.resolve({ ok: true as const, value: makeNoteFileSaved(noteId) }); },
     });
 
     const input: EditPastNoteStartInput = {
@@ -615,7 +616,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
       currentNote,
       previousFrontmatter: null,
     };
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(true);
     expect(blurSaveCalled).toBe(false);
@@ -623,7 +624,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
   });
 
   // PROP-EPNS-028: same-note idempotent refocus
-  test("same-note: idempotent re-focus — both calls return Ok(NewSession), 2 BlockFocused events total", () => {
+  test("same-note: idempotent re-focus — both calls return Ok(NewSession), 2 BlockFocused events total", async () => {
     const noteId = makeNoteId("2026-04-30-120000-043");
     const blockId = makeBlockId("block-same-block");
     const currentNote = makeNote([makeBlock("content")], noteId);
@@ -642,8 +643,8 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
       previousFrontmatter: null,
     };
 
-    const r1 = runEditPastNoteStartPipeline(input, ports);
-    const r2 = runEditPastNoteStartPipeline(input, ports);
+    const r1 = await runEditPastNoteStartPipeline(input, ports);
+    const r2 = await runEditPastNoteStartPipeline(input, ports);
 
     expect(r1.ok).toBe(true);
     expect(r2.ok).toBe(true);
@@ -652,7 +653,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
   });
 
   // REQ-EPNS-012: same-note path → Clock.now() called exactly once per invocation
-  test("same-note path: Clock.now() called exactly once", () => {
+  test("same-note path: Clock.now() called exactly once", async () => {
     let clockCalls = 0;
     const noteId = makeNoteId("2026-04-30-120000-044");
     const currentNote = makeNote([makeBlock("content")], noteId);
@@ -672,7 +673,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
       currentNote,
       previousFrontmatter: null,
     };
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
     expect(clockCalls).toBe(1);
   });
 });
@@ -680,7 +681,7 @@ describe("pipeline — same-note path (REQ-EPNS-005)", () => {
 // ── REQ-EPNS-006: save-failed + cross-note ───────────────────────────────
 
 describe("pipeline — save-failed + cross-note (REQ-EPNS-006)", () => {
-  test("save-failed + new note + save succeeds → NewSession with new noteId", () => {
+  test("save-failed + new note + save succeeds → NewSession with new noteId", async () => {
     const currentId = makeNoteId("2026-04-30-120000-050");
     const oldPendingId = makeNoteId("2026-04-30-130000-050");
     const newTargetId = makeNoteId("2026-04-30-150000-050");
@@ -702,7 +703,7 @@ describe("pipeline — save-failed + cross-note (REQ-EPNS-006)", () => {
       currentNote,
       previousFrontmatter: null,
     };
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -710,7 +711,7 @@ describe("pipeline — save-failed + cross-note (REQ-EPNS-006)", () => {
     }
   });
 
-  test("save-failed + new note + save fails → SwitchError.pendingNextFocus = new { noteId, blockId }", () => {
+  test("save-failed + new note + save fails → SwitchError.pendingNextFocus = new { noteId, blockId }", async () => {
     const currentId = makeNoteId("2026-04-30-120000-051");
     const oldPendingId = makeNoteId("2026-04-30-130000-051");
     const newTargetId = makeNoteId("2026-04-30-150000-051");
@@ -719,7 +720,7 @@ describe("pipeline — save-failed + cross-note (REQ-EPNS-006)", () => {
     const saveError: SaveError = { kind: "fs", reason: { kind: "disk-full" } };
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy, {
-      blurSave: () => ({ ok: false as const, error: saveError }),
+      blurSave: () => Promise.resolve({ ok: false as const, error: saveError }),
     });
 
     const input: EditPastNoteStartInput = {
@@ -736,7 +737,7 @@ describe("pipeline — save-failed + cross-note (REQ-EPNS-006)", () => {
       currentNote,
       previousFrontmatter: null,
     };
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -750,7 +751,7 @@ describe("pipeline — save-failed + cross-note (REQ-EPNS-006)", () => {
 // ── REQ-EPNS-013: precondition violations → throw ────────────────────────
 
 describe("pipeline — precondition violations (REQ-EPNS-013)", () => {
-  test("PC-001: cross-note + snapshot=null → throws synchronously", () => {
+  test("PC-001: cross-note + snapshot=null → throws synchronously", async () => {
     const targetId = makeNoteId("2026-04-30-150000-060");
     const currentId = makeNoteId("2026-04-30-120000-060");
     const spy = makeEventSpy();
@@ -769,19 +770,19 @@ describe("pipeline — precondition violations (REQ-EPNS-013)", () => {
     };
 
     // PC-001 violation: cross-note (different noteId than state's currentNoteId) + snapshot=null
-    expect(() => runEditPastNoteStartPipeline(input, ports)).toThrow(
+    await expect(runEditPastNoteStartPipeline(input, ports)).rejects.toThrow(
       "cross-note request requires non-null snapshot"
     );
   });
 
-  test("PC-001 throw: no ports invoked (no emit, no blurSave, no clock)", () => {
+  test("PC-001 throw: no ports invoked (no emit, no blurSave, no clock)", async () => {
     const targetId = makeNoteId("2026-04-30-150000-061");
     const spy = makeEventSpy();
     let blurSaveCalled = false;
     let clockCalled = false;
     const ports: EditPastNoteStartPorts = {
       clockNow: () => { clockCalled = true; return makeTimestamp(1000); },
-      blurSave: () => { blurSaveCalled = true; return { ok: true as const, value: makeNoteFileSaved(targetId) }; },
+      blurSave: () => { blurSaveCalled = true; return Promise.resolve({ ok: true as const, value: makeNoteFileSaved(targetId) }); },
       parseMarkdownToBlocks: () => ({ ok: true as const, value: [] }),
       emit: spy.emit,
     };
@@ -799,7 +800,7 @@ describe("pipeline — precondition violations (REQ-EPNS-013)", () => {
     };
 
     try {
-      runEditPastNoteStartPipeline(input, ports);
+      await runEditPastNoteStartPipeline(input, ports);
     } catch (_e) {
       // expected
     }
@@ -809,7 +810,7 @@ describe("pipeline — precondition violations (REQ-EPNS-013)", () => {
     expect(spy.events).toHaveLength(0);
   });
 
-  test("PC-004: editing + currentNote=null → throws", () => {
+  test("PC-004: editing + currentNote=null → throws", async () => {
     const targetId = makeNoteId("2026-04-30-150000-062");
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy);
@@ -826,12 +827,12 @@ describe("pipeline — precondition violations (REQ-EPNS-013)", () => {
       previousFrontmatter: null,
     };
 
-    expect(() => runEditPastNoteStartPipeline(input, ports)).toThrow(
+    await expect(runEditPastNoteStartPipeline(input, ports)).rejects.toThrow(
       "currentNote must not be null"
     );
   });
 
-  test("PC-004: save-failed + currentNote=null → throws", () => {
+  test("PC-004: save-failed + currentNote=null → throws", async () => {
     const targetId = makeNoteId("2026-04-30-150000-063");
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy);
@@ -848,7 +849,7 @@ describe("pipeline — precondition violations (REQ-EPNS-013)", () => {
       previousFrontmatter: null,
     };
 
-    expect(() => runEditPastNoteStartPipeline(input, ports)).toThrow(
+    await expect(runEditPastNoteStartPipeline(input, ports)).rejects.toThrow(
       "currentNote must not be null"
     );
   });
@@ -857,11 +858,11 @@ describe("pipeline — precondition violations (REQ-EPNS-013)", () => {
 // ── REQ-EPNS-010 / PROP-EPNS-016: Event type membership ─────────────────
 
 describe("pipeline — event type membership (PROP-EPNS-016)", () => {
-  test("BlockFocused.kind === 'block-focused' on successful path", () => {
+  test("BlockFocused.kind === 'block-focused' on successful path", async () => {
     const spy = makeEventSpy();
     const ports = makeHappyPorts(spy);
     const input = makeCrossNoteInput(makeIdleState(), null);
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
 
     const blockFocused = spy.events.find((e) => e.kind === "block-focused");
     expect(blockFocused).toBeDefined();
@@ -877,7 +878,7 @@ describe("pipeline — event type membership (PROP-EPNS-016)", () => {
 // The workflow proceeds normally on the same-note happy path, ignoring the extra snapshot.
 
 describe("pipeline — R6-001: same-note + non-null snapshot is silently ignored", () => {
-  test("same-note path proceeds normally when snapshot is non-null (silent ignore)", () => {
+  test("same-note path proceeds normally when snapshot is non-null (silent ignore)", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-r6001");
     const blockId = makeBlockId("block-target");
     const currentNote = makeNote([makeBlock("some content")], currentNoteId);
@@ -905,7 +906,7 @@ describe("pipeline — R6-001: same-note + non-null snapshot is silently ignored
     };
 
     // Must NOT throw — snapshot is silently ignored per PC-001
-    const result = runEditPastNoteStartPipeline(input, ports);
+    const result = await runEditPastNoteStartPipeline(input, ports);
 
     // Proceeds as normal same-note path
     expect(result.ok).toBe(true);
@@ -918,7 +919,7 @@ describe("pipeline — R6-001: same-note + non-null snapshot is silently ignored
     }
   });
 
-  test("same-note + non-null snapshot: BlockFocused emitted once, no blurSave", () => {
+  test("same-note + non-null snapshot: BlockFocused emitted once, no blurSave", async () => {
     const currentNoteId = makeNoteId("2026-04-30-120000-r6001b");
     const blockId = makeBlockId("block-target-b");
     const currentNote = makeNote([makeBlock("content")], currentNoteId);
@@ -931,7 +932,7 @@ describe("pipeline — R6-001: same-note + non-null snapshot is silently ignored
       ...makeHappyPorts(spy),
       blurSave: (noteId) => {
         blurSaveCount++;
-        return { ok: true as const, value: makeNoteFileSaved(noteId) };
+        return Promise.resolve({ ok: true as const, value: makeNoteFileSaved(noteId) });
       },
     };
 
@@ -947,7 +948,7 @@ describe("pipeline — R6-001: same-note + non-null snapshot is silently ignored
       previousFrontmatter: null,
     };
 
-    runEditPastNoteStartPipeline(input, ports);
+    await runEditPastNoteStartPipeline(input, ports);
 
     // Same-note path: no blurSave, exactly one BlockFocused
     expect(blurSaveCount).toBe(0);
