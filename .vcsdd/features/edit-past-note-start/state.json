@@ -2,7 +2,7 @@
   "featureName": "edit-past-note-start",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -96,6 +96,20 @@
       "timestamp": "2026-05-07T01:15:00.000Z",
       "sprint": 2,
       "reason": "Revision 6 — FIND-EPNS-S2-R5-001 resolved via throw-on-precondition-violation"
+    },
+    {
+      "from": "1b",
+      "to": "2a",
+      "timestamp": "2026-05-07T01:40:00.000Z",
+      "sprint": 2,
+      "reason": "Phase 1c PASS (revision 6, 3 minor findings, 0 critical/major) — proceed to Phase 2a (TDD Red)"
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-07T01:55:00.000Z",
+      "sprint": 2,
+      "reason": "Sprint 2 Red phase complete — 12 test files written (9 rewrites + 3 new harnesses), 69 fail / 44 pass, failures confirm Sprint 1 impl vs Sprint 2 block-based API"
     }
   ],
   "iterations": {
@@ -105,14 +119,14 @@
     "1a": 5,
     "1b": 4,
     "1c": 1,
-    "2a": 1,
+    "2a": 3,
     "2b": 1,
     "2c": 1
   },
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-edit-past-note-start-1777558291604",
-    "lastBeadId": "BEAD-053",
+    "lastBeadId": "BEAD-065",
     "beads": [
       {
         "beadId": "BEAD-001",
@@ -846,6 +860,208 @@
         "createdAt": "2026-05-07T01:35:52.000Z",
         "createdInPhase": "1c",
         "externalId": "FIND-EPNS-S2-R6-003"
+      },
+      {
+        "beadId": "BEAD-054",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step1-classify-current-session.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-002",
+          "BEAD-003",
+          "BEAD-005",
+          "BEAD-009",
+          "BEAD-010",
+          "BEAD-016",
+          "BEAD-017"
+        ],
+        "createdAt": "2026-05-07T01:55:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-EPNS-S2-STEP1"
+      },
+      {
+        "beadId": "BEAD-055",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step2-flush-current-session.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-005",
+          "BEAD-006",
+          "BEAD-008",
+          "BEAD-018",
+          "BEAD-023",
+          "BEAD-036"
+        ],
+        "createdAt": "2026-05-07T01:55:01.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-EPNS-S2-STEP2"
+      },
+      {
+        "beadId": "BEAD-056",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step3-start-new-session.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-005",
+          "BEAD-006",
+          "BEAD-007",
+          "BEAD-008",
+          "BEAD-009",
+          "BEAD-024",
+          "BEAD-025"
+        ],
+        "createdAt": "2026-05-07T01:55:02.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-EPNS-S2-STEP3"
+      },
+      {
+        "beadId": "BEAD-057",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-002",
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-005",
+          "BEAD-006",
+          "BEAD-007",
+          "BEAD-008",
+          "BEAD-009",
+          "BEAD-010",
+          "BEAD-011",
+          "BEAD-012",
+          "BEAD-013"
+        ],
+        "createdAt": "2026-05-07T01:55:03.000Z",
+        "createdInPhase": "2a",
+        "externalId": "TEST-EPNS-S2-PIPELINE"
+      },
+      {
+        "beadId": "BEAD-058",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-001-classify-purity.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-007",
+          "BEAD-012",
+          "BEAD-014",
+          "BEAD-032"
+        ],
+        "createdAt": "2026-05-07T01:55:04.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-001-HARNESS-S2"
+      },
+      {
+        "beadId": "BEAD-059",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-002-classify-idle.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-007",
+          "BEAD-015"
+        ],
+        "createdAt": "2026-05-07T01:55:05.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-002-HARNESS-S2"
+      },
+      {
+        "beadId": "BEAD-060",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-003-classify-editing.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-003",
+          "BEAD-007",
+          "BEAD-009",
+          "BEAD-010",
+          "BEAD-016"
+        ],
+        "createdAt": "2026-05-07T01:55:06.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-003-HARNESS-S2"
+      },
+      {
+        "beadId": "BEAD-061",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-004-classify-save-failed.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-005",
+          "BEAD-007",
+          "BEAD-013",
+          "BEAD-017",
+          "BEAD-026"
+        ],
+        "createdAt": "2026-05-07T01:55:07.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-004-HARNESS-S2"
+      },
+      {
+        "beadId": "BEAD-062",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-005-switch-error-exhaustive.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-011",
+          "BEAD-018"
+        ],
+        "createdAt": "2026-05-07T01:55:08.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-005-HARNESS-S2"
+      },
+      {
+        "beadId": "BEAD-063",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-026-save-error-mapping.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-004",
+          "BEAD-039",
+          "BEAD-046"
+        ],
+        "createdAt": "2026-05-07T01:55:09.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-026-HARNESS-S2"
+      },
+      {
+        "beadId": "BEAD-064",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-027-precondition-throws.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-013",
+          "BEAD-040",
+          "BEAD-050",
+          "BEAD-051",
+          "BEAD-052",
+          "BEAD-053"
+        ],
+        "createdAt": "2026-05-07T01:55:10.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-027-HARNESS-S2"
+      },
+      {
+        "beadId": "BEAD-065",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-028-idempotent-refocus.harness.test.ts",
+        "status": "red",
+        "linkedBeads": [
+          "BEAD-005",
+          "BEAD-008",
+          "BEAD-041",
+          "BEAD-048"
+        ],
+        "createdAt": "2026-05-07T01:55:11.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-EPNS-028-HARNESS-S2"
       }
     ]
   },
@@ -876,5 +1092,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T14:11:31.604Z",
-  "updatedAt": "2026-05-07T01:35:52.000Z"
+  "updatedAt": "2026-05-07T01:55:00.000Z"
 }

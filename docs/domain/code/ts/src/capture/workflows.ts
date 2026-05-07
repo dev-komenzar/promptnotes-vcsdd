@@ -32,6 +32,7 @@ import type {
   SaveFailedState,
   SavingState,
 } from "./states.js";
+import type { Note } from "../shared/note.js";
 import type { CaptureDeps } from "./ports.js";
 
 // ──────────────────────────────────────────────────────────────────────
@@ -87,9 +88,14 @@ export type CaptureAutoSave = (
 // 入力は `BlockFocusRequest{noteId, blockId, snapshot?}`。
 // ──────────────────────────────────────────────────────────────────────
 
+// Sprint 2 delta — currentNote provided by pipeline orchestrator from EditPastNoteStartInput.
+// Per behavioral-spec.md Type Contract Delta 1 (FIND-EPNS-S2-002 resolution):
+// currentNote is passed explicitly so classifyCurrentSession remains referentially transparent.
+// null iff currentState.status === 'idle' (no active note).
 export type ClassifyCurrentSession = (
   current: EditingSessionState,
   request: BlockFocusRequest,
+  currentNote: Note | null,
 ) => CurrentSessionDecision;
 
 export type FlushCurrentSession = (
