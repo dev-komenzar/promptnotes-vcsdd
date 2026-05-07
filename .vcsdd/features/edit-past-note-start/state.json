@@ -2,7 +2,7 @@
   "featureName": "edit-past-note-start",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -169,6 +169,13 @@
       "timestamp": "2026-05-07T03:03:00.000Z",
       "sprint": 2,
       "reason": "Revision 7 lightweight gate PASS — proceed to bundled 2a tests"
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-07T03:10:00.000Z",
+      "sprint": 2,
+      "reason": "Bundled 2a test additions complete — 3 new sub-cases failing (PC-004 idle+non-null: 2, PC-002 clock-order: 1); R6-001 and PROP-028(c) already pass"
     }
   ],
   "iterations": {
@@ -179,7 +186,7 @@
     "1b": 5,
     "1c": 2,
     "2a": 4,
-    "2b": 2,
+    "2b": 3,
     "2c": 2
   },
   "proofObligations": [],

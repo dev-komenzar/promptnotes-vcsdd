@@ -325,3 +325,89 @@ describe("PROP-EPNS-027 (d): PC-004 — save-failed + currentNote=null → throw
     expect(spy.parseCalled()).toBe(false);
   });
 });
+
+// ── (e) PC-004: idle + currentNote !== null → throw (FIND-EPNS-S2-P3-001, R6-002) ──
+
+describe("PROP-EPNS-027 (e): PC-004 — idle + currentNote !== null → throw", () => {
+  test("throws when state is idle but currentNote is non-null (state/note inconsistency)", () => {
+    const targetId = makeNoteId("2026-04-30-150000-035");
+    const note = makeNote(targetId);
+    const spy = makeSpyPorts(targetId);
+
+    const input: EditPastNoteStartInput = {
+      request: {
+        kind: "BlockFocusRequest",
+        noteId: targetId,
+        blockId: makeBlockId("block-001"),
+        snapshot: makeSnapshot(targetId),
+      },
+      currentState: makeIdleState(),
+      currentNote: note,  // PC-004 violation: idle must have currentNote === null
+      previousFrontmatter: null,
+    };
+
+    expect(() => runEditPastNoteStartPipeline(input, spy.ports)).toThrow();
+  });
+
+  test("PC-004 (idle + non-null) throw: no port is invoked (no clockNow, blurSave, emit, parse)", () => {
+    const targetId = makeNoteId("2026-04-30-150000-036");
+    const note = makeNote(targetId);
+    const spy = makeSpyPorts(targetId);
+
+    const input: EditPastNoteStartInput = {
+      request: {
+        kind: "BlockFocusRequest",
+        noteId: targetId,
+        blockId: makeBlockId("block-001"),
+        snapshot: makeSnapshot(targetId),
+      },
+      currentState: makeIdleState(),
+      currentNote: note,  // PC-004 violation
+      previousFrontmatter: null,
+    };
+
+    try { runEditPastNoteStartPipeline(input, spy.ports); } catch (_) { /* expected */ }
+
+    expect(spy.blurSaveCalled()).toBe(false);
+    expect(spy.clockCalled()).toBe(false);
+    expect(spy.emitCalled()).toBe(false);
+    expect(spy.parseCalled()).toBe(false);
+  });
+});
+
+// ── (b) extended: clockNow NOT called on PC-002 throw (FIND-EPNS-S2-P3-004) ──
+
+describe("PROP-EPNS-027 (b) extended: PC-002 — clockNow must NOT be called before parse fails", () => {
+  test("clockNow is called zero times when parseMarkdownToBlocks fails (clock must come after parse)", () => {
+    const targetId = makeNoteId("2026-04-30-150000-037");
+    let clockCallCount = 0;
+    const events: Array<{ kind: string }> = [];
+    const ports: EditPastNoteStartPorts = {
+      clockNow: () => { clockCallCount++; return makeTimestamp(1000); },
+      blurSave: () => ({ ok: true as const, value: { kind: "note-file-saved", noteId: targetId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: makeTimestamp(1000) } }),
+      parseMarkdownToBlocks: () => ({
+        ok: false as const,
+        error: { kind: "malformed-structure", line: 1, detail: "clock-order test failure" },
+      }),
+      emit: (e) => { events.push(e as { kind: string }); },
+    };
+
+    const input: EditPastNoteStartInput = {
+      request: {
+        kind: "BlockFocusRequest",
+        noteId: targetId,
+        blockId: makeBlockId("block-001"),
+        snapshot: makeSnapshot(targetId),
+      },
+      currentState: makeIdleState(),
+      currentNote: null,
+      previousFrontmatter: null,
+    };
+
+    // PC-002: parse failure must throw before clockNow is invoked
+    expect(() => runEditPastNoteStartPipeline(input, ports)).toThrow();
+    // After impl reorder (FIND-004 fix): clockNow must be zero on parse failure
+    expect(clockCallCount).toBe(0);
+    expect(events).toHaveLength(0);
+  });
+});

@@ -870,3 +870,90 @@ describe("pipeline — event type membership (PROP-EPNS-016)", () => {
     expect(spy.events.some((e) => e.kind === "editor-focused-on-past-note")).toBe(false);
   });
 });
+
+// ── R6-001: PC-001 same-note + non-null snapshot — silent ignore (FIND-EPNS-S2-P3-003) ──
+//
+// Spec PC-001: same-note + request.snapshot !== null is silently ignored (not a hard error).
+// The workflow proceeds normally on the same-note happy path, ignoring the extra snapshot.
+
+describe("pipeline — R6-001: same-note + non-null snapshot is silently ignored", () => {
+  test("same-note path proceeds normally when snapshot is non-null (silent ignore)", () => {
+    const currentNoteId = makeNoteId("2026-04-30-120000-r6001");
+    const blockId = makeBlockId("block-target");
+    const currentNote = makeNote([makeBlock("some content")], currentNoteId);
+    const spy = makeEventSpy();
+
+    // EditingState with matching noteId — this is a same-note request
+    const currentState = makeEditingState({
+      currentNoteId,
+      isDirty: false,
+      focusedBlockId: makeBlockId("block-old"),
+    });
+
+    const ports = makeHappyPorts(spy);
+
+    const input: EditPastNoteStartInput = {
+      request: {
+        kind: "BlockFocusRequest",
+        noteId: currentNoteId,  // SAME as currentNoteId → same-note path
+        blockId,
+        snapshot: makeSnapshot(currentNoteId),  // non-null snapshot on same-note path → silently ignored
+      },
+      currentState,
+      currentNote,
+      previousFrontmatter: null,
+    };
+
+    // Must NOT throw — snapshot is silently ignored per PC-001
+    const result = runEditPastNoteStartPipeline(input, ports);
+
+    // Proceeds as normal same-note path
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.kind).toBe("NewSession");
+      expect(result.value.noteId).toBe(currentNoteId);
+      expect(result.value.focusedBlockId).toBe(blockId);
+      // Same-note: note is the existing currentNote, not hydrated from snapshot
+      expect(result.value.note).toBe(currentNote);
+    }
+  });
+
+  test("same-note + non-null snapshot: BlockFocused emitted once, no blurSave", () => {
+    const currentNoteId = makeNoteId("2026-04-30-120000-r6001b");
+    const blockId = makeBlockId("block-target-b");
+    const currentNote = makeNote([makeBlock("content")], currentNoteId);
+    const spy = makeEventSpy();
+    let blurSaveCount = 0;
+
+    const currentState = makeEditingState({ currentNoteId, isDirty: true });
+
+    const ports: EditPastNoteStartPorts = {
+      ...makeHappyPorts(spy),
+      blurSave: (noteId) => {
+        blurSaveCount++;
+        return { ok: true as const, value: makeNoteFileSaved(noteId) };
+      },
+    };
+
+    const input: EditPastNoteStartInput = {
+      request: {
+        kind: "BlockFocusRequest",
+        noteId: currentNoteId,  // same-note
+        blockId,
+        snapshot: makeSnapshot(currentNoteId),  // extra snapshot — silently ignored
+      },
+      currentState,
+      currentNote,
+      previousFrontmatter: null,
+    };
+
+    runEditPastNoteStartPipeline(input, ports);
+
+    // Same-note path: no blurSave, exactly one BlockFocused
+    expect(blurSaveCount).toBe(0);
+    const blockFocusedEvents = spy.events.filter((e) => e.kind === "block-focused");
+    expect(blockFocusedEvents).toHaveLength(1);
+    expect(blockFocusedEvents[0].noteId).toBe(currentNoteId);
+    expect(blockFocusedEvents[0].blockId).toBe(blockId);
+  });
+});

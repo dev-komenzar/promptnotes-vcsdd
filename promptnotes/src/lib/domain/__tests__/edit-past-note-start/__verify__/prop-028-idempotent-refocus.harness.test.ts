@@ -228,4 +228,45 @@ describe("PROP-EPNS-028: idempotent re-focus invariant", () => {
 
     expect(blurSaveCalled).toBe(false);
   });
+
+  // (c) FIND-EPNS-S2-P3-008: Structural equality of the two returned NewSession objects
+  // Both calls with identical input must produce structurally equal output (idempotent fixed point
+  // on workflow output). State-mutation idempotency is deferred to the upstream reducer.
+  test("(c) both invocations return structurally equal NewSession objects", () => {
+    const noteId = makeNoteId("2026-04-30-120000-028f");
+    const blockId = makeBlockId("block-same-block-f");
+    const currentNote = makeNote(noteId);
+    const state = makeEditingState({ noteId, blockId, isDirty: true });
+    // Use a fixed clock so startedAt is deterministic across both calls
+    const fixedTimestamp = makeTimestamp(42000);
+    const spy = { events: [] as Array<{ kind: string; [k: string]: unknown }> };
+    const ports: EditPastNoteStartPorts = {
+      clockNow: () => fixedTimestamp,
+      blurSave: (nId) => ({ ok: true as const, value: { kind: "note-file-saved" as const, noteId: nId, blocks: [], body: "" as unknown as Frontmatter, frontmatter: makeFrontmatter(), previousFrontmatter: null, occurredOn: fixedTimestamp } }),
+      parseMarkdownToBlocks: () => ({ ok: true as const, value: [] }),
+      emit: (e) => spy.events.push(e),
+    };
+
+    const input: EditPastNoteStartInput = {
+      request: {
+        kind: "BlockFocusRequest",
+        noteId,
+        blockId,
+        snapshot: null,
+      },
+      currentState: state,
+      currentNote,
+      previousFrontmatter: null,
+    };
+
+    const r1 = runEditPastNoteStartPipeline(input, ports);
+    const r2 = runEditPastNoteStartPipeline(input, ports);
+
+    // Both must succeed
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+
+    // (c) structural equality — idempotent fixed point on workflow output
+    expect(r1).toEqual(r2);
+  });
 });
