@@ -1,0 +1,20 @@
+{
+  "phase": "1c",
+  "feature": "edit-past-note-start",
+  "sprint": 2,
+  "revision": 4,
+  "verdict": "FAIL",
+  "perDimension": {
+    "spec_fidelity": "FAIL",
+    "edge_case_coverage": "PASS",
+    "verification_readiness": "FAIL",
+    "purity_boundary_clarity": "FAIL",
+    "internal_consistency": "FAIL"
+  },
+  "reviewedBy": "adversary",
+  "reviewedAt": "2026-05-07T03:30:00Z",
+  "findingsCount": 8,
+  "criticalCount": 2,
+  "majorCount": 3,
+  "minorCount": 3
+}
