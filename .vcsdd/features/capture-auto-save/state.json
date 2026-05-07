@@ -72,14 +72,26 @@
       "to": "1b",
       "timestamp": "2026-05-07T03:50:00.000Z",
       "reason": "Revision 3 — block-based migration: behavioral-spec and verification-architecture both updated"
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "timestamp": "2026-05-07T05:00:00.000Z",
+      "reason": "Phase 4 feedback routing — 8 findings from 1c iteration 3 (FIND-012..019): FIND-012/015/016/018 spec_fidelity/edge_case gaps rooted in 1a; FIND-013/018 verification_readiness with 1a-level timing/acceptance gap; FIND-014/017/019 1b-only (deferred to next 1b pass). Earliest affected phase: 1a."
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-07T08:22:30.000Z",
+      "reason": "Revision 4 — 8 findings addressed (FIND-012..019): isEmpty broader rule (aggregates.md L120/L142), factory-pattern convention for ValidatedSaveRequest, isEmptyOrWhitespaceContent precise predicate, pipeline scope clarification (Step 4 out of scope), empty-Note variants table, SaveNoteRequested timing consistency, PROP-027/PROP-028 added"
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
     "6": 1,
-    "1a": 2,
-    "1b": 2,
+    "1a": 3,
+    "1b": 3,
     "1c": 1,
     "2a": 1,
     "2b": 1,
@@ -146,6 +158,18 @@
       "tier": 1,
       "required": false,
       "status": "pending"
+    },
+    {
+      "id": "PROP-027",
+      "tier": 3,
+      "required": false,
+      "status": "pending"
+    },
+    {
+      "id": "PROP-028",
+      "tier": 0,
+      "required": true,
+      "status": "pending"
     }
   ],
   "traceability": {
@@ -157,7 +181,8 @@
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/behavioral-spec.md#REQ-001",
         "status": "active",
         "linkedBeads": [
-          "BEAD-035"
+          "BEAD-035",
+          "BEAD-048"
         ],
         "createdAt": "2026-05-07T04:08:07.636Z",
         "createdInPhase": "1a",
@@ -184,7 +209,10 @@
         "linkedBeads": [
           "BEAD-021",
           "BEAD-041",
-          "BEAD-043"
+          "BEAD-043",
+          "BEAD-045",
+          "BEAD-047",
+          "BEAD-049"
         ],
         "createdAt": "2026-05-07T04:08:07.642Z",
         "createdInPhase": "1a",
@@ -197,7 +225,10 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-021",
-          "BEAD-022"
+          "BEAD-022",
+          "BEAD-045",
+          "BEAD-047",
+          "BEAD-049"
         ],
         "createdAt": "2026-05-07T04:08:07.643Z",
         "createdInPhase": "1a",
@@ -253,7 +284,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-029",
-          "BEAD-042"
+          "BEAD-042",
+          "BEAD-051"
         ],
         "createdAt": "2026-05-07T04:08:07.646Z",
         "createdInPhase": "1a",
@@ -295,7 +327,10 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-030",
-          "BEAD-031"
+          "BEAD-031",
+          "BEAD-048",
+          "BEAD-050",
+          "BEAD-053"
         ],
         "createdAt": "2026-05-07T04:08:07.649Z",
         "createdInPhase": "1a",
@@ -308,7 +343,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-030",
-          "BEAD-031"
+          "BEAD-031",
+          "BEAD-048"
         ],
         "createdAt": "2026-05-07T04:08:07.650Z",
         "createdInPhase": "1a",
@@ -362,7 +398,9 @@
           "BEAD-019",
           "BEAD-032",
           "BEAD-033",
-          "BEAD-034"
+          "BEAD-034",
+          "BEAD-048",
+          "BEAD-051"
         ],
         "createdAt": "2026-05-07T04:08:07.653Z",
         "createdInPhase": "1a",
@@ -374,7 +412,9 @@
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/behavioral-spec.md#REQ-017",
         "status": "active",
         "linkedBeads": [
-          "BEAD-035"
+          "BEAD-035",
+          "BEAD-052",
+          "BEAD-054"
         ],
         "createdAt": "2026-05-07T04:08:07.654Z",
         "createdInPhase": "1a",
@@ -387,7 +427,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-042",
-          "BEAD-044"
+          "BEAD-044",
+          "BEAD-046"
         ],
         "createdAt": "2026-05-07T04:08:07.655Z",
         "createdInPhase": "1a",
@@ -692,7 +733,8 @@
           "BEAD-002",
           "BEAD-008",
           "BEAD-009",
-          "BEAD-018"
+          "BEAD-018",
+          "BEAD-046"
         ],
         "createdAt": "2026-05-07T04:08:07.682Z",
         "createdInPhase": "1b",
@@ -704,7 +746,10 @@
         "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-025",
         "status": "active",
         "linkedBeads": [
-          "BEAD-003"
+          "BEAD-003",
+          "BEAD-045",
+          "BEAD-047",
+          "BEAD-049"
         ],
         "createdAt": "2026-05-07T04:08:07.683Z",
         "createdInPhase": "1b",
@@ -722,6 +767,137 @@
         "createdAt": "2026-05-07T04:08:07.685Z",
         "createdInPhase": "1b",
         "externalId": "PROP-026"
+      },
+      {
+        "beadId": "BEAD-045",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-012.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-043"
+        ],
+        "createdAt": "2026-05-07T04:14:50.498Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-012"
+      },
+      {
+        "beadId": "BEAD-046",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-013.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-018",
+          "BEAD-042"
+        ],
+        "createdAt": "2026-05-07T04:14:50.501Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-013"
+      },
+      {
+        "beadId": "BEAD-047",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-014.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-043",
+          "BEAD-003",
+          "BEAD-004"
+        ],
+        "createdAt": "2026-05-07T04:14:50.503Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-014"
+      },
+      {
+        "beadId": "BEAD-048",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-015.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-001",
+          "BEAD-011",
+          "BEAD-012",
+          "BEAD-016"
+        ],
+        "createdAt": "2026-05-07T04:14:50.505Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-015"
+      },
+      {
+        "beadId": "BEAD-049",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-016.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-004",
+          "BEAD-043"
+        ],
+        "createdAt": "2026-05-07T04:14:50.507Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-016"
+      },
+      {
+        "beadId": "BEAD-050",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-017.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-011"
+        ],
+        "createdAt": "2026-05-07T04:14:50.509Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-017"
+      },
+      {
+        "beadId": "BEAD-051",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-018.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-008",
+          "BEAD-016"
+        ],
+        "createdAt": "2026-05-07T04:14:50.511Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-018"
+      },
+      {
+        "beadId": "BEAD-052",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output/findings/FIND-019.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-017"
+        ],
+        "createdAt": "2026-05-07T04:14:50.512Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-019"
+      },
+      {
+        "beadId": "BEAD-053",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-027",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-011"
+        ],
+        "createdAt": "2026-05-07T08:22:11.140Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-027"
+      },
+      {
+        "beadId": "BEAD-054",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md#PROP-028",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-017"
+        ],
+        "createdAt": "2026-05-07T08:22:21.106Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-028"
       }
     ]
   },
@@ -742,14 +918,28 @@
       "reviewedBy": "adversary"
     },
     "1c": {
-      "verdict": "PASS",
-      "timestamp": "2026-04-30T12:52:42.614Z",
+      "verdict": "FAIL",
+      "timestamp": "2026-05-07T04:30:00.000Z",
       "reviewedBy": "adversary",
-      "adversaryVerdict": "PASS",
-      "adversaryReviewedAt": "2026-04-30T12:52:42.614Z"
+      "adversaryVerdict": "FAIL",
+      "adversaryReviewedAt": "2026-05-07T04:30:00.000Z",
+      "details": {
+        "iteration": 3,
+        "findingsPath": ".vcsdd/features/capture-auto-save/reviews/spec/iteration-3/output",
+        "findingIds": [
+          "FIND-012",
+          "FIND-013",
+          "FIND-014",
+          "FIND-015",
+          "FIND-016",
+          "FIND-017",
+          "FIND-018",
+          "FIND-019"
+        ]
+      }
     }
   },
   "sprintCount": 1,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T04:08:07.685Z"
+  "updatedAt": "2026-05-07T08:22:32.318Z"
 }

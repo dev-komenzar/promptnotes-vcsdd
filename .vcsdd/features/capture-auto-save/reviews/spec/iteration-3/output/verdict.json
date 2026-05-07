@@ -1,0 +1,75 @@
+{
+  "verdict": "FAIL",
+  "timestamp": "2026-05-07T00:00:00Z",
+  "feature": "capture-auto-save",
+  "iteration": 3,
+  "phase": "1c",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "FAIL",
+      "findings": ["FIND-012", "FIND-015"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "docs/domain/aggregates.md:120,142",
+          "description": "Aggregates.md defines Note.isEmpty as '全ブロックが空（または divider のみ）の Note' — broader than the spec's narrow blocks.length===1 + paragraph definition (REQ-003, PROP-025)."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/capture-auto-save/specs/behavioral-spec.md:7,250-261",
+          "description": "Scope says pipeline ends when NoteFileSaved is returned, yet REQ-011/REQ-012 cover Step 4 updateProjections (Curate context) — scope contradiction."
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "FAIL",
+      "findings": ["FIND-013", "FIND-014", "FIND-018"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md:143-144",
+          "description": "PROP-024 lacks a defined construction strategy that prevents independent assignment of blocks/body. PROP-025 'empty/whitespace-only' predicate is not precisely defined."
+        }
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "FAIL",
+      "findings": ["FIND-016"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/capture-auto-save/specs/behavioral-spec.md:88-114",
+          "description": "REQ-003 narrowly defines empty as single paragraph; multi-empty-paragraph and divider-only edge cases are not enumerated. aggregates.md treats them as Empty Note."
+        }
+      ]
+    },
+    "purity_boundary_clarity": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "docs/domain/code/ts/src/capture/ports.ts:23-28",
+          "description": "Confirmed CaptureDeps does NOT include serializeBlocksToMarkdown or FrontmatterSerializerToYaml — both are correctly classified as Shared Kernel / module-internal pure functions in the spec (REQ-006, PROP-016)."
+        },
+        {
+          "type": "file",
+          "location": "docs/domain/code/ts/src/shared/blocks.ts:42-44",
+          "description": "SerializeBlocksToMarkdown is defined as a Shared Kernel pure function interface — alignment with verification-architecture.md L76-85 confirmed."
+        }
+      ]
+    },
+    "traceability_completeness": {
+      "verdict": "FAIL",
+      "findings": ["FIND-017", "FIND-019"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/capture-auto-save/specs/verification-architecture.md:171-188",
+          "description": "Coverage matrix maps every REQ to ≥1 PROP, but REQ-011 (Feed.refreshSort) has no PROP for sort refresh; REQ-017 (CaptureAutoSave function signature) is only covered by integration test PROP-017, with no Tier-0 type assertion."
+        }
+      ]
+    }
+  },
+  "summary": "FAIL. Six findings spanning four dimensions. Critical: REQ-003/PROP-025 narrow isEmpty definition contradicts aggregates.md L120/L142 (empty = '全ブロックが空 or divider のみ'). REQ-018/PROP-024 cross-language coherence (TS→Rust→TS NoteFileSaved construction) is not specified or made enforceable. Scope contradiction: pipeline ends at NoteFileSaved per L7 but REQ-011/REQ-012 cover Step 4. PROP-025 'empty/whitespace-only' is undefined (length===0? trim===''?). REQ-011 Feed sort refresh has no PROP. REQ-017 signature claim lacks Tier-0 verification. REQ-008 mislabels SaveNoteRequested emission as 'Step 3 (pre-write)' while EARS says it occurs BEFORE Step 3."
+}

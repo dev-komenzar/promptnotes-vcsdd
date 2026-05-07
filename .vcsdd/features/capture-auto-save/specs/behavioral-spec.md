@@ -2,9 +2,9 @@
 
 **Feature**: `capture-auto-save`
 **Phase**: 1a
-**Revision**: 3 (block-based type contract migration: ValidatedSaveRequest/SaveNoteRequested/NoteFileSaved 派生 body 化、Note.isEmpty 再定義、serializeBlocksToMarkdown 純粋核追加)
+**Revision**: 4 (FIND-012..019: isEmpty broader rule, factory-pattern convention for ValidatedSaveRequest, pipeline scope clarification, empty-Note variants table, SaveNoteRequested timing consistency)
 **Source of truth**: `docs/domain/workflows.md` Workflow 2, `docs/domain/aggregates.md` §1 Note Aggregate（Block Sub-entity）, `docs/domain/domain-events.md`, `docs/domain/glossary.md` §0 Shared Kernel（Block 系語彙）, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/blocks.ts`, `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/events.ts`
-**Scope**: CaptureAutoSave pipeline only (idle save and blur save). Excludes: idle timer management (UI concern), debounce logic (UI concern), EditPastNoteStart flush (Workflow 3), HandleSaveFailure (Workflow 8). The pipeline starts when a save trigger fires and ends when `NoteFileSaved` is returned or an error/early-exit occurs.
+**Scope**: CaptureAutoSave pipeline only (idle save and blur save). Excludes: idle timer management (UI concern), debounce logic (UI concern), EditPastNoteStart flush (Workflow 3), HandleSaveFailure (Workflow 8). The pipeline starts when a save trigger fires and ends when `NoteFileSaved` is emitted (success) or `NoteSaveFailed` is emitted / an error occurs (failure). Step 4 (`updateProjections`) is the Curate-side reaction to `NoteFileSaved` — it is part of the wider Workflow 2 narrative but lies OUTSIDE the CaptureAutoSave pipeline boundary. See cross-context post-conditions section (REQ-011/REQ-012) for traceability.
 
 ---
 
@@ -17,6 +17,11 @@
 | 2026-04-30 | 2 | FIND-003 | REQ-006: `FrontmatterSerializer.toYaml` は外部ポートではなくモジュール内部の純粋関数として位置づけ。`serializeNote` が依存するのはこの内部関数のみであり、`CaptureDeps` のポートは呼ばない |
 | 2026-04-30 | 2 | FIND-004 | REQ-008: `SaveNoteRequested` の発行タイミングを「Step 3 の write 前」から「Step 1 完了直後、状態遷移 `editing → saving` と同時」に修正（canonical `EmitSaveAndTransition` に準拠） |
 | 2026-05-07 | 3 | block-migration | 型契約のブロックベース化に伴う再仕様化。`ValidatedSaveRequest` / `SaveNoteRequested` / `NoteFileSaved` の payload に `blocks: ReadonlyArray<Block>` を追加し、`body: Body` は `serializeBlocksToMarkdown(blocks)` 派生フィールドとして両持ち化（domain-events.md L55–56 / L115–116 と整合）。`Note.isEmpty()` 定義を「blocks が `[empty paragraph]` のみ」に再定義。Step 2 `serializeNote` を「`serializeBlocksToMarkdown(blocks)` で本文を、内部 YAML 関数で frontmatter を直列化する合成関数」と再定義し、新たな pure core ターゲットとして `serializeBlocksToMarkdown` を追加。新規 REQ-018（body/blocks 整合不変条件）を追加 |
+| 2026-05-07 | 4 | FIND-012 | REQ-003: `Note.isEmpty()` 定義を `aggregates.md` L120/L142 の広義ルール「全ブロックが空（または divider のみ）」に更新。単一空 paragraph のみという狭義定義を破棄。PROP-025 および関連箇所も同期更新 |
+| 2026-05-07 | 4 | FIND-013 | REQ-018: ValidatedSaveRequest 構築を factory 関数 `buildValidatedSaveRequest` 経由に限定するコード規約として再定義。型レベル強制ではなくコードレビュー規約として明示。Rust エコー方式（blocks/body を SaveNoteRequested からそのまま転送）を明記 |
+| 2026-05-07 | 4 | FIND-015 | Scope 文を更新（Step 4 は Curate-side handler の責務と明記）。REQ-011/REQ-012 を cross-context post-conditions サブセクションへ移動。REQ-016 から Step 4 publish 言及を削除。REQ-001 の reconciliation note を修正 |
+| 2026-05-07 | 4 | FIND-016 | REQ-003 に Empty-Note variants テーブルを追加。各形状の idle / blur 動作を明示 |
+| 2026-05-07 | 4 | FIND-018 | REQ-008 / REQ-016 / Event Catalog の SaveNoteRequested 発行タイミング表現を「オーケストレーション境界」で統一 |
 
 ---
 
@@ -27,10 +32,9 @@ DirtyEditingSession (note.blocks)
   → ValidatedSaveRequest (blocks + derived body)
   → SerializedMarkdown
   → PersistedNote
-  → IndexedNote
 ```
 
-Each intermediate type carries stronger guarantees than the previous. The pipeline has a Capture-side front half (Steps 1–2, TypeScript) and a Vault-side back half (Step 3, Rust/Tauri). Step 4 (`updateProjections`) runs in the Curate context (TypeScript, in-memory).
+Each intermediate type carries stronger guarantees than the previous. The pipeline has a Capture-side front half (Steps 1–2, TypeScript) and a Vault-side back half (Step 3, Rust/Tauri). Step 4 (`updateProjections`) is the Curate context reaction to `NoteFileSaved` and is NOT part of this pipeline.
 
 **Block-based primary representation** (Revision 3): the editor maintains state as `Note.blocks: ReadonlyArray<Block>`. `body: Body` is a **derived field** computed via `serializeBlocksToMarkdown(blocks)`. The pipeline carries both representations through `ValidatedSaveRequest`, `SaveNoteRequested`, and `NoteFileSaved` — `blocks` for downstream Block-aware consumers (Curate, EditPastNoteStart re-hydration), `body` for the file-bytes boundary and search/legacy compatibility. The implementation MUST guarantee `body === serializeBlocksToMarkdown(blocks)` at every carrier site (REQ-018).
 
@@ -42,12 +46,12 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 ### REQ-001: Happy Path — Full pipeline produces NoteFileSaved
 
-**EARS**: WHEN a save trigger fires (idle or blur) AND the current `EditingSessionState` is `editing` with `isDirty=true` AND the body is non-empty THEN the system SHALL produce `Result<NoteFileSaved, SaveError>` where `NoteFileSaved` confirms that the note file has been written, and the Curate projections (Feed, TagInventory) have been updated as a side effect.
+**EARS**: WHEN a save trigger fires (idle or blur) AND the current `EditingSessionState` is `editing` with `isDirty=true` AND the body is non-empty THEN the system SHALL produce `Result<NoteFileSaved, SaveError>` where `NoteFileSaved` confirms that the note file has been written.
 
 **Return type reconciliation** (resolves FIND-001):
 - The canonical return type is `Promise<Result<NoteFileSaved, SaveError>>` per `workflows.ts` line 73 (`CaptureAutoSave` type).
 - `workflows.md` uses the informal name `SavedNoteAck` for the same concept — this spec uses `NoteFileSaved` exclusively.
-- `IndexedNote` (from `workflows.md` stage pipeline) is an internal concept: `updateProjections` (Step 4) runs as a side effect after `NoteFileSaved` is obtained, and its result is not surfaced in the pipeline return type.
+- `IndexedNote` (from `workflows.md` stage pipeline) is an internal concept: after `NoteFileSaved` is emitted, the Curate context independently updates Feed/TagInventory in response to the event (out of pipeline scope; see REQ-011/REQ-012 cross-context section).
 
 **Edge Cases**:
 - Trigger is `idle` but body is empty: see REQ-003 (EmptyNoteDiscarded route — success channel, not error).
@@ -59,7 +63,7 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 - `NoteFileSaved.blocks` carries the full `ReadonlyArray<Block>` of the saved note and `NoteFileSaved.body === serializeBlocksToMarkdown(NoteFileSaved.blocks)`.
 - `NoteFileSaved` public domain event is emitted exactly once (see REQ-009).
 - `EditingSessionState` transitions through `editing → saving → editing` with `isDirty=false` and `lastSaveResult='success'` on return.
-- `SaveNoteRequested` public domain event is emitted at state transition time (see REQ-008).
+- `SaveNoteRequested` public domain event is emitted at the orchestration boundary (see REQ-008).
 
 ---
 
@@ -89,9 +93,35 @@ Each intermediate type carries stronger guarantees than the previous. The pipeli
 
 **EARS**: WHEN a `DirtyEditingSession` has `trigger: "idle"` AND `Note.isEmpty(note)` returns `true` THEN the system SHALL NOT proceed to Step 2 but SHALL emit `EmptyNoteDiscarded { noteId, occurredOn }` and return `Err(SaveError { kind: 'validation', reason: { kind: 'empty-body-on-idle' } })`.
 
-**`Note.isEmpty` definition** (Revision 3 — block-based): `isEmpty(note)` returns `true` iff `note.blocks.length === 1` AND `note.blocks[0].type === "paragraph"` AND `note.blocks[0].content` is the empty/whitespace-only `BlockContent`. This is the block-aware reformulation of the legacy "body is empty" check; it preserves the `errors.ts` `SaveValidationError.kind === "empty-body-on-idle"` semantics ("派生 body が空") per `errors.ts` L40–43.
+**`Note.isEmpty` definition** (Revision 4 — broader rule per `aggregates.md` L120 and L142):
 
-**Source**: `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`; `errors.ts` `SaveValidationError`; `note.ts` `NoteOps.isEmpty`; `aggregates.md` §1 Note invariants.
+`isEmpty(note)` returns `true` iff **all blocks are either (a) an empty/whitespace-only paragraph or (b) a divider**. Formally:
+
+```
+note.isEmpty() === note.blocks.every(b =>
+  b.type === "divider" ||
+  (b.type === "paragraph" && isEmptyOrWhitespaceContent(b.content))
+)
+```
+
+where `isEmptyOrWhitespaceContent` is defined in the verification architecture. A divider is empty by Block type invariant (`aggregates.md` §1: "divider は常に空 content"). The function returns `false` for any block of type `heading-1`, `heading-2`, `heading-3`, `bullet`, `numbered`, `code`, or `quote` — regardless of content — because these types carry structural-distinctiveness that constitutes non-empty user intent (structural-distinctiveness rule, derived from `aggregates.md` L88 "空 paragraph は許容" — only paragraph and divider are afforded the "structurally empty" classification).
+
+**Source**: `aggregates.md` L120 ("全ブロックが空（または `divider` のみ）の Note はファイル化されない（Capture 側ルール）。判定は `note.isEmpty()` が担う") and L142 ("`note.isEmpty(): boolean` | 全ブロックが空（または divider のみ）か判定"); `workflows.md` Step 1 error column — `EmptyBodyOnIdleSave`; `errors.ts` `SaveValidationError`; `note.ts` `NoteOps.isEmpty`.
+
+**Empty-Note variants** (per FIND-016 — exhaustive enumeration):
+
+| Variant | blocks | `isEmpty()` | idle behavior | blur behavior |
+|---------|--------|-------------|---------------|---------------|
+| single-empty-para | `[paragraph("")]` | **true** | Discard (EmptyNoteDiscarded) | Save |
+| multi-empty-para | `[paragraph(""), paragraph("")]` | **true** | Discard | Save |
+| whitespace-para | `[paragraph(" \t")]` | **true** | Discard | Save |
+| divider-only | `[divider]` | **true** | Discard | Save |
+| divider-and-empty | `[divider, paragraph("")]` | **true** | Discard | Save |
+| empty-heading | `[heading-1("")]` | **false** (structural-distinctiveness rule) | Save | Save |
+| empty-bullet | `[bullet("")]` | **false** (structural-distinctiveness rule) | Save | Save |
+| nonempty | `[paragraph("hi")]` | **false** | Save | Save |
+
+**Decision on empty-heading / empty-bullet**: An empty `heading-1("") ` has empty content but its block type is not `paragraph` or `divider`. Per `aggregates.md` L88 and the structural-distinctiveness rule stated above, only `paragraph` and `divider` blocks contribute to the "structurally empty" classification. A note containing `[heading-1("")]` is therefore NOT empty and SHALL be saved even on idle trigger (no data-loss risk because the user explicitly inserted a heading-type block).
 
 **Two-layer channel design** (Sprint 4 reconciliation with canonical `CaptureAutoSave` type):
 
@@ -111,6 +141,7 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 - No file I/O occurs.
 - No `NoteFileSaved` or `NoteSaveFailed` is emitted.
 - `EditingSessionState` does NOT transition to `saving` (see REQ-015).
+- All five true-isEmpty variants in the empty-Note variants table (single-empty-para, multi-empty-para, whitespace-para, divider-only, divider-and-empty) are discarded on idle trigger.
 
 ---
 
@@ -121,9 +152,10 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 **Rationale** (source: `workflows.md` Step 1): Blur save preserves user intent — the user may return to the note later. Only idle save discards empty notes.
 
 **Acceptance Criteria**:
-- A `ValidatedSaveRequest` is produced with `blocks = [empty paragraph]` and `body === serializeBlocksToMarkdown(blocks)` (typically the empty string or a single-newline string per `serializeBlocksToMarkdown` semantics).
-- The pipeline continues through Steps 2, 3, 4.
+- A `ValidatedSaveRequest` is produced with `isEmpty(note) === true` blocks and `body === serializeBlocksToMarkdown(blocks)` (typically the empty string or whitespace-only string per `serializeBlocksToMarkdown` semantics).
+- The pipeline continues through Steps 2, 3.
 - `EmptyNoteDiscarded` is NOT emitted.
+- All five true-isEmpty variants in the empty-Note variants table (single-empty-para, multi-empty-para, whitespace-para, divider-only, divider-and-empty) proceed to save on blur trigger.
 
 ---
 
@@ -182,15 +214,14 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 
 ---
 
-### REQ-008: SaveNoteRequested emitted at state transition (editing → saving)
+### REQ-008: SaveNoteRequested emitted at orchestration boundary (editing → saving)
 
 **EARS**: WHEN `prepareSaveRequest` produces a `ValidatedSaveRequest` AND the state transitions from `editing` to `saving` THEN the system SHALL emit `SaveNoteRequested` public domain event with `source` mapped from the trigger: `trigger: "idle"` → `source: "capture-idle"`, `trigger: "blur"` → `source: "capture-blur"`.
 
-**Source**: `events.ts` `SaveNoteSource` type; `workflows.ts` `EmitSaveAndTransition` type (line 129–134).
+**Source**: `events.ts` `SaveNoteSource` type; `workflows.ts` `EmitSaveAndTransition` type (line 149–155).
 
-**Emission timing clarification** (resolves FIND-004):
-- The canonical `EmitSaveAndTransition` in `workflows.ts` couples `SaveNoteRequested` emission with the `editing → saving` state transition. This occurs AFTER Step 1 (`prepareSaveRequest`) produces a `ValidatedSaveRequest` and BEFORE the Vault write (Step 3).
-- `SaveNoteRequested` is NOT emitted inside `writeMarkdown`. It is emitted at the orchestration layer when the state machine transitions to `saving`.
+**Emission timing** (resolves FIND-004, FIND-018):
+`SaveNoteRequested` is emitted at the **orchestration boundary** BETWEEN Step 1 and Step 3 — concretely, when `EmitSaveAndTransition(deps)(request, state)` is invoked AFTER `prepareSaveRequest` succeeds AND BEFORE `dispatchSaveRequest` (Step 3 wrapper) is called. Step 2 (`serializeNote`) may run before or after this emission since it has no observable side effects. `SaveNoteRequested` is NOT emitted inside `writeMarkdown` itself — it is emitted at the orchestration layer when the state machine transitions to `saving`.
 
 **Acceptance Criteria**:
 - `SaveNoteRequested.kind === "save-note-requested"`.
@@ -200,7 +231,7 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 - `SaveNoteRequested.frontmatter` matches the `ValidatedSaveRequest.frontmatter`.
 - `SaveNoteRequested.previousFrontmatter` carries the pre-save frontmatter (may be `null`).
 - `SaveNoteRequested.source` is `"capture-idle"` or `"capture-blur"` per the trigger.
-- `SaveNoteRequested` is emitted at the `editing → saving` transition, BEFORE `NoteFileSaved` or `NoteSaveFailed`.
+- `SaveNoteRequested` is emitted at the orchestration boundary (post-Step 1, pre-Step 3), BEFORE `NoteFileSaved` or `NoteSaveFailed`.
 - `SaveNoteRequested` is NOT emitted on the EmptyNoteDiscarded path (REQ-003).
 
 ---
@@ -243,17 +274,23 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 - `NoteSaveFailed.reason` follows the mapping table above.
 - `NoteSaveFailed` is emitted AFTER `SaveNoteRequested`.
 - `NoteFileSaved` is NOT emitted when `NoteSaveFailed` is emitted.
-- The pipeline returns `SaveError` and does NOT proceed to Step 4.
+- The pipeline returns `SaveError` and does NOT proceed further.
 
 ---
 
-### REQ-011: Step 4 — updateProjections refreshes Feed and TagInventory
+## Cross-context post-conditions (Curate-side handler of `NoteFileSaved`)
 
-**EARS**: WHEN a `PersistedNote` is available (Step 3 succeeded) THEN the system SHALL call `Feed.refreshSort` and `TagInventory.applyDelta` in the Curate context to produce `IndexedNote`.
+The following requirements describe behavior that occurs OUTSIDE the CaptureAutoSave pipeline boundary. They are traced here for completeness because they are part of `workflows.md` Workflow 2. Verification responsibility lies in the Curate-side handler (or equivalent integration test), NOT in this feature's verification architecture. The `apply-filter-or-search` feature spec does not currently cover this area; a dedicated Curate projection-refresh spec is the correct future home for these requirements.
+
+### REQ-011: Curate-side — updateProjections refreshes Feed and TagInventory
+
+**EARS**: WHEN a `NoteFileSaved` event is observed by the Curate context handler THEN the Curate handler SHALL call `Feed.refreshSort` and `TagInventory.applyDelta` to produce `IndexedNote`.
 
 **Source**: `workflows.md` Step 4.
 
-**Acceptance Criteria**:
+**Cross-context note**: This requirement is traced here for workflow completeness. CaptureAutoSave has no `Feed` or `TagInventory` ports (see `ports.ts` — `CaptureDeps` contains only `clockNow`, `allocateNoteId`, `clipboardWrite`, `publish`). The Curate handler fires independently in response to the `NoteFileSaved` public domain event.
+
+**Acceptance Criteria** (Curate handler's responsibility):
 - Feed sort order is refreshed to reflect the new `updatedAt`.
 - `TagInventory` is updated with any tag additions or removals (delta from `previousFrontmatter` to `frontmatter`).
 - `IndexedNote` is produced.
@@ -262,9 +299,9 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 
 ---
 
-### REQ-012: Step 4 — TagInventoryUpdated emitted on tag delta
+### REQ-012: Curate-side — TagInventoryUpdated emitted on tag delta
 
-**EARS**: WHEN `updateProjections` detects a tag difference between `previousFrontmatter.tags` and `frontmatter.tags` THEN the system SHALL emit `TagInventoryUpdated` event.
+**EARS**: WHEN the Curate handler detects a tag difference between `previousFrontmatter.tags` and `frontmatter.tags` (from the received `NoteFileSaved` event) THEN the Curate handler SHALL emit `TagInventoryUpdated` event.
 
 **Source**: `workflows.md` Step 4 発行 Event.
 
@@ -273,9 +310,11 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 - `previousFrontmatter` is `null` (first save of a new note with tags): all tags are additions → `TagInventoryUpdated` is emitted.
 - `previousFrontmatter` is `null` and new note has no tags: no delta → `TagInventoryUpdated` is NOT emitted.
 
-**Acceptance Criteria**:
+**Cross-context note**: `TagInventoryUpdated` is emitted by the Curate handler post-NoteFileSaved (out of CaptureAutoSave pipeline scope). The emission is not tested by this feature's verification architecture PROPs.
+
+**Acceptance Criteria** (Curate handler's responsibility):
 - `TagInventoryUpdated` is emitted if and only if `previousFrontmatter?.tags` differs from `frontmatter.tags`.
-- `TagInventoryUpdated` is an internal Curate event (not in `PublicDomainEvent` union — to be confirmed in Phase 1b).
+- `TagInventoryUpdated` is an internal Curate event (not in `PublicDomainEvent` union — to be confirmed in the Curate projection-refresh spec).
 
 ---
 
@@ -329,7 +368,6 @@ The `EmptyNoteDiscarded` event is emitted regardless — it conveys domain seman
 **EARS**: WHEN the CaptureAutoSave pipeline executes THEN I/O SHALL occur only in:
 - Step 1: `Clock.now()` (one call).
 - Step 3: `FileSystem.writeFileAtomic()` (one call), event emission.
-- Step 4: in-memory projection update (no file I/O).
 
 Step 2 (`serializeNote`) SHALL be a pure function with zero I/O. The same applies to `serializeBlocksToMarkdown` (Shared Kernel pure function used to derive `body`).
 
@@ -338,7 +376,7 @@ Step 2 (`serializeNote`) SHALL be a pure function with zero I/O. The same applie
 - `serializeBlocksToMarkdown` calls no ports and has no side effects (Shared Kernel pure function, `blocks.ts`).
 - `Clock.now()` is called exactly once in the pipeline (in Step 1, `prepareSaveRequest`).
 - `FileSystem.writeFileAtomic()` is called exactly once (in Step 3, `writeMarkdown`).
-- Event emission (`publish`) occurs in Step 3 (SaveNoteRequested, NoteFileSaved/NoteSaveFailed) and optionally in Step 4 (TagInventoryUpdated).
+- Event emission (`publish`) occurs at the orchestration boundary between Step 1 and Step 3 (SaveNoteRequested, at `editing → saving` transition) and inside Step 3 (NoteFileSaved/NoteSaveFailed). TagInventoryUpdated is emitted by the Curate handler post-NoteFileSaved (out of pipeline scope).
 
 ---
 
@@ -368,10 +406,20 @@ The `CaptureAutoSave` top-level type returns `Result<NoteFileSaved, SaveError>`.
 
 **Rationale**: `blocks` is the primary state for editor and downstream Block-aware consumers (Curate Hydration via `parseMarkdownToBlocks`, EditPastNoteStart re-focus). `body` exists for the file-bytes boundary (Vault writes the string), search index input (Curate `SearchScope`), and legacy compatibility. Carrying both representations risks drift; this invariant pins the relationship to a single pure function.
 
+**Factory-pattern convention** (resolves FIND-013): The TypeScript structural record type cannot enforce absence of direct object-literal construction. Therefore:
+
+> All producers of `ValidatedSaveRequest` MUST go through a single factory function `buildValidatedSaveRequest(noteId, blocks, frontmatter, previousFrontmatter, trigger, requestedAt): ValidatedSaveRequest` defined in the capture module. The factory derives `body` internally via `serializeBlocksToMarkdown(blocks)`. Direct object-literal construction is forbidden by code review / lint convention but cannot be enforced at the type level.
+
+**Cross-language clarification** (resolves FIND-013):
+
+> The Rust-side Vault implementation receives the inbound `SaveNoteRequested.blocks` and `SaveNoteRequested.body` and echoes both fields unchanged into the outbound `NoteFileSaved` event. The Rust side does NOT re-derive body from blocks. PROP-024 verifies coherence at TS-side construction sites (factory + event echo); the Rust echo is treated as a black-box pass-through verified by integration test PROP-017/PROP-018.
+
+See `events.ts` L52–66 (`NoteFileSaved`) / L115–125 (`SaveNoteRequested`) for payload field layout.
+
 **Acceptance Criteria**:
-- At every construction site of `ValidatedSaveRequest`, the producer SHALL compute `body = serializeBlocksToMarkdown(blocks)` and assign both fields atomically. There is no public constructor that accepts `blocks` and `body` independently.
+- At every construction site of `ValidatedSaveRequest`, the producer SHALL call `buildValidatedSaveRequest(...)` which computes `body = serializeBlocksToMarkdown(blocks)` and assigns both fields atomically. Direct object-literal construction is a lint/code-review violation.
 - `SaveNoteRequested` MUST be built by `BuildSaveNoteRequested(request: ValidatedSaveRequest) → SaveNoteRequested` (`workflows.ts` L145–147), which propagates `blocks` and `body` directly from `request`. No site MAY synthesize `body` from any source other than `serializeBlocksToMarkdown(blocks)`.
-- `NoteFileSaved.blocks` and `NoteFileSaved.body` carry the same `blocks` and the same `serializeBlocksToMarkdown(blocks)` value as the originating `SaveNoteRequested`. The Vault-side write does not transform `body`.
+- `NoteFileSaved.blocks` and `NoteFileSaved.body` carry the same `blocks` and the same `body` as the originating `SaveNoteRequested`. The Vault-side implementation echoes both fields from the received `SaveNoteRequested` without re-serializing.
 - For test purposes, the equation `event.body === serializeBlocksToMarkdown(event.blocks)` SHALL hold for every emitted `SaveNoteRequested` and `NoteFileSaved` (verified by PROP-024 in Phase 1b).
 
 **Failure mode** (informational): If implementation accidentally produces `body !== serializeBlocksToMarkdown(blocks)` (e.g., by mutating `blocks` after deriving `body`, or by reading a stale cached `body`), the spec considers this a Tier-1 invariant violation. There is no defined error variant in `SaveError` for this case — the invariant is an internal correctness property, not a user-visible failure.
@@ -384,10 +432,10 @@ The `CaptureAutoSave` top-level type returns `Result<NoteFileSaved, SaveError>`.
 |------|---------------|-----------|
 | Step 1: `prepareSaveRequest` | Mixed | `Clock.now()` is the only effectful call; validation logic and `serializeBlocksToMarkdown(blocks)` (called to derive `body`) are pure |
 | Step 1 (derive body): `serializeBlocksToMarkdown` | **Pure core** | Shared Kernel pure function (`blocks.ts`); deterministic, no ports |
-| Step 1 (empty check): `Note.isEmpty(note)` | **Pure core** | Pure structural check on `blocks` (`blocks.length === 1` && first block is empty paragraph) |
+| Step 1 (empty check): `Note.isEmpty(note)` | **Pure core** | Pure structural check on `blocks` (all blocks are empty paragraph or divider); property-test target |
 | Step 2: `serializeNote` | **Pure core** | Composition of `serializeBlocksToMarkdown(blocks)` + internal YAML serializer; no ports, no I/O |
 | Step 3: `writeMarkdown` | **Effectful shell** | `FileSystem.writeFileAtomic` + event emission |
-| Step 4: `updateProjections` | In-memory write | Curate Read Model update; no file I/O |
+| Curate handler: `updateProjections` | **Out of scope** | Curate Read Model update triggered by NoteFileSaved; not a CaptureAutoSave pipeline step |
 
 The pure core targets are `serializeBlocksToMarkdown` and `serializeNote`. Property-testable claims: deterministic serialization (purity), structural roundtrip with `parseMarkdownToBlocks` (`blocks.ts` invariant `parseMarkdownToBlocks(serializeBlocksToMarkdown(b)) ≈ b` modulo new BlockId), Obsidian-compatible format, body/blocks coherence invariant (REQ-018).
 
@@ -430,8 +478,8 @@ UI mapping:
 
 | Event | Step | Emitter Context | Type | Condition | Block-related payload |
 |-------|------|----------------|------|-----------|----------------------|
-| `EmptyNoteDiscarded` | 1 | Capture | Public | idle trigger + `Note.isEmpty(note)` (= blocks 列が `[empty paragraph]` のみ) | `noteId` のみ（blocks/body は載せない） |
-| `SaveNoteRequested` | 3 (pre-write, at `editing → saving`) | Capture | Public | always (on validated save) | `blocks: ReadonlyArray<Block>` + `body = serializeBlocksToMarkdown(blocks)`（REQ-018） |
+| `EmptyNoteDiscarded` | 1 | Capture | Public | idle trigger + `Note.isEmpty(note)` (= 全ブロックが empty paragraph or divider) | `noteId` のみ（blocks/body は載せない） |
+| `SaveNoteRequested` | Orchestration boundary (post-Step 1) | Capture | Public | always (on validated save) | `blocks: ReadonlyArray<Block>` + `body = serializeBlocksToMarkdown(blocks)`（REQ-018） |
 | `NoteFileSaved` | 3 (post-write) | Vault | Public | write success | `blocks: ReadonlyArray<Block>` + `body`（REQ-018 同上） |
 | `NoteSaveFailed` | 3 (post-write) | Vault | Public | write failure | `noteId` + `reason`（blocks/body は載せない） |
-| `TagInventoryUpdated` | 4 | Curate | Internal | tag delta detected | tag delta のみ（blocks 非依存） |
+| `TagInventoryUpdated` | Curate handler (post-NoteFileSaved) | Curate | Internal | tag delta detected | tag delta のみ（blocks 非依存）— out of CaptureAutoSave scope |
