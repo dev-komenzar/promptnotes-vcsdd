@@ -2,7 +2,7 @@
   "featureName": "copy-body",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -137,11 +137,18 @@
       "reason": "sprint 3 phase 3 PASS; advancing to formal hardening",
       "timestamp": "2026-05-07T15:55:00.000Z",
       "sprint": 3
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "reason": "sprint 3 phase 5 hardening complete: 12/12 PROPs proved",
+      "timestamp": "2026-05-07T16:15:00.000Z",
+      "sprint": 3
     }
   ],
   "iterations": {
     "3": 2,
-    "5": 1,
+    "5": 2,
     "6": 1,
     "1a": 3,
     "1b": 3,
@@ -635,6 +642,16 @@
     ]
   },
   "gates": {
+    "5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T16:15:00.000Z",
+      "reviewedBy": "verifier",
+      "sprint": 3,
+      "details": {
+        "reason": "12/12 PROPs proved; lean Tier 0+1 only",
+        "evidence": "bun test src/lib/domain/__tests__/copy-body/__verify__/ => 29 pass / 4 skip / 0 fail (461 expect calls, 12 files); bun test src/lib/domain/__tests__/copy-body/ => 66 pass / 4 skip / 0 fail (535 expect calls, 14 files); tsc via svelte-check => zero copy-body errors; purity audit => no drift; security scan => clean"
+      }
+    },
     "3": {
       "verdict": "PASS",
       "timestamp": "2026-05-07T15:50:00.000Z",
@@ -697,5 +714,5 @@
   },
   "sprintCount": 3,
   "createdAt": "2026-05-01T08:31:48.740Z",
-  "updatedAt": "2026-05-07T15:40:00.000Z"
+  "updatedAt": "2026-05-07T16:15:00.000Z"
 }
