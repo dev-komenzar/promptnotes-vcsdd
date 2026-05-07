@@ -82,14 +82,28 @@
       "timestamp": "2026-05-07T00:45:00.000Z",
       "sprint": 2,
       "reason": "Revision 5 — 8 findings addressed (FIND-EPNS-S2-001..008)"
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "timestamp": "2026-05-07T01:05:00.000Z",
+      "sprint": 2,
+      "reason": "Phase 4 feedback — FIND-EPNS-S2-R5-001 (critical) ContractViolationError return type contradiction"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-07T01:15:00.000Z",
+      "sprint": 2,
+      "reason": "Revision 6 — FIND-EPNS-S2-R5-001 resolved via throw-on-precondition-violation"
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
     "6": 1,
-    "1a": 4,
-    "1b": 3,
+    "1a": 5,
+    "1b": 4,
     "1c": 1,
     "2a": 1,
     "2b": 1,
@@ -113,15 +127,16 @@
     },
     "1c": {
       "verdict": "FAIL",
-      "timestamp": "2026-05-07T00:25:00.000Z",
+      "timestamp": "2026-05-07T01:00:00.000Z",
       "reviewedBy": "adversary",
-      "iteration": 2,
+      "iteration": 3,
       "sprint": 2,
-      "findingsCount": 8,
-      "criticalCount": 2,
-      "majorCount": 3,
-      "minorCount": 3,
-      "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-4/",
+      "revision": 5,
+      "findingsCount": 1,
+      "criticalCount": 1,
+      "majorCount": 0,
+      "minorCount": 0,
+      "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/spec/sprint-2-revision-5/",
       "sprint1Verdict": {
         "verdict": "PASS",
         "timestamp": "2026-04-30T14:38:00.995Z",
@@ -133,5 +148,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T14:11:31.604Z",
-  "updatedAt": "2026-05-07T00:45:00.000Z"
+  "updatedAt": "2026-05-07T01:15:00.000Z"
 }

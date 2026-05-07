@@ -2,9 +2,20 @@
 
 **Feature**: `edit-past-note-start`
 **Phase**: 1b
-**Revision**: 5 (Sprint 2 — addressing 1c FAIL findings FIND-EPNS-S2-001..008)
+**Revision**: 6 (Sprint 2 — addressing FIND-EPNS-S2-R5-001 via throw-on-precondition-violation)
 **Mode**: lean
 **Source of truth**: `docs/domain/workflows.md` Workflow 3 (block-based revision), `docs/domain/code/ts/src/capture/stages.ts`, `docs/domain/code/ts/src/capture/workflows.ts`, `docs/domain/code/ts/src/capture/internal-events.ts`, `docs/domain/code/ts/src/capture/states.ts`, `docs/domain/code/ts/src/shared/events.ts`, `docs/domain/code/ts/src/shared/errors.ts`, `docs/domain/code/ts/src/shared/note.ts`, `docs/domain/code/ts/src/shared/blocks.ts`
+
+---
+
+## Revision 6 Changes (from Revision 5 — addressing FIND-EPNS-S2-R5-001)
+
+FIND-EPNS-S2-R5-001 resolved by collapsing PC-001/PC-004 violations to `throw` (matches classifyCurrentSession convention from promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts). `ContractViolationError` removed; `Result<NewSession, SwitchError>` return type preserved.
+
+| Change | Detail |
+|--------|--------|
+| PROP-EPNS-027 rewritten | Now verifies that each precondition violation (PC-001 cross-note + null snapshot; PC-002 parse failure; PC-004 state/currentNote inconsistency) causes the workflow to `throw Error` (or the Promise to reject with `Error`), with no port invoked and no state mutation. `Err(ContractViolationError)` assertion removed. |
+| Coverage matrix row REQ-EPNS-013 | Unchanged IDs; clarified that PROP-EPNS-027 now tests throw behavior, not Err return. |
 
 ---
 
@@ -185,7 +196,7 @@ type ClassifyCurrentSession = (
 | PROP-EPNS-024 | `Clock.now()` call counts per path match the budget table (REQ-EPNS-012): same-note=1, no-current=1, empty=2, dirty-success=1, dirty-fail=1. Dirty-fail count of 1 is anchored to REQ-EPNS-004: `flushCurrentSession` calls `Clock.now()` once after BlurSave returns `Err` to stamp `NoteSaveFailed.occurredOn`; `startNewSession` is not reached on dirty-fail. | REQ-EPNS-008, REQ-EPNS-012, REQ-EPNS-004 | 1 | false | fast-check / spy wrapper: run each path with instrumented Clock.now; assert call count per path |
 | PROP-EPNS-025 | Architectural invariant: `startNewSession` for cross-note paths invokes `parseMarkdownToBlocks(snapshot.body)` to produce `Note.blocks`; same-note path does NOT call `parseMarkdownToBlocks` | REQ-EPNS-008 | 2 | false | Example-based test: spy on parseMarkdownToBlocks; cross-note path → spy called once; same-note path → spy not called. (Architectural verification; runtime observable via spy.) |
 | PROP-EPNS-026 | Enumerative `SaveError → NoteSaveFailureReason` mapping: for every `SaveError` discriminant, the emitted `NoteSaveFailed.reason` matches the table in REQ-EPNS-004. Covers: `{kind:'fs', reason:{kind:'permission'}} → "permission"`, `{kind:'fs', reason:{kind:'disk-full'}} → "disk-full"`, `{kind:'fs', reason:{kind:'lock'}} → "lock"`, `{kind:'fs', reason:{kind:'not-found'}} → "unknown"`, `{kind:'fs', reason:{kind:'unknown'}} → "unknown"`, `{kind:'validation', ...} → "unknown"`. | REQ-EPNS-004 | 1 | false | fast-check oneof over all SaveError variants (or table-driven test enumerating all 6 cases); for each variant: run flushCurrentSession with BlurSave returning that Err; assert NoteSaveFailed.reason equals mapped value |
-| PROP-EPNS-027 | Precondition violation: (a) cross-note + `request.snapshot === null` → workflow returns `Err(ContractViolationError)` with no I/O performed and no state change; (b) `currentState.status === 'editing'` + `currentNote === null` → workflow returns `Err(ContractViolationError)` with no I/O performed | REQ-EPNS-013 | 2 | false | Example-based test for each violation case: verify BlurSave not called; verify emit not called; verify EditingSessionState unchanged |
+| PROP-EPNS-027 | Precondition violation — throw behavior: for each of the 4 enumerated precondition violations, calling the workflow throws `Error` (or the Promise rejects with `Error`) AND no port is invoked (verified by spy on `clockNow`, `blurSave`, `hydrateSnapshot`, `emit`) AND no state-machine field is mutated. Sub-cases: (a) PC-001: cross-note + `request.snapshot === null` — workflow throws with message prefix `"EditPastNoteStart: cross-note request requires non-null snapshot"`; (b) PC-002: `parseMarkdownToBlocks` returns `Err` — workflow throws (programming error; specific message is implementation-defined); (c) PC-004 (editing + null currentNote): `currentState.status === 'editing'` and `currentNote === null` — workflow throws with message prefix `"EditPastNoteStart: currentNote must not be null when state.status is 'editing' or 'save-failed'"`; (d) PC-004 (save-failed + null currentNote): `currentState.status === 'save-failed'` and `currentNote === null` — same throw as (c). Each sub-case is a separate example-based test. | REQ-EPNS-013 | 2 | false | Example-based test for each violation sub-case (a)–(d): call workflow with violating input; assert `expect(() => workflow(...)).toThrow()` (or `await expect(promise).rejects.toThrow()`); spy on all ports (clockNow, blurSave, emit) and assert spy.callCount === 0; snapshot state before call and assert no field changed after throw |
 | PROP-EPNS-028 | Idempotent re-focus: WHEN `classifyCurrentSession+flushCurrentSession+startNewSession` is invoked twice with identical `(EditingState, request)` where `request.noteId === state.currentNoteId && request.blockId === state.focusedBlockId`, THEN: (a) both invocations return Ok(NewSession); (b) cumulative `BlockFocused` emit count is exactly 2; (c) `EditingSessionState` after the second call equals `EditingSessionState` after the first call (idempotent fixed point); (d) `isDirty` is preserved across both calls | REQ-EPNS-005, REQ-EPNS-008 | 2 | false | Example-based test: EditingState with isDirty=true, same request twice; spy on emit; count BlockFocused; assert state identity after second call; assert isDirty still true |
 
 ---
