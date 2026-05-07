@@ -102,8 +102,8 @@ function arbDividerBlock(): fc.Arbitrary<Block> {
 
 function arbRoundtripBlock(): fc.Arbitrary<Block> {
   return fc.oneof(
-    { weight: 4 }, arbInlineBlock(),
-    { weight: 1 }, arbDividerBlock(),
+    { arbitrary: arbInlineBlock(), weight: 4 },
+    { arbitrary: arbDividerBlock(), weight: 1 },
   );
 }
 

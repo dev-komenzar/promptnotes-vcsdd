@@ -2,7 +2,7 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -109,6 +109,20 @@
       "timestamp": "2026-05-07T05:56:00.000Z",
       "reason": "Phase 1c PASS — proceed to Phase 2a (TDD Red)",
       "sprint": 2
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-07T10:00:00.000Z",
+      "sprint": 2,
+      "reason": "Green phase — implemented serialize-blocks-to-markdown, parse-markdown-to-blocks, note-is-empty, build-validated-save-request; updated prepare-save-request and pipeline; all 154 tests pass"
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-07T10:30:00.000Z",
+      "sprint": 2,
+      "reason": "Refactor pass — extracted serializeBlock helper, exposed isEmptyOrWhitespaceContent, removed dead code, fixed regression test compatibility (blocks in Note, SaveFailedState fields, fc.oneof API, test.todo signature)"
     }
   ],
   "iterations": {
@@ -119,8 +133,8 @@
     "1b": 4,
     "1c": 3,
     "2a": 2,
-    "2b": 1,
-    "2c": 1,
+    "2b": 2,
+    "2c": 2,
     "complete": 1
   },
   "proofObligations": [
@@ -170,35 +184,35 @@
       "id": "PROP-024",
       "tier": 1,
       "required": true,
-      "status": "in-progress",
+      "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-024-body-blocks-coherence.harness.test.ts"
     },
     {
       "id": "PROP-025",
       "tier": 1,
       "required": false,
-      "status": "in-progress",
+      "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-025-isempty-block-rule.harness.test.ts"
     },
     {
       "id": "PROP-026",
       "tier": 1,
       "required": false,
-      "status": "in-progress",
+      "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts"
     },
     {
       "id": "PROP-027",
       "tier": 3,
       "required": false,
-      "status": "in-progress",
+      "status": "pending",
       "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-027-curate-projection.harness.test.ts"
     },
     {
       "id": "PROP-028",
       "tier": 0,
       "required": true,
-      "status": "in-progress",
+      "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-028-signature-assertion.harness.test.ts"
     }
   ],
@@ -962,7 +976,7 @@
         "beadId": "BEAD-056",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-024-body-blocks-coherence.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-042"
         ],
@@ -974,7 +988,7 @@
         "beadId": "BEAD-057",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-025-isempty-block-rule.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-043"
         ],
@@ -986,7 +1000,7 @@
         "beadId": "BEAD-058",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-044"
         ],
@@ -998,7 +1012,7 @@
         "beadId": "BEAD-059",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-027-curate-projection.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-053"
         ],
@@ -1010,7 +1024,7 @@
         "beadId": "BEAD-060",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-028-signature-assertion.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-054"
         ],
@@ -1022,7 +1036,7 @@
         "beadId": "BEAD-061",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/factory-build-validated-save-request.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-018",
           "BEAD-042"
@@ -1035,7 +1049,7 @@
         "beadId": "BEAD-062",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/step1-prepare-save-request.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-018",
@@ -1049,7 +1063,7 @@
         "beadId": "BEAD-063",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-001-serialize-note-purity.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-019"
         ],
@@ -1061,7 +1075,7 @@
         "beadId": "BEAD-064",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-002-serialize-note-format.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-020"
         ],
@@ -1073,7 +1087,7 @@
         "beadId": "BEAD-065",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-003-empty-idle-discard.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-021"
         ],
@@ -1085,13 +1099,96 @@
         "beadId": "BEAD-066",
         "type": "test-case",
         "artifactPath": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-004-empty-blur-save.harness.test.ts",
-        "status": "red",
+        "status": "green",
         "linkedBeads": [
           "BEAD-022"
         ],
         "createdAt": "2026-05-07T08:42:46.520Z",
         "createdInPhase": "2a",
         "externalId": "TEST-PROP-004-SPRINT2"
+      },
+      {
+        "beadId": "BEAD-067",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-006",
+          "BEAD-018",
+          "BEAD-044"
+        ],
+        "createdAt": "2026-05-07T10:00:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-SERIALIZE-BLOCKS"
+      },
+      {
+        "beadId": "BEAD-068",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-006",
+          "BEAD-044"
+        ],
+        "createdAt": "2026-05-07T10:00:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-PARSE-BLOCKS"
+      },
+      {
+        "beadId": "BEAD-069",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-043"
+        ],
+        "createdAt": "2026-05-07T10:00:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-NOTE-IS-EMPTY"
+      },
+      {
+        "beadId": "BEAD-070",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-018",
+          "BEAD-042",
+          "BEAD-067"
+        ],
+        "createdAt": "2026-05-07T10:00:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-FACTORY"
+      },
+      {
+        "beadId": "BEAD-071",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-042",
+          "BEAD-054",
+          "BEAD-060"
+        ],
+        "createdAt": "2026-05-07T10:00:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-PIPELINE-V2"
+      },
+      {
+        "beadId": "BEAD-072",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-018",
+          "BEAD-042",
+          "BEAD-070"
+        ],
+        "createdAt": "2026-05-07T10:00:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "IMPL-PREPARE-V2"
       }
     ]
   },
@@ -1125,5 +1222,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T09:00:00.000Z"
+  "updatedAt": "2026-05-07T10:30:00.000Z"
 }

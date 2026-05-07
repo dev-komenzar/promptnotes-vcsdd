@@ -40,7 +40,8 @@ describe("PROP-027: Curate projection handler (cross-context traceability placeh
    */
   test.todo(
     "REQ-011: Curate handler — Feed.refreshSort called on NoteFileSaved " +
-    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]"
+    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]",
+    () => { /* placeholder — implemented in Curate projection-refresh feature spec */ },
   );
 
   /**
@@ -49,7 +50,8 @@ describe("PROP-027: Curate projection handler (cross-context traceability placeh
    */
   test.todo(
     "REQ-011: Curate handler — TagInventory.applyDelta called on NoteFileSaved " +
-    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]"
+    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]",
+    () => { /* placeholder */ },
   );
 
   /**
@@ -58,7 +60,8 @@ describe("PROP-027: Curate projection handler (cross-context traceability placeh
    */
   test.todo(
     "REQ-012: Curate handler — TagInventoryUpdated emitted on tag delta " +
-    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]"
+    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]",
+    () => { /* placeholder */ },
   );
 
   /**
@@ -67,7 +70,8 @@ describe("PROP-027: Curate projection handler (cross-context traceability placeh
    */
   test.todo(
     "REQ-012: Curate handler — TagInventoryUpdated NOT emitted when no delta " +
-    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]"
+    "[CROSS-CONTEXT: traced to Curate projection-refresh feature spec]",
+    () => { /* placeholder */ },
   );
 
   /**

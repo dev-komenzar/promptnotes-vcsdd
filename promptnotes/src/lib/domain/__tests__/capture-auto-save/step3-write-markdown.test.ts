@@ -22,7 +22,8 @@ import type { NoteId, Body, Frontmatter, Timestamp, Tag, VaultPath } from "promp
 import type { FsError, SaveError } from "promptnotes-domain-types/shared/errors";
 import type { PublicDomainEvent } from "promptnotes-domain-types/shared/events";
 import type { EditingState, SavingState, SaveFailedState } from "promptnotes-domain-types/capture/states";
-import type { Note } from "promptnotes-domain-types/shared/note";
+import type { Block, Note } from "promptnotes-domain-types/shared/note";
+import type { BlockId, BlockType, BlockContent } from "promptnotes-domain-types/shared/value-objects";
 
 import { captureAutoSave, type CaptureAutoSavePorts } from "$lib/domain/capture-auto-save/pipeline";
 
@@ -56,12 +57,22 @@ function makeFrontmatter(overrides: Partial<{
   } as unknown as Frontmatter;
 }
 
-function makeNote(overrides: Partial<{ id: NoteId; body: Body; frontmatter: Frontmatter }> = {}): Note {
+function makeParagraphBlock(content: string, id = "block-001"): Block {
+  return {
+    id: id as unknown as BlockId,
+    type: "paragraph" as BlockType,
+    content: content as unknown as BlockContent,
+  } as unknown as Block;
+}
+
+function makeNote(overrides: Partial<{ id: NoteId; blocks: ReadonlyArray<Block>; body: Body; frontmatter: Frontmatter }> = {}): Note {
+  const defaultBlocks: ReadonlyArray<Block> = [makeParagraphBlock("Hello world")];
   return {
     id: overrides.id ?? makeNoteId("2026-04-30-120000-000"),
+    blocks: overrides.blocks ?? defaultBlocks,
     body: overrides.body ?? makeBody("Hello world"),
     frontmatter: overrides.frontmatter ?? makeFrontmatter(),
-  };
+  } as unknown as Note;
 }
 
 function makeEditingState(): EditingState {
@@ -104,8 +115,8 @@ function makePorts(
     } as EditingState),
     onSaveFailed: (state: SavingState, error: SaveError) => ({
       status: "save-failed", currentNoteId: state.currentNoteId,
-      pendingNextNoteId: null, lastSaveError: error,
-    } as SaveFailedState),
+      pendingNextFocus: null, lastSaveError: error,
+    } as unknown as SaveFailedState),
   } as CaptureAutoSavePorts;
 }
 

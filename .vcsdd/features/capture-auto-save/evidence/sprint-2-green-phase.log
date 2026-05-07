@@ -1,11 +1,59 @@
 target-feature-tests: PASS
 regression-baseline: PASS
-total-tests: 59
-sprint: 2 (post-adversary-feedback)
----
+
+# Sprint 2 Green Phase Evidence
+# Generated: 2026-05-07
+# Feature: capture-auto-save
+# Phase: 2b (TDD Green) + 2c (Refactor)
+
+## Summary
+
+target-feature-tests: PASS
+  - All 154 tests pass (0 fail)
+  - 4 todo entries (PROP-027 cross-context placeholders — expected)
+  - All Sprint 2 new tests green: prop-024, prop-025, prop-026, prop-028,
+    factory-build-validated-save-request, step1 sprint-2 additions,
+    prop-001/002/003/004 sprint-2 block-based updates
+
+regression-baseline: PASS
+  - All Sprint 1 baseline tests still pass
+  - pipeline.test.ts: 20 pass
+  - step2-serialize-note.test.ts: 7 pass
+  - step3-write-markdown.test.ts: all pass
+  - step4-update-projections.test.ts: 5 pass
+  - prop-005, prop-014, prop-027 harness tests pass
+
+## Full Test Run Output
+
 bun test v1.3.11 (af24e281)
 
- 59 pass
+ 154 pass
+ 4 todo
  0 fail
- 96 expect() calls
-Ran 59 tests across 5 files. [17.00ms]
+ 191 expect() calls
+Ran 158 tests across 17 files. [426.00ms]
+
+## New modules created (Phase 2b)
+
+  1. serialize-blocks-to-markdown.ts — serializeBlocksToMarkdown(blocks): string
+  2. parse-markdown-to-blocks.ts — parseMarkdownToBlocks(md): Result<Block[], BlockParseError>
+  3. note-is-empty.ts — noteIsEmpty(note): boolean (Revision 4 broader rule)
+  4. build-validated-save-request.ts — buildValidatedSaveRequest factory
+
+## Updated existing modules (Phase 2b)
+
+  5. prepare-save-request.ts — switched to buildValidatedSaveRequest factory,
+     sets request.blocks + derived body atomically
+  6. pipeline.ts — added blocks to SaveNoteRequested + NoteFileSaved,
+     exported canonicalCaptureAutoSave typed as CaptureAutoSave
+  7. serialize-note.ts — no changes needed (uses request.body correctly)
+
+## Phase 2c Refactor applied
+
+  - serialize-blocks-to-markdown.ts: extracted serializeBlock(block) per-type helper
+  - note-is-empty.ts: exposed isEmptyOrWhitespaceContent as named export
+  - prepare-save-request.ts: removed dead code (inline object literal + cast)
+  - Tests updated for regression compatibility: added blocks to Note construction,
+    fixed SaveFailedState.pendingNextNoteId → pendingNextFocus,
+    fixed fc.oneof weighted API in prop-026,
+    fixed test.todo single-arg TS issue in prop-027

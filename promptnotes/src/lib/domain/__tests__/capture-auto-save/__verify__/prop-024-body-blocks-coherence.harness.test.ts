@@ -246,9 +246,9 @@ function makePipelinePorts(
       ({
         status: "save-failed",
         currentNoteId: state.currentNoteId,
-        pendingNextNoteId: null,
+        pendingNextFocus: null,
         lastSaveError: error,
-      }) as SaveFailedState,
+      }) as unknown as SaveFailedState,
   } as CaptureAutoSavePorts;
 }
 

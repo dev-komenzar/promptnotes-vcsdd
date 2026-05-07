@@ -14,6 +14,7 @@ import type { EmptyNoteDiscarded, PublicDomainEvent } from "promptnotes-domain-t
 import type { Note } from "promptnotes-domain-types/shared/note";
 import type { DirtyEditingSession, ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
 import { isBefore, toEpochMillis } from "./timestamp-utils.js";
+import { buildValidatedSaveRequest } from "./build-validated-save-request.js";
 
 export type PrepareSaveRequestDeps = {
   readonly clockNow: () => Timestamp;
@@ -63,17 +64,16 @@ export function prepareSaveRequest(
       updatedAt: now,
     };
 
-    // updatedFrontmatter spreads the branded Frontmatter and adds updatedAt,
-    // preserving the brand. The cast is safe because we only updated one field.
-    const request = {
-      kind: "ValidatedSaveRequest" as const,
-      noteId: input.noteId,
-      body: input.note.body,
-      frontmatter: updatedFrontmatter as typeof input.note.frontmatter,
-      previousFrontmatter: input.previousFrontmatter,
-      trigger: input.trigger,
-      requestedAt: now,
-    } satisfies Record<string, unknown> as unknown as ValidatedSaveRequest;
+    // REQ-002 / REQ-018: use the factory to derive body = serializeBlocksToMarkdown(blocks)
+    // atomically. The cast to Frontmatter is safe — we only updated updatedAt.
+    const request = buildValidatedSaveRequest(
+      input.noteId,
+      input.note.blocks,
+      updatedFrontmatter as typeof input.note.frontmatter,
+      input.previousFrontmatter,
+      input.trigger,
+      now,
+    );
 
     return { ok: true, value: { kind: "validated", request } };
   };
