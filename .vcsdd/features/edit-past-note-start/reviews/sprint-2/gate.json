@@ -1,0 +1,126 @@
+{
+  "phase": "3",
+  "feature": "edit-past-note-start",
+  "sprintNumber": 2,
+  "iteration": 1,
+  "mode": "lean",
+  "reviewedBy": "adversary",
+  "timestamp": "2026-05-07T02:45:00.000Z",
+  "specRevision": 6,
+  "verificationArchitectureRevision": 6,
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "spec_implementation_fidelity",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-EPNS-S2-P3-001",
+        "FIND-EPNS-S2-P3-002",
+        "FIND-EPNS-S2-P3-005",
+        "FIND-EPNS-S2-P3-006"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "proof_obligation_coverage",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-EPNS-S2-P3-003",
+        "FIND-EPNS-S2-P3-008"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-001-classify-purity.harness.test.ts",
+          "description": "PROP-EPNS-001 purity verified at 1000 fast-check runs; PROP-EPNS-019 clock-not-called verified"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/__verify__/prop-026-save-error-mapping.harness.test.ts",
+          "description": "PROP-EPNS-026 enumerative SaveError mapping verified for 6+1 discriminants"
+        }
+      ]
+    },
+    {
+      "name": "purity_boundary_compliance",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+          "description": "Pure: no port imports; only `Note`, `EditingSessionState`, `BlockFocusRequest`, `CurrentSessionDecision` imports. No Date/Clock access. Verified by PROP-EPNS-001 (1000 runs) and PROP-EPNS-019 (Date.now spy)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+          "description": "Effectful only on empty/dirty paths. Same-note and no-current paths return immediately without port calls (verified by step2:144-156, step2:402-421)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
+          "description": "Calls clockNow() exactly once per invocation (verified by step3:361-393)."
+        }
+      ]
+    },
+    {
+      "name": "error_handling_robustness",
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-EPNS-S2-P3-004",
+        "FIND-EPNS-S2-P3-007"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+          "description": "Lines 108-120 implement exhaustive SaveError → NoteSaveFailureReason mapping; verified for all 6 SaveError variants by PROP-EPNS-026."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "Lines 750-855 cover PC-001 (cross-note + null snapshot) and PC-004 (editing/save-failed + null currentNote) throws and assert no ports invoked."
+        }
+      ]
+    },
+    {
+      "name": "regression_safety",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/edit-past-note-start/evidence/sprint-2-refactor-phase.log",
+          "description": "1841/1845 tests pass (0 failing, 4 pre-existing todos). 113/113 edit-past-note-start tests pass across 12 files."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/pipeline.test.ts",
+          "description": "Line 870 explicitly verifies absence of Sprint 1 `editor-focused-on-past-note` event."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/edit-past-note-start/step3-start-new-session.test.ts",
+          "description": "Lines 339-355 explicitly verify Sprint 1 event name does not leak."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 8,
+    "criticalCount": 0,
+    "majorCount": 5,
+    "minorCount": 3,
+    "duplicateFindings": [],
+    "openR6Followups": [
+      "FIND-EPNS-S2-R6-001",
+      "FIND-EPNS-S2-R6-002",
+      "FIND-EPNS-S2-R6-003"
+    ]
+  },
+  "routing": {
+    "earliestAffectedPhase": "1a",
+    "phasesAffected": ["1a", "2a", "2b", "2c"]
+  },
+  "verdictPath": ".vcsdd/features/edit-past-note-start/reviews/sprint-2/"
+}
