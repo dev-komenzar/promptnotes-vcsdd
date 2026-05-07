@@ -642,3 +642,9 @@
 {"timestamp":"2026-05-07T08:42:46.517Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-064","type":"test-case","phase":"2a","externalId":"TEST-PROP-002-SPRINT2"}
 {"timestamp":"2026-05-07T08:42:46.519Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-065","type":"test-case","phase":"2a","externalId":"TEST-PROP-003-SPRINT2"}
 {"timestamp":"2026-05-07T08:42:46.522Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-066","type":"test-case","phase":"2a","externalId":"TEST-PROP-004-SPRINT2"}
+{"timestamp":"2026-05-07T09:09:36.021Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-073","type":"adversary-finding","phase":"3","externalId":"FIND-021"}
+{"timestamp":"2026-05-07T09:09:36.025Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-074","type":"adversary-finding","phase":"3","externalId":"FIND-022"}
+{"timestamp":"2026-05-07T09:09:36.027Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-075","type":"adversary-finding","phase":"3","externalId":"FIND-023"}
+{"timestamp":"2026-05-07T09:09:36.030Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-076","type":"adversary-finding","phase":"3","externalId":"FIND-024"}
+{"timestamp":"2026-05-07T09:09:36.032Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-077","type":"adversary-finding","phase":"3","externalId":"FIND-025"}
+{"timestamp":"2026-05-07T07:00:00.000Z","event":"gate_passed","feature":"capture-auto-save","phase":"3","sprint":2,"verdict":"PASS","advisoryFindings":5}

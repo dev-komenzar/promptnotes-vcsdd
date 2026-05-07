@@ -2,7 +2,7 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -123,10 +123,17 @@
       "timestamp": "2026-05-07T10:30:00.000Z",
       "sprint": 2,
       "reason": "Refactor pass — extracted serializeBlock helper, exposed isEmptyOrWhitespaceContent, removed dead code, fixed regression test compatibility (blocks in Note, SaveFailedState fields, fc.oneof API, test.todo signature)"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-07T06:55:00.000Z",
+      "reason": "Sprint 2 phase 3 adversarial review",
+      "sprint": 2
     }
   ],
   "iterations": {
-    "3": 1,
+    "3": 2,
     "5": 1,
     "6": 1,
     "1a": 4,
@@ -257,7 +264,9 @@
           "BEAD-043",
           "BEAD-045",
           "BEAD-047",
-          "BEAD-049"
+          "BEAD-049",
+          "BEAD-075",
+          "BEAD-076"
         ],
         "createdAt": "2026-05-07T04:08:07.642Z",
         "createdInPhase": "1a",
@@ -303,7 +312,9 @@
           "BEAD-019",
           "BEAD-020",
           "BEAD-034",
-          "BEAD-044"
+          "BEAD-044",
+          "BEAD-074",
+          "BEAD-077"
         ],
         "createdAt": "2026-05-07T04:08:07.645Z",
         "createdInPhase": "1a",
@@ -460,7 +471,8 @@
         "linkedBeads": [
           "BEAD-035",
           "BEAD-052",
-          "BEAD-054"
+          "BEAD-054",
+          "BEAD-073"
         ],
         "createdAt": "2026-05-07T04:08:07.654Z",
         "createdInPhase": "1a",
@@ -476,7 +488,8 @@
           "BEAD-044",
           "BEAD-046",
           "BEAD-061",
-          "BEAD-062"
+          "BEAD-062",
+          "BEAD-074"
         ],
         "createdAt": "2026-05-07T04:08:07.655Z",
         "createdInPhase": "1a",
@@ -806,7 +819,9 @@
           "BEAD-045",
           "BEAD-047",
           "BEAD-049",
-          "BEAD-057"
+          "BEAD-057",
+          "BEAD-075",
+          "BEAD-076"
         ],
         "createdAt": "2026-05-07T04:08:07.683Z",
         "createdInPhase": "1b",
@@ -820,7 +835,8 @@
         "linkedBeads": [
           "BEAD-006",
           "BEAD-018",
-          "BEAD-058"
+          "BEAD-058",
+          "BEAD-074"
         ],
         "createdAt": "2026-05-07T04:08:07.685Z",
         "createdInPhase": "1b",
@@ -953,7 +969,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-017",
-          "BEAD-060"
+          "BEAD-060",
+          "BEAD-073"
         ],
         "createdAt": "2026-05-07T08:22:21.106Z",
         "createdInPhase": "1b",
@@ -1189,19 +1206,98 @@
         "createdAt": "2026-05-07T10:00:00.000Z",
         "createdInPhase": "2b",
         "externalId": "IMPL-PREPARE-V2"
+      },
+      {
+        "beadId": "BEAD-073",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/sprint-2/output/findings/FIND-021.md",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-054",
+          "BEAD-017"
+        ],
+        "createdAt": "2026-05-07T09:09:36.020Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-021"
+      },
+      {
+        "beadId": "BEAD-074",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/sprint-2/output/findings/FIND-022.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-044",
+          "BEAD-006",
+          "BEAD-018"
+        ],
+        "createdAt": "2026-05-07T09:09:36.023Z",
+        "createdInPhase": "3",
+        "resolvedAt": "2026-05-07T09:30:00.000Z",
+        "resolution": "Extended arbInlineBlock to cover all 7 inline BlockTypes + added arbCodeBlock for multi-line code; added 15 example-based tests for heading-1/2/3, bullet, numbered, code, quote; filtered paragraph content to avoid prefix collisions",
+        "externalId": "FIND-022"
+      },
+      {
+        "beadId": "BEAD-075",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/sprint-2/output/findings/FIND-023.md",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-003",
+          "BEAD-043"
+        ],
+        "createdAt": "2026-05-07T09:09:36.026Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-023"
+      },
+      {
+        "beadId": "BEAD-076",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/sprint-2/output/findings/FIND-024.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-043",
+          "BEAD-003"
+        ],
+        "createdAt": "2026-05-07T09:09:36.029Z",
+        "createdInPhase": "3",
+        "resolvedAt": "2026-05-07T09:30:00.000Z",
+        "resolution": "Added NBSP (U+00A0) and ideographic space (U+3000) to arbEmptyCompatibleBlock whitespace generator; replaced inline tautological predicate test with 5 tests importing actual isEmptyOrWhitespaceContent; added 4 isEmpty integration tests for NBSP/full-width variants",
+        "externalId": "FIND-024"
+      },
+      {
+        "beadId": "BEAD-077",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/capture-auto-save/reviews/sprint-2/output/findings/FIND-025.md",
+        "status": "resolved",
+        "linkedBeads": [
+          "BEAD-006"
+        ],
+        "createdAt": "2026-05-07T09:09:36.031Z",
+        "createdInPhase": "3",
+        "resolvedAt": "2026-05-07T09:30:00.000Z",
+        "resolution": "Removed unused `import { serializeBlocksToMarkdown }` from pipeline.ts line 35",
+        "externalId": "FIND-025"
       }
     ]
   },
   "gates": {
     "3": {
       "verdict": "PASS",
-      "timestamp": "2026-04-30T13:45:46.604Z",
-      "reviewedBy": "human",
-      "details": {
-        "reason": "Escalation approved: spec reconciled, remaining findings are deferred to Phase 5"
-      },
+      "timestamp": "2026-05-07T07:00:00.000Z",
+      "reviewedBy": "adversary",
       "adversaryVerdict": "PASS",
-      "adversaryReviewedAt": "2026-04-30T13:45:46.604Z"
+      "adversaryReviewedAt": "2026-05-07T07:00:00.000Z",
+      "details": {
+        "sprint": 2,
+        "advisoryFindings": [
+          "FIND-021",
+          "FIND-022",
+          "FIND-023",
+          "FIND-024",
+          "FIND-025"
+        ],
+        "findingsPath": ".vcsdd/features/capture-auto-save/reviews/sprint-2/output"
+      }
     },
     "6": {
       "verdict": "PASS",
@@ -1222,5 +1318,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T10:30:00.000Z"
+  "updatedAt": "2026-05-07T09:09:36.031Z"
 }

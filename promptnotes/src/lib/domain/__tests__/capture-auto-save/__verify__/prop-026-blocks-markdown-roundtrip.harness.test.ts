@@ -87,13 +87,57 @@ function arbInlineContent(maxLength = 80): fc.Arbitrary<BlockContent> {
     .map((s) => s as unknown as BlockContent);
 }
 
-function arbInlineBlock(): fc.Arbitrary<Block> {
-  // Limit to types whose roundtrip is well-defined in the parser
+// For paragraph, content must not start with a recognized Markdown prefix; the parser has no
+// way to distinguish a paragraph whose raw text begins with "# " from a heading-1 line.
+// All other typed blocks emit a type-specific prefix, so their content is unambiguous.
+const MARKDOWN_PREFIXES = /^(# |## |### |- |1\. |> |---$|```)/;
+
+function arbParagraphBlock(): fc.Arbitrary<Block> {
   return fc.record({
     id: arbBlockId(),
-    type: fc.constantFrom<BlockType>("paragraph"),
+    content: arbInlineContent(80).filter(
+      (c) => !MARKDOWN_PREFIXES.test(c as unknown as string),
+    ),
+  }).map(({ id, content }) => ({
+    id,
+    type: "paragraph" as BlockType,
+    content,
+  }) as unknown as Block);
+}
+
+function arbTypedInlineBlock(): fc.Arbitrary<Block> {
+  // heading-1/2/3, bullet, numbered, quote — each emits a distinctive prefix so any content
+  // (including content that looks like another prefix) roundtrips unambiguously.
+  return fc.record({
+    id: arbBlockId(),
+    type: fc.constantFrom<BlockType>(
+      "heading-1", "heading-2", "heading-3",
+      "bullet", "numbered", "quote",
+    ),
     content: arbInlineContent(80),
   }).map((b) => b as unknown as Block);
+}
+
+function arbInlineBlock(): fc.Arbitrary<Block> {
+  return fc.oneof(
+    { arbitrary: arbParagraphBlock(), weight: 2 },
+    { arbitrary: arbTypedInlineBlock(), weight: 5 },
+  );
+}
+
+function arbCodeBlock(): fc.Arbitrary<Block> {
+  // code blocks allow multi-line content (Block invariant 2); exclude triple-backtick in content.
+  return fc.record({
+    id: arbBlockId(),
+    content: fc.array(
+      fc.string({ maxLength: 40 }).filter((s) => !/[\x00-\x1F]/.test(s) && !s.includes("```")),
+      { minLength: 0, maxLength: 5 },
+    ).map((lines) => lines.join("\n") as unknown as BlockContent),
+  }).map(({ id, content }) => ({
+    id,
+    type: "code" as BlockType,
+    content,
+  }) as unknown as Block);
 }
 
 function arbDividerBlock(): fc.Arbitrary<Block> {
@@ -102,7 +146,8 @@ function arbDividerBlock(): fc.Arbitrary<Block> {
 
 function arbRoundtripBlock(): fc.Arbitrary<Block> {
   return fc.oneof(
-    { arbitrary: arbInlineBlock(), weight: 4 },
+    { arbitrary: arbInlineBlock(), weight: 5 },
+    { arbitrary: arbCodeBlock(), weight: 2 },
     { arbitrary: arbDividerBlock(), weight: 1 },
   );
 }
@@ -170,6 +215,159 @@ describe("PROP-026: serializeBlocksToMarkdown ↔ parseMarkdownToBlocks structur
     expect(parseResult.ok).toBe(true);
     if (!parseResult.ok) return;
 
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: heading-1 block
+  test("heading-1 block roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("heading-1", "My Title")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: heading-2 block
+  test("heading-2 block roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("heading-2", "Section")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: heading-3 block
+  test("heading-3 block roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("heading-3", "Subsection")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: heading-3 before heading-2 prefix-ordering check
+  test("heading prefix ordering: ### before ## before # (no mis-detection)", () => {
+    const blocks: ReadonlyArray<Block> = [
+      makeBlock("heading-3", "deep", "block-001"),
+      makeBlock("heading-2", "mid", "block-002"),
+      makeBlock("heading-1", "top", "block-003"),
+    ];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: bullet block
+  test("bullet block roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("bullet", "item one")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: bullet content starting with a digit (no mis-detection as numbered)
+  test("bullet with digit-starting content roundtrips correctly (not mis-detected as numbered)", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("bullet", "1 item starting with digit")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: numbered block
+  test("numbered block roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("numbered", "first item")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: numbered followed by bullet (joiner correctness)
+  test("numbered followed by bullet roundtrips correctly", () => {
+    const blocks: ReadonlyArray<Block> = [
+      makeBlock("numbered", "step one", "block-001"),
+      makeBlock("bullet", "side note", "block-002"),
+    ];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: code block (single-line)
+  test("code block (single-line content) roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("code", "const x = 1;")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: code block (multi-line content)
+  test("code block (multi-line content) roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("code", "line one\nline two\nline three")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: code block (empty content)
+  test("code block (empty content) roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("code", "")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: quote block
+  test("quote block roundtrips structurally", () => {
+    const blocks: ReadonlyArray<Block> = [makeBlock("quote", "to be or not to be")];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
+    expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
+  });
+
+  // Example-based: paragraph content that does NOT start with a recognized prefix roundtrips correctly
+  test("paragraph with plain content roundtrips correctly (no prefix collision)", () => {
+    const blocks: ReadonlyArray<Block> = [
+      makeBlock("quote", "the quote text", "block-001"),
+      makeBlock("paragraph", "a plain paragraph with no prefix", "block-002"),
+    ];
+    const serialized = serializeBlocksToMarkdown(blocks);
+    const parseResult = parseMarkdownToBlocks(serialized);
+
+    expect(parseResult.ok).toBe(true);
+    if (!parseResult.ok) return;
     expect(isStructurallyEquivalent(blocks, parseResult.value)).toBe(true);
   });
 

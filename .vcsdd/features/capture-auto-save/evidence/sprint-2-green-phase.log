@@ -57,3 +57,52 @@ Ran 158 tests across 17 files. [426.00ms]
     fixed SaveFailedState.pendingNextNoteId → pendingNextFocus,
     fixed fc.oneof weighted API in prop-026,
     fixed test.todo single-arg TS issue in prop-027
+
+## Post-FIND-022/024/025 follow-up
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+### Changes applied
+
+FIND-022 (BEAD-074) — PROP-026 roundtrip generator extended to all 8 BlockTypes:
+  - prop-026-blocks-markdown-roundtrip.harness.test.ts:
+    - Added arbParagraphBlock() with prefix-collision filter (paragraph content must not
+      start with recognized Markdown prefixes "# ", "## ", "### ", "- ", "1. ", "> ", "---", "```")
+    - Added arbTypedInlineBlock() covering heading-1/2/3, bullet, numbered, quote
+    - Added arbCodeBlock() for multi-line code content (excludes triple-backtick in content)
+    - Extended arbInlineBlock() to use oneof(paragraph, typed-inline)
+    - Added 15 example-based tests: heading-1/2/3, prefix-ordering, bullet,
+      bullet with digit-start, numbered, numbered+bullet joiner, code (single/multi/empty),
+      quote, paragraph+quote with no prefix collision
+  - Total: 20 tests (was previously fewer, but test count matches new file structure)
+
+FIND-024 (BEAD-076) — PROP-025 NBSP and full-width space coverage:
+  - prop-025-isempty-block-rule.harness.test.ts:
+    - Added isEmptyOrWhitespaceContent to import (no longer just noteIsEmpty)
+    - Extended arbEmptyCompatibleBlock whitespace generator: added NBSP (U+00A0),
+      ideographic space (U+3000), mixed Unicode whitespace
+    - Replaced tautological inline-predicate test with 5 tests using actual exported
+      isEmptyOrWhitespaceContent: ASCII whitespace, Unicode whitespace, negative cases
+    - Added 4 isEmpty integration tests: NBSP → true, full-width → true,
+      NBSP+"a" → false, "a"+full-width → false
+  - Total: 32 tests (was 28 before)
+
+FIND-025 (BEAD-077) — Unused import removed from pipeline.ts:
+  - Removed `import { serializeBlocksToMarkdown } from "./serialize-blocks-to-markdown.js"` (line 35)
+  - No functional change — import was stale dead code from Sprint 2 refactor
+
+### Full test run output
+
+bun test v1.3.11 (af24e281)
+
+ 173 pass
+ 4 todo
+ 0 fail
+ 226 expect() calls
+Ran 177 tests across 17 files. [404.00ms]
+
+All 173 tests pass (19 new tests added vs 154 baseline).
+4 todo entries unchanged (PROP-027 cross-context placeholders).
+BEAD-074, BEAD-076, BEAD-077 marked resolved.
+BEAD-073 (FIND-021), BEAD-075 (FIND-023) remain open (by-design, no action).

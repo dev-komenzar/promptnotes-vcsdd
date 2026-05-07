@@ -26,11 +26,11 @@ import type { Block } from "promptnotes-domain-types/shared/note";
 import type { BlockId, BlockType, BlockContent, NoteId, Frontmatter, Timestamp, Tag } from "promptnotes-domain-types/shared/value-objects";
 import type { Note } from "promptnotes-domain-types/shared/note";
 
-// ── Import under test ──────────────────────────────────────────────────────
+// ── Imports under test ─────────────────────────────────────────────────────
 // noteIsEmpty is the concrete implementation of NoteOps.isEmpty.
 // RED: This import will fail if noteIsEmpty does not exist or does not use the
 // broader block-based rule.
-import { noteIsEmpty } from "$lib/domain/capture-auto-save/note-is-empty";
+import { noteIsEmpty, isEmptyOrWhitespaceContent } from "$lib/domain/capture-auto-save/note-is-empty";
 
 // ── Helper factories ───────────────────────────────────────────────────────
 
@@ -197,13 +197,16 @@ describe("PROP-025: fast-check property for isEmpty invariant", () => {
         type: "paragraph" as BlockType,
         content: makeBlockContent(""),
       }) as unknown as Block),
-      // whitespace paragraph
+      // whitespace paragraph — includes Unicode whitespace variants (verification-architecture.md L106-107)
       fc.record({
         id: arbBlockId(),
         content: fc.constantFrom(
           makeBlockContent(" "),
           makeBlockContent("\t"),
           makeBlockContent("   "),
+          makeBlockContent(" "),       // NBSP (U+00A0)
+          makeBlockContent("　"),       // ideographic space (U+3000)
+          makeBlockContent(" 　"), // mixed Unicode whitespace
         ),
       }).map(({ id, content }) => ({
         id,
@@ -273,18 +276,46 @@ describe("PROP-025: fast-check property for isEmpty invariant", () => {
     );
   });
 
-  test("isEmptyOrWhitespaceContent: /^\\s*$/ matches correct patterns", () => {
-    // Verify the isEmptyOrWhitespaceContent predicate semantics
-    // (inline test matching verification-architecture.md definition)
-    const isEmptyOrWhitespace = (s: string) => /^\s*$/.test(s);
-    // Positive cases
-    expect(isEmptyOrWhitespace("")).toBe(true);
-    expect(isEmptyOrWhitespace(" ")).toBe(true);
-    expect(isEmptyOrWhitespace("\t")).toBe(true);
-    expect(isEmptyOrWhitespace("   ")).toBe(true);
-    // Negative cases
-    expect(isEmptyOrWhitespace("a")).toBe(false);
-    expect(isEmptyOrWhitespace(" a ")).toBe(false);
-    expect(isEmptyOrWhitespace("a ")).toBe(false);
+  test("isEmptyOrWhitespaceContent: ASCII whitespace positive cases", () => {
+    // Tests the actual exported implementation, not an inline re-implementation
+    expect(isEmptyOrWhitespaceContent("")).toBe(true);
+    expect(isEmptyOrWhitespaceContent(" ")).toBe(true);
+    expect(isEmptyOrWhitespaceContent("\t")).toBe(true);
+    expect(isEmptyOrWhitespaceContent("   ")).toBe(true);
+  });
+
+  test("isEmptyOrWhitespaceContent: Unicode whitespace positive cases (NBSP, full-width)", () => {
+    // verification-architecture.md L106-107 explicitly enumerates these
+    expect(isEmptyOrWhitespaceContent(" ")).toBe(true);    // NBSP (U+00A0)
+    expect(isEmptyOrWhitespaceContent("　")).toBe(true);   // ideographic space (U+3000)
+    expect(isEmptyOrWhitespaceContent(" 　")).toBe(true);  // mixed Unicode whitespace
+  });
+
+  test("isEmptyOrWhitespaceContent: negative cases — non-whitespace content", () => {
+    expect(isEmptyOrWhitespaceContent("a")).toBe(false);
+    expect(isEmptyOrWhitespaceContent(" a ")).toBe(false);
+    expect(isEmptyOrWhitespaceContent("a ")).toBe(false);
+    expect(isEmptyOrWhitespaceContent(" a")).toBe(false);   // NBSP before 'a'
+    expect(isEmptyOrWhitespaceContent("a　")).toBe(false);  // full-width space after 'a'
+  });
+
+  test("isEmpty: single paragraph with NBSP content → isEmpty === true", () => {
+    const note = makeNote([makeBlock("paragraph", " ")]);   // NBSP
+    expect(noteIsEmpty(note)).toBe(true);
+  });
+
+  test("isEmpty: single paragraph with full-width space → isEmpty === true", () => {
+    const note = makeNote([makeBlock("paragraph", "　")]);   // ideographic space
+    expect(noteIsEmpty(note)).toBe(true);
+  });
+
+  test("isEmpty: paragraph with NBSP before 'a' → isEmpty === false", () => {
+    const note = makeNote([makeBlock("paragraph", " a")]);  // NBSP + 'a'
+    expect(noteIsEmpty(note)).toBe(false);
+  });
+
+  test("isEmpty: paragraph with 'a' before full-width space → isEmpty === false", () => {
+    const note = makeNote([makeBlock("paragraph", "a　")]); // 'a' + full-width space
+    expect(noteIsEmpty(note)).toBe(false);
   });
 });

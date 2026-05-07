@@ -32,7 +32,6 @@ import type { CaptureAutoSave } from "promptnotes-domain-types/capture/workflows
 import { prepareSaveRequest, type PrepareSaveRequestDeps } from "./prepare-save-request.js";
 import { serializeNote } from "./serialize-note.js";
 import { updateProjections, type UpdateProjectionsDeps, type TagInventoryUpdated } from "./update-projections.js";
-import { serializeBlocksToMarkdown } from "./serialize-blocks-to-markdown.js";
 
 /**
  * Infrastructure ports that are NOT part of CaptureDeps.
