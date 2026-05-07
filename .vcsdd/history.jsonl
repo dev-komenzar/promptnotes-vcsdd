@@ -648,3 +648,6 @@
 {"timestamp":"2026-05-07T09:09:36.030Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-076","type":"adversary-finding","phase":"3","externalId":"FIND-024"}
 {"timestamp":"2026-05-07T09:09:36.032Z","event":"bead_created","featureName":"capture-auto-save","beadId":"BEAD-077","type":"adversary-finding","phase":"3","externalId":"FIND-025"}
 {"timestamp":"2026-05-07T07:00:00.000Z","event":"gate_passed","feature":"capture-auto-save","phase":"3","sprint":2,"verdict":"PASS","advisoryFindings":5}
+{"timestamp":"2026-05-07T07:30:00.000Z","event":"phase_transition","featureName":"capture-auto-save","from":"5","to":"6","sprint":2,"reason":"Phase 6 convergence check"}
+{"timestamp":"2026-05-07T07:30:00.000Z","event":"gate_passed","featureName":"capture-auto-save","phase":"6","sprint":2,"verdict":"PASS","reviewedBy":"orchestrator","dimensions":{"finding_diminishment":"PASS","finding_specificity":"PASS","criteria_coverage":"PASS","duplicate_detection":"PASS"},"reqCount":18,"propCount":11,"findCount":14,"beadCount":77,"testsPass":173,"testsTodo":4,"testsFail":0}
+{"timestamp":"2026-05-07T07:30:00.000Z","event":"phase_transition","featureName":"capture-auto-save","from":"6","to":"complete","sprint":2,"reason":"Sprint 2 convergence achieved — all 4 dimensions PASS"}

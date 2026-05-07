@@ -2,7 +2,7 @@
   "featureName": "capture-auto-save",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -137,19 +137,33 @@
       "timestamp": "2026-05-07T12:00:00.000Z",
       "sprint": 2,
       "reason": "Phase 5 hardening — 10/11 obligations proved, gate PASS"
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-07T07:30:00.000Z",
+      "sprint": 2,
+      "reason": "Phase 6 convergence check"
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-07T07:30:00.000Z",
+      "sprint": 2,
+      "reason": "Sprint 2 convergence achieved — all 4 dimensions PASS"
     }
   ],
   "iterations": {
     "3": 2,
     "5": 2,
-    "6": 1,
+    "6": 2,
     "1a": 4,
     "1b": 4,
     "1c": 3,
     "2a": 2,
     "2b": 2,
     "2c": 2,
-    "complete": 1
+    "complete": 2
   },
   "proofObligations": [
     {
@@ -1339,8 +1353,28 @@
     },
     "6": {
       "verdict": "PASS",
-      "timestamp": "2026-04-30T13:55:34.161Z",
-      "reviewedBy": "adversary"
+      "timestamp": "2026-05-07T07:30:00.000Z",
+      "reviewedBy": "orchestrator",
+      "details": {
+        "sprint": 2,
+        "dimensions": {
+          "finding_diminishment": "PASS",
+          "finding_specificity": "PASS",
+          "criteria_coverage": "PASS",
+          "duplicate_detection": "PASS"
+        },
+        "reqCount": 18,
+        "propCount": 11,
+        "propsProved": 10,
+        "propsPending": 1,
+        "findCount": 14,
+        "beadCount": 77,
+        "testsPass": 173,
+        "testsTodo": 4,
+        "testsFail": 0,
+        "openAdvisories": ["FIND-021", "FIND-023", "CONTENT-001"],
+        "convergenceReportPath": ".vcsdd/features/capture-auto-save/convergence-report.md"
+      }
     },
     "1c": {
       "verdict": "PASS",
@@ -1356,5 +1390,5 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-04-30T12:29:51.428Z",
-  "updatedAt": "2026-05-07T12:00:00.000Z"
+  "updatedAt": "2026-05-07T07:30:00.000Z"
 }
