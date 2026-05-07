@@ -2,7 +2,7 @@
   "featureName": "copy-body",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "6",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -144,19 +144,26 @@
       "reason": "sprint 3 phase 5 hardening complete: 12/12 PROPs proved",
       "timestamp": "2026-05-07T16:15:00.000Z",
       "sprint": 3
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "reason": "sprint 3 phase 6 PASS; 4D convergence achieved",
+      "timestamp": "2026-05-07T16:30:00.000Z",
+      "sprint": 3
     }
   ],
   "iterations": {
     "3": 2,
     "5": 2,
-    "6": 1,
+    "6": 2,
     "1a": 3,
     "1b": 3,
     "1c": 2,
     "2a": 2,
     "2b": 2,
     "2c": 2,
-    "complete": 1
+    "complete": 2
   },
   "proofObligations": [
     {
@@ -675,12 +682,29 @@
     },
     "6": {
       "verdict": "PASS",
-      "timestamp": "2026-05-01T08:51:39.773Z",
-      "reviewedBy": "adversary",
+      "timestamp": "2026-05-07T16:30:00.000Z",
+      "reviewedBy": "orchestrator",
+      "sprint": 3,
       "details": {
-        "reason": "4D convergence: findings 5→4→0 all resolved in-place; 10/10 PROPs proved.",
-        "adversaryVerdict": "PASS"
-      }
+        "reason": "sprint 3 phase 6 PASS; 4D convergence achieved: D1 diminishment (5→0 1c; 2→0 phase-3), D2 specificity (all findings cite file+line), D3 coverage (14 REQ / 12 PROP all proved, allCriteriaEvaluated=true), D4 no duplicates (1c vs phase-3 target different layers). Hardening artifacts present and post-Phase5. bun test: 66 pass / 4 skip / 0 fail.",
+        "adversaryVerdict": "PASS",
+        "convergenceSignals": {
+          "findingCount": 0,
+          "previousFindingCount": 5,
+          "allCriteriaEvaluated": true,
+          "evaluatedCriteria": ["PROP-001","PROP-002","PROP-003","PROP-004","PROP-005","PROP-006","PROP-007","PROP-008","PROP-009","PROP-010","PROP-011","PROP-012"],
+          "duplicatesDetected": false,
+          "hardeningArtifactsPresent": true
+        }
+      },
+      "history": [
+        {
+          "verdict": "PASS",
+          "timestamp": "2026-05-01T08:51:39.773Z",
+          "sprint": 2,
+          "reason": "4D convergence: findings 5→4→0 all resolved in-place; 10/10 PROPs proved."
+        }
+      ]
     },
     "1c": {
       "verdict": "PASS",
@@ -714,5 +738,5 @@
   },
   "sprintCount": 3,
   "createdAt": "2026-05-01T08:31:48.740Z",
-  "updatedAt": "2026-05-07T16:15:00.000Z"
+  "updatedAt": "2026-05-07T16:30:00.000Z"
 }
