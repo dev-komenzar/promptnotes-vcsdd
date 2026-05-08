@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -363,6 +363,22 @@
       "sprint": 5,
       "iteration": 2,
       "reason": "spec-rev8 complete: REQ-008 throw + REQ-017 parser blank-line contract; PROP-031 / PROP-032 added"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "iteration": 2,
+      "reason": "Phase 1c gate iteration-7 begin"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "iteration": 2,
+      "reason": "Phase 1c iteration-7 PASS — zero findings; rev8 fixes FIND-030/031 from sprint-5 iteration-1"
     }
   ],
   "iterations": {
@@ -372,7 +388,7 @@
     "6": 1,
     "1a": 6,
     "1b": 5,
-    "1c": 6,
+    "1c": 7,
     "2a": 2,
     "2b": 5,
     "2c": 5
@@ -2188,19 +2204,15 @@
       "timestamp": "2026-05-08T00:00:00Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 6,
+        "iteration": 7,
         "ears_rigor": "PASS",
         "edge_case_coverage": "PASS",
         "purity_boundary": "PASS",
         "type_contract_consistency": "PASS",
         "traceability": "PASS",
         "spec_ambiguity": "PASS",
-        "advisory_findings": [
-          "FIND-027",
-          "FIND-028",
-          "FIND-029"
-        ],
-        "verdict_path": ".vcsdd/features/app-startup/reviews/spec/iteration-6/output/verdict.md"
+        "advisory_findings": [],
+        "verdict_path": ".vcsdd/features/app-startup/reviews/spec/iteration-7/output/verdict.md"
       },
       "adversaryVerdict": "PASS",
       "adversaryReviewedAt": "2026-05-08T00:00:00Z",
@@ -2895,12 +2907,12 @@
     },
     "sprint-5": {
       "startedAt": "2026-05-08T00:00:00Z",
-      "currentPhase": "2c",
+      "currentPhase": "2a",
       "routedFindings": [],
       "specRefinementContext": {
-        "behavioralSpecRevision": 7,
-        "verificationArchitectureRevision": 7,
-        "specGateIteration": 6,
+        "behavioralSpecRevision": 8,
+        "verificationArchitectureRevision": 8,
+        "specGateIteration": 7,
         "specGateVerdict": "PASS"
       },
       "redPhase": {
