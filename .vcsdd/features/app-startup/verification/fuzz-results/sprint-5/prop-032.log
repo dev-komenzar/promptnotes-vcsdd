@@ -1,0 +1,22 @@
+PROP-032 — hydrateFeed throws on hydrateNote Err (Tier 2 example-based)
+Date: 2026-05-08T00:00:00Z
+Sprint: 5 iteration 2
+Command: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts
+
+bun test v1.3.11 (af24e281)
+ 22 pass
+ 0 fail
+ 40 expect() calls
+Ran 22 tests across 1 file. [89.00ms]
+
+PROP-032 relevant tests (5/22):
+  PROP-032 — throws Error when hydrateNote returns Err for any snapshot (divergent parser stub)            PASS
+  PROP-032 — thrown Error message contains snapshot.filePath and reason                                    PASS
+  PROP-032 — corruptedFiles[] does NOT gain new entries from Step-3 divergent-stub Err (throw aborts)     PASS
+  PROP-032 — does NOT throw when all hydrateNote calls return Ok (happy path)                              PASS
+  PROP-032 — throws even when 1 snapshot succeeds and 1 diverges (any Err triggers throw)                 PASS
+
+Throw message format verified: /^hydrateNote-invariant-violation: .+: .+$/
+Example: "hydrateNote-invariant-violation: /vault/divergent.md: block-parse"
+
+RESULT: PROVED — 5 PROP-032 tests pass (all 22 in file pass)

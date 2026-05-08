@@ -2,7 +2,8 @@
 
 **Feature**: app-startup
 **Phase**: 5 (Formal Hardening)
-**Verified at**: 2026-04-30T20:30:00Z
+**Sprint**: 5 iteration 2
+**Verified at**: 2026-05-08T00:00:00Z
 
 ---
 
@@ -10,60 +11,67 @@
 
 | Tool | Status | Output |
 |------|--------|--------|
-| bun pm scan | 未設定 | bunfig.toml に [install.security] scanner 指定なし (security-results/bun-audit.log) |
+| bun audit | 実行済み | security-results/bun-audit-sprint5.log — 1 LOW (cookie <0.7.0 via @sveltejs/kit) |
 | npm audit | 実行不可 | bun.lock のみ存在、package-lock.json なし |
-| semgrep | NOT INSTALLED | security-results/semgrep-not-installed.txt |
+| semgrep | NOT INSTALLED | 前回と同様 (security-results/semgrep-not-installed.txt) |
 | cargo audit | NOT INSTALLED | PATH 上に存在しない |
-| 手動 OWASP 検査 | 実施済み | security-results/owasp-visual-inspection.log |
+| 手動 OWASP 検査 | 実施済み (継続) | security-results/owasp-visual-inspection.log (sprint 4 baseline 継続) |
 | Wycheproof | 非適用 | app-startup に暗号処理なし |
 
 ---
 
 ## Findings
 
-### 所見 1 (LOW): パストラバーサル処理のインフラ層依存
+### 所見 1 (LOW): @sveltejs/kit › cookie 依存脆弱性
+
+- **OWASP カテゴリ**: A06:2021 - Vulnerable and Outdated Components
+- **重大度**: LOW
+- **対象パッケージ**: cookie <0.7.0 (via @sveltejs/kit)
+- **CVE/Advisory**: GHSA-pxg6-pf52-xh8x
+
+**説明**:
+`bun audit` (2026-05-08) 実行結果: cookie パッケージが out-of-bounds な cookie 名/パス/ドメインを受け入れる可能性がある。
+
+**app-startup スコープへの適用可能性**:
+- `hydrate-feed.ts`, `hydrate-note.ts`, `scan-vault.ts`, `parse-markdown-to-blocks.ts` はいずれも `cookie` パッケージを使用しない。
+- 脆弱性は `@sveltejs/kit` の HTTP cookie ハンドリングに由来し、Tauri IPC レイヤーで動作する。
+- app-startup はローカルファイルシステム読み取り専用; HTTP リクエスト/レスポンス処理は範囲外。
+
+**推奨**: インフラ sprint にて `@sveltejs/kit` を最新バージョンへ更新すること。
+
+---
+
+### 所見 2 (LOW, 継続): パストラバーサル処理のインフラ層依存
 
 - **OWASP カテゴリ**: A01:2021 - Broken Access Control (path traversal)
 - **重大度**: LOW
 - **対象ファイル**: `scan-vault.ts`
-- **該当箇所**: `listMarkdown` ポートが返す `filePath` 値の検証
 
-**説明**:
-`scanVault` 関数は `listMarkdown()` ポートが返すファイルパスをそのまま
-`readFile()` ポートに渡す。`../../../etc/passwd` のようなパストラバーサル文字列が
-`listMarkdown` の戻り値に含まれた場合、`readFile` に渡されてしまう可能性がある。
+**説明** (sprint 4 baseline から変更なし):
+`scanVault` は `listMarkdown()` ポートが返すファイルパスを `readFile()` ポートに渡す。
 
 **軽減措置**:
-1. `filePathStem()` 関数は `split("/").pop()` を使って末尾ファイル名のみを抽出するため、
-   ステム検証 (`NOTE_ID_FORMAT` regex) はディレクトリトラバーサルの影響を受けない。
-2. `NOTE_ID_FORMAT = /^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}(-\d+)?$/` により
-   非適合ステムを持つファイルは `CorruptedFile` として除外される (FIND-004)。
-3. 実際の `listMarkdown` 実装は Tauri `tauri-plugin-fs` が担当し、
-   Tauri の `allowlist` 設定でサンドボックス化されている。
-4. ドメイン層は `readFile` ポートのインターフェース経由でのみファイルを読み込む。
-
-**推奨**:
-インフラ層 (`tauri-plugin-fs` adapter) での `..` セグメント正規化を
-明示的に文書化すること (Phase 6 以降の infrastructure sprint にて対応予定)。
-ドメイン層での追加対応は不要。
+1. `NOTE_ID_FORMAT = /^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}(-\d+)?$/` による非適合ステムの `CorruptedFile` 扱い
+2. `filePathStem()` による末尾ファイル名のみ抽出
+3. Tauri `tauri-plugin-fs` の allowlist サンドボックス
 
 ---
 
-### ソースコード静的検査結果
+### Sprint 5 新規ソースコード静的検査結果
 
-検査コマンドと結果:
+Sprint 5 iteration 2 で追加されたファイルへの検査:
 
 ```
-grep -nE "Date\.now\(\)" app-startup/*.ts | grep -v comment
-  -> 0 件 (コメント内への言及のみ)
-
-grep -nE "process\." app-startup/*.ts
+grep -nE "Date\.now\(\)" capture-auto-save/parse-markdown-to-blocks.ts | grep -v "//"
   -> 0 件
 
-grep -nE "eval\(|exec\(|spawn\(" app-startup/*.ts
+grep -nE "Date\.now\(\)" app-startup/hydrate-note.ts | grep -v "//"
   -> 0 件
 
-grep -nE "require\(" app-startup/*.ts
+grep -nE "process\.|require\(|eval\(|exec\(|fetch\(" capture-auto-save/parse-markdown-to-blocks.ts
+  -> 0 件
+
+grep -nE "process\.|require\(|eval\(|exec\(|fetch\(" app-startup/hydrate-note.ts
   -> 0 件
 ```
 
@@ -71,11 +79,9 @@ grep -nE "require\(" app-startup/*.ts
 
 **A3 - Injection**: eval/exec/spawn の呼び出しなし。PASS。
 
-**A5 - Security Misconfiguration**: 環境変数 (`process.env`) の直接読み取りなし。
-設定はすべて `settingsLoad` ポート経由。PASS。
+**A5 - Security Misconfiguration**: 環境変数 (`process.env`) の直接読み取りなし。PASS。
 
-**A8 - Software and Data Integrity**: 外部 URL からのデータ取得なし。
-Tauri IPC + ローカルファイルシステムのみ。PASS。
+**A8 - Software and Data Integrity**: 外部 URL からのデータ取得なし。PASS。
 
 ---
 
@@ -85,15 +91,21 @@ Tauri IPC + ローカルファイルシステムのみ。PASS。
 
 - 重大度 HIGH 以上の所見: 0 件
 - 重大度 MEDIUM の所見: 0 件
-- 重大度 LOW の所見: 1 件 (パストラバーサル: インフラ層依存、ドメイン層で部分軽減済み)
+- 重大度 LOW の所見: 2 件
+  1. cookie 脆弱性 (GHSA-pxg6-pf52-xh8x): インフラ層、app-startup domain スコープ外
+  2. パストラバーサル (継続): インフラ層依存、ドメイン層で部分軽減済み
+
+**Sprint 5 iteration 2 追加コードへの評価**:
+- `parse-markdown-to-blocks.ts`: 純粋関数、I/O なし、外部依存なし。セキュリティリスクなし。
+- `hydrate-note.ts`: 純粋関数、I/O なし、外部依存なし。セキュリティリスクなし。
 
 **考慮した OWASP Top 10 カテゴリ**:
-- A01 Broken Access Control: パストラバーサル (LOW、上記所見 1)
+- A01 Broken Access Control: パストラバーサル (LOW、所見 2)
 - A02 Cryptographic Failures: 非適用
 - A03 Injection: PASS (eval/exec なし)
 - A04 Insecure Design: PASS (ポートアーキテクチャによる I/O 分離)
 - A05 Security Misconfiguration: PASS
-- A06 Vulnerable Components: 自動 audit 不可 (手動確認、既知 CVE なし)
+- A06 Vulnerable Components: LOW (cookie via @sveltejs/kit; 所見 1)
 - A07 Identity/Authentication: 非適用
 - A08 Software Integrity: PASS
 - A09 Logging/Monitoring: スコープ外
@@ -101,6 +113,5 @@ Tauri IPC + ローカルファイルシステムのみ。PASS。
 
 **残留リスク**:
 - semgrep / cargo audit が未インストールのため自動スキャンが実施できなかった。
-  定期的な依存関係の脆弱性スキャンを推奨する。
 - Wycheproof は現フィーチャーに暗号処理が存在しないため非適用。
-  今後暗号機能が追加された場合は再評価が必要。
+- cookie 脆弱性はインフラ sprint での @sveltejs/kit 更新で対処予定。

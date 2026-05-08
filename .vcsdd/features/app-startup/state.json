@@ -480,6 +480,72 @@
       "tool": "fast-check + spy",
       "runs": 100,
       "verifiedAt": "2026-04-30T20:30:00Z"
+    },
+    {
+      "id": "PROP-025",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "harnessPath": ".vcsdd/features/app-startup/verification/proof-harnesses/sprint-5/prop-025-parse-markdown-to-blocks-purity.harness.ts",
+      "resultPath": ".vcsdd/features/app-startup/verification/fuzz-results/sprint-5/prop-025.log",
+      "tool": "fast-check",
+      "runs": 100,
+      "verifiedAt": "2026-05-08T00:00:00Z"
+    },
+    {
+      "id": "PROP-026",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "harnessPath": ".vcsdd/features/app-startup/verification/proof-harnesses/sprint-5/prop-026-block-parse-failure-mapping.harness.ts",
+      "resultPath": ".vcsdd/features/app-startup/verification/fuzz-results/sprint-5/prop-026.log",
+      "tool": "example-based test with stub",
+      "runs": null,
+      "verifiedAt": "2026-05-08T00:00:00Z"
+    },
+    {
+      "id": "PROP-027",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "harnessPath": ".vcsdd/features/app-startup/verification/proof-harnesses/sprint-5/prop-027-hydrate-note-purity.harness.ts",
+      "resultPath": ".vcsdd/features/app-startup/verification/fuzz-results/sprint-5/prop-027.log",
+      "tool": "fast-check",
+      "runs": 100,
+      "verifiedAt": "2026-05-08T00:00:00Z"
+    },
+    {
+      "id": "PROP-029",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "harnessPath": ".vcsdd/features/app-startup/verification/proof-harnesses/sprint-5/prop-029-ok-empty-block-parse.harness.ts",
+      "resultPath": ".vcsdd/features/app-startup/verification/fuzz-results/sprint-5/prop-029.log",
+      "tool": "example-based test with stub + real parser",
+      "runs": null,
+      "verifiedAt": "2026-05-08T00:00:00Z"
+    },
+    {
+      "id": "PROP-031",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "harnessPath": ".vcsdd/features/app-startup/verification/proof-harnesses/sprint-5/prop-031-parser-no-empty-paragraph.harness.ts",
+      "resultPath": ".vcsdd/features/app-startup/verification/fuzz-results/sprint-5/prop-031.log",
+      "tool": "example-based + fast-check",
+      "runs": 200,
+      "verifiedAt": "2026-05-08T00:00:00Z"
+    },
+    {
+      "id": "PROP-032",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "harnessPath": ".vcsdd/features/app-startup/verification/proof-harnesses/sprint-5/prop-032-hydrate-feed-throws-on-err.harness.ts",
+      "resultPath": ".vcsdd/features/app-startup/verification/fuzz-results/sprint-5/prop-032.log",
+      "tool": "example-based test with divergent stub",
+      "runs": null,
+      "verifiedAt": "2026-05-08T00:00:00Z"
     }
   ],
   "traceability": {
@@ -695,44 +761,53 @@
         "beadId": "BEAD-016",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "draft",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-008",
           "BEAD-015"
         ],
         "createdAt": "2026-04-27T21:20:51.040Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-001"
+        "externalId": "PROP-001",
+        "metadata": {
+          "provedAt": "2026-05-08T00:00:00Z"
+        }
       },
       {
         "beadId": "BEAD-017",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "draft",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-009"
         ],
         "createdAt": "2026-04-27T21:20:51.043Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-002"
+        "externalId": "PROP-002",
+        "metadata": {
+          "provedAt": "2026-05-08T00:00:00Z"
+        }
       },
       {
         "beadId": "BEAD-018",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "draft",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-011"
         ],
         "createdAt": "2026-04-27T21:20:51.044Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-003"
+        "externalId": "PROP-003",
+        "metadata": {
+          "provedAt": "2026-05-08T00:00:00Z"
+        }
       },
       {
         "beadId": "BEAD-019",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "draft",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-003",
           "BEAD-004",
@@ -741,7 +816,10 @@
         ],
         "createdAt": "2026-04-27T21:20:51.045Z",
         "createdInPhase": "1b",
-        "externalId": "PROP-004"
+        "externalId": "PROP-004",
+        "metadata": {
+          "provedAt": "2026-05-08T00:00:00Z"
+        }
       },
       {
         "beadId": "BEAD-020",
@@ -1462,7 +1540,7 @@
         "beadId": "BEAD-065",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "draft",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-015",
           "BEAD-057"
@@ -1474,7 +1552,8 @@
           "tier": 1,
           "required": true,
           "statement": "Clock.now is called at most twice per pipeline run; hydrateFeed contains no Clock.now call and accepts no timestamp argument.",
-          "addressesFinding": "FIND-003"
+          "addressesFinding": "FIND-003",
+          "provedAt": "2026-05-08T00:00:00Z"
         }
       },
       {
@@ -1794,7 +1873,7 @@
         "beadId": "BEAD-081",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "active",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-080"
@@ -1806,14 +1885,15 @@
           "tier": 1,
           "required": true,
           "statement": "parseMarkdownToBlocks is pure: same Markdown input always produces identical Result with deep-equal Block tree including BlockId values (deterministic positional BlockId 'block-0..block-N-1' per Q2=A).",
-          "addressesMigration": "block-based-editor; FIND-020 fix"
+          "addressesMigration": "block-based-editor; FIND-020 fix",
+          "provedAt": "2026-05-08T00:00:00Z"
         }
       },
       {
         "beadId": "BEAD-082",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "active",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-080"
@@ -1825,14 +1905,15 @@
           "tier": 2,
           "required": true,
           "statement": "Per-file parseMarkdownToBlocks failure during scanVault produces failure: { kind: 'hydrate', reason: 'block-parse' }; workflow continues processing remaining files.",
-          "addressesMigration": "block-based-editor"
+          "addressesMigration": "block-based-editor",
+          "provedAt": "2026-05-08T00:00:00Z"
         }
       },
       {
         "beadId": "BEAD-083",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "active",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-008",
@@ -1846,7 +1927,8 @@
           "tier": 1,
           "required": true,
           "statement": "HydrateNote ACL is pure: (NoteFileSnapshot) → Result<Note, HydrationFailureReason> is referentially transparent. By Q2 determinism + Q5=A (no filter inside hydrateNote), the resulting Note.blocks is bit-identical to parseMarkdownToBlocks(snapshot.body).value, including BlockId values. hydrateNote does NOT filter, transform, or re-number blocks; it composes parser output with snapshot frontmatter only. A snapshot whose body triggers parseMarkdownToBlocks Err or Ok([]) returns Err('block-parse').",
-          "addressesMigration": "block-based-editor; FIND-025 fix"
+          "addressesMigration": "block-based-editor; FIND-025 fix",
+          "provedAt": "2026-05-08T00:00:00Z"
         }
       },
       {
@@ -1888,7 +1970,7 @@
         "beadId": "BEAD-086",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "active",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-080",
           "BEAD-084",
@@ -1901,7 +1983,8 @@
           "tier": 2,
           "required": true,
           "statement": "parseMarkdownToBlocks(snapshot.body) returning Ok([]) is folded by Step 2 caller to CorruptedFile.failure: { kind: 'hydrate', reason: 'block-parse' }; downstream invariant Note.blocks.length >= 1 is preserved. Per Q5=A (rev8), Ok([]) corresponds to whitespace-only body input (no content blocks); parser does NOT emit paragraph('') artifacts.",
-          "addressesFinding": "FIND-019"
+          "addressesFinding": "FIND-019",
+          "provedAt": "2026-05-08T00:00:00Z"
         }
       },
       {
@@ -2057,7 +2140,7 @@
         "beadId": "BEAD-094",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "active",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-002",
           "BEAD-080",
@@ -2070,14 +2153,15 @@
           "tier": 2,
           "required": true,
           "statement": "parseMarkdownToBlocks does not emit paragraph('') blocks for blank-line separators; whitespace-only body returns Ok([]).",
-          "addressesFinding": "FIND-031"
+          "addressesFinding": "FIND-031",
+          "provedAt": "2026-05-08T00:00:00Z"
         }
       },
       {
         "beadId": "BEAD-095",
         "type": "verification-property",
         "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
-        "status": "active",
+        "status": "closed",
         "linkedBeads": [
           "BEAD-008",
           "BEAD-088"
@@ -2089,7 +2173,8 @@
           "tier": 2,
           "required": true,
           "statement": "If hydrateNote returns Err, hydrateFeed MUST throw Error('hydrateNote-invariant-violation: <filePath>: <reason>'); corruptedFiles[] MUST NOT contain Step-3 entries.",
-          "addressesFinding": "FIND-030"
+          "addressesFinding": "FIND-030",
+          "provedAt": "2026-05-08T00:00:00Z"
         }
       }
     ]

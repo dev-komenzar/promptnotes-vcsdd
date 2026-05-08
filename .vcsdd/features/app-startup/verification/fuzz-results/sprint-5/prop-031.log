@@ -1,0 +1,32 @@
+PROP-031 — parser blank-line coalesce contract (Tier 2 + Tier 1 fast-check)
+Date: 2026-05-08T00:00:00Z
+Sprint: 5 iteration 2
+Command: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-blank-lines.test.ts
+
+bun test v1.3.11 (af24e281)
+ 18 pass
+ 0 fail
+ 45 expect() calls
+Ran 18 tests across 1 file. [90.00ms]
+
+Test mapping:
+  PROP-031 — 'a\n\n\nb' returns Ok([paragraph('a'), paragraph('b')]) with no empty paragraph    PASS
+  PROP-031 — '\n\n\n' (blank lines only) returns Ok([])                                          PASS
+  PROP-031 — '   ' (spaces only) returns Ok([])                                                   PASS
+  PROP-031 — '\t\n  \n\t' (mixed whitespace) returns Ok([])                                       PASS
+  PROP-031 — '' (empty string) returns Ok([])                                                      PASS
+  PROP-031 — 'a\n\nb' (single blank line) returns no empty paragraph                              PASS
+  PROP-031 — '# Heading\n\n\nParagraph' returns [heading, paragraph] with no empty paragraph      PASS
+  PROP-031 — typical note body 'First\n\nSecond\n\nThird' returns 3 blocks, no empty paragraphs   PASS
+  PROP-031 — '\n  content  \n' (leading/trailing whitespace) returns no empty paragraph            PASS
+  PROP-031 property (fast-check): for any markdown, result.value has NO paragraph('') blocks      PASS (200 runs)
+  PROP-031 — empty string '' → Ok([]) (no content blocks)                                         PASS
+  PROP-031 — single space ' ' → Ok([]) (no content blocks)                                        PASS
+  PROP-031 — multiple spaces '   ' → Ok([]) (no content blocks)                                   PASS
+  PROP-031 — single newline '\n' → Ok([]) (no content blocks)                                     PASS
+  PROP-031 — multiple newlines '\n\n\n' → Ok([]) (no content blocks)                              PASS
+  PROP-031 — single tab '\t' → Ok([]) (no content blocks)                                         PASS
+  PROP-031 — mixed '\t\n  \n\t' → Ok([]) (no content blocks)                                     PASS
+  PROP-031 — spaces and newlines '  \n  \n  ' → Ok([]) (no content blocks)                       PASS
+
+RESULT: PROVED — all 18 tests pass, fast-check 200 runs, 0 counterexamples found
