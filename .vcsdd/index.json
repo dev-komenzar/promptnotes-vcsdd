@@ -6,8 +6,8 @@
       "createdAt": "2026-04-27T21:10:34.186Z",
       "mode": "lean",
       "language": "typescript",
-      "currentPhase": "complete",
-      "updatedAt": "2026-04-30T20:50:00Z"
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-08T00:00:00Z"
     },
     "capture-auto-save": {
       "status": "active",
@@ -114,5 +114,5 @@
       "updatedAt": "2026-05-06T07:30:01.000Z"
     }
   },
-  "activeFeature": "copy-body"
+  "activeFeature": "app-startup"
 }

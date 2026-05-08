@@ -1,1 +1,1 @@
-copy-body
+app-startup
