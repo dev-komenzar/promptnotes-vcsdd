@@ -1,8 +1,20 @@
-# 型契約のブロックベース化に伴う feature spec 影響表
+# Block-based 型契約移行 — feature spec 影響分析
 
-> 本ファイルは `feature/inplace-edit-migration` ブランチで型契約 (`docs/domain/code/ts/src/`)
-> をブロックベース WYSIWYG モデルへ移行した結果、各 VCSDD feature の spec が
-> どの程度影響を受けるかをまとめた **後続セッション向けの引き継ぎノート** である。
+> **スコープ**: `feature/inplace-edit-migration` ブランチで型契約 (`docs/domain/code/ts/src/`)
+> をブロックベース WYSIWYG モデルへ移行した結果、各 VCSDD feature の **spec
+> （`.vcsdd/features/<feature>/specs/`）** がどの程度影響を受けるかを
+> 後続セッション向けにまとめた引き継ぎノート。
+>
+> **このドキュメントが扱うこと**:
+> - 型契約変更が各 feature の spec / IPC contract / mirror state に与える影響度の分類
+> - spec 改訂時に参照すべき型契約ファイルへのポインタ
+> - 各 feature の spec 改訂で押さえるべきポイント（payload・mirror state・派生プロパティ）
+>
+> **このドキュメントが扱わないこと（別ドキュメントへ）**:
+> - in-place 編集の UX インタラクションモデル（クリック→フォーカス、視覚状態遷移、
+>   placeholder、cursor 管理など）→ `ui-editor` の behavioral spec で定義
+> - Svelte 5 contenteditable の実装パターン → 後続の `ui-editor` Sprint 実装指示書
+> - Markdown ↔ Block 変換のラウンドトリップ性質の証明 → `app-startup` / `capture-auto-save` spec
 
 ## 背景
 
@@ -59,14 +71,73 @@
 - **参照すべき型契約**：`capture/states.ts` の `SaveFailedState` / `PendingNextFocus`、`shared/errors.ts` の `SwitchError`。
 - **推奨アクション**：spec の状態遷移図と pending pointer 表現を Block Focus 単位に書き換え。
 
----
+#### `ui-feed-list-actions` ⚠️ 当初「中程度」と評価したが、Sprint 3 の IPC 契約まで広く影響することが判明したため「強く影響」へ再分類
 
-### 中程度の影響（一部の型・コメント修正で済む見込み）
+- **影響の広さ**：Sprint 1（pure core: reducer / predicates）、Sprint 2（Rust handlers + AppShell mount）、Sprint 3（`select_past_note` の IPC 拡張）の **3 sprint すべての成果物が再検証対象**。
 
-#### `ui-feed-list-actions`
-- **何が変わるか**：Feed 上のアクションは Note 全体を扱うため Block 化の直接影響は小さいが、過去ノート選択時に `blockId` を渡す経路（`PastNoteSelected.blockId`）が増える。
-- **参照すべき型契約**：`shared/events.ts` の `PastNoteSelected`。
-- **推奨アクション**：「過去ノート選択 → どのブロックにフォーカスを当てるか（既定値：先頭ブロック）」の意思決定を spec に追記。
+- **何が変わるか**：
+
+  1. **`Note.body` の派生プロパティ化** — `body` は `NoteOps.body(note)` 経由でしか取得できなくなる
+     （`shared/note.ts` 冒頭コメント参照）。フィード行に渡す body 文字列は
+     `serializeBlocksToMarkdown(note.blocks)` の結果か、ファイル境界の
+     `NoteFileSnapshot.body`（Markdown 文字列）から取る。
+     - `promptnotes/src/lib/feed/types.ts:72` `NoteRowMetadata.body: string` の **意味付け** が変わる
+       （Aggregate 内の真の属性 → 派生 / ファイル境界の文字列）。型は不変だが spec の責務記述を更新。
+     - `bodyPreviewLines(body, 2)` のセマンティクスを spec で明示する必要：
+       - **Option A**: `body = serializeBlocksToMarkdown(blocks)` を改行 split（既存挙動の継承）
+       - **Option B**: `note.blocks.slice(0, 2)` の content を結合（block-aware preview）
+       - 推奨は Option A（既存テスト・既存 Sprint 1 純粋性証明を維持しつつ意味だけ更新）。
+         ただし code block のみ複数行を保持する点に注意（一行に flatten する方針を spec に書く）。
+
+  2. **mirror state の構造変更** — `feedReducer.ts:60` で `pendingNextNoteId` を mirror しているが、
+     `EditingSessionState` 側が `pendingNextFocus: { noteId, blockId } | null` に変わるため、
+     `FeedViewState` の mirror フィールドも同様に拡張が必要。
+     - `FeedRow.svelte` の `showPendingSwitch` ロジック（`pendingNextNoteId === noteId` 判定）は
+       `viewState.pendingNextFocus?.noteId === noteId` に変更。
+     - REQ-FEED-009（pending switch 表示の defense-in-depth）の Acceptance Criteria を更新。
+
+  3. **Sprint 3 IPC 契約の根本的な再設計（REQ-FEED-024 / EC-FEED-016 / EC-FEED-017）**：
+     現行の `select_past_note → editing_session_state_changed` payload は
+     `{ status: "editing", currentNoteId, body: <string>, ... }` の 6 フィールド構造で、
+     **`body` を IPC 越しに直接搬送している**。block 化により以下が必要：
+     - payload に `blocks: BlockDTO[]` を追加（または `body` を `blocks` に置換）
+     - payload に `focusedBlockId: BlockId` を追加（行クリック時にどの block に
+       フォーカスするか — 既定値は先頭 block。`PastNoteSelected.blockId` 仕様と整合）
+     - EC-FEED-016（note_id が `note_metadata` に未存在のエッジケース）：
+       現行は `body: ""` で emit する fallback だが、block 化後は
+       「空 paragraph 1 件 + その block を `focusedBlockId`」で emit する spec に書き換え。
+     - EC-FEED-017（`feed_state_changed` より先に emit する順序保証）は維持。
+     - Rust handler `editor.rs::make_editing_state_changed_payload` も更新対象（src 側）。
+
+  4. **`add-tag-via-chip` / `remove-tag-via-chip` の reducer action payload**
+     （`types.ts:167-168`）が `body: string` を含む。タグ操作後の永続化（`tag-chip-update`
+     feature が担当）が block 化対応した時点で、ここの payload も `blocks` を carry するか、
+     `body` を派生 / 末端変換に閉じるかの設計判断が必要。
+     **推奨**: payload は `blocks: BlockDTO[]` を持ち、`body` は派生として落とす（重複の単一情報源化）。
+
+- **参照すべき型契約**：
+  - `shared/note.ts` の `Note.blocks` / `NoteOps.body`（派生）
+  - `shared/blocks.ts` の `serializeBlocksToMarkdown`
+  - `shared/events.ts` の `PastNoteSelected`（`blockId` 追加済み）
+  - `shared/snapshots.ts` の `NoteFileSnapshot.body`（ファイル境界では Markdown 文字列のまま）
+  - `capture/states.ts` の `EditingState.focusedBlockId` / `PendingNextFocus`
+  - `capture/stages.ts` の `BlockFocusRequest`
+  - `.vcsdd/features/edit-past-note-start/specs/behavioral-spec.md`（同期対象）
+  - `.vcsdd/features/handle-save-failure/specs/behavioral-spec.md`（pending mirror 整合）
+
+- **推奨アクション**：
+  1. spec の「Source of truth」セクションに block 関連の型契約ファイルを追加。
+  2. REQ-FEED-001〜009 のうち body / pendingNext を扱う条項を block-aware に書き換え。
+  3. **REQ-FEED-024 / EC-FEED-016 / EC-FEED-017 を block-based payload で書き直す**
+     （Sprint 3 既存 spec の最重要セクション）。Rust 側 `editor.rs` への影響を Acceptance Criteria に明記。
+  4. `bodyPreviewLines` の入力源を spec で明示（"derived from `serializeBlocksToMarkdown(blocks)`"）。
+  5. `apply-filter-or-search` / `tag-chip-update` の payload 整合（body vs blocks）を併せて決定。
+  6. Sprint 3 の cargo integration tests（`select_past_note` IPC 検証）を block payload 対応へ書き換える指針を Sprint 4 contract で明記。
+
+- **影響を受ける既存 PR / ゲート**：
+  - Sprint 1 spec gate（PASS 済）→ block-aware への spec patch が必要 → 1c-sprint-4 として再 review
+  - Sprint 2 vertical slice（Rust handler 群）→ DTO 構造更新 → cargo integration test 再生成
+  - Sprint 3 `select_past_note` IPC（PASS 済）→ payload 拡張のため REQ-FEED-024 改訂
 
 #### `apply-filter-or-search`
 - **何が変わるか**：検索対象 `body` が派生プロパティ (`serializeBlocksToMarkdown(blocks)`) になる旨が明示された。型シグネチャは不変。
