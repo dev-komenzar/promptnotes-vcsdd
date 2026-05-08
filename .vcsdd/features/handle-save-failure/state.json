@@ -2,7 +2,7 @@
   "featureName": "handle-save-failure",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "complete",
+  "currentPhase": "1c",
   "phaseHistory": [
     {
       "from": "init",
@@ -70,15 +70,36 @@
       "timestamp": "2026-05-01T16:20:05.433Z",
       "reason": "convergence achieved",
       "sprint": 1
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "reason": "spec-revision: block-based editor migration (pendingNextNoteId → pendingNextFocus)",
+      "sprint": 2
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 2,
+      "reason": "spec rev3 (1a) complete; advancing to 1b"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 2,
+      "reason": "verification-architecture rev3 complete; advancing to 1c"
     }
   ],
   "iterations": {
     "3": 1,
     "5": 1,
     "6": 1,
-    "1a": 1,
-    "1b": 1,
-    "1c": 1,
+    "1a": 2,
+    "1b": 2,
+    "1c": 2,
     "2a": 1,
     "2b": 1,
     "2c": 1,
@@ -87,7 +108,348 @@
   "proofObligations": [],
   "traceability": {
     "epicId": "VCSDD-handle-save-failure-1777648370376",
-    "beads": []
+    "beads": [
+      {
+        "beadId": "BEAD-001",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-017", "BEAD-031"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-001"
+      },
+      {
+        "beadId": "BEAD-002",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-013", "BEAD-014", "BEAD-021", "BEAD-026", "BEAD-030", "BEAD-033"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-002"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-015", "BEAD-020", "BEAD-022", "BEAD-027", "BEAD-030", "BEAD-033"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-003"
+      },
+      {
+        "beadId": "BEAD-004",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-015", "BEAD-018", "BEAD-020", "BEAD-022", "BEAD-027", "BEAD-030", "BEAD-033", "BEAD-034"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-004"
+      },
+      {
+        "beadId": "BEAD-005",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-016", "BEAD-019", "BEAD-023", "BEAD-025", "BEAD-030", "BEAD-033"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-005"
+      },
+      {
+        "beadId": "BEAD-006",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-024", "BEAD-032"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-006"
+      },
+      {
+        "beadId": "BEAD-007",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-017"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-007"
+      },
+      {
+        "beadId": "BEAD-008",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-018", "BEAD-020", "BEAD-021", "BEAD-022", "BEAD-023", "BEAD-028"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-008"
+      },
+      {
+        "beadId": "BEAD-009",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-013", "BEAD-025", "BEAD-026", "BEAD-027", "BEAD-032"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-009"
+      },
+      {
+        "beadId": "BEAD-010",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-029", "BEAD-030"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-010"
+      },
+      {
+        "beadId": "BEAD-011",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-017"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-011"
+      },
+      {
+        "beadId": "BEAD-012",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-020"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-HSF-012"
+      },
+      {
+        "beadId": "BEAD-013",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-002", "BEAD-009"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-001"
+      },
+      {
+        "beadId": "BEAD-014",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-002"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-002"
+      },
+      {
+        "beadId": "BEAD-015",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-003", "BEAD-004"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-003"
+      },
+      {
+        "beadId": "BEAD-016",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-005"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-004"
+      },
+      {
+        "beadId": "BEAD-017",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-001", "BEAD-007", "BEAD-011"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-005"
+      },
+      {
+        "beadId": "BEAD-018",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-004", "BEAD-008"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-006"
+      },
+      {
+        "beadId": "BEAD-019",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-005"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-007"
+      },
+      {
+        "beadId": "BEAD-020",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-002", "BEAD-003", "BEAD-004", "BEAD-008", "BEAD-012"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-008"
+      },
+      {
+        "beadId": "BEAD-021",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-002", "BEAD-008"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-009"
+      },
+      {
+        "beadId": "BEAD-022",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-003", "BEAD-004", "BEAD-008"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-010"
+      },
+      {
+        "beadId": "BEAD-023",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-005", "BEAD-008"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-011"
+      },
+      {
+        "beadId": "BEAD-024",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-006"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-012"
+      },
+      {
+        "beadId": "BEAD-025",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-005", "BEAD-009"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-013"
+      },
+      {
+        "beadId": "BEAD-026",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-002", "BEAD-009"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-014"
+      },
+      {
+        "beadId": "BEAD-027",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-003", "BEAD-004", "BEAD-009"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-015"
+      },
+      {
+        "beadId": "BEAD-028",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-008"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-016"
+      },
+      {
+        "beadId": "BEAD-029",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-010"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-017"
+      },
+      {
+        "beadId": "BEAD-030",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-002", "BEAD-003", "BEAD-004", "BEAD-005", "BEAD-010"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-018"
+      },
+      {
+        "beadId": "BEAD-031",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-001"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-019"
+      },
+      {
+        "beadId": "BEAD-032",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-006", "BEAD-009"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-020"
+      },
+      {
+        "beadId": "BEAD-033",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-002", "BEAD-003", "BEAD-004", "BEAD-005"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-021"
+      },
+      {
+        "beadId": "BEAD-034",
+        "type": "proof-obligation",
+        "artifactPath": ".vcsdd/features/handle-save-failure/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": ["BEAD-004"],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-HSF-022"
+      }
+    ]
   },
   "gates": {
     "3": {
@@ -138,7 +500,7 @@
       "adversaryReviewedAt": "2026-05-01T15:35:26.208Z"
     }
   },
-  "sprintCount": 1,
+  "sprintCount": 2,
   "createdAt": "2026-05-01T15:12:50.376Z",
-  "updatedAt": "2026-05-01T16:20:05.433Z"
+  "updatedAt": "2026-05-08T00:00:00Z"
 }
