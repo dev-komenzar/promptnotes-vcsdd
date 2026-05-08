@@ -15,7 +15,7 @@
 - `docs/domain/code/ts/src/shared/note.ts` (`NoteOps.bodyForClipboard` — JSDoc: "内部で `serializeBlocksToMarkdown(note.blocks)` を呼ぶ")
 - `docs/domain/code/ts/src/shared/blocks.ts` (`SerializeBlocksToMarkdown` interface and `BlockParseError`)
 - `docs/domain/code/ts/src/shared/errors.ts` (`SaveError`, `FsError`)
-- `docs/tasks/feature-impact.md` (copy-body entry — derivation note: `bodyForClipboard` internally calls `serializeBlocksToMarkdown(note.blocks)`)
+- `docs/tasks/block-migration-spec-impact.md` (copy-body entry — derivation note: `bodyForClipboard` internally calls `serializeBlocksToMarkdown(note.blocks)`)
 - `docs/domain/event-storming.md`, `domain-events.md`, `glossary.md`, `validation.md`, `ui-fields.md`
 **Scope**: CopyBody pipeline only. The pipeline starts when a `CopyNoteBody` command fires for the currently editing note and ends when `ClipboardText` is returned (success) or a `SaveError` is returned (clipboard failure). Excludes: button rendering / keyboard binding (UI concern), past-note copy from feed (out of MVP).
 
@@ -280,7 +280,7 @@ Timestamp budget is stated directly in REQ-003 and verified by PROP-004 / PROP-0
 
 **EARS**: WHEN the `bodyForClipboard` function is implemented THEN it SHALL import and call `serializeBlocksToMarkdown` from the canonical serializer source rather than parsing or recomputing the block-to-markdown mapping internally.
 
-**Source**: `docs/tasks/feature-impact.md` copy-body entry; `capture-auto-save/serialize-blocks-to-markdown.ts` (canonical implementation for this migration sprint).
+**Source**: `docs/tasks/block-migration-spec-impact.md` copy-body entry; `capture-auto-save/serialize-blocks-to-markdown.ts` (canonical implementation for this migration sprint).
 
 **Implementation guidance**: Importing `serializeBlocksToMarkdown` from `../capture-auto-save/serialize-blocks-to-markdown.js` is the current canonical source. Cross-feature import is acceptable for this migration sprint and is recorded as a finding for a later "shared kernel extraction" refactor (see Findings to Carry Forward in `verification-architecture.md`). When a shared kernel utility is extracted, the import path will change; the behavioral contract expressed in REQ-013 remains stable.
 

@@ -46,7 +46,7 @@ coherence:
 - `docs/domain/code/ts/src/shared/errors.ts` — `SaveError`, `SwitchError.pendingNextFocus`, `SaveValidationError.empty-body-on-idle`
 - `docs/domain/aggregates.md` §1 Note Aggregate (Block Sub-entity), §EditingSessionState
 - `docs/domain/workflows.md` Workflow 2 / 3 / 6 / 8 / 10 (BlockEdit)
-- `docs/tasks/feature-impact.md` — `ui-editor` を「強く影響」と分類した移行ノート
+- `docs/tasks/block-migration-spec-impact.md` — `ui-editor` を「強く影響」と分類した移行ノート
 - `DESIGN.md` — §3 Typography, §4 Inputs & Forms / Buttons / Cards / Distinctive Components, §6 Depth & Elevation, §8 Accessibility & States, §10 Token Reference
 
 **Scope**: UI/orchestration layer for the right-pane editor only. The editor renders one Note as a vertical stack of contenteditable Block elements and translates user input (typing / Enter / Backspace / `/` menu / drag-and-drop / focus changes) into the typed `CaptureCommand` set defined by the block-based contract. It does NOT contain business validation rules; those live in `NoteOps` and `EditingSessionTransitions`. This feature consumes existing `FocusBlock`, `EditBlockContent`, `InsertBlock`, `RemoveBlock`, `MergeBlocks`, `SplitBlock`, `ChangeBlockType`, `MoveBlock`, `TriggerIdleSave`, `TriggerBlurSave`, `CopyNoteBody`, `RequestNewNote`, `RetrySave`, `DiscardCurrentSession`, and `CancelSwitch` commands verbatim — it never invents new variants.
