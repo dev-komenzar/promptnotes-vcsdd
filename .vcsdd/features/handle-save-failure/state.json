@@ -2,7 +2,7 @@
   "featureName": "handle-save-failure",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -126,6 +126,13 @@
       "timestamp": "2026-05-08T00:00:00Z",
       "sprint": 2,
       "reason": "sprint-2 phase-3 PASS — block migration verified"
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 2,
+      "reason": "sprint-2 formal hardening complete — all PROPs pass, required proved"
     }
   ],
   "iterations": {
@@ -513,17 +520,35 @@
     },
     "5": {
       "verdict": "PASS",
-      "timestamp": "2026-05-01T16:16:17.933Z",
+      "timestamp": "2026-05-08T00:00:00Z",
       "reviewedBy": "verifier",
       "details": {
+        "sprint": 2,
         "tier0Count": 2,
         "tier1Count": 5,
-        "tier2Count": 13,
+        "tier2Count": 14,
         "tier3Count": 1,
         "skippedCount": 0,
-        "totalProved": 21,
+        "totalProved": 22,
         "requiredProved": 5,
         "requiredFailed": 0
+      },
+      "history": {
+        "sprint1": {
+          "verdict": "PASS",
+          "timestamp": "2026-05-01T16:16:17.933Z",
+          "reviewedBy": "verifier",
+          "details": {
+            "tier0Count": 2,
+            "tier1Count": 5,
+            "tier2Count": 13,
+            "tier3Count": 1,
+            "skippedCount": 0,
+            "totalProved": 21,
+            "requiredProved": 5,
+            "requiredFailed": 0
+          }
+        }
       }
     },
     "6": {
@@ -569,7 +594,7 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-01T15:12:50.376Z",
-  "updatedAt": "2026-05-08T00:00:00Z",
+  "updatedAt": "2026-05-08T00:01:00Z",
   "redPhaseEvidence": {
     "sprint": 2,
     "timestamp": "2026-05-08T00:00:00Z",
