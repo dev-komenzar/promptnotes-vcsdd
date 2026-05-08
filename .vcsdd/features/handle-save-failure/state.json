@@ -2,7 +2,7 @@
   "featureName": "handle-save-failure",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -98,6 +98,13 @@
       "timestamp": "2026-05-08T00:00:00Z",
       "sprint": 2,
       "reason": "spec review sprint-2 PASS"
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 2,
+      "reason": "sprint-2 red phase complete: 89 tests encoded against revised spec; Red signal observed (26 runtime failures — focusedBlockId threading, cancel-switch guard string, pendingNextFocus field rename)"
     }
   ],
   "iterations": {
@@ -107,7 +114,7 @@
     "1a": 2,
     "1b": 2,
     "1c": 2,
-    "2a": 1,
+    "2a": 2,
     "2b": 1,
     "2c": 1,
     "complete": 1
@@ -525,5 +532,14 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-01T15:12:50.376Z",
-  "updatedAt": "2026-05-08T00:00:00Z"
+  "updatedAt": "2026-05-08T00:00:00Z",
+  "redPhaseEvidence": {
+    "sprint": 2,
+    "timestamp": "2026-05-08T00:00:00Z",
+    "testCount": 89,
+    "passing": 63,
+    "failing": 26,
+    "logPath": ".vcsdd/features/handle-save-failure/evidence/sprint-2-red-phase.log",
+    "summary": "26 runtime failures: focusedBlockId threading (PROP-HSF-022 + REQ-HSF-004/005), cancel-switch guard string (REQ-HSF-006), pendingNextFocus null-guard mismatch (old impl checks pendingNextNoteId)"
+  }
 }

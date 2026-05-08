@@ -3,6 +3,10 @@
  * Tier 2 — Example-based test
  * Required: false
  *
+ * Sprint-2 (block migration) — coverage retrofit
+ * [coverage retrofit] — EditingState fixture updated to include focusedBlockId: null
+ *   (the SaveFailedState fixture uses pendingNextFocus instead of pendingNextNoteId)
+ *
  * Property: given a deliberately-cast non-save-failed state (e.g. EditingState cast to
  * SaveFailedState), handleSaveFailure returns
  *   Promise.reject(SaveError { kind: 'validation', reason: { kind: 'invariant-violated' } })
@@ -48,6 +52,7 @@ function makeEditingState(noteId: NoteId): EditingState {
   return {
     status: "editing" as const,
     currentNoteId: noteId,
+    focusedBlockId: null,
     isDirty: true,
     lastInputAt: null,
     idleTimerHandle: null,
@@ -156,6 +161,7 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
       arbNoteId.map((id) => ({
         status: "editing" as const,
         currentNoteId: id,
+        focusedBlockId: null as null,
         isDirty: false,
         lastInputAt: null,
         idleTimerHandle: null,
@@ -169,7 +175,7 @@ describe("PROP-HSF-019: invariant-on-non-save-failed", () => {
       fc.tuple(arbNoteId, arbNoteId).map(([id1, id2]) => ({
         status: "switching" as const,
         currentNoteId: id1,
-        pendingNextNoteId: id2,
+        pendingNextFocus: { noteId: id2, blockId: "block-arb" as unknown },
         savingStartedAt: makeTimestamp(1000),
       })),
     );

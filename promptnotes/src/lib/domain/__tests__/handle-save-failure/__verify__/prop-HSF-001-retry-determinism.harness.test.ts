@@ -3,6 +3,9 @@
  * Tier 1 — fast-check, 1000 runs
  * Required: true
  *
+ * Sprint-2 (block migration) — coverage retrofit
+ * [coverage retrofit] — fixture updated (pendingNextNoteId → pendingNextFocus: { noteId, blockId })
+ *
  * Property: ∀ (state: SaveFailedState, now: Timestamp),
  *   calling retryTransition(state, now) twice with identical inputs
  *   produces structurally equal SavingState outputs.
@@ -17,10 +20,14 @@ import { describe, test, expect } from "bun:test";
 import fc from "fast-check";
 import type {
   NoteId,
+  BlockId,
   Timestamp,
 } from "promptnotes-domain-types/shared/value-objects";
 import type { SaveError } from "promptnotes-domain-types/shared/errors";
-import type { SaveFailedState } from "promptnotes-domain-types/capture/states";
+import type {
+  SaveFailedState,
+  PendingNextFocus,
+} from "promptnotes-domain-types/capture/states";
 
 import { retryTransition } from "../../../handle-save-failure/transitions.js";
 
@@ -30,6 +37,10 @@ function makeNoteId(raw: string): NoteId {
   return raw as unknown as NoteId;
 }
 
+function makeBlockId(raw: string): BlockId {
+  return raw as unknown as BlockId;
+}
+
 function makeTimestamp(ms: number): Timestamp {
   return { epochMillis: ms } as unknown as Timestamp;
 }
@@ -37,6 +48,10 @@ function makeTimestamp(ms: number): Timestamp {
 const arbNoteId: fc.Arbitrary<NoteId> = fc
   .stringMatching(/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}-[0-9]{3}$/)
   .map(makeNoteId);
+
+const arbBlockId: fc.Arbitrary<BlockId> = fc
+  .stringMatching(/^block-[a-z0-9]{4,12}$/)
+  .map(makeBlockId);
 
 const arbTimestamp: fc.Arbitrary<Timestamp> = fc
   .integer({ min: 1, max: 2_000_000_000_000 })
@@ -52,16 +67,20 @@ const arbSaveError: fc.Arbitrary<SaveError> = fc.oneof(
   }),
 );
 
+const arbPendingNextFocus: fc.Arbitrary<PendingNextFocus> = fc
+  .tuple(arbNoteId, arbBlockId)
+  .map(([noteId, blockId]) => ({ noteId, blockId }));
+
 const arbSaveFailedState: fc.Arbitrary<SaveFailedState> = fc
   .tuple(
     arbNoteId,
-    fc.option(arbNoteId, { nil: null }),
+    fc.option(arbPendingNextFocus, { nil: null }),
     arbSaveError,
   )
   .map(([noteId, pending, error]) => ({
     status: "save-failed" as const,
     currentNoteId: noteId,
-    pendingNextNoteId: pending,
+    pendingNextFocus: pending,
     lastSaveError: error,
   }));
 
