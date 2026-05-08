@@ -1,0 +1,162 @@
+{
+  "phase": "3",
+  "feature": "app-startup",
+  "sprint": 5,
+  "iteration": 2,
+  "timestamp": "2026-05-08T00:00:00Z",
+  "overallVerdict": "PASS",
+  "dimensionVerdicts": {
+    "spec_fidelity": "PASS",
+    "edge_case_coverage": "PASS",
+    "implementation_correctness": "PASS",
+    "structural_integrity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "findingsCount": 0,
+  "blockerCount": 0,
+  "majorCount": 0,
+  "minorCount": 0,
+  "advisoryCount": 0,
+  "findingIds": [],
+  "priorIterationFindings": {
+    "resolved": ["FIND-030", "FIND-031", "FIND-032", "FIND-034", "FIND-035"],
+    "deferred": ["FIND-033"]
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts:51-66",
+          "description": "REQ-008 rev8 AC + PROP-032 satisfied — hydrateFeed iterates snapshots, calls hydrateNote per snapshot, and on Err throws `Error('hydrateNote-invariant-violation: ${snapshot.filePath}: ${noteResult.error}')`. No routing of Step-3 errors to corruptedFiles; step2CorruptedFiles passed through unchanged at line 96. Fail-fast guard fully aligned with FIND-030 remediation."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-note.ts:50-77",
+          "description": "REQ-002 rev8 / PROP-027 satisfied — hydrateNote is a pure pass-through: no filter on paragraph(''), no BlockId reassignment. Only the documented Err(BlockParseError) → Err('block-parse') and Ok([]) → Err('block-parse') (aggregates.md §1.5 invariant 6) folds remain (sanctioned by spec PROP-027 failure-mode determinism). FIND-031 remediation correctly applied."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts:80-95",
+          "description": "REQ-017 rev8 / PROP-031 satisfied — parser returns Ok([]) for whitespace-only input (line 80: `if (markdown.trim() === \"\") return Ok([])`) and skips blank lines as separators (line 92: `if (line.trim() === \"\") { i++; continue; }`). No paragraph('') artifacts emitted. Q5=A contract enforced at the parser layer."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts:443-589",
+          "description": "FIND-032 fix — `PROP-032 / REQ-008 rev8` describe block covers Step-3 throw path with 5 tests: divergent parser stub triggers Error matching `/^hydrateNote-invariant-violation: .+: .+$/`; thrown message contains filePath and reason; happy path does NOT throw; partial divergence (1 of 2) still throws. Selective-fail parser test exercises non-empty snapshots with one failing hydrateNote, validating the previously unreviewed code path."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts:519-622",
+          "description": "FIND-034 fix — `PROP-029 (Q5=A reachable)` describe block uses the REAL parseMarkdownToBlocks (imported, not stubbed) with whitespace-only bodies (`'\\n\\n\\n'`, `'   '`) to verify end-to-end Ok([]) → CorruptedFile reason='block-parse' folding."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-blank-lines.test.ts",
+          "description": "PROP-031 covered by 18+ tests including 8 parameterized whitespace-only inputs (empty, spaces, tabs, newlines, mixed), blank-line coalescing examples (`'a\\n\\n\\nb'`, `'# Heading\\n\\n\\nParagraph'`, `'First\\n\\nSecond\\n\\nThird'`), and a fast-check property (200 runs) asserting no paragraph('') in any output."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts:276-370",
+          "description": "REQ-002 rev8 pass-through behavior covered by 3 stub-based tests: (1) stub returning [paragraph(''), heading-1('X'), paragraph('')] preserves all 3 blocks; (2) stub returning [paragraph('')] yields Ok(Note) with 1 block (NOT Err); (3) stub-supplied BlockIds (block-5, block-7) preserved without reassignment."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/scan-vault.ts:140-166",
+          "description": "FIND-035 fix — block-parse failure detail at line 155-157 correctly distinguishes whitespace-only body (`detail = 'whitespace-only body'`) from BlockParseError (`detail = blockResultDetail(blockResult.error)`). Misleading `'empty block array'` message replaced. Per-file loop logic (read → parseNote → parseMarkdownToBlocks → NoteId VO → tag VO) preserved with correct ordering and try/catch defenses."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts:42-98",
+          "description": "Logic correctness verified: blockParser injection from scannedVault.parseMarkdownToBlocks, ordered for-loop over snapshots, throw on Err with template-literal message embedding filePath+reason (HydrationFailureReason is a string union, so direct interpolation produces the spec-mandated regex shape), sort by updatedAt desc using stable [...spread] copy, deterministic lastBuiltAt epochMillis: 0, corruptedFiles passed through unchanged."
+        },
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/app-startup/evidence/sprint-5-iter-2-green-phase.log",
+          "description": "Final test suite: 1943 pass / 0 fail / 4 skip / 4 todo across 1951 tests in 157 files. Target app-startup: 212 pass / 0 fail. PROP-026 harness: 20 pass / 0 fail (was 18/2 before fix). 28 new tests added in iter-2 all pass."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/stages.ts:62-79",
+          "description": "FIND-033 deferral acknowledged with explicit JSDoc comment (`FIND-033 (deferred to a future sprint)`) on the ScannedVault.parseMarkdownToBlocks field. Comment cites the test-harness restructure cost. Aligned with the deferralNote in FIND-033.json (resolution: 'deferred')."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-note.ts:50-53",
+          "description": "PROP-027 unary contract preserved — default-parameter syntax `blockParser: BlockParser = moduleParseMarkdownToBlocks` keeps `hydrateNote.length === 1` (verified by hydrate-note-purity.test.ts:191-194). Function signature remains (NoteFileSnapshot) → Result<Note, HydrationFailureReason>."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts:42",
+          "description": "PROP-023b arity-1 / no-Timestamp constraint preserved — hydrateFeed remains unary `function hydrateFeed(scannedVault: ScannedVault): HydratedFeed`. Type-level guards in step3-hydrate-feed.test.ts:37-65 (arity, exact tuple shape, no Timestamp anywhere) provide compile-time enforcement."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts:445-589",
+          "description": "PROP-032 (required:true) covered by 5 genuine tests with divergent and selective-fail parser stubs — not tautological. Each test asserts both the throw and the message format `/^hydrateNote-invariant-violation: .+: .+$/`. The selective-fail variant proves any-Err triggers throw."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-blank-lines.test.ts",
+          "description": "PROP-031 (required:true) covered by 18 tests including a fast-check property over arbitrary inputs (200 runs) verifying no paragraph('') artifacts. Genuine end-to-end real-parser invocations, not stubbed."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts",
+          "description": "PROP-027 (required:true) covered by 11 tests including referential transparency, arity-1 contract, no-Date.now spy, no-FrontmatterParser.parse, block-parse failure-mode determinism, AND 3 new pass-through tests verifying the rev8 no-filter contract via stubs that deliberately emit paragraph(''), single-paragraph(''), and non-positional BlockIds."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-purity.test.ts:121-139",
+          "description": "PROP-025 + PROP-031 cross-coverage — empty-string returns Ok([]) determinism test verifies rev8 contract coexists with PROP-025 deterministic positional BlockId scheme."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/parse-call-budget.test.ts",
+          "description": "PROP-030 two-call invariant test suite still passes with rev8 changes — counter-based parsers verify exactly 2 calls per non-corrupt file (Step 2 + Step 3 via hydrateNote)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts:21-33,195-210",
+          "description": "Cross-feature alignment — PROP-026 harness updated with explicit rev8-conflict documentation in file header and an `'empty paragraph block does NOT roundtrip (rev8 contract)'` test. arbParagraphBlock() filters out empty-content paragraphs from the property domain. Decision rationale (note.isEmpty() prevents reaching this case in production) clearly documented."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 0,
+    "allCriteriaEvaluated": true,
+    "duplicateFindings": []
+  }
+}

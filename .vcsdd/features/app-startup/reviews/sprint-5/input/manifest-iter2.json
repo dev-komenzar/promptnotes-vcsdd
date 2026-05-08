@@ -1,0 +1,78 @@
+{
+  "reviewType": "implementation",
+  "featureName": "app-startup",
+  "sprintNumber": 5,
+  "iteration": 2,
+  "mode": "lean",
+  "language": "typescript",
+  "priorReview": {
+    "sprintNumber": 5,
+    "iteration": 1,
+    "verdict": "FAIL",
+    "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-5/output/verdict.json",
+    "findingsRoutedThisSprint": ["FIND-030", "FIND-031", "FIND-032", "FIND-034", "FIND-035"],
+    "findingsRoutingMap": {
+      "FIND-030": "1a→2b (REQ-008 throw + hydrate-feed.ts throw)",
+      "FIND-031": "1a→2b (REQ-017 parser blank-line + parse-markdown-to-blocks.ts coalesce)",
+      "FIND-032": "2a (Step-3 throw test added in step3-hydrate-feed.test.ts)",
+      "FIND-034": "2a (whitespace-only body real-parser test added)",
+      "FIND-035": "2b (detail message fixed: 'whitespace-only body')"
+    },
+    "findingsDeferred": ["FIND-033"]
+  },
+  "specRefinementContext": {
+    "behavioralSpecRevision": 8,
+    "verificationArchitectureRevision": 8,
+    "specGateIteration": 7,
+    "specGateVerdict": "PASS"
+  },
+  "scope": "Spec rev8 fixes for sprint-5 iter-1 FAIL (FIND-030/031): Q5=A parseMarkdownToBlocks coalesce blank lines + Q6=A REQ-008 throw on hydrateNote Err. New PROP-031/032 (both required:true). PROP-027 modified (no filter inside hydrateNote). Cross-feature capture-auto-save PROP-026 test updated to align with rev8 contract.",
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/app-startup/specs/behavioral-spec.md",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-hydration-unknown-fallback.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-purity.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-blank-lines.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/parse-call-budget.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts",
+      "promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts"
+    ],
+    "source": [
+      "promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
+      "promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "promptnotes/src/lib/domain/app-startup/stages.ts",
+      "promptnotes/src/lib/domain/app-startup/errors.ts",
+      "promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts"
+    ],
+    "supportingSource": [
+      "docs/domain/code/ts/src/shared/snapshots.ts",
+      "docs/domain/code/ts/src/shared/blocks.ts",
+      "docs/domain/code/ts/src/shared/value-objects.ts",
+      "docs/domain/code/ts/src/shared/note.ts",
+      "docs/domain/code/ts/src/curate/ports.ts"
+    ]
+  },
+  "evidence": {
+    "redPhase": ".vcsdd/features/app-startup/evidence/sprint-5-iter-2-red-phase.log",
+    "greenPhase": ".vcsdd/features/app-startup/evidence/sprint-5-iter-2-green-phase.log",
+    "refactorPhase": ".vcsdd/features/app-startup/evidence/sprint-5-iter-2-refactor-phase.log"
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "outputDirectory": ".vcsdd/features/app-startup/reviews/sprint-5/output/iteration-2",
+  "createdAt": "2026-05-08T00:00:00Z"
+}
