@@ -2,7 +2,7 @@
   "featureName": "handle-save-failure",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "6",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -133,6 +133,13 @@
       "timestamp": "2026-05-08T00:00:00Z",
       "sprint": 2,
       "reason": "sprint-2 formal hardening complete — all PROPs pass, required proved"
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 2,
+      "reason": "sprint-2 convergence achieved (block migration)"
     }
   ],
   "iterations": {
@@ -145,7 +152,7 @@
     "2a": 2,
     "2b": 2,
     "2c": 2,
-    "complete": 1
+    "complete": 2
   },
   "proofObligations": [],
   "traceability": {
@@ -553,11 +560,23 @@
     },
     "6": {
       "verdict": "PASS",
-      "timestamp": "2026-05-01T16:20:05.428Z",
-      "reviewedBy": "human",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "reviewedBy": "orchestrator",
       "details": {
-        "iteration": 1,
+        "sprint": 2,
+        "iteration": 2,
         "dimensions": "all-converged"
+      },
+      "history": {
+        "sprint1": {
+          "verdict": "PASS",
+          "timestamp": "2026-05-01T16:20:05.428Z",
+          "reviewedBy": "human",
+          "details": {
+            "iteration": 1,
+            "dimensions": "all-converged"
+          }
+        }
       }
     },
     "1c": {
@@ -594,7 +613,7 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-01T15:12:50.376Z",
-  "updatedAt": "2026-05-08T00:01:00Z",
+  "updatedAt": "2026-05-08T00:00:00Z",
   "redPhaseEvidence": {
     "sprint": 2,
     "timestamp": "2026-05-08T00:00:00Z",

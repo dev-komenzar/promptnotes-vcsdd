@@ -54,8 +54,8 @@
       "createdAt": "2026-05-01T15:12:50.836Z",
       "mode": "lean",
       "language": "typescript",
-      "currentPhase": "6",
-      "updatedAt": "2026-05-08T00:01:00Z"
+      "currentPhase": "complete",
+      "updatedAt": "2026-05-08T00:00:00Z"
     },
     "configure-vault": {
       "status": "active",
