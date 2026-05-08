@@ -292,6 +292,18 @@
       "to": "1b",
       "timestamp": "2026-05-08T00:00:00Z",
       "reason": "spec-revision-complete: block migration; behavioral-spec rev6 + verification-architecture rev6 in place"
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "reason": "Phase 1c iteration-5 FAIL — feedback routing: 8 findings (FIND-019..026) — earliest-affected-phase: 1a (REQ-002, REQ-008, REQ-016, REQ-017 ambiguity); design decisions Q1=A/Q2=A/Q3=A/Q4=A approved by user 2026-05-08."
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "reason": "spec-revision-rev7-complete: behavioral-spec rev7 + verification-architecture rev7 in place; ready for Phase 1c iteration-6"
     }
   ],
   "iterations": {
@@ -299,8 +311,8 @@
     "4": 3,
     "5": 2,
     "6": 1,
-    "1a": 4,
-    "1b": 3,
+    "1a": 5,
+    "1b": 4,
     "1c": 4,
     "2a": 5,
     "2b": 4,
@@ -392,7 +404,10 @@
           "BEAD-033",
           "BEAD-081",
           "BEAD-082",
-          "BEAD-083"
+          "BEAD-083",
+          "BEAD-085",
+          "BEAD-086",
+          "BEAD-087"
         ],
         "createdAt": "2026-04-27T21:20:33.272Z",
         "createdInPhase": "1a",
@@ -474,7 +489,8 @@
           "BEAD-026",
           "BEAD-030",
           "BEAD-032",
-          "BEAD-083"
+          "BEAD-083",
+          "BEAD-087"
         ],
         "createdAt": "2026-04-27T21:20:33.276Z",
         "createdInPhase": "1a",
@@ -815,13 +831,14 @@
         "status": "draft",
         "linkedBeads": [
           "BEAD-002",
-          "BEAD-034"
+          "BEAD-034",
+          "BEAD-084"
         ],
         "createdAt": "2026-04-28T00:00:00.000Z",
         "createdInPhase": "1b",
         "externalId": "PROP-019",
         "metadata": {
-          "statement": "ScanFileFailure discriminated union is exhaustively handled: every consumer switch/match covers both 'read' and 'hydrate' variants. Within the 'hydrate' branch, the HydrationFailureReason switch covers all five values ('yaml-parse' | 'missing-field' | 'invalid-value' | 'block-parse' | 'unknown') with no fall-through."
+          "statement": "ScanFileFailure discriminated union is exhaustively handled: every consumer switch/match covers both 'read' and 'hydrate' variants. Within the 'hydrate' branch, the HydrationFailureReason switch covers all five values ('yaml-parse' | 'missing-field' | 'invalid-value' | 'block-parse' | 'unknown') with no fall-through. After REQ-018 (rev7), the producer mapping is fully specified: 'yaml-parse'/'missing-field'/'invalid-value' ← FrontmatterParser.parse / VO conversion (REQ-002, REQ-016 NOTE); 'block-parse' ← parseMarkdownToBlocks failure or Ok([]) (REQ-017); 'unknown' ← non-categorisable defensive fallback (REQ-018)."
         }
       },
       {
@@ -1651,7 +1668,9 @@
         "linkedBeads": [
           "BEAD-081",
           "BEAD-082",
-          "BEAD-083"
+          "BEAD-083",
+          "BEAD-086",
+          "BEAD-087"
         ],
         "createdAt": "2026-05-08T00:00:00Z",
         "createdInPhase": "1a",
@@ -1676,8 +1695,8 @@
         "metadata": {
           "tier": 1,
           "required": true,
-          "statement": "parseMarkdownToBlocks is pure: same Markdown input always produces identical Result (deep-equal Block tree, ignoring fresh-allocated BlockId).",
-          "addressesMigration": "block-based-editor"
+          "statement": "parseMarkdownToBlocks is pure: same Markdown input always produces identical Result with deep-equal Block tree including BlockId values (deterministic positional BlockId 'block-0..block-N-1' per Q2=A).",
+          "addressesMigration": "block-based-editor; FIND-020 fix"
         }
       },
       {
@@ -1714,9 +1733,83 @@
         "externalId": "PROP-027",
         "metadata": {
           "tier": 1,
+          "required": true,
+          "statement": "HydrateNote ACL is pure: (NoteFileSnapshot) → Result<Note, HydrationFailureReason> is referentially transparent; same snapshot always produces same Result with bit-identical Note.blocks (incl. BlockId per Q2=A determinism). A snapshot whose body triggers parseMarkdownToBlocks Err or Ok([]) returns Err('block-parse').",
+          "addressesMigration": "block-based-editor; FIND-025 fix"
+        }
+      },
+      {
+        "beadId": "BEAD-084",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/app-startup/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-035",
+          "BEAD-085"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-018",
+        "metadata": {
+          "addressesFinding": "FIND-024",
+          "summary": "HydrationFailureReason 'unknown' is a defensive fallback for non-categorisable hydration failures (Q3=A)."
+        }
+      },
+      {
+        "beadId": "BEAD-085",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-084"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-028",
+        "metadata": {
+          "tier": 2,
           "required": false,
-          "statement": "HydrateNote ACL is pure: (NoteFileSnapshot) → Result<Note, HydrationFailureReason> is referentially transparent, no I/O, no clock, no Vault state read.",
-          "addressesMigration": "block-based-editor"
+          "statement": "REQ-018 'unknown' fallback path is reachable only via uncategorisable parser/VO errors; static REQ-002/REQ-017 producers never yield 'unknown'.",
+          "addressesFinding": "FIND-024"
+        }
+      },
+      {
+        "beadId": "BEAD-086",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-080",
+          "BEAD-084"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-029",
+        "metadata": {
+          "tier": 2,
+          "required": true,
+          "statement": "parseMarkdownToBlocks(snapshot.body) returning Ok([]) is folded by Step 2 caller to CorruptedFile.failure: { kind: 'hydrate', reason: 'block-parse' }; downstream invariant Note.blocks.length >= 1 is preserved.",
+          "addressesFinding": "FIND-019"
+        }
+      },
+      {
+        "beadId": "BEAD-087",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-008",
+          "BEAD-080"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-030",
+        "metadata": {
+          "tier": 1,
+          "required": false,
+          "statement": "Q1=A two-call invariant: parseMarkdownToBlocks invoked exactly twice per non-corrupt file per pipeline run (Step 2 validation + Step 3 HydrateNote).",
+          "addressesFinding": "FIND-022"
         }
       }
     ]
@@ -2031,6 +2124,95 @@
       "verdictPath": ".vcsdd/features/app-startup/reviews/sprint-3/output/verdict.json",
       "findingsDir": ".vcsdd/features/app-startup/reviews/sprint-3/output/findings/",
       "newSprintNumber": 4
+    },
+    "spec-review-iteration-5": {
+      "routedAt": "2026-05-08T00:00:00Z",
+      "fromPhase": "1c",
+      "fromIteration": 5,
+      "fromArtifact": ".vcsdd/features/app-startup/reviews/spec/iteration-5/output/findings.md",
+      "toPhase": "1a",
+      "toIteration": 5,
+      "timestamp": "2026-05-08T00:00:00Z",
+      "findings": [
+        {
+          "id": "FIND-019",
+          "severity": "major",
+          "dimension": "edge_case_coverage",
+          "affects": [
+            "REQ-002",
+            "REQ-017"
+          ]
+        },
+        {
+          "id": "FIND-020",
+          "severity": "blocker",
+          "dimension": "purity_boundary",
+          "affects": [
+            "PROP-025",
+            "REQ-002",
+            "REQ-017"
+          ]
+        },
+        {
+          "id": "FIND-021",
+          "severity": "blocker",
+          "dimension": "purity_boundary",
+          "affects": [
+            "REQ-002",
+            "PROP-027"
+          ]
+        },
+        {
+          "id": "FIND-022",
+          "severity": "major",
+          "dimension": "type_contract_consistency",
+          "affects": [
+            "REQ-002",
+            "REQ-008",
+            "REQ-013a"
+          ]
+        },
+        {
+          "id": "FIND-023",
+          "severity": "major",
+          "dimension": "type_contract_consistency",
+          "affects": [
+            "REQ-002"
+          ]
+        },
+        {
+          "id": "FIND-024",
+          "severity": "blocker",
+          "dimension": "type_contract_consistency",
+          "affects": [
+            "REQ-002",
+            "REQ-016",
+            "PROP-019"
+          ]
+        },
+        {
+          "id": "FIND-025",
+          "severity": "major",
+          "dimension": "spec_ambiguity",
+          "affects": [
+            "PROP-027"
+          ]
+        },
+        {
+          "id": "FIND-026",
+          "severity": "minor",
+          "dimension": "spec_ambiguity",
+          "affects": [
+            "PROP-027"
+          ]
+        }
+      ],
+      "designDecisions": {
+        "Q1": "A — parseMarkdownToBlocks runs in Step 2 (validation); Step 3 re-parses via HydrateNote",
+        "Q2": "A — pin BlockId to deterministic positional scheme (block-<n>) in parseMarkdownToBlocks",
+        "Q3": "A — keep 'unknown' as defensive fallback; add small REQ documenting it",
+        "Q4": "A — Ok([]) folds to reason='block-parse'"
+      }
     }
   },
   "sprintCount": 4,

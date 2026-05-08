@@ -2,7 +2,7 @@
 
 **Feature**: `app-startup`
 **Phase**: 1a
-**Revision**: 6 (block-migration: parseMarkdownToBlocks in HydrateNote ACL; block-parse HydrationFailureReason; REQ-017 added)
+**Revision**: 7 (FIND-019..026 解消。Q1=A: parseMarkdownToBlocks は Step 2 でのみ実行 (per-file 検証)、Step 3 は HydrateNote 経由で再パースする二重実行モデルを採用。Q2=A: parseMarkdownToBlocks は deterministic positional BlockId (`block-0`..`block-N-1`) を使う pure function（PROP-025 は plain deepEquals）。Q3=A: HydrationFailureReason 'unknown' は防御的フォールバックとして REQ-018 で文書化。Q4=A: parseMarkdownToBlocks の Ok([]) は reason='block-parse' に折り畳む。Note aggregate invariant 6（最低 1 ブロック）と整合。)
 **Source of truth**: `docs/domain/workflows.md` Workflow 1, `docs/domain/aggregates.md`, `docs/domain/aggregates.md §1.6`, `docs/domain/domain-events.md`, `docs/domain/glossary.md`, `docs/domain/code/ts/src/shared/snapshots.ts`, `docs/domain/code/ts/src/shared/blocks.ts`, `docs/domain/code/ts/src/curate/ports.ts`
 **Scope**: Initialization-only. Workflow terminates after the 4-step pipeline completes or returns an error. ConfigureVault flow and UI reaction to errors are out of scope.
 
@@ -15,6 +15,7 @@
 | 2026-04-30 | 2 | FIND-003, FIND-010 | FIND-003: REQ-015にオーケストレーター間ステップClock.now呼び出しの明示的許可を追記（Option A採択）; FIND-010: REQ-004のACにErr(disk-full\|lock\|unknown)→path-not-found折り畳みの明示的根拠を追記 |
 | 2026-04-30 | 3 | FIND-014 | Iteration 3: REQ-010 NOTE clarifies that the Note aggregate is constructed for invariant + event-emission semantics, not retention (resolves FIND-014). |
 | 2026-05-08 | block-migration | — | 型契約のブロックベース移行に伴い、Step 2 の per-file Hydration が parseMarkdownToBlocks(snapshot.body) を呼ぶことを明示。`block-parse` を HydrationFailureReason の有効値として追加。新 REQ-017 を追加。 |
+| 2026-05-08 | spec-rev7 | FIND-019..026 | Phase 1c iteration-5 FAIL fix — FIND-019..026 解消。Q1=A: parseMarkdownToBlocks は Step 2 でのみ実行 (per-file 検証)、Step 3 は HydrateNote 経由で再パースする二重実行モデルを採用。Q2=A: parseMarkdownToBlocks は deterministic positional BlockId (`block-0`..`block-N-1`) を使う pure function（PROP-025 は plain deepEquals）。Q3=A: HydrationFailureReason 'unknown' は防御的フォールバックとして REQ-018 で文書化。Q4=A: parseMarkdownToBlocks の Ok([]) は reason='block-parse' に折り畳む。Note aggregate invariant 6（最低 1 ブロック）と整合。 |
 
 ---
 
@@ -61,6 +62,10 @@ Both `Ok(false)` and `Err(not-found)` are treated as `PathNotFound` because AppS
 
 **EARS**: WHEN a `ConfiguredVault` is available THEN the system SHALL call `FileSystem.listMarkdown(path)` to enumerate all `.md` files, attempt to read each file with `FileSystem.readFile`, attempt to parse each successfully-read file with `FrontmatterParser.parse`, and produce a `ScannedVault` containing `NoteFileSnapshot[]` and `corruptedFiles: CorruptedFile[]`.
 
+**Per-file operation order in Step 2** (FIND-021/FIND-023 resolution — Q1=A):
+
+Within Step 2's per-file loop, the order of operations is: `FileSystem.readFile(filePath)` (effectful) → `FrontmatterParser.parse(raw)` (pure) → conceptually-construct a `NoteFileSnapshot` value with the parsed `Frontmatter` and the residual `Body` (Markdown string) → `parseMarkdownToBlocks(snapshot.body)` (pure, **deterministic positional BlockId**) as a structural-validation step. Failures from any of the four sub-steps fold into the `CorruptedFile.failure` discriminated union per the table below. `HydrateNote` (the Curate Context ACL function) is NOT invoked during Step 2 — it is invoked later in Step 3 to materialize `Note` aggregates from validated snapshots.
+
 **Per-file failure model** (source: `workflows.md` Step 2 error column; `snapshots.ts`; `curate/ports.ts`):
 
 Each `CorruptedFile` carries `{ filePath: string, failure: ScanFileFailure, detail?: string }` where `ScanFileFailure` is a discriminated union:
@@ -74,9 +79,10 @@ type ScanFileFailure =
 - A `readFile` OS failure (permission, lock, not-found, disk-full, unknown) produces `failure: { kind: 'read', fsError: { kind: '...' } }`.
 - A parse, VO conversion, or block-parse failure produces `failure: { kind: 'hydrate', reason: HydrationFailureReason }`. The `hydrate` failure path covers three distinct failure points:
   1. `FrontmatterParser.parse` failures (`yaml-parse` / `missing-field` / `invalid-value`).
-  2. snapshot→Note VO conversion failures (`invalid-value` / `unknown`).
-  3. `parseMarkdownToBlocks(snapshot.body)` failures via the `HydrateNote` ACL function (`block-parse`). `HydrateNote` is the single ACL function that performs both frontmatter validation and Markdown→Block parsing during `scanVault`. Any `Result.Err` from `parseMarkdownToBlocks` propagates as `HydrationFailureReason 'block-parse'` (source: `curate/ports.ts HydrateNote`; `shared/blocks.ts BlockParseError`).
+  2. snapshot→VO conversion failures (`invalid-value`).
+  3. `parseMarkdownToBlocks(snapshot.body)` failures (`block-parse`) — see REQ-017. `parseMarkdownToBlocks` is called directly within Step 2's per-file loop (NOT via `HydrateNote`). Any `Result.Err` or `Ok([])` from `parseMarkdownToBlocks` propagates as `HydrationFailureReason 'block-parse'` (source: `shared/blocks.ts BlockParseError`; `aggregates.md §1.5` invariant 6).
 - The `CorruptedFile.failure` field (not `reason`) carries the `ScanFileFailure` value.
+- `HydrationFailureReason` exhaustive producer mapping: `'yaml-parse' | 'missing-field' | 'invalid-value'` come from `FrontmatterParser.parse` / VO conversion; `'block-parse'` comes from `parseMarkdownToBlocks` failure (including `Ok([])`) — see REQ-017; `'unknown'` is the defensive fallback per REQ-018.
 
 **Edge Cases**:
 - Empty vault (0 `.md` files): `listMarkdown` returns `[]`; `ScannedVault.snapshots = []`, `corruptedFiles = []`. Workflow continues to Step 3.
@@ -91,13 +97,14 @@ type ScanFileFailure =
 - Every file in the vault is corrupted: `ScannedVault.snapshots = []`, `corruptedFiles.length === total .md file count`. Workflow continues — see REQ-009.
 
 **Acceptance Criteria**:
-- `ScannedVault.snapshots` contains only files where `FrontmatterParser.parse` succeeded and all VO invariants were satisfied.
+- `ScannedVault.snapshots` contains only files where `FrontmatterParser.parse` succeeded, all VO invariants were satisfied, and `parseMarkdownToBlocks` returned `Ok` with at least one block.
 - `ScannedVault.corruptedFiles` contains one `CorruptedFile` per failed file, with `filePath`, `failure: ScanFileFailure`, and optional `detail`.
 - Total files = `snapshots.length + corruptedFiles.length` (no file is silently dropped).
 - `ScanFileFailure` is a discriminated union with exactly two variants: `{kind:'read', fsError: FsError}` and `{kind:'hydrate', reason: HydrationFailureReason}` (source: `snapshots.ts`, `snapshots.rs`).
 - `HydrationFailureReason` is exhaustively typed as `'yaml-parse' | 'missing-field' | 'invalid-value' | 'block-parse' | 'unknown'` (source: `glossary.md §3`, `shared/snapshots.ts`).
 - `FsError.kind` is exhaustively typed as `'permission' | 'disk-full' | 'lock' | 'not-found' | 'unknown'` (source: `workflows.md §エラーカタログ統合`).
 - The workflow does NOT fail on per-file errors; only `list-failed` from `listMarkdown` terminates the workflow.
+- `ScannedVault.snapshots[i]` is a `NoteFileSnapshot` (NOT a `Note` aggregate). The validated `Block[]` produced during Step 2 is discarded; Step 3 will re-parse the body via `HydrateNote`.
 
 ---
 
@@ -182,12 +189,14 @@ type ScanFileFailure =
 
 **Acceptance Criteria**:
 - `hydrateFeed` takes only `ScannedVault` as input; it calls no ports (no `Settings`, `FileSystem`, `Clock`, `Vault.allocateNoteId`, `nextAvailableNoteId`).
+- `hydrateFeed` MUST NOT receive a `BlockIdAllocator`, `Clock`, or any side-effecting port; the only sub-call it makes is `HydrateNote` (pure).
 - `Feed.noteRefs` contains exactly the NoteIds from `ScannedVault.snapshots` that were successfully hydrated.
 - `corruptedFiles` from `ScannedVault` is passed through to `HydratedFeed` unchanged.
 - `TagInventory` is built from the hydrated `Note` snapshots via `TagInventory.buildFromNotes`.
 - Feed sort order is `updatedAt` descending (source: `aggregates.md §2 Feed`).
 - The function is referentially transparent: same `ScannedVault` input always produces the same `HydratedFeed` output.
-- By the time `hydrateFeed` runs, all per-file `parseMarkdownToBlocks` calls have already completed in Step 2 (within `HydrateNote`). Step 3 receives the `ScannedVault` whose `snapshots` are pre-validated, fully-hydrated `Note` aggregates and whose `corruptedFiles` already includes any `block-parse` failures. `hydrateFeed` does not call `parseMarkdownToBlocks` itself. (Purity boundary: `parseMarkdownToBlocks` is pure but its invocation is colocated with Step 2's effectful `readFile` loop, NOT Step 3's pure core.)
+- Step 3 receives a `ScannedVault` whose `snapshots: NoteFileSnapshot[]` are read- and structurally-validated (each `body` is known to parse via `parseMarkdownToBlocks` because Step 2 already executed it as a validation step). `hydrateFeed` calls `HydrateNote(snapshot)` for each snapshot to materialize a `Note` aggregate; because `HydrateNote` is pure, this preserves Step 3's purity. The double `parseMarkdownToBlocks` call (Step 2 validation + Step 3 hydration) is the deliberate cost of keeping `ScannedVault` shape unchanged in the Shared Kernel; both calls are deterministic and produce equal `Block[]` per Q2.
+- If a snapshot's `HydrateNote` call returns `Err(HydrationFailureReason)` during Step 3 (e.g., due to a downstream code change that diverged from Step 2), the workflow MUST treat this as a programming-error invariant violation. (Step 2's pre-validation makes this branch unreachable in normal operation.)
 
 ---
 
@@ -336,26 +345,47 @@ The pipeline orchestrator MAY call `Clock.now()` exactly once after Step 2 compl
 - `CorruptedFile.failure.fsError` carries the specific `FsError` variant.
 - The remaining files in the vault are not affected; the workflow continues.
 - This is distinct from `{kind:'hydrate'}` failures: read failures never reach the parser stage.
-- (Note: previously, readFile failures were mis-classified as `reason: 'unknown'` HydrationFailureReason — that classification is incorrect. Source: `snapshots.ts ScanFileFailure` docstring; `glossary.md §Hydration Failure`.)
+- (Note: previously, readFile failures were mis-classified as `reason: 'unknown'` HydrationFailureReason — that classification is incorrect. Source: `snapshots.ts ScanFileFailure` docstring; `glossary.md §Hydration Failure`.) Cross-reference REQ-018 for the correct producer of `'unknown'` HydrationFailureReason.
 
 ---
 
 ### REQ-017: Step 2 — parseMarkdownToBlocks failure produces hydrate-kind ScanFileFailure with reason 'block-parse'
 
-**EARS**: WHEN `parseMarkdownToBlocks(snapshot.body)` returns `Err(BlockParseError)` for an individual file during `scanVault` (called via the `HydrateNote` ACL function) THEN the system SHALL accumulate a `CorruptedFile` with `failure: { kind: 'hydrate', reason: 'block-parse' }` for that file AND continue processing remaining files in the vault.
+**EARS**: WHEN `parseMarkdownToBlocks(snapshot.body)` returns `Err(BlockParseError)` for an individual file during `scanVault` (called directly within Step 2's per-file loop, NOT via `HydrateNote`) THEN the system SHALL accumulate a `CorruptedFile` with `failure: { kind: 'hydrate', reason: 'block-parse' }` for that file AND continue processing remaining files in the vault.
 
 **Edge Cases**:
 - `BlockParseError { kind: 'unterminated-code-fence' }`: code fence opened but not closed before end of file; folds to `reason: 'block-parse'`. The `app-startup` error layer does not distinguish `unterminated-code-fence` from `malformed-structure`; both BlockParseError variants fold to `reason: 'block-parse'` at this layer (source: `shared/blocks.ts BlockParseError`).
 - `BlockParseError { kind: 'malformed-structure' }`: structural breakage not recoverable by paragraph fallback; folds to `reason: 'block-parse'`.
-- Per `aggregates.md §1.5`, "unknown blocks" are NOT BlockParseErrors — they are recovered by the paragraph fallback and parsing succeeds. Therefore `block-parse` only fires on structural breakage, never on merely unrecognised block types.
+- Per `aggregates.md §1.5`, "unknown blocks" are NOT BlockParseErrors — they are recovered by the paragraph fallback and parsing succeeds. Therefore `block-parse` only fires on structural breakage or empty-output, never on merely unrecognised block types.
 - A file whose frontmatter parses fine but whose body is structurally broken reaches `parseMarkdownToBlocks` only after `FrontmatterParser.parse` has succeeded; the failure is `block-parse`, not `yaml-parse`.
+- `parseMarkdownToBlocks(snapshot.body)` returns `Ok([])` (e.g., body containing only whitespace or only YAML-frontmatter delimiters): folds to `failure: { kind: 'hydrate', reason: 'block-parse' }`. Rationale: `aggregates.md §1.5` invariant 6 requires `blocks: Block[]` with length ≥ 1; an empty result cannot become a valid `Note` aggregate. Rejected alternatives: (1) classify as `'invalid-value'` — rejected because the failure is an aggregate-shape problem, not a VO-validation problem; (2) auto-pad to a single empty paragraph in `parseMarkdownToBlocks` — rejected because that would mask user-data issues and silently change file semantics.
 
 **Acceptance Criteria**:
 - `CorruptedFile.failure.kind === 'hydrate'` and `CorruptedFile.failure.reason === 'block-parse'` for all `parseMarkdownToBlocks` failures.
 - The remaining files in the vault are not affected; the workflow continues to Step 3 with those files that parsed successfully.
 - This is distinct from `'yaml-parse' | 'missing-field' | 'invalid-value'`: a file whose frontmatter parses fine but whose body is structurally broken yields `'block-parse'`, not `'yaml-parse'`.
 - `'block-parse'` is a member of the `HydrationFailureReason` union (source: `shared/snapshots.ts`; `shared/blocks.ts`).
-- `HydrateNote` is a pure function (no I/O); the only effectful step in per-file scan is `FileSystem.readFile`. The `parseMarkdownToBlocks` call inside `HydrateNote` is a pure sub-computation colocated with Step 2's effectful loop, not a separate effectful step (source: `curate/ports.ts HydrateNote`).
+- `parseMarkdownToBlocks(snapshot.body)` returning `Ok([])` produces `CorruptedFile.failure.reason === 'block-parse'`.
+- `parseMarkdownToBlocks` is deterministic: same Markdown input always produces the same `Block[]`, including BlockId values (`block-0`, `block-1`, ... in document order). PROP-025 is verifiable with plain `deepEquals` (no equivalence-modulo-BlockId predicate).
+- `parseMarkdownToBlocks` is a pure function (no I/O); the only effectful step in per-file scan is `FileSystem.readFile`. The `parseMarkdownToBlocks` call within Step 2's per-file loop is a pure sub-computation colocated with the effectful loop, not a separate effectful step.
+
+---
+
+### REQ-018: HydrationFailureReason 'unknown' is a defensive fallback for non-categorisable hydration failures
+
+**EARS**: WHEN per-file Hydration in Step 2 (`FrontmatterParser.parse`, snapshot-VO conversion, or `parseMarkdownToBlocks`) raises an exception or returns a `Result.Err` whose variant is not statically reachable (e.g., a future parser variant added after this REQ was written, or a runtime exception from the parser library), THEN the system SHALL accumulate a `CorruptedFile` with `failure: { kind: 'hydrate', reason: 'unknown' }` and `detail: <message>`, AND continue processing remaining files.
+
+**Edge Cases**:
+- `FrontmatterParser.parse` throws synchronously (library bug): the exception is caught, the file accumulates `failure: { kind: 'hydrate', reason: 'unknown', detail: <error.message> }`.
+- `parseMarkdownToBlocks` throws (impossible per its pure contract, but defended): caught and folded to `'unknown'`.
+- A future `HydrationFailureReason` variant added to `shared/snapshots.ts` without spec update: falls into the `'unknown'` path until the spec catches up.
+
+**Acceptance Criteria**:
+- `'unknown'` is NEVER produced by a `FileSystem.readFile` failure (REQ-016 NOTE — read failures use `failure: { kind: 'read', fsError: {...} }` instead).
+- `'unknown'` is the only non-static `HydrationFailureReason`; the other four (`'yaml-parse'`, `'missing-field'`, `'invalid-value'`, `'block-parse'`) have specific REQ-defined producers.
+- `CorruptedFile.detail` is set to a human-readable summary of the unexpected error.
+- The total file count invariant (snapshots + corruptedFiles = total `.md` files) is preserved.
+- Workflow continues to Step 3 unchanged.
 
 ---
 
@@ -364,13 +394,14 @@ The pipeline orchestrator MAY call `Clock.now()` exactly once after Step 2 compl
 | Step | Classification | Rationale |
 |------|---------------|-----------|
 | Step 1: `loadVaultConfig` | Effectful read | Calls `Settings.load` and `FileSystem.statDir` |
-| Step 2: `scanVault` | Effectful read | Calls `FileSystem.listMarkdown`, `FileSystem.readFile`; per-file `HydrateNote` ACL composes the pure `FrontmatterParser.parse` and pure `parseMarkdownToBlocks` calls within an effectful loop. |
-| Step 2 (block-parse, pure): `parseMarkdownToBlocks` | Pure core | Markdown文字列→Block[]の純粋関数。HydrateNote 内で呼ばれるが、本体は副作用ゼロ・決定的。`Err(BlockParseError)`は HydrationFailureReason 'block-parse' に折り畳まれる。 |
+| Step 2: `scanVault` | Effectful read | Calls `FileSystem.listMarkdown`, `FileSystem.readFile`; per-file sequence is `readFile (effectful) → FrontmatterParser.parse (pure) → parseMarkdownToBlocks (pure, deterministic positional BlockId, validation only — Block[] discarded)`. The pure `parseMarkdownToBlocks` and `FrontmatterParser.parse` calls are colocated within Step 2's effectful loop but are themselves pure. **`HydrateNote` is NOT called in Step 2.** |
+| Step 2 (block-parse, pure): `parseMarkdownToBlocks` | Pure core | Markdown 文字列 → `Block[]` の決定的純粋関数。**deterministic positional BlockId allocation (`block-0..block-N-1`)** により referential transparency を満たす。`BlockIdSmartCtor.generate()` (UUID v4 path) は editor runtime 専用で、parseMarkdownToBlocks では使われない。`Err(BlockParseError)` または `Ok([])` のいずれも `reason='block-parse'` の `CorruptedFile` に折り畳む（呼び出し側 ACL の責務）。Step 2 内で呼ばれるが本体は副作用ゼロ。 |
 | Inter-step (2→3): orchestrator `Clock.now()` | Effectful shell | `runAppStartupPipeline` calls `Clock.now()` exactly once after Step 2 to obtain `occurredOn` for `VaultScanned`, `FeedRestored`, `TagInventoryBuilt`. This is orchestration-layer I/O, NOT Step 3 I/O. REQ-015 explicitly permits it. |
-| Step 3: `hydrateFeed` | Pure core | No ports; deterministic; referentially transparent. Receives `ScannedVault` only — no timestamp argument. |
+| Step 3: `hydrateFeed` | Pure core | No ports; deterministic; referentially transparent. Receives `ScannedVault` only — no timestamp argument. Calls `HydrateNote` per snapshot to materialize `Note` aggregates. |
+| Step 3 (ACL, pure): `HydrateNote` | Pure core | Pure core. `(NoteFileSnapshot) → Result<Note, HydrationFailureReason>` の純粋 ACL 関数。`parseMarkdownToBlocks` を呼んで Markdown → Block[] 変換し、`Note.fromSnapshot(snapshot, blocks)` で aggregate を再構成する（`FrontmatterParser.parse` は呼ばない — frontmatter は既に snapshot.frontmatter として VO 化済み）。Step 3 (`hydrateFeed`) 内で per-snapshot に呼ばれる。 |
 | Step 4 (time) | `Clock.now()` | Effectful shell — second and final `Clock.now()` call per pipeline run; returns wall-clock time for `Note` and `EditingSessionState` |
 | Step 4 (id-effectful) | `vault.allocateNoteId(now)` | Effectful — reads Vault Aggregate's internal NoteId set |
 | Step 4 (id-pure) | `nextAvailableNoteId(preferred, existingIds)` | Pure core — collision-avoidance algorithm; deterministic given inputs; property-test target |
 | Step 4 (compose) | `initializeCaptureSession` | Mixed — calls effectful `Clock.now()` and effectful `vault.allocateNoteId`; only the inner `nextAvailableNoteId` call is pure |
 
-The pure core targets are `hydrateFeed`, `nextAvailableNoteId`, and `parseMarkdownToBlocks`. The effectful steps are tested via integration tests with port fakes/stubs.
+The pure core targets are `hydrateFeed`, `nextAvailableNoteId`, `parseMarkdownToBlocks`, and `HydrateNote`. The effectful steps are tested via integration tests with port fakes/stubs.
