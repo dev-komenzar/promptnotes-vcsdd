@@ -63,6 +63,11 @@ export type ConfiguredVault = {
  * When present, hydrateFeed uses this same function reference in Step 3 (PROP-030 counting).
  * When absent, hydrateFeed falls back to the module-level parseMarkdownToBlocks import.
  * This field is a pure function — it does not break the determinism invariant.
+ *
+ * FIND-033 (deferred to a future sprint): ScannedVault carries the
+ * parseMarkdownToBlocks port reference for PROP-030 call-counting in
+ * the test harness. A cleaner design pulls this out into a separate
+ * dependency, but the refactor requires test-harness restructure.
  */
 export type ScannedVault = {
   readonly kind: "ScannedVault";

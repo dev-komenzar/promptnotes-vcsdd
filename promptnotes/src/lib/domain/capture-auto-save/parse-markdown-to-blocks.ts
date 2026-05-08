@@ -19,6 +19,11 @@
 // Structural failures (returning BlockParseError):
 //   - unterminated code fence (EOF reached before closing ```)
 //
+// REQ-002 (rev8) / PROP-031: blank lines ("\n\n+") are block separators, NOT content.
+//   Whitespace-only input (only \n, \t, space) → Ok([]).
+//   Empty string "" → Ok([]).
+//   No paragraph('') blocks are ever emitted for blank-line separators.
+//
 // BlockIds are positional: block-0, block-1, ... (zero-indexed, reset per call).
 // REQ-002 (rev7): deterministic BlockId allocation for round-trip reproducibility.
 
@@ -56,6 +61,9 @@ function makeBlock(type: BlockType, content: string, index: number): Block {
  * Returns Err only for structural failures (e.g., unterminated code fence).
  *
  * Pure function — no I/O, no hidden state.
+ * REQ-002 (rev8) / PROP-031: blank lines are block separators, not content.
+ *   Whitespace-only input (only \n, \t, space) and empty string "" → Ok([]).
+ *   paragraph('') blocks are NEVER emitted for blank-line separators.
  * REQ-002 (rev7): BlockIds are positional (block-0, block-1, ...) and reset per call.
  * Same Markdown input always produces identical output (PROP-025 determinism).
  */
@@ -67,9 +75,10 @@ export function parseMarkdownToBlocks(
   const nextBlock = (type: BlockType, content: string): Block =>
     makeBlock(type, content, blockIndex++);
 
-  // Empty string → single empty paragraph (matches round-trip for empty paragraph block).
-  if (markdown === "") {
-    return { ok: true, value: [nextBlock("paragraph", "")] };
+  // PROP-031: whitespace-only input (including empty string) → Ok([]).
+  // No paragraph('') fallback for blank/whitespace bodies.
+  if (markdown.trim() === "") {
+    return { ok: true, value: [] };
   }
 
   const lines = markdown.split("\n");
@@ -78,6 +87,12 @@ export function parseMarkdownToBlocks(
 
   while (i < lines.length) {
     const line = lines[i];
+
+    // PROP-031: blank lines (empty or whitespace-only) are block separators — skip silently.
+    if (line.trim() === "") {
+      i++;
+      continue;
+    }
 
     // Code fence: opening "```"
     if (line === "```") {
@@ -148,11 +163,6 @@ export function parseMarkdownToBlocks(
     // Paragraph (lenient fallback for everything else, including unknown lines)
     blocks.push(nextBlock("paragraph", line));
     i++;
-  }
-
-  // Guarantee at least one block
-  if (blocks.length === 0) {
-    blocks.push(nextBlock("paragraph", ""));
   }
 
   return { ok: true, value: blocks };

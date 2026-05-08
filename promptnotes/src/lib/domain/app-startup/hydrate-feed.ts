@@ -12,6 +12,9 @@
 //   once in Step 2 (via ScanVaultPorts, result discarded) and once here via hydrateNote.
 //   scannedVault.parseMarkdownToBlocks carries the injected reference so both
 //   invocations use the same function.
+// PROP-032: If hydrateNote returns Err for any snapshot during Step 3, hydrateFeed MUST throw.
+//   This indicates a Step 2/Step 3 divergence (invariant violation), not a recoverable file error.
+//   Step-2 corruptedFiles pass through unchanged — they are NOT augmented by Step-3 failures.
 
 import type { NoteId, Tag, Timestamp } from "promptnotes-domain-types/shared/value-objects";
 import type { NoteFileSnapshot, CorruptedFile } from "promptnotes-domain-types/shared/snapshots";
@@ -31,7 +34,10 @@ import { hydrateNote } from "./hydrate-note.js";
  *
  * PROP-030: calls hydrateNote per snapshot using scannedVault.parseMarkdownToBlocks
  * (the same function reference used in Step 2), satisfying the two-call budget.
- * Snapshots whose hydrateNote call fails in Step 3 are added to corruptedFiles.
+ *
+ * PROP-032: If hydrateNote returns Err for any snapshot during Step 3, hydrateFeed throws.
+ * This is an invariant violation (Step 2 passed the file, Step 3 cannot re-parse it) —
+ * it is NOT a recoverable per-file error. Step-2 corruptedFiles pass through unchanged.
  */
 export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
   const { snapshots, corruptedFiles: step2CorruptedFiles } = scannedVault;
@@ -40,7 +46,6 @@ export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
   // (carried on scannedVault) so call-count tracking works correctly.
   const blockParser = scannedVault.parseMarkdownToBlocks;
 
-  const step3CorruptedFiles: CorruptedFile[] = [];
   const hydratedSnapshots: NoteFileSnapshot[] = [];
 
   for (const snapshot of snapshots) {
@@ -50,14 +55,14 @@ export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
       : hydrateNote(snapshot);
 
     if (!noteResult.ok) {
-      // Step 3 hydration failure: add to corruptedFiles, exclude from noteRefs.
-      step3CorruptedFiles.push({
-        filePath: snapshot.filePath,
-        failure: { kind: "hydrate", reason: noteResult.error },
-      });
-    } else {
-      hydratedSnapshots.push(snapshot);
+      // PROP-032: Step-3 hydrateNote failure is an invariant violation, not a file error.
+      // The file passed Step 2 validation but cannot be re-parsed in Step 3 — divergence.
+      throw new Error(
+        `hydrateNote-invariant-violation: ${snapshot.filePath}: ${noteResult.error}`
+      );
     }
+
+    hydratedSnapshots.push(snapshot);
   }
 
   // PROP-015: sort noteRefs by updatedAt descending (stable copy, no mutation).
@@ -83,17 +88,12 @@ export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
   // PROP-001: lastBuiltAt fixed to epochMillis: 0 (deterministic, no Date.now()).
   const tagInventory = buildTagInventory(hydratedSnapshots);
 
-  // Merge Step 2 and Step 3 corrupted files.
-  const allCorruptedFiles: readonly CorruptedFile[] = [
-    ...step2CorruptedFiles,
-    ...step3CorruptedFiles,
-  ];
-
+  // PROP-032: Step-2 corruptedFiles pass through unchanged (no Step-3 augmentation).
   return {
     kind: "HydratedFeed",
     feed,
     tagInventory,
-    corruptedFiles: allCorruptedFiles,
+    corruptedFiles: step2CorruptedFiles,
   };
 }
 

@@ -150,9 +150,10 @@ export async function scanVault(
       }
 
       // Err(BlockParseError) or Ok([]) both → reason='block-parse' (REQ-017 / PROP-029).
+      // FIND-035: Ok([]) after parser fix corresponds to whitespace-only body.
       if (!blockResult.ok || blockResult.value.length === 0) {
         const detail = blockResult.ok
-          ? "empty block array"
+          ? "whitespace-only body"
           : blockResultDetail(blockResult.error);
         corruptedFiles.push({
           filePath,

@@ -1,0 +1,78 @@
+## Sprint 5 iter-2 — Phase 2c (Refactor Phase) Evidence
+
+**Feature**: app-startup
+**Sprint**: 5
+**Iteration**: 2
+**Phase**: 2c (Refactor)
+**Date**: 2026-05-08
+**Spec revision**: 8
+
+---
+
+## Gate Result
+
+target-feature-tests: PASS
+regression-baseline: PARTIAL (same 2 PROP-026 failures as Green phase — pre-existing blocker)
+
+---
+
+## Test Suite Summary (post-refactor)
+
+- **Full suite**: 1941 pass / 2 fail / 4 skip / 4 todo across 1951 tests in 157 files
+- **App-startup tests**: 212 pass / 0 fail across 17 files
+- No new failures introduced by refactor
+- TypeScript errors: 74 (all pre-existing, no new errors)
+
+---
+
+## Refactor Changes
+
+### FIND-035 — Implemented: misleading detail message fixed
+
+**File**: `promptnotes/src/lib/domain/app-startup/scan-vault.ts`
+
+- Old: `? "empty block array"` (detail when `Ok([])` is returned)
+- New: `? "whitespace-only body"` (accurate: after parser fix, `Ok([])` corresponds to whitespace-only body)
+- Context: When `ports.parseMarkdownToBlocks` returns `Ok([])` in Step 2 validation, the CorruptedFile detail now accurately describes why the block list is empty (body was whitespace-only, which the parser now returns `Ok([])` for per PROP-031/rev8).
+
+---
+
+## FIND-033 — BLOCKED: ScannedVault function reference removal
+
+**Reason**: FIND-033 asks to remove `parseMarkdownToBlocks` from `ScannedVault` and pass it alongside the data separately. However, this change is blocked by a test constraint:
+
+**Blocking test**: `parse-call-budget.test.ts` (PROP-030 counting tests)
+- These tests inject a counting `parseMarkdownToBlocks` via `ScanVaultPorts`
+- `scanVault` returns `ScannedVault` carrying that counting parser
+- `hydrateFeed(scanResult.value)` is called without a second argument
+- Tests verify `callCount.total === 2` (1 from Step 2 + 1 from Step 3 via hydrateNote)
+
+If `parseMarkdownToBlocks` is removed from `ScannedVault`:
+- `hydrateFeed(scanResult.value)` has no way to access the injected counting parser
+- `hydrateFeed` would use the module-level parser (non-counting)
+- PROP-030 count assertions would fail: `callCount.total === 1` not `2`
+
+If `hydrateFeed` takes a second optional `blockParser?` parameter:
+- `hydrateFeed.length === 1` still holds (optional params don't count)
+- But the test calls `hydrateFeed(scanResult.value)` — no second arg — so module-level parser is used
+- Same PROP-030 counting failure
+
+**Resolution required**: The parent agent must either:
+  a) Update the PROP-030 counting tests to pass the parser explicitly to `hydrateFeed`
+  b) Accept FIND-033 as deferred (ScannedVault keeps the function reference)
+  c) Design a different mechanism for PROP-030 counting that doesn't require `ScannedVault` to carry the function
+
+**Current state**: `ScannedVault.parseMarkdownToBlocks` remains as optional field on the data structure (unchanged from Green phase). The comment in `stages.ts` accurately documents this design decision.
+
+---
+
+## Final File State
+
+### Modified in Green + Refactor:
+1. `promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts` — parser rev8 (PROP-031)
+2. `promptnotes/src/lib/domain/app-startup/hydrate-note.ts` — pass-through, no filter (REQ-002 rev8)
+3. `promptnotes/src/lib/domain/app-startup/hydrate-feed.ts` — throw on Err (PROP-032)
+4. `promptnotes/src/lib/domain/app-startup/scan-vault.ts` — detail message fix (FIND-035)
+
+### Unchanged (FIND-033 blocked):
+5. `promptnotes/src/lib/domain/app-startup/stages.ts` — `ScannedVault.parseMarkdownToBlocks` remains

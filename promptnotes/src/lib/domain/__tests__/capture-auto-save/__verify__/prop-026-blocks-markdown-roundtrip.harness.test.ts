@@ -17,6 +17,19 @@
  * RED phase: tests fail because:
  *   - serializeBlocksToMarkdown does not exist at the expected import path
  *   - parseMarkdownToBlocks does not exist at the expected import path
+ *
+ * NOTE (cross-feature): paragraph("") is a KNOWN NON-ROUNDTRIPPING case per spec rev8.
+ * app-startup PROP-031 / REQ-017 (rev8): parseMarkdownToBlocks MUST NOT emit paragraph("")
+ * for blank input; whitespace-only / empty body MUST return Ok([]).
+ * serializeBlocksToMarkdown([paragraph("")]) = "" and parseMarkdownToBlocks("") = Ok([]),
+ * so [paragraph("")] → "" → Ok([]) which is NOT structurally equivalent to [paragraph("")].
+ * This case is unreachable in production: capture-auto-save's note.isEmpty() validation
+ * prevents saving notes where blocks degenerate to [paragraph("")].
+ * The arbRoundtripBlocks() arbitrary excludes empty-content paragraphs (minLength: 1 is NOT
+ * enforced — see arbParagraphBlock()), so the property test below only exercises non-empty
+ * paragraph content via the filter on MARKDOWN_PREFIXES.
+ * The "empty paragraph block roundtrips" example-based test is replaced below with a test
+ * that explicitly documents and asserts the rev8 non-roundtrip contract.
  */
 
 import { describe, test, expect } from "bun:test";
@@ -93,10 +106,16 @@ function arbInlineContent(maxLength = 80): fc.Arbitrary<BlockContent> {
 const MARKDOWN_PREFIXES = /^(# |## |### |- |1\. |> |---$|```)/;
 
 function arbParagraphBlock(): fc.Arbitrary<Block> {
+  // Per rev8 contract (PROP-031 / app-startup cross-feature):
+  // paragraph("") is a non-roundtripping degenerate case — serializes to ""
+  // which the rev8 parser returns as Ok([]), not Ok([paragraph("")]).
+  // Exclude empty-content paragraphs from the roundtrip domain.
   return fc.record({
     id: arbBlockId(),
     content: arbInlineContent(80).filter(
-      (c) => !MARKDOWN_PREFIXES.test(c as unknown as string),
+      (c) =>
+        (c as unknown as string).length > 0 &&
+        !MARKDOWN_PREFIXES.test(c as unknown as string),
     ),
   }).map(({ id, content }) => ({
     id,
@@ -173,17 +192,21 @@ describe("PROP-026: serializeBlocksToMarkdown ↔ parseMarkdownToBlocks structur
     expect(isStructurallyEquivalent(blocks, roundtripped)).toBe(true);
   });
 
-  // Example-based: empty paragraph block
-  test("empty paragraph block roundtrips structurally", () => {
+  // PROP-026 + app-startup PROP-031 (cross-feature): per spec rev8 of
+  // app-startup, parseMarkdownToBlocks MUST NOT emit paragraph("") for
+  // blank input; whitespace-only/empty body returns Ok([]).
+  // [paragraph("")] is a degenerate input that does not roundtrip; this
+  // case is unreachable in production because capture-auto-save's
+  // note.isEmpty() validation prevents saving empty notes.
+  test("empty paragraph block does NOT roundtrip (rev8 contract)", () => {
     const blocks: ReadonlyArray<Block> = [makeBlock("paragraph", "")];
     const serialized = serializeBlocksToMarkdown(blocks);
-    const parseResult = parseMarkdownToBlocks(serialized);
+    expect(serialized).toBe("");
 
+    const parseResult = parseMarkdownToBlocks(serialized);
     expect(parseResult.ok).toBe(true);
     if (!parseResult.ok) return;
-
-    const roundtripped = parseResult.value;
-    expect(isStructurallyEquivalent(blocks, roundtripped)).toBe(true);
+    expect(parseResult.value).toEqual([]);  // not [paragraph("")]
   });
 
   // Example-based: multiple paragraphs
