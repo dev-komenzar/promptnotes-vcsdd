@@ -2,7 +2,7 @@
 
 **Feature**: `app-startup`
 **Phase**: 1a
-**Revision**: 7 (FIND-019..026 解消。Q1=A: parseMarkdownToBlocks は Step 2 でのみ実行 (per-file 検証)、Step 3 は HydrateNote 経由で再パースする二重実行モデルを採用。Q2=A: parseMarkdownToBlocks は deterministic positional BlockId (`block-0`..`block-N-1`) を使う pure function（PROP-025 は plain deepEquals）。Q3=A: HydrationFailureReason 'unknown' は防御的フォールバックとして REQ-018 で文書化。Q4=A: parseMarkdownToBlocks の Ok([]) は reason='block-parse' に折り畳む。Note aggregate invariant 6（最低 1 ブロック）と整合。)
+**Revision**: 8 (Phase 3 sprint-5 iteration-1 FAIL (FIND-030/031) 解消。Q5=A: parseMarkdownToBlocks の port 契約を「blank-line `\n\n` セパレータを paragraph('') に展開せず coalesce する」に厳格化（hydrateNote 内のフィルタは spec で許可されない）。Q6=A: REQ-008 AC の 'programming-error invariant violation' を「throw Error('hydrateNote-invariant-violation: ...')」に sharpen。FIND-032/034 (test coverage), FIND-033 (code structure), FIND-035 (naming) は Phase 2 で対応する。)
 **Source of truth**: `docs/domain/workflows.md` Workflow 1, `docs/domain/aggregates.md`, `docs/domain/aggregates.md §1.6`, `docs/domain/domain-events.md`, `docs/domain/glossary.md`, `docs/domain/code/ts/src/shared/snapshots.ts`, `docs/domain/code/ts/src/shared/blocks.ts`, `docs/domain/code/ts/src/curate/ports.ts`
 **Scope**: Initialization-only. Workflow terminates after the 4-step pipeline completes or returns an error. ConfigureVault flow and UI reaction to errors are out of scope.
 
@@ -16,6 +16,7 @@
 | 2026-04-30 | 3 | FIND-014 | Iteration 3: REQ-010 NOTE clarifies that the Note aggregate is constructed for invariant + event-emission semantics, not retention (resolves FIND-014). |
 | 2026-05-08 | block-migration | — | 型契約のブロックベース移行に伴い、Step 2 の per-file Hydration が parseMarkdownToBlocks(snapshot.body) を呼ぶことを明示。`block-parse` を HydrationFailureReason の有効値として追加。新 REQ-017 を追加。 |
 | 2026-05-08 | spec-rev7 | FIND-019..026 | Phase 1c iteration-5 FAIL fix — FIND-019..026 解消。Q1=A: parseMarkdownToBlocks は Step 2 でのみ実行 (per-file 検証)、Step 3 は HydrateNote 経由で再パースする二重実行モデルを採用。Q2=A: parseMarkdownToBlocks は deterministic positional BlockId (`block-0`..`block-N-1`) を使う pure function（PROP-025 は plain deepEquals）。Q3=A: HydrationFailureReason 'unknown' は防御的フォールバックとして REQ-018 で文書化。Q4=A: parseMarkdownToBlocks の Ok([]) は reason='block-parse' に折り畳む。Note aggregate invariant 6（最低 1 ブロック）と整合。 |
+| 2026-05-08 | spec-rev8 | FIND-030, FIND-031 | Phase 3 sprint-5 iteration-1 FAIL (FIND-030/031) 解消。Q5=A: parseMarkdownToBlocks の port 契約を「blank-line `\n\n` セパレータを paragraph('') に展開せず coalesce する」に厳格化（hydrateNote 内のフィルタは spec で許可されない）。Q6=A: REQ-008 AC の 'programming-error invariant violation' を「throw Error('hydrateNote-invariant-violation: ...')」に sharpen。FIND-032/034 (test coverage), FIND-033 (code structure), FIND-035 (naming) は Phase 2 で対応する。 |
 
 ---
 
@@ -105,6 +106,7 @@ type ScanFileFailure =
 - `FsError.kind` is exhaustively typed as `'permission' | 'disk-full' | 'lock' | 'not-found' | 'unknown'` (source: `workflows.md §エラーカタログ統合`).
 - The workflow does NOT fail on per-file errors; only `list-failed` from `listMarkdown` terminates the workflow.
 - `ScannedVault.snapshots[i]` is a `NoteFileSnapshot` (NOT a `Note` aggregate). The validated `Block[]` produced during Step 2 is discarded; Step 3 will re-parse the body via `HydrateNote`.
+- By the parseMarkdownToBlocks port contract (REQ-017 + verification-architecture port docstring rev8), the parser SHALL NOT emit `paragraph('')` blocks for blank-line `\n\n` separators between content blocks. Step 2 validation MAY assume the returned `Block[]` contains only content blocks.
 
 ---
 
@@ -196,7 +198,8 @@ type ScanFileFailure =
 - Feed sort order is `updatedAt` descending (source: `aggregates.md §2 Feed`).
 - The function is referentially transparent: same `ScannedVault` input always produces the same `HydratedFeed` output.
 - Step 3 receives a `ScannedVault` whose `snapshots: NoteFileSnapshot[]` are read- and structurally-validated (each `body` is known to parse via `parseMarkdownToBlocks` because Step 2 already executed it as a validation step). `hydrateFeed` calls `HydrateNote(snapshot)` for each snapshot to materialize a `Note` aggregate; because `HydrateNote` is pure, this preserves Step 3's purity. The double `parseMarkdownToBlocks` call (Step 2 validation + Step 3 hydration) is the deliberate cost of keeping `ScannedVault` shape unchanged in the Shared Kernel; both calls are deterministic and produce equal `Block[]` per Q2.
-- If a snapshot's `HydrateNote` call returns `Err(HydrationFailureReason)` during Step 3 (e.g., due to a downstream code change that diverged from Step 2), the workflow MUST treat this as a programming-error invariant violation. (Step 2's pre-validation makes this branch unreachable in normal operation.)
+- If a snapshot's `HydrateNote` call returns `Err(HydrationFailureReason)` during Step 3, the workflow MUST throw `Error('hydrateNote-invariant-violation: <snapshot.filePath>: <reason>')` with the snapshot's `filePath` and the `HydrationFailureReason` value as a string in the message. The thrown Error MUST propagate out of `hydrateFeed` (NOT routed to `corruptedFiles`, NOT swallowed). Step 2's pre-validation makes this branch unreachable in normal operation; the throw is a fail-fast guard that surfaces a developer error if Step 2 and Step 3 validation diverge in a future code change. (Resolves FIND-030.)
+- `hydrateFeed` MUST NOT route Step-3 `HydrateNote` failures to `corruptedFiles[]`. The `corruptedFiles[]` collection only carries Step-2 failures (read/parse/validate). Adding Step-3 entries would corrupt the invariant that `corruptedFiles[i]` always corresponds to a file that failed BEFORE pure-core reasoning.
 
 ---
 
@@ -366,8 +369,9 @@ The pipeline orchestrator MAY call `Clock.now()` exactly once after Step 2 compl
 - This is distinct from `'yaml-parse' | 'missing-field' | 'invalid-value'`: a file whose frontmatter parses fine but whose body is structurally broken yields `'block-parse'`, not `'yaml-parse'`.
 - `'block-parse'` is a member of the `HydrationFailureReason` union (source: `shared/snapshots.ts`; `shared/blocks.ts`).
 - `parseMarkdownToBlocks(snapshot.body)` returning `Ok([])` produces `CorruptedFile.failure.reason === 'block-parse'`.
-- `parseMarkdownToBlocks` is deterministic: same Markdown input always produces the same `Block[]`, including BlockId values (`block-0`, `block-1`, ... in document order). PROP-025 is verifiable with plain `deepEquals` (no equivalence-modulo-BlockId predicate).
+- `parseMarkdownToBlocks` is deterministic: same Markdown input always produces the same `Block[]`, including BlockId values (`block-0`, `block-1`, ... in document order). PROP-025 is verifiable with plain `deepEquals` (no equivalence-modulo-BlockId predicate). By spec rev8 (FIND-031), the parser MUST coalesce consecutive blank lines (`\n\n+` separators) into block boundaries WITHOUT emitting `paragraph('')` artifacts for the blank lines themselves. The returned `Block[]` contains only content blocks (and explicit content-bearing paragraph blocks for whitespace inside a paragraph). A whitespace-only body (containing only `\n`, `\t`, ` ` characters) MUST yield `Ok([])`, which the Step 2 caller folds to `reason='block-parse'` per Q4=A.
 - `parseMarkdownToBlocks` is a pure function (no I/O); the only effectful step in per-file scan is `FileSystem.readFile`. The `parseMarkdownToBlocks` call within Step 2's per-file loop is a pure sub-computation colocated with the effectful loop, not a separate effectful step.
+- Rejected alternative (FIND-031, FIND-031 path-c): documenting an in-place filter inside `hydrateNote`. Rejected because it breaks the symmetry between Step 2 validation and Step 3 hydration (a snapshot Step 2 admits could fail Step 3 if the filter changes). Q5=A keeps the symmetry by enforcing the contract on the parser itself.
 
 ---
 

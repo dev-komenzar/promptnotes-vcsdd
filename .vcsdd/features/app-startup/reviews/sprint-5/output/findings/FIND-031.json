@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-031",
+  "dimension": "spec_fidelity",
+  "severity": "major",
+  "title": "hydrateNote performs undocumented empty-paragraph filtering and BlockId reassignment, breaking Step-2/Step-3 validation symmetry",
+  "affects": [
+    "REQ-002",
+    "REQ-008",
+    "REQ-017",
+    "PROP-025",
+    "PROP-027",
+    "PROP-030",
+    "promptnotes/src/lib/domain/app-startup/hydrate-note.ts"
+  ],
+  "spec_quote": "REQ-008 AC: 'each body is known to parse via parseMarkdownToBlocks because Step 2 already executed it as a validation step.' / REQ-017 AC: 'parseMarkdownToBlocks is deterministic: same Markdown input always produces the same Block[], including BlockId values (block-0, block-1, ... in document order).' / verification-architecture.md PROP-027: 'By Q2 determinism, the resulting Note.blocks is bit-identical, including BlockId values.'",
+  "code_quote": "hydrate-note.ts:65-84 — `const contentBlocks = blocksResult.value.filter((block) => !((block.type as unknown as string) === \"paragraph\" && (block.content as unknown as string) === \"\")); if (contentBlocks.length === 0) { return { ok: false, error: \"block-parse\" }; } const blocks: ReadonlyArray<Block> = contentBlocks.map((block, idx) => ({ ...block, id: `block-${idx}` as unknown as BlockId, }));`",
+  "issue": "hydrateNote silently strips paragraph blocks whose content is the empty string, then re-numbers BlockIds positionally on the filtered subset. Neither the spec nor verification-architecture.md describes this behavior. Two concrete consequences: (1) Symmetry break with Step 2 — Step 2 validates `parseMarkdownToBlocks(body).length > 0` (scan-vault.ts:153) on the *raw* output, so a body like `\\n\\n\\n` (which parses to several `paragraph(\"\")` blocks via the line-split logic in capture-auto-save/parse-markdown-to-blocks.ts) passes Step 2 but fails Step 3 (post-filter length 0). This makes the REQ-008 'unreachable in normal operation' branch reachable. (2) BlockId divergence — for a snapshot whose body produces `[paragraph(\"\"), heading-1(\"X\")]`, Step 2 saw and validated `block-0=paragraph(\"\"), block-1=heading-1(\"X\")`; Step 3 retains only `[heading-1(\"X\")]` with id `block-0`. The Note.blocks sent downstream therefore differ in both content and identity from the array that PROP-025/PROP-030 claim is 'bit-identical' between the two parser invocations. The PROP-030 'deep-equal Block[]' claim is technically about the two parseMarkdownToBlocks return values (still equal), but the spec's emphasis on deterministic positional BlockIds is undermined because the IDs that survive in the materialized Note are no longer the positional IDs the spec describes.",
+  "recommended_remediation": "Pick one approach and reflect it in spec rev8: (a) Move the empty-paragraph filter into parseMarkdownToBlocks itself (so both Step 2 and Step 3 see the same filtered result and BlockIds remain stable), or (b) Remove the filter from hydrateNote entirely and require parseMarkdownToBlocks to coalesce blank lines so it never emits `paragraph(\"\")` from `\\n\\n` separators, or (c) Document the filter+reindex behavior in REQ-017/PROP-027 explicitly (this changes 'bit-identical' to 'identical-modulo-blank-line-paragraphs' and requires adjusting PROP-030's deep-equal claim).",
+  "createdAt": "2026-05-08T00:00:00Z"
+}

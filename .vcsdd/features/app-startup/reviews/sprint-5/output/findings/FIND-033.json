@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-033",
+  "dimension": "structural_integrity",
+  "severity": "minor",
+  "title": "ScannedVault carries a function reference (parseMarkdownToBlocks port), bleeding the effectful shell into a 'pure' data stage",
+  "affects": [
+    "REQ-008",
+    "REQ-015",
+    "PROP-001",
+    "PROP-030",
+    "promptnotes/src/lib/domain/app-startup/stages.ts",
+    "promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+    "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts"
+  ],
+  "spec_quote": "REQ-008 AC-1 (purity): 'hydrateFeed (Step 3) has no port dependencies and is a pure function — no side effects, no I/O, deterministic given its input.' / verification-architecture.md: 'Step 3 hydrateFeed: Pure core | No port dependencies; deterministic; ScannedVault → HydratedFeed is referentially transparent.'",
+  "code_quote": "stages.ts:67-74 — `export type ScannedVault = { readonly kind: \"ScannedVault\"; readonly snapshots: readonly NoteFileSnapshot[]; readonly corruptedFiles: readonly CorruptedFile[]; readonly parseMarkdownToBlocks?: (markdown: string) => Result<ReadonlyArray<Block>, BlockParseError>; };` and hydrate-feed.ts:41 — `const blockParser = scannedVault.parseMarkdownToBlocks;`",
+  "issue": "ScannedVault is documented in stages.ts as a value type ('intermediate results at each pipeline stage'), and verification-architecture.md classifies hydrateFeed as a Pure core that takes only a ScannedVault and returns a HydratedFeed. By smuggling the parseMarkdownToBlocks function reference onto ScannedVault, the supposedly-pure Step 3 now receives a port through a value-shaped channel. Concrete problems: (1) two ScannedVault values can be structurally equal in their data fields yet produce different HydratedFeed outputs if their parseMarkdownToBlocks fields differ — referential transparency over the *data* of ScannedVault is broken; (2) PROP-001's 'same ScannedVault input → identical HydratedFeed' is only true when parseMarkdownToBlocks is the same reference; (3) the optional `?` on the field means Step 3 falls back to a module-level import (hydrate-note.ts:30 `moduleParseMarkdownToBlocks`), introducing hidden coupling that Step-3 callers cannot see; (4) PROP-030's call-budget invariant only holds when the port is injected — there is no test asserting the failure mode (different counters in Step 2 vs Step 3) when the port is absent; (5) it conflicts with PROP-013's framing of the pipeline stages as data-only.",
+  "recommended_remediation": "Either (a) thread parseMarkdownToBlocks as an explicit second parameter to hydrateFeed and remove it from ScannedVault — this preserves data purity and forces callers to inject the port, or (b) remove the optional and the fallback path entirely (parseMarkdownToBlocks becomes required on ScannedVault, and the production assembly always injects), and document the field as a 'pure-function reference' (no captured state). Add a test that constructs two ScannedVault values with different parseMarkdownToBlocks references but identical data and asserts the divergence is intentional (or impossible after the refactor).",
+  "createdAt": "2026-05-08T00:00:00Z"
+}

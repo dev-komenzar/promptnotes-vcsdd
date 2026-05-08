@@ -2,7 +2,7 @@
 
 **Feature**: `app-startup`
 **Phase**: 1b
-**Revision**: 7 (FIND-019..026 解消。Q1=A: parseMarkdownToBlocks は Step 2 でのみ実行 (per-file 検証)、Step 3 は HydrateNote 経由で再パースする二重実行モデルを採用。Q2=A: parseMarkdownToBlocks は deterministic positional BlockId (`block-0`..`block-N-1`) を使う pure function（PROP-025 は plain deepEquals）。Q3=A: HydrationFailureReason 'unknown' は防御的フォールバックとして REQ-018 で文書化。Q4=A: parseMarkdownToBlocks の Ok([]) は reason='block-parse' に折り畳む。Note aggregate invariant 6（最低 1 ブロック）と整合。)
+**Revision**: 8 (Phase 3 sprint-5 iteration-1 FAIL (FIND-030/031) 解消。Q5=A: parseMarkdownToBlocks の port 契約を「blank-line `\n\n` セパレータを paragraph('') に展開せず coalesce する」に厳格化（hydrateNote 内のフィルタは spec で許可されない）。Q6=A: REQ-008 AC の 'programming-error invariant violation' を「throw Error('hydrateNote-invariant-violation: ...')」に sharpen。FIND-032/034 (test coverage), FIND-033 (code structure), FIND-035 (naming) は Phase 2 で対応する。)
 **Mode**: lean
 **Source**: `docs/domain/workflows.md` Workflow 1, `docs/domain/aggregates.md §1 衝突回避設計`, `docs/domain/code/ts/src/shared/snapshots.ts`, `docs/domain/code/rust/src/vault/ports.rs`, `docs/domain/code/ts/src/shared/blocks.ts`, `docs/domain/code/ts/src/curate/ports.ts`, `docs/domain/code/ts/src/shared/value-objects.ts`
 
@@ -16,6 +16,7 @@
 | 2026-04-30 | 3 | FIND-014 | FIND-014: REQ-010 NOTE 追記（Option A 採用 — Note aggregate は invariant 強制 + event-emission 用途のみ、retention なし）。PROP-013 の InitialUIState shape 制約に Note aggregate 非保持の明示注記を追加。 |
 | 2026-05-08 | block-migration | spec-rev6 (block-based migration) | REQ-017 追加と REQ-002/REQ-008 拡張に対応。`parseMarkdownToBlocks` を Pure core として Purity Boundary Map に追加し、`HydrateNote` ACL の純粋性と block-parse → CorruptedFile マッピングを検証する PROP-025/PROP-026 を追加。`HydrationFailureReason` 拡張型 `'block-parse'` の exhaustiveness を PROP-019 のスコープに含める。 |
 | 2026-05-08 | spec-rev7 | FIND-019..026 | Phase 1c iteration-5 FAIL fix — FIND-019..026 解消。Q1=A: parseMarkdownToBlocks は Step 2 でのみ実行 (per-file 検証)、Step 3 は HydrateNote 経由で再パースする二重実行モデルを採用。Q2=A: parseMarkdownToBlocks は deterministic positional BlockId (`block-0`..`block-N-1`) を使う pure function（PROP-025 は plain deepEquals）。Q3=A: HydrationFailureReason 'unknown' は防御的フォールバックとして REQ-018 で文書化。Q4=A: parseMarkdownToBlocks の Ok([]) は reason='block-parse' に折り畳む。Note aggregate invariant 6（最低 1 ブロック）と整合。 |
+| 2026-05-08 | spec-rev8 | FIND-030, FIND-031 | Phase 3 sprint-5 iteration-1 FAIL (FIND-030/031) 解消。Q5=A: parseMarkdownToBlocks の port 契約を「blank-line `\n\n` セパレータを paragraph('') に展開せず coalesce する」に厳格化（hydrateNote 内のフィルタは spec で許可されない）。Q6=A: REQ-008 AC の 'programming-error invariant violation' を「throw Error('hydrateNote-invariant-violation: ...')」に sharpen。FIND-032/034 (test coverage), FIND-033 (code structure), FIND-035 (naming) は Phase 2 で対応する。 |
 
 ---
 
@@ -86,17 +87,19 @@ type FrontmatterParserParse = (
 
 // ── Block parsing — pure core (block-based migration) ────────────────────
 /** Parse Markdown body into Block[]. Pure, deterministic.
- *  Source: shared/blocks.ts ParseMarkdownToBlocks.
- *  Uses positional BlockId (`block-0`, `block-1`, ... in document order).
- *  The BlockIdSmartCtor.generate() allocator (which may use UUID v4) is NOT
- *  invoked here — it is reserved for editor runtime block creation.
+ *  Source: shared/blocks.ts ParseMarkdownToBlocks; spec rev8 contract.
+ *  - Uses positional BlockId (`block-0`, `block-1`, ... in document order).
  *  - Unknown blocks fold to paragraph; not an error.
- *  - Structural breakage (unterminated code fence, malformed-structure)
- *    yields Err(BlockParseError) which the caller folds to
- *    HydrationFailureReason 'block-parse'.
- *  - Empty output (Ok([])) is treated as reason='block-parse' by the caller
- *    (aggregates.md §1.5 invariant 6: blocks.length >= 1).
- *  Purity is the verifiable property; sync-only by construction. */
+ *  - **Blank-line `\n\n+` separators between content blocks DO NOT produce
+ *    `paragraph('')` artifacts** (rev8, FIND-031). Block boundaries are
+ *    inferred from blank-line separators; the blank lines themselves are
+ *    structural and discarded.
+ *  - **Whitespace-only body MUST return `Ok([])`** (no content, no artifacts).
+ *    The Step 2 caller folds Ok([]) to `reason='block-parse'` per Q4=A.
+ *  - Structural breakage (`unterminated-code-fence`, `malformed-structure`)
+ *    yields `Err(BlockParseError)`.
+ *  - The `BlockIdSmartCtor.generate()` allocator (which may use UUID v4) is
+ *    NOT invoked here — it is reserved for editor runtime block creation. */
 type ParseMarkdownToBlocks = (
   markdown: string,
 ) => Result<ReadonlyArray<Block>, BlockParseError>;
@@ -187,10 +190,12 @@ type VaultAllocateNoteId = (now: Timestamp) => NoteId;  // effectful: reads Vaul
 | PROP-024 | For each `statDir` result kind, `loadVaultConfig` maps to the spec-defined `reason`: `Ok(true)` → success; `Ok(false)` → `path-not-found`; `Err('not-found')` → `path-not-found`; `Err('permission')` → `permission-denied`; `Err('disk-full')` → `path-not-found`; `Err('lock')` → `path-not-found`; `Err('unknown')` → `path-not-found` | REQ-004 | 1 | false | fast-check with small finite generator over all 5 `statDir` result variants; assert `reason` matches the table in REQ-004 for each case |
 | PROP-025 | `parseMarkdownToBlocks` is pure: same Markdown input always produces identical `Result<ReadonlyArray<Block>, BlockParseError>` output (deep-equal Block tree including BlockId values, because Q2 pins parseMarkdownToBlocks to deterministic positional BlockId). | REQ-002, REQ-017 | 1 | **true** | fast-check (property: ∀ markdown, parseMarkdownToBlocks(markdown) deepEquals parseMarkdownToBlocks(markdown)) |
 | PROP-026 | Per-file `parseMarkdownToBlocks` failure during `scanVault` produces `failure: { kind: 'hydrate', reason: 'block-parse' }` (NOT `'unknown'`, NOT `'invalid-value'`, NOT `'yaml-parse'`); the surrounding `scanVault` workflow continues processing remaining files. | REQ-002, REQ-017 | 2 | **true** | Example-based test using a `parseMarkdownToBlocks` stub that returns Err(BlockParseError) for one specific file |
-| PROP-027 | `HydrateNote` ACL is pure: `(NoteFileSnapshot) → Result<Note, HydrationFailureReason>` is referentially transparent — same snapshot always produces the same Result, no I/O, no clock, no Vault state read. By Q2 determinism, the resulting `Note.blocks` is bit-identical, including BlockId values. Failure-mode determinism: a snapshot whose body triggers `parseMarkdownToBlocks` Err always returns `Err('block-parse')`; a snapshot whose body produces `Ok([])` also returns `Err('block-parse')`. | REQ-002, REQ-008, REQ-017 | 1 | **true** | fast-check (property: ∀ snapshot, hydrateNote(snapshot) deepEquals hydrateNote(snapshot); for crafted block-parse-triggering snapshot, Err.reason === 'block-parse'; for Ok([]) body, Err.reason === 'block-parse') |
+| PROP-027 | `HydrateNote` ACL is pure: `(NoteFileSnapshot) → Result<Note, HydrationFailureReason>` is referentially transparent — same snapshot always produces the same Result, no I/O, no clock, no Vault state read. By Q2 determinism + Q5=A (no filter inside hydrateNote), the resulting `Note.blocks` is bit-identical to `parseMarkdownToBlocks(snapshot.body).value`, including BlockId values. `hydrateNote` does NOT filter, transform, or re-number blocks; it composes parser output with snapshot frontmatter only. Failure-mode determinism: a snapshot whose body triggers `parseMarkdownToBlocks` Err always returns `Err('block-parse')`; a snapshot whose body produces `Ok([])` also returns `Err('block-parse')`. | REQ-002, REQ-008, REQ-017 | 1 | **true** | fast-check (property: ∀ snapshot, hydrateNote(snapshot) deepEquals hydrateNote(snapshot); for crafted block-parse-triggering snapshot, Err.reason === 'block-parse'; for Ok([]) body, Err.reason === 'block-parse') |
 | PROP-028 | REQ-018 — `'unknown'` HydrationFailureReason is produced ONLY by the defensive fallback path; no static REQ-002/REQ-017 producer ever yields `'unknown'`. The fallback path is reachable only via uncategorisable parser/VO errors and exceptions; remaining files in the vault still process and the workflow continues to Step 3. | REQ-018 | 2 | false | Example-based test with a parser stub that throws an unexpected error and a parser stub that returns `Err({ kind: 'unrecognized-future-variant' })` cast to `HydrationFailureReason` |
-| PROP-029 | Q4 — `parseMarkdownToBlocks(snapshot.body)` returning `Ok([])` (e.g., whitespace-only body) is folded by the Step 2 caller to `CorruptedFile.failure: { kind: 'hydrate', reason: 'block-parse' }` (NOT `'invalid-value'`, NOT auto-padded, NOT silently dropped). The downstream invariant `Note.blocks.length >= 1` is preserved by NEVER constructing a Note from an empty Block[]. | REQ-017, REQ-018 | 2 | **true** | Example-based test with `parseMarkdownToBlocks` stub returning `Ok([])` for one specific file; assert resulting `CorruptedFile.failure.reason === 'block-parse'` |
+| PROP-029 | Q4 — `parseMarkdownToBlocks(snapshot.body)` returning `Ok([])` (e.g., whitespace-only body) is folded by the Step 2 caller to `CorruptedFile.failure: { kind: 'hydrate', reason: 'block-parse' }` (NOT `'invalid-value'`, NOT auto-padded, NOT silently dropped). The downstream invariant `Note.blocks.length >= 1` is preserved by NEVER constructing a Note from an empty Block[]. Per Q5=A (rev8), `Ok([])` from `parseMarkdownToBlocks` corresponds to whitespace-only body input (no content blocks); the parser does NOT emit `paragraph('')` artifacts for blank-line separators. | REQ-017, REQ-018 | 2 | **true** | Example-based test with `parseMarkdownToBlocks` stub returning `Ok([])` for one specific file; assert resulting `CorruptedFile.failure.reason === 'block-parse'` |
 | PROP-030 | Q1=A two-call invariant: `parseMarkdownToBlocks` is invoked exactly twice per non-corrupt file per pipeline run — once in Step 2 (validation, result discarded) and once in Step 3 (via `HydrateNote`, result retained on the materialized `Note`). Both invocations produce deep-equal `Block[]` per Q2 determinism. Files that fail the Step 2 invocation never reach Step 3. | REQ-002, REQ-008, REQ-017, REQ-015 | 1 | false | fast-check with parseMarkdownToBlocks call counter; for each non-corrupt input file, counter increment is exactly 2 |
+| PROP-031 | REQ-017 rev8 — parser blank-line behavior: `parseMarkdownToBlocks(s)` does NOT emit `paragraph('')` blocks for blank-line `\n\n+` separators between content blocks. For each input string s, the returned `Block[]` contains zero `paragraph('')` blocks. (Whitespace-only body returns `Ok([])`.) | REQ-002, REQ-017 | 2 | **true** | Example-based test with inputs `'a\n\n\nb'` (two non-empty paragraphs, no empty paragraph in between), `'\n\n\n'` (whitespace-only → `Ok([])`), `'   '` (all spaces → `Ok([])`), and a fast-check property for "no paragraph('') in any output" |
+| PROP-032 | REQ-008 rev8 — Step 3 throw on Err: If `hydrateNote(snapshot)` returns `Err(HydrationFailureReason)` during Step 3, `hydrateFeed` MUST throw `Error` whose `.message` matches the regex `/^hydrateNote-invariant-violation: .+: .+$/` (filePath, reason). The thrown Error MUST propagate out of `hydrateFeed`; `corruptedFiles[]` MUST NOT contain Step-3 entries. | REQ-008 | 2 | **true** | Example-based test with a divergent `hydrateNote` stub that returns `Err('block-parse')` for one snapshot; assert `hydrateFeed` throws and the message matches |
 
 ---
 
@@ -211,6 +216,8 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 - **PROP-026** (block-parse failure mapping) — Failure-mode mapping is load-bearing for REQ-017; misclassification (e.g., as `'unknown'` or `'yaml-parse'`) would silently drop diagnostic fidelity for users with structurally-broken vault files.
 - **PROP-027** (HydrateNote purity) — FIND-025: `HydrateNote` purity is the load-bearing claim that lets `hydrateFeed` (Step 3) remain pure even though it calls `HydrateNote` per snapshot. Asymmetry with PROP-025 is removed; both pure-core purity claims are now required:true.
 - **PROP-029** (Ok([]) → block-parse classification) — Q4: empty-body classification is the boundary between aggregate-shape errors and VO errors; misclassification would leak into either the `'invalid-value'` reason (wrong producer) or the auto-pad rejected alternative (silent data loss).
+- **PROP-031** (parser blank-line coalesce contract) — FIND-031: load-bearing parser contract: blank-line artifacts would break Step 2/Step 3 symmetry and create a reachable Step 3 throw path. The contract IS the invariant.
+- **PROP-032** (Step 3 fail-fast throw) — FIND-030: load-bearing fail-fast guard: silent corruptedFiles routing of Step 3 errors masks divergence between Step 2 and Step 3 in future code changes. Throw is the invariant.
 
 ---
 
@@ -219,13 +226,13 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 | Requirement | PROP IDs |
 |-------------|---------|
 | REQ-001 | PROP-005 (indirectly), PROP-016, PROP-017 |
-| REQ-002 | PROP-009, PROP-010, PROP-011, PROP-018, PROP-019, PROP-025, PROP-026, PROP-027, PROP-030 |
+| REQ-002 | PROP-009, PROP-010, PROP-011, PROP-018, PROP-019, PROP-025, PROP-026, PROP-027, PROP-030, PROP-031 |
 | REQ-003 | PROP-004, PROP-005, PROP-014 |
 | REQ-004 | PROP-004, PROP-006, PROP-024 |
 | REQ-005 | PROP-004, PROP-007 |
 | REQ-006 | PROP-005, PROP-006 |
 | REQ-007 | PROP-004, PROP-008 |
-| REQ-008 | PROP-001, PROP-011, PROP-015, PROP-017, PROP-027, PROP-030 [^req008-prop027] |
+| REQ-008 | PROP-001, PROP-011, PROP-015, PROP-017, PROP-027, PROP-030, PROP-032 [^req008-prop027] |
 | REQ-009 | PROP-002, PROP-012 |
 | REQ-010 | PROP-013, PROP-017 |
 | REQ-011 | PROP-003, PROP-022 |
@@ -235,12 +242,12 @@ In lean mode, `required: true` is reserved for the highest-risk invariants:
 | REQ-014 | PROP-013, PROP-017 |
 | REQ-015 | PROP-001, PROP-018, PROP-023, PROP-030 |
 | REQ-016 | PROP-009, PROP-019, PROP-020 |
-| REQ-017 | PROP-025, PROP-026, PROP-027, PROP-019, PROP-029, PROP-030 |
+| REQ-017 | PROP-025, PROP-026, PROP-027, PROP-019, PROP-029, PROP-030, PROP-031 |
 | REQ-018 | PROP-019, PROP-028, PROP-029 |
 
 [^req008-prop027]: REQ-008 depends on `HydrateNote` purity because Step 3 (`hydrateFeed`) calls `HydrateNote` per snapshot. PROP-027 verifies this purity. FIND-026 was conditional on FIND-022 resolution; with Q1=A adopted (hydrateFeed calls HydrateNote per snapshot in Step 3), PROP-027 IS directly relevant to REQ-008 and is retained in this row.
 
-Every requirement has at least one proof obligation. Nine `required: true` obligations (PROP-001, PROP-002, PROP-003, PROP-004, PROP-023, PROP-025, PROP-026, PROP-027, PROP-029) cover the highest-risk invariants and span Tiers 0–2. Total proof obligations: 30 (PROP-001 through PROP-030).
+Every requirement has at least one proof obligation. Eleven `required: true` obligations (PROP-001, PROP-002, PROP-003, PROP-004, PROP-023, PROP-025, PROP-026, PROP-027, PROP-029, PROP-031, PROP-032) cover the highest-risk invariants and span Tiers 0–2. Total proof obligations: 32 (PROP-001 through PROP-032).
 
 **Note on PROP-003 retarget (F-001)**: In revision 2, PROP-003 was written as `allocateNoteId(ts) ∉ set` where `set` was never an argument to the function — making the property untestable as a pure fast-check test. In revision 3, PROP-003 targets `nextAvailableNoteId(ts, existingIds) ∉ existingIds`, which is a pure function with `existingIds` as an explicit parameter and is fully property-testable. The `externalId` link (BEAD-018 → PROP-003) is unchanged; only the spec content is updated.
 

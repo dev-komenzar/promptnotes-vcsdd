@@ -1,0 +1,16 @@
+{
+  "findingId": "FIND-035",
+  "dimension": "implementation_correctness",
+  "severity": "minor",
+  "title": "Step 2 Ok([]) detail message is misleading when blockResult is Err",
+  "affects": [
+    "REQ-017",
+    "PROP-026",
+    "promptnotes/src/lib/domain/app-startup/scan-vault.ts"
+  ],
+  "spec_quote": "REQ-018 AC: 'CorruptedFile.detail is set to a human-readable summary of the unexpected error.' (block-parse failures should similarly carry a useful detail string for diagnostic traceability — REQ-017 says BlockParseError variants carry `line` and `detail` that should surface).",
+  "code_quote": "scan-vault.ts:153-163 — `if (!blockResult.ok || blockResult.value.length === 0) { const detail = blockResult.ok ? \"empty block array\" : blockResultDetail(blockResult.error); corruptedFiles.push({ filePath, failure: { kind: \"hydrate\", reason: \"block-parse\" }, detail, }); continue; }`",
+  "issue": "The condition `!blockResult.ok || blockResult.value.length === 0` correctly captures both failure modes, but the resulting `detail` field uses the literal string `'empty block array'` for the Ok([]) case. There is no test asserting the value of `corrupted.detail` for either branch (step2-block-parse.test.ts checks reason but never detail), so a regression that swaps the two branches (e.g., always producing 'empty block array') would go unnoticed. Additionally, the BlockParseError variants `unterminated-code-fence` and `malformed-structure` carry useful line/detail metadata (parse-markdown-to-blocks.ts:36-38) that blockResultDetail concatenates correctly — but again, no test asserts the format. Diagnostic traceability is therefore not verified.",
+  "recommended_remediation": "Add Tier-2 tests in step2-block-parse.test.ts that assert `corrupted.detail` matches expected substrings: `'unterminated code fence at line 3'` for the unterminated-code-fence stub, `'malformed structure at line 5: ...'` for malformed-structure, and `'empty block array'` for the Ok([]) stub. This locks in the diagnostic contract and prevents silent regression.",
+  "createdAt": "2026-05-08T00:00:00Z"
+}

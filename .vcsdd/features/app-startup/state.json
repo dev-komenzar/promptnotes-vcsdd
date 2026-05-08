@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "1b",
   "phaseHistory": [
     {
       "from": "init",
@@ -317,19 +317,65 @@
       "timestamp": "2026-05-08T00:00:00Z",
       "iteration": 6,
       "reason": "Phase 1c iteration-6 PASS — all FIND-019..026 resolved; 3 advisory findings (FIND-027/028/029) recorded as non-blocking"
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "reason": "sprint 5 green phase complete: PROP-025/026/027/028/029/030 implemented; 1915 tests pass / 0 fail"
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "reason": "sprint 5 refactor complete; tests still green; 74 pre-existing typecheck errors unchanged"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "iteration": 1,
+      "reason": "Phase 3 review begin"
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "iteration": 1,
+      "reason": "Phase 3 sprint-5 iteration-1 FAIL — entering feedback routing"
+    },
+    {
+      "from": "4",
+      "to": "1a",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "iteration": 1,
+      "reason": "Earliest affected phase: 1a — REQ-008 AC sharpening (FIND-030 Q6=A) and parseMarkdownToBlocks docstring update (FIND-031 Q5=A)"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 5,
+      "iteration": 2,
+      "reason": "spec-rev8 complete: REQ-008 throw + REQ-017 parser blank-line contract; PROP-031 / PROP-032 added"
     }
   ],
   "iterations": {
-    "3": 3,
+    "3": 4,
     "4": 3,
     "5": 2,
     "6": 1,
-    "1a": 5,
-    "1b": 4,
+    "1a": 6,
+    "1b": 5,
     "1c": 6,
-    "2a": 1,
-    "2b": 4,
-    "2c": 4
+    "2a": 2,
+    "2b": 5,
+    "2c": 5
   },
   "proofObligations": [
     {
@@ -420,7 +466,8 @@
           "BEAD-083",
           "BEAD-085",
           "BEAD-086",
-          "BEAD-087"
+          "BEAD-087",
+          "BEAD-094"
         ],
         "createdAt": "2026-04-27T21:20:33.272Z",
         "createdInPhase": "1a",
@@ -503,7 +550,8 @@
           "BEAD-030",
           "BEAD-032",
           "BEAD-083",
-          "BEAD-087"
+          "BEAD-087",
+          "BEAD-095"
         ],
         "createdAt": "2026-04-27T21:20:33.276Z",
         "createdInPhase": "1a",
@@ -1683,7 +1731,8 @@
           "BEAD-082",
           "BEAD-083",
           "BEAD-086",
-          "BEAD-087"
+          "BEAD-087",
+          "BEAD-094"
         ],
         "createdAt": "2026-05-08T00:00:00Z",
         "createdInPhase": "1a",
@@ -1739,7 +1788,8 @@
         "linkedBeads": [
           "BEAD-002",
           "BEAD-008",
-          "BEAD-080"
+          "BEAD-080",
+          "BEAD-094"
         ],
         "createdAt": "2026-05-08T00:00:00Z",
         "createdInPhase": "1b",
@@ -1747,7 +1797,7 @@
         "metadata": {
           "tier": 1,
           "required": true,
-          "statement": "HydrateNote ACL is pure: (NoteFileSnapshot) → Result<Note, HydrationFailureReason> is referentially transparent; same snapshot always produces same Result with bit-identical Note.blocks (incl. BlockId per Q2=A determinism). A snapshot whose body triggers parseMarkdownToBlocks Err or Ok([]) returns Err('block-parse').",
+          "statement": "HydrateNote ACL is pure: (NoteFileSnapshot) → Result<Note, HydrationFailureReason> is referentially transparent. By Q2 determinism + Q5=A (no filter inside hydrateNote), the resulting Note.blocks is bit-identical to parseMarkdownToBlocks(snapshot.body).value, including BlockId values. hydrateNote does NOT filter, transform, or re-number blocks; it composes parser output with snapshot frontmatter only. A snapshot whose body triggers parseMarkdownToBlocks Err or Ok([]) returns Err('block-parse').",
           "addressesMigration": "block-based-editor; FIND-025 fix"
         }
       },
@@ -1793,7 +1843,8 @@
         "status": "active",
         "linkedBeads": [
           "BEAD-080",
-          "BEAD-084"
+          "BEAD-084",
+          "BEAD-094"
         ],
         "createdAt": "2026-05-08T00:00:00Z",
         "createdInPhase": "1b",
@@ -1801,7 +1852,7 @@
         "metadata": {
           "tier": 2,
           "required": true,
-          "statement": "parseMarkdownToBlocks(snapshot.body) returning Ok([]) is folded by Step 2 caller to CorruptedFile.failure: { kind: 'hydrate', reason: 'block-parse' }; downstream invariant Note.blocks.length >= 1 is preserved.",
+          "statement": "parseMarkdownToBlocks(snapshot.body) returning Ok([]) is folded by Step 2 caller to CorruptedFile.failure: { kind: 'hydrate', reason: 'block-parse' }; downstream invariant Note.blocks.length >= 1 is preserved. Per Q5=A (rev8), Ok([]) corresponds to whitespace-only body input (no content blocks); parser does NOT emit paragraph('') artifacts.",
           "addressesFinding": "FIND-019"
         }
       },
@@ -1823,6 +1874,168 @@
           "required": false,
           "statement": "Q1=A two-call invariant: parseMarkdownToBlocks invoked exactly twice per non-corrupt file per pipeline run (Step 2 validation + Step 3 HydrateNote).",
           "addressesFinding": "FIND-022"
+        }
+      },
+      {
+        "beadId": "BEAD-088",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-5/output/findings/FIND-030.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-008",
+          "BEAD-083",
+          "BEAD-087"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-030",
+        "metadata": {
+          "severity": "major",
+          "dimension": "spec_fidelity",
+          "sprint": 5,
+          "iteration": 1
+        }
+      },
+      {
+        "beadId": "BEAD-089",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-5/output/findings/FIND-031.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-008",
+          "BEAD-080",
+          "BEAD-081",
+          "BEAD-083",
+          "BEAD-087"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-031",
+        "metadata": {
+          "severity": "major",
+          "dimension": "spec_fidelity",
+          "sprint": 5,
+          "iteration": 1
+        }
+      },
+      {
+        "beadId": "BEAD-090",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-5/output/findings/FIND-032.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-008",
+          "BEAD-083",
+          "BEAD-087"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-032",
+        "metadata": {
+          "severity": "major",
+          "dimension": "edge_case_coverage",
+          "sprint": 5,
+          "iteration": 1
+        }
+      },
+      {
+        "beadId": "BEAD-091",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-5/output/findings/FIND-033.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-008",
+          "BEAD-015",
+          "BEAD-016",
+          "BEAD-087"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-033",
+        "metadata": {
+          "severity": "minor",
+          "dimension": "structural_integrity",
+          "sprint": 5,
+          "iteration": 1
+        }
+      },
+      {
+        "beadId": "BEAD-092",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-5/output/findings/FIND-034.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-080",
+          "BEAD-081",
+          "BEAD-086"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-034",
+        "metadata": {
+          "severity": "minor",
+          "dimension": "verification_readiness",
+          "sprint": 5,
+          "iteration": 1
+        }
+      },
+      {
+        "beadId": "BEAD-093",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/app-startup/reviews/sprint-5/output/findings/FIND-035.json",
+        "status": "open",
+        "linkedBeads": [
+          "BEAD-080",
+          "BEAD-082"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "3",
+        "externalId": "FIND-035",
+        "metadata": {
+          "severity": "minor",
+          "dimension": "implementation_correctness",
+          "sprint": 5,
+          "iteration": 1
+        }
+      },
+      {
+        "beadId": "BEAD-094",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-002",
+          "BEAD-080",
+          "BEAD-089"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-031",
+        "metadata": {
+          "tier": 2,
+          "required": true,
+          "statement": "parseMarkdownToBlocks does not emit paragraph('') blocks for blank-line separators; whitespace-only body returns Ok([]).",
+          "addressesFinding": "FIND-031"
+        }
+      },
+      {
+        "beadId": "BEAD-095",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/app-startup/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-008",
+          "BEAD-088"
+        ],
+        "createdAt": "2026-05-08T00:00:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-032",
+        "metadata": {
+          "tier": 2,
+          "required": true,
+          "statement": "If hydrateNote returns Err, hydrateFeed MUST throw Error('hydrateNote-invariant-violation: <filePath>: <reason>'); corruptedFiles[] MUST NOT contain Step-3 entries.",
+          "addressesFinding": "FIND-030"
         }
       }
     ]
@@ -1982,7 +2195,11 @@
         "type_contract_consistency": "PASS",
         "traceability": "PASS",
         "spec_ambiguity": "PASS",
-        "advisory_findings": ["FIND-027", "FIND-028", "FIND-029"],
+        "advisory_findings": [
+          "FIND-027",
+          "FIND-028",
+          "FIND-029"
+        ],
         "verdict_path": ".vcsdd/features/app-startup/reviews/spec/iteration-6/output/verdict.md"
       },
       "adversaryVerdict": "PASS",
@@ -2019,7 +2236,9 @@
           "verification_readiness": "PASS",
           "findingsCount": 0,
           "priorFindingsResolved": 8,
-          "routedFindingsResolved": ["FIND-014"],
+          "routedFindingsResolved": [
+            "FIND-014"
+          ],
           "watchpointForSprint3": "PROP-013 must be implemented as a runtime Object.keys assertion on InitialUIState (not a TypeScript type assertion which would be tautological under structural typing). The new test should assert Object.keys(initialUIState).sort() === ['corruptedFiles', 'editingSessionState', 'feed', 'tagInventory']."
         },
         {
@@ -2028,7 +2247,16 @@
           "timestamp": "2026-05-08T00:00:00Z",
           "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-5/output/verdict.md",
           "findingsCount": 8,
-          "blockingFindings": ["FIND-019", "FIND-020", "FIND-021", "FIND-022", "FIND-023", "FIND-024", "FIND-025", "FIND-026"]
+          "blockingFindings": [
+            "FIND-019",
+            "FIND-020",
+            "FIND-021",
+            "FIND-022",
+            "FIND-023",
+            "FIND-024",
+            "FIND-025",
+            "FIND-026"
+          ]
         },
         {
           "iteration": 6,
@@ -2036,9 +2264,22 @@
           "timestamp": "2026-05-08T00:00:00Z",
           "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-6/output/verdict.md",
           "findingsCount": 3,
-          "advisoryFindings": ["FIND-027", "FIND-028", "FIND-029"],
+          "advisoryFindings": [
+            "FIND-027",
+            "FIND-028",
+            "FIND-029"
+          ],
           "blockingFindings": [],
-          "resolvedFromIteration5": ["FIND-019", "FIND-020", "FIND-021", "FIND-022", "FIND-023", "FIND-024", "FIND-025", "FIND-026"]
+          "resolvedFromIteration5": [
+            "FIND-019",
+            "FIND-020",
+            "FIND-021",
+            "FIND-022",
+            "FIND-023",
+            "FIND-024",
+            "FIND-025",
+            "FIND-026"
+          ]
         }
       ]
     }
@@ -2246,9 +2487,66 @@
         "Q3": "A — keep 'unknown' as defensive fallback; add small REQ documenting it",
         "Q4": "A — Ok([]) folds to reason='block-parse'"
       }
+    },
+    "sprint-5": {
+      "fromPhase": "3",
+      "fromSprint": 5,
+      "fromIteration": 1,
+      "fromArtifact": ".vcsdd/features/app-startup/reviews/sprint-5/output/verdict.json",
+      "toPhase": "1a",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "findings": [
+        {
+          "id": "FIND-030",
+          "severity": "major",
+          "dimension": "spec_fidelity",
+          "category": "spec_ambiguity_then_implementation_bug",
+          "routeToPhase": "1a->2b"
+        },
+        {
+          "id": "FIND-031",
+          "severity": "major",
+          "dimension": "spec_fidelity",
+          "category": "spec_ambiguity_then_implementation_bug",
+          "routeToPhase": "1a->2b"
+        },
+        {
+          "id": "FIND-032",
+          "severity": "major",
+          "dimension": "edge_case_coverage",
+          "category": "test_coverage",
+          "routeToPhase": "2a"
+        },
+        {
+          "id": "FIND-033",
+          "severity": "minor",
+          "dimension": "structural_integrity",
+          "category": "code_structure",
+          "routeToPhase": "2c"
+        },
+        {
+          "id": "FIND-034",
+          "severity": "minor",
+          "dimension": "verification_readiness",
+          "category": "test_quality",
+          "routeToPhase": "2a"
+        },
+        {
+          "id": "FIND-035",
+          "severity": "minor",
+          "dimension": "implementation_correctness",
+          "category": "naming",
+          "routeToPhase": "2b"
+        }
+      ],
+      "designDecisions": {
+        "Q5": "A — remove filter from hydrateNote; fix parseMarkdownToBlocks to coalesce blank-line separators",
+        "Q6": "A — REQ-008 programming-error invariant violation = throw Error(hydrateNote-invariant-violation)"
+      },
+      "earliestAffectedPhase": "1a"
     }
   },
-  "sprintCount": 4,
+  "sprintCount": 5,
   "createdAt": "2026-04-27T21:10:34.186Z",
   "updatedAt": "2026-05-08T00:00:00Z",
   "sprints": {
@@ -2593,6 +2891,63 @@
           "bunTest": "137 pass / 0 fail",
           "svelteCheck": "0 errors / 0 warnings"
         }
+      }
+    },
+    "sprint-5": {
+      "startedAt": "2026-05-08T00:00:00Z",
+      "currentPhase": "2c",
+      "routedFindings": [],
+      "specRefinementContext": {
+        "behavioralSpecRevision": 7,
+        "verificationArchitectureRevision": 7,
+        "specGateIteration": 6,
+        "specGateVerdict": "PASS"
+      },
+      "redPhase": {
+        "completedAt": "2026-05-08T00:00:00Z",
+        "iteration": 1,
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-5-red-phase.log",
+        "targetFeatureTests": "FAIL",
+        "regressionBaseline": "PASS",
+        "totalTests": 1915,
+        "newTestsAdded": 35,
+        "failingTests": 35,
+        "passingTests": 1880,
+        "typeCheckErrors": 74,
+        "scope": "spec rev7 block-based migration: REQ-017/018, PROP-025/026/027/028/029/030",
+        "redCommit": "eaf2613"
+      },
+      "greenPhase": {
+        "completedAt": "2026-05-08T00:00:00Z",
+        "iteration": 1,
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-5-green-phase.log",
+        "targetFeatureTests": "PASS",
+        "regressionBaseline": "PASS",
+        "totalTests": 1915,
+        "passingTests": 1915,
+        "failingTests": 0,
+        "typeCheckErrors": 74,
+        "note": "74 pre-existing typecheck errors unchanged (not introduced by sprint-5)",
+        "resolvedPropositions": [
+          "PROP-025",
+          "PROP-026",
+          "PROP-027",
+          "PROP-028",
+          "PROP-029",
+          "PROP-030"
+        ]
+      },
+      "refactorPhase": {
+        "completedAt": "2026-05-08T00:00:00Z",
+        "iteration": 1,
+        "evidencePath": ".vcsdd/features/app-startup/evidence/sprint-5-refactor-phase.log",
+        "targetFeatureTests": "PASS",
+        "regressionBaseline": "PASS",
+        "totalTests": 1915,
+        "passingTests": 1915,
+        "failingTests": 0,
+        "typeCheckErrors": 74,
+        "greenRefactorCommit": "6d4a635"
       }
     }
   },
