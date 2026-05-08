@@ -2,7 +2,7 @@
   "featureName": "app-startup",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -304,6 +304,19 @@
       "to": "1b",
       "timestamp": "2026-05-08T00:00:00Z",
       "reason": "spec-revision-rev7-complete: behavioral-spec rev7 + verification-architecture rev7 in place; ready for Phase 1c iteration-6"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "reason": "Phase 1c gate iteration-6 begin"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "iteration": 6,
+      "reason": "Phase 1c iteration-6 PASS — all FIND-019..026 resolved; 3 advisory findings (FIND-027/028/029) recorded as non-blocking"
     }
   ],
   "iterations": {
@@ -313,8 +326,8 @@
     "6": 1,
     "1a": 5,
     "1b": 4,
-    "1c": 4,
-    "2a": 5,
+    "1c": 6,
+    "2a": 1,
     "2b": 4,
     "2c": 4
   },
@@ -1959,31 +1972,21 @@
     },
     "1c": {
       "verdict": "PASS",
-      "timestamp": "2026-04-30T15:05:00Z",
+      "timestamp": "2026-05-08T00:00:00Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 4,
-        "spec_fidelity": "PASS",
-        "verification_readiness": "PASS",
-        "findingsCount": 0,
-        "priorFindingsResolved": 8,
-        "routedFindingsResolved": [
-          "FIND-014"
-        ],
-        "regressionCheck": [
-          "F-001",
-          "F-002",
-          "F-003",
-          "F-004",
-          "F-005",
-          "FIND-003",
-          "FIND-010"
-        ],
-        "watchpointForSprint3": "PROP-013 must be implemented as a runtime Object.keys assertion on InitialUIState (not a TypeScript type assertion which would be tautological under structural typing). The new test should assert Object.keys(initialUIState).sort() === ['corruptedFiles', 'editingSessionState', 'feed', 'tagInventory'].",
-        "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-4/output/verdict.json"
+        "iteration": 6,
+        "ears_rigor": "PASS",
+        "edge_case_coverage": "PASS",
+        "purity_boundary": "PASS",
+        "type_contract_consistency": "PASS",
+        "traceability": "PASS",
+        "spec_ambiguity": "PASS",
+        "advisory_findings": ["FIND-027", "FIND-028", "FIND-029"],
+        "verdict_path": ".vcsdd/features/app-startup/reviews/spec/iteration-6/output/verdict.md"
       },
       "adversaryVerdict": "PASS",
-      "adversaryReviewedAt": "2026-04-30T15:05:00Z",
+      "adversaryReviewedAt": "2026-05-08T00:00:00Z",
       "history": [
         {
           "iteration": 1,
@@ -2006,6 +2009,36 @@
             "FIND-003",
             "FIND-010"
           ]
+        },
+        {
+          "iteration": 4,
+          "verdict": "PASS",
+          "timestamp": "2026-04-30T15:05:00Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-4/output/verdict.json",
+          "spec_fidelity": "PASS",
+          "verification_readiness": "PASS",
+          "findingsCount": 0,
+          "priorFindingsResolved": 8,
+          "routedFindingsResolved": ["FIND-014"],
+          "watchpointForSprint3": "PROP-013 must be implemented as a runtime Object.keys assertion on InitialUIState (not a TypeScript type assertion which would be tautological under structural typing). The new test should assert Object.keys(initialUIState).sort() === ['corruptedFiles', 'editingSessionState', 'feed', 'tagInventory']."
+        },
+        {
+          "iteration": 5,
+          "verdict": "FAIL",
+          "timestamp": "2026-05-08T00:00:00Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-5/output/verdict.md",
+          "findingsCount": 8,
+          "blockingFindings": ["FIND-019", "FIND-020", "FIND-021", "FIND-022", "FIND-023", "FIND-024", "FIND-025", "FIND-026"]
+        },
+        {
+          "iteration": 6,
+          "verdict": "PASS",
+          "timestamp": "2026-05-08T00:00:00Z",
+          "verdictPath": ".vcsdd/features/app-startup/reviews/spec/iteration-6/output/verdict.md",
+          "findingsCount": 3,
+          "advisoryFindings": ["FIND-027", "FIND-028", "FIND-029"],
+          "blockingFindings": [],
+          "resolvedFromIteration5": ["FIND-019", "FIND-020", "FIND-021", "FIND-022", "FIND-023", "FIND-024", "FIND-025", "FIND-026"]
         }
       ]
     }
