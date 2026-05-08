@@ -5,7 +5,7 @@
 //
 // REQ-HSF-002: retry — save-failed → saving
 // REQ-HSF-003: discard (no pending) — save-failed → idle
-// REQ-HSF-004: discard (with pending) — save-failed → editing(pendingNextNoteId)
+// REQ-HSF-004: discard (with pending) — save-failed → editing(pendingNextFocus)
 // REQ-HSF-005: cancelSwitch — save-failed → editing(currentNoteId)
 
 export { retry as retryTransition } from "./retry.js";

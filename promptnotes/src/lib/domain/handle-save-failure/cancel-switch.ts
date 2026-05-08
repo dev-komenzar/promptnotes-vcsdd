@@ -1,9 +1,9 @@
 // handle-save-failure/cancel-switch.ts
 // Pure transition: save-failed → editing(currentNoteId) with isDirty=true, lastSaveResult='failed'
 //
-// REQ-HSF-005: Branch — CancelSwitch (valid: pendingNextNoteId present)
-// PROP-HSF-004: cancelSwitch state shape
-// PROP-HSF-007: pendingNextNoteId absent from resulting EditingState
+// REQ-HSF-005: Branch — CancelSwitch (valid: pendingNextFocus present)
+// PROP-HSF-004: cancelSwitch state shape (all 7 fields including focusedBlockId: null)
+// PROP-HSF-007: pendingNextFocus absent from resulting EditingState
 // PROP-HSF-021: pure-transition-no-side-effect
 
 import type { Timestamp } from "promptnotes-domain-types/shared/value-objects";
@@ -15,18 +15,9 @@ import type { SaveFailedState, EditingState } from "promptnotes-domain-types/cap
  * The user cancels the pending note switch and continues editing the current note.
  * The current note's unsaved content is retained (isDirty: true).
  * The failed-save history is preserved so the auto-save system can display a warning.
- *
- * Precondition: state.pendingNextNoteId !== null (enforced by the orchestrator before calling).
+ * focusedBlockId is null — UI re-focuses from its own state (REQ-HSF-005 Option A).
  *
  * No Clock.now() call, no emit — the orchestrator provides `now` and handles effects.
- *
- * REQ-HSF-005 AC — resulting EditingState has:
- *   - status: 'editing'
- *   - currentNoteId: state.currentNoteId  (same note; switch cancelled)
- *   - isDirty: true  (unsaved content retained)
- *   - lastInputAt: null  (restoration moment; no new input timestamp)
- *   - idleTimerHandle: null  (no timer running at restoration)
- *   - lastSaveResult: 'failed'  (last save did not succeed; preserved for UI warning)
  */
 export function cancelSwitch(
   state: SaveFailedState,
@@ -35,6 +26,7 @@ export function cancelSwitch(
   return {
     status: "editing",
     currentNoteId: state.currentNoteId,
+    focusedBlockId: null,
     isDirty: true,
     lastInputAt: null,
     idleTimerHandle: null,

@@ -2,7 +2,7 @@
   "featureName": "handle-save-failure",
   "mode": "lean",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -105,6 +105,20 @@
       "timestamp": "2026-05-08T00:00:00Z",
       "sprint": 2,
       "reason": "sprint-2 red phase complete: 89 tests encoded against revised spec; Red signal observed (26 runtime failures — focusedBlockId threading, cancel-switch guard string, pendingNextFocus field rename)"
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 2,
+      "reason": "sprint-2 green phase complete: 89 pass / 0 fail"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-08T00:00:00Z",
+      "sprint": 2,
+      "reason": "sprint-2 refactor complete (no structural change — null-guards and field selectors each used once; no duplication to extract); ready for adversarial review"
     }
   ],
   "iterations": {
@@ -115,8 +129,8 @@
     "1b": 2,
     "1c": 2,
     "2a": 2,
-    "2b": 1,
-    "2c": 1,
+    "2b": 2,
+    "2c": 2,
     "complete": 1
   },
   "proofObligations": [],
@@ -532,7 +546,7 @@
   },
   "sprintCount": 2,
   "createdAt": "2026-05-01T15:12:50.376Z",
-  "updatedAt": "2026-05-08T00:00:00Z",
+  "updatedAt": "2026-05-08T01:00:00Z",
   "redPhaseEvidence": {
     "sprint": 2,
     "timestamp": "2026-05-08T00:00:00Z",

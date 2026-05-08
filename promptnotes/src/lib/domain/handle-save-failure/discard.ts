@@ -1,10 +1,10 @@
 // handle-save-failure/discard.ts
-// Pure transition: save-failed → editing(pendingNextNoteId) | idle
+// Pure transition: save-failed → editing(pendingNextFocus) | idle
 //
-// REQ-HSF-003: Branch — DiscardCurrentSession without pendingNextNoteId
-// REQ-HSF-004: Branch — DiscardCurrentSession with pendingNextNoteId
+// REQ-HSF-003: Branch — DiscardCurrentSession without pendingNextFocus
+// REQ-HSF-004: Branch — DiscardCurrentSession with pendingNextFocus (propagates blockId)
 // PROP-HSF-003: discard routing
-// PROP-HSF-006: pendingNextNoteId routing — discard with pending (all 6 EditingState fields)
+// PROP-HSF-006: pendingNextFocus routing — discard with pending (all 7 EditingState fields)
 // PROP-HSF-021: pure-transition-no-side-effect
 
 import type { Timestamp } from "promptnotes-domain-types/shared/value-objects";
@@ -15,27 +15,19 @@ import type {
 } from "promptnotes-domain-types/capture/states";
 
 /**
- * Pure transition: save-failed → editing(pendingNextNoteId) or idle.
+ * Pure transition: save-failed → editing(pendingNextFocus) or idle.
  *
- * Routing is determined by state.pendingNextNoteId:
+ * Routing is determined by state.pendingNextFocus:
  *   - null  → IdleState  (REQ-HSF-003)
- *   - non-null → EditingState for pendingNextNoteId (REQ-HSF-004)
+ *   - non-null → EditingState for pendingNextFocus.noteId with focusedBlockId=pendingNextFocus.blockId (REQ-HSF-004)
  *
  * No Clock.now() call, no emit — the orchestrator provides `now` and handles effects.
- *
- * REQ-HSF-004 AC — when pendingNextNoteId is non-null, resulting EditingState has:
- *   - status: 'editing'
- *   - currentNoteId: state.pendingNextNoteId
- *   - isDirty: false  (fresh session; pending note not yet edited)
- *   - lastInputAt: null  (fresh session)
- *   - idleTimerHandle: null  (no timer running)
- *   - lastSaveResult: null  (fresh session)
  */
 export function discard(
   state: SaveFailedState,
   _now: Timestamp,
 ): EditingState | IdleState {
-  if (state.pendingNextNoteId === null) {
+  if (state.pendingNextFocus === null) {
     // REQ-HSF-003: no pending note → transition to idle
     const idleState: IdleState = {
       status: "idle",
@@ -43,10 +35,11 @@ export function discard(
     return idleState;
   }
 
-  // REQ-HSF-004: pending note exists → begin editing the pending note
+  // REQ-HSF-004: pending focus exists → begin editing the pending note at the pending block
   const editingState: EditingState = {
     status: "editing",
-    currentNoteId: state.pendingNextNoteId,
+    currentNoteId: state.pendingNextFocus.noteId,
+    focusedBlockId: state.pendingNextFocus.blockId,
     isDirty: false,
     lastInputAt: null,
     idleTimerHandle: null,
