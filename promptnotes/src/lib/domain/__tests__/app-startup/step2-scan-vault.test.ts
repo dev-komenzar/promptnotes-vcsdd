@@ -1,7 +1,7 @@
 /**
  * step2-scan-vault.test.ts — Step 2: scanVault tests
  *
- * REQ-002: Scans vault, accumulates per-file results
+ * REQ-002: Scans vault, accumulates per-file results (rev7: snapshots are NoteFileSnapshot[])
  * REQ-007: list-failed terminates the workflow
  * REQ-016: Per-file readFile failure → read-kind ScanFileFailure
  *
@@ -11,17 +11,23 @@
  * PROP-011: empty vault (0 .md files) → empty Feed, proceeds to Step 4
  * PROP-012: all-corrupted vault succeeds, empty Feed
  * PROP-018: total output invariant: snapshots.length + corruptedFiles.length = input count
+ * PROP-019: HydrationFailureReason switch covers all 5 values exhaustively
  * PROP-020: permission-denied readFile → failure {kind:'read', fsError:{kind:'permission'}}
  *
  * Sprint 2 changes:
  *   FIND-004: NoteId VO validation — non-conforming stem → CorruptedFile with hydrate/invalid-value
  *   FIND-005: ParsedNote type-level assertion — tags must be Tag[], body must be Body
  *   FIND-006: Higher-fidelity invalid-value test via real VO rejection (malformed tag in parsed output)
+ *
+ * Sprint 5 additions (spec rev7):
+ *   PROP-019: HydrationFailureReason exhaustiveness — all 5 values covered in switch
+ *   REQ-002 (rev7): ScannedVault.snapshots is NoteFileSnapshot[] (not Note aggregates)
+ *                   HydrateNote is NOT called in Step 2
  */
 
 import { describe, test, expect } from "bun:test";
 import * as fc from "fast-check";
-import type { CorruptedFile, NoteFileSnapshot } from "promptnotes-domain-types/shared/snapshots";
+import type { CorruptedFile, NoteFileSnapshot, HydrationFailureReason, ScanFileFailure } from "promptnotes-domain-types/shared/snapshots";
 import type { FsError } from "promptnotes-domain-types/shared/errors";
 import type { VaultPath, Tag, Body, Frontmatter, Timestamp } from "promptnotes-domain-types/shared/value-objects";
 import type { ScannedVault, ParsedNote } from "$lib/domain/app-startup/stages";
@@ -906,5 +912,160 @@ describe("FIND-006 / REQ-002: invalid-value via real VO rejection — malformed 
       expect(result.value.snapshots).toHaveLength(1);
       expect(result.value.corruptedFiles).toHaveLength(0);
     }
+  });
+});
+
+// ── PROP-019 (re-affirmed, sprint 5): HydrationFailureReason exhaustiveness ──
+//
+// REQ-002 / REQ-016 / REQ-018: HydrationFailureReason is exhaustively typed as
+//   'yaml-parse' | 'missing-field' | 'invalid-value' | 'block-parse' | 'unknown'
+// (5 values after block-based migration added 'block-parse').
+//
+// Sprint 5 additions: 'block-parse' (REQ-017) and 'unknown' (REQ-018) were added to the union.
+// PROP-019 now covers all 5 values.
+
+describe("PROP-019 (re-affirmed, sprint 5) — HydrationFailureReason switch covers all 5 values exhaustively", () => {
+  // These are Tier-0 (type-level) + Tier-2 (example-based) tests.
+  // The type-level check verifies exhaustiveness; the runtime tests document which
+  // REQ produces each value.
+
+  // ── Tier-0: TypeScript type-level exhaustiveness guard ─────────────────────
+  //
+  // PROP-019 AC: every consumer switch over HydrationFailureReason must cover all
+  // 5 values with no fall-through. We encode this as a function with a never-typed
+  // exhaustive switch — if any case is missing, the TypeScript compiler reports an error.
+  //
+  // This is a compile-time check, not a runtime test. If all 5 cases are handled,
+  // the function compiles. If a new case is added without updating the switch,
+  // the file fails to compile.
+
+  function handleHydrationReason(reason: HydrationFailureReason): string {
+    switch (reason) {
+      case "yaml-parse":
+        return "yaml-parse: FrontmatterParser.parse YAML syntax error (REQ-002)";
+      case "missing-field":
+        return "missing-field: FrontmatterParser.parse missing required field (REQ-002)";
+      case "invalid-value":
+        return "invalid-value: VO Smart Constructor rejection (REQ-002, FIND-004, FIND-006)";
+      case "block-parse":
+        // Added in block-based migration (spec rev 6+) — REQ-017
+        return "block-parse: parseMarkdownToBlocks failure or Ok([]) (REQ-017)";
+      case "unknown":
+        // Added in spec rev7 — REQ-018 defensive fallback
+        return "unknown: defensive fallback for non-categorisable errors (REQ-018)";
+      default: {
+        // PROP-019 exhaustiveness guard: this branch is unreachable if all 5 values
+        // are handled. If a new value is added without updating this switch, TypeScript
+        // reports: 'Type X is not assignable to type never'.
+        const _exhaustive: never = reason;
+        return _exhaustive;
+      }
+    }
+  }
+
+  test("PROP-019 — handleHydrationReason covers 'yaml-parse' (REQ-002 producer: FrontmatterParser.parse)", () => {
+    // REQ-002: FrontmatterParser.parse failures produce 'yaml-parse'
+    const result = handleHydrationReason("yaml-parse");
+    expect(result).toContain("yaml-parse");
+  });
+
+  test("PROP-019 — handleHydrationReason covers 'missing-field' (REQ-002 producer: required field absent)", () => {
+    // REQ-002: zero-byte file or missing required frontmatter field
+    const result = handleHydrationReason("missing-field");
+    expect(result).toContain("missing-field");
+  });
+
+  test("PROP-019 — handleHydrationReason covers 'invalid-value' (REQ-002 producer: VO rejection)", () => {
+    // REQ-002, FIND-004, FIND-006: VO Smart Constructor rejection
+    const result = handleHydrationReason("invalid-value");
+    expect(result).toContain("invalid-value");
+  });
+
+  test("PROP-019 — handleHydrationReason covers 'block-parse' (REQ-017 producer: parseMarkdownToBlocks failure/Ok([]))", () => {
+    // REQ-017 (sprint 5 addition): parseMarkdownToBlocks Err or Ok([])
+    const result = handleHydrationReason("block-parse");
+    expect(result).toContain("block-parse");
+  });
+
+  test("PROP-019 — handleHydrationReason covers 'unknown' (REQ-018 producer: defensive fallback)", () => {
+    // REQ-018 (sprint 5 addition): defensive fallback for non-categorisable errors
+    const result = handleHydrationReason("unknown");
+    expect(result).toContain("unknown");
+  });
+
+  test("PROP-019 — HydrationFailureReason union has exactly 5 members", () => {
+    // Tier-2: runtime verification that we know about exactly 5 reasons.
+    // The type-level switch above is the primary guarantee; this runtime check
+    // documents the expected count.
+    const allReasons: HydrationFailureReason[] = [
+      "yaml-parse",
+      "missing-field",
+      "invalid-value",
+      "block-parse",
+      "unknown",
+    ];
+
+    // Verify all are handled by the exhaustive switch
+    for (const reason of allReasons) {
+      expect(() => handleHydrationReason(reason)).not.toThrow();
+    }
+
+    // Verify the count matches the spec (5 values post block-based migration)
+    expect(allReasons).toHaveLength(5);
+  });
+
+  test("PROP-019 — ScanFileFailure discriminated union: 'hydrate' branch reason switch covers all 5 values", () => {
+    // PROP-019 AC: 'within the hydrate branch, the HydrationFailureReason switch covers
+    // all five values with no fall-through.'
+    // We verify that a consumer can exhaustively switch over ScanFileFailure and
+    // within its 'hydrate' branch switch over HydrationFailureReason.
+
+    function handleScanFileFailure(failure: ScanFileFailure): string {
+      switch (failure.kind) {
+        case "read":
+          return `read failure: ${failure.fsError.kind}`;
+        case "hydrate":
+          // Inner switch must be exhaustive over HydrationFailureReason
+          return handleHydrationReason(failure.reason);
+        default: {
+          const _exhaustive: never = failure;
+          return _exhaustive;
+        }
+      }
+    }
+
+    // Verify 'read' branch
+    const readResult = handleScanFileFailure({ kind: "read", fsError: { kind: "permission" } });
+    expect(readResult).toContain("read failure");
+
+    // Verify 'hydrate' branch with all 5 reasons
+    for (const reason of ["yaml-parse", "missing-field", "invalid-value", "block-parse", "unknown"] as HydrationFailureReason[]) {
+      const result = handleScanFileFailure({ kind: "hydrate", reason });
+      expect(result).toBeDefined();
+    }
+  });
+
+  test("PROP-019 — 'block-parse' is a member of HydrationFailureReason (spec rev7 addition)", () => {
+    // REQ-017 AC: 'block-parse' is a member of the HydrationFailureReason union.
+    // This test will fail if HydrationFailureReason in shared/snapshots.ts does not
+    // include 'block-parse'.
+    // (Note: the type was already updated in docs/domain/code/ts/src/shared/snapshots.ts
+    // as part of the block-based migration.)
+    const blockParseReason: HydrationFailureReason = "block-parse";
+    expect(blockParseReason).toBe("block-parse");
+
+    // Verify it's handled by the exhaustive switch (compile-time proof above)
+    const result = handleHydrationReason(blockParseReason);
+    expect(result).toContain("block-parse");
+  });
+
+  test("PROP-019 — 'unknown' is a member of HydrationFailureReason (REQ-018 defensive fallback)", () => {
+    // REQ-018 AC: 'unknown' is the only non-static HydrationFailureReason.
+    // This test verifies it is a member of the union.
+    const unknownReason: HydrationFailureReason = "unknown";
+    expect(unknownReason).toBe("unknown");
+
+    const result = handleHydrationReason(unknownReason);
+    expect(result).toContain("unknown");
   });
 });
