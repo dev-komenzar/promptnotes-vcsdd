@@ -271,6 +271,104 @@ describe("PROP-027 — failure-mode determinism: block-parse triggering snapshot
   });
 });
 
+// ── PROP-027 / REQ-002 rev8: hydrateNote is a pass-through — does NOT filter blocks ──
+
+describe("PROP-027 / REQ-002 rev8 — hydrateNote MUST NOT filter paragraph('') blocks (parser contract, not hydrateNote filter)", () => {
+  // REQ-002 rev8 / Q5=A: The rev8 spec SHARPLY REJECTS the in-place filter inside
+  // hydrateNote. The parser contract (PROP-031) ensures paragraph('') is NEVER emitted
+  // by a compliant parser. Therefore hydrateNote MUST pass through ALL blocks from the
+  // parser unchanged — no filtering of paragraph('') blocks.
+  //
+  // This test uses a STUB parser that deliberately returns paragraph('') blocks to verify
+  // that hydrateNote does NOT filter them. If hydrateNote filters, the resulting Note.blocks
+  // will be shorter than what the stub returned → test FAILS.
+  //
+  // Red phase: the current hydrateNote impl DOES filter paragraph('') blocks.
+  // These tests WILL FAIL because the current filter will remove the empty paragraphs.
+
+  test("REQ-002 rev8 — hydrateNote with stub returning [paragraph(''), heading('X'), paragraph('')] passes ALL 3 blocks through", () => {
+    // Rev8: hydrateNote is a pure pass-through; the contract is on the parser, not on hydrateNote.
+    // A stub parser that returns paragraph('') blocks must produce a Note with ALL 3 blocks intact.
+    const snapshot = makeSnapshot("2026-04-28-120000-020", "any body");
+
+    // Stub: deliberately returns paragraph('') artifacts (simulating a non-compliant parser
+    // to prove hydrateNote does not filter)
+    const stubParser = (_markdown: string): { ok: true; value: ReadonlyArray<{id: unknown; type: unknown; content: unknown}> } => ({
+      ok: true as const,
+      value: [
+        { id: "block-0", type: "paragraph", content: "" },   // paragraph(''): empty
+        { id: "block-1", type: "heading-1", content: "X" },  // heading: content block
+        { id: "block-2", type: "paragraph", content: "" },   // paragraph(''): empty
+      ],
+    });
+
+    const result = hydrateNote(snapshot, stubParser as Parameters<typeof hydrateNote>[1]);
+
+    // Rev8: hydrateNote MUST NOT filter — all 3 blocks must be in Note.blocks
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.blocks).toHaveLength(3);
+      expect(result.value.blocks[0].type as unknown as string).toBe("paragraph");
+      expect(result.value.blocks[0].content as unknown as string).toBe("");
+      expect(result.value.blocks[1].type as unknown as string).toBe("heading-1");
+      expect(result.value.blocks[1].content as unknown as string).toBe("X");
+      expect(result.value.blocks[2].type as unknown as string).toBe("paragraph");
+      expect(result.value.blocks[2].content as unknown as string).toBe("");
+    }
+  });
+
+  test("REQ-002 rev8 — hydrateNote with stub returning [paragraph('')] passes through the 1 block (NOT Err)", () => {
+    // A single paragraph('') from the stub must produce Ok(Note) with 1 block, NOT Err.
+    // Rev8: hydrateNote MUST NOT filter — if the block is there, it stays.
+    // (Note: the real parser would never produce this per PROP-031; we use a stub to test the boundary.)
+    const snapshot = makeSnapshot("2026-04-28-120000-021", "any body");
+
+    const stubParser = (_markdown: string): { ok: true; value: ReadonlyArray<{id: unknown; type: unknown; content: unknown}> } => ({
+      ok: true as const,
+      value: [
+        { id: "block-0", type: "paragraph", content: "" },
+      ],
+    });
+
+    const result = hydrateNote(snapshot, stubParser as Parameters<typeof hydrateNote>[1]);
+
+    // Rev8: pass-through means Ok(Note) with the single paragraph(''), NOT Err('block-parse')
+    // Current impl will return Err because it filters and then checks length === 0 → FAIL
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.blocks).toHaveLength(1);
+      expect(result.value.blocks[0].content as unknown as string).toBe("");
+    }
+  });
+
+  test("REQ-002 rev8 — hydrateNote with stub returning non-empty blocks does NOT reassign BlockIds", () => {
+    // Rev8: hydrateNote is a pure pass-through. It does NOT reassign BlockIds.
+    // If the stub returns { id: 'block-99', type: 'paragraph', content: 'hello' },
+    // the resulting Note.blocks[0].id must still be 'block-99', NOT 'block-0'.
+    // (Current impl reassigns IDs after filtering — this test catches both the filter removal
+    // AND the ID reassignment removal.)
+    const snapshot = makeSnapshot("2026-04-28-120000-022", "any body");
+
+    const stubParser = (_markdown: string): { ok: true; value: ReadonlyArray<{id: unknown; type: unknown; content: unknown}> } => ({
+      ok: true as const,
+      value: [
+        { id: "block-5", type: "paragraph", content: "first" },
+        { id: "block-7", type: "heading-1", content: "second" },
+      ],
+    });
+
+    const result = hydrateNote(snapshot, stubParser as Parameters<typeof hydrateNote>[1]);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.blocks).toHaveLength(2);
+      // BlockIds must be preserved from the parser output, NOT reassigned
+      expect(result.value.blocks[0].id as unknown as string).toBe("block-5");
+      expect(result.value.blocks[1].id as unknown as string).toBe("block-7");
+    }
+  });
+});
+
 // ── PROP-027 / REQ-008: hydrateNote preserves HydratedFeed purity ────────────
 
 describe("PROP-027 / REQ-008 — hydrateNote purity enables hydrateFeed purity", () => {

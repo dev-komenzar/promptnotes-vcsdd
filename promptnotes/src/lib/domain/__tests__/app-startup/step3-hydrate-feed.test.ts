@@ -440,6 +440,154 @@ describe("REQ-008 / PROP-015: Feed.noteRefs sorted by updatedAt descending", () 
   });
 });
 
+// ── PROP-032 / REQ-008 rev8: hydrateFeed MUST throw on hydrateNote Err ───
+
+describe("PROP-032 / REQ-008 rev8 — hydrateFeed throws Error when hydrateNote returns Err for any snapshot", () => {
+  // PROP-032: If hydrateNote(snapshot) returns Err(HydrationFailureReason) during Step 3,
+  // hydrateFeed MUST throw Error whose .message matches /^hydrateNote-invariant-violation: .+: .+$/.
+  // The thrown Error MUST propagate out of hydrateFeed.
+  // corruptedFiles[] MUST NOT contain Step-3 entries (no routing to corruptedFiles on Err).
+  //
+  // Red phase: current hydrateFeed routes hydrateNote failures to step3CorruptedFiles instead
+  // of throwing. All tests in this describe will FAIL.
+
+  // We trigger hydrateNote to return Err by injecting a divergent parseMarkdownToBlocks
+  // via ScannedVault.parseMarkdownToBlocks. When this block parser returns Err,
+  // hydrateNote will return Err('block-parse'), which must cause hydrateFeed to throw.
+
+  function makeDivergentBlockParser(): (markdown: string) => { ok: false; error: { kind: "unterminated-code-fence"; line: number } } {
+    return (_markdown: string) => ({
+      ok: false as const,
+      error: { kind: "unterminated-code-fence" as const, line: 1 },
+    });
+  }
+
+  function makeScannedVaultWithDivergentParser(
+    snapshots: NoteFileSnapshot[],
+    corruptedFiles: CorruptedFile[] = []
+  ): ScannedVault {
+    return {
+      kind: "ScannedVault",
+      snapshots,
+      corruptedFiles,
+      parseMarkdownToBlocks: makeDivergentBlockParser(),
+    } as unknown as ScannedVault;
+  }
+
+  test("PROP-032 — throws Error when hydrateNote returns Err for any snapshot (divergent parser stub)", () => {
+    // Simulate divergence: a snapshot that passed Step 2 but whose block parser
+    // now returns Err (as if Step 2 and Step 3 have diverged).
+    // hydrateFeed MUST throw, NOT route to corruptedFiles.
+    const snapshot = makeSnapshot("2026-04-28-120000-010", "/vault/divergent.md", 2000);
+    const input = makeScannedVaultWithDivergentParser([snapshot]);
+
+    // PROP-032: the throw message must match /^hydrateNote-invariant-violation: .+: .+$/
+    expect(() => hydrateFeed(input)).toThrow(/^hydrateNote-invariant-violation: .+: .+$/);
+  });
+
+  test("PROP-032 — thrown Error message contains snapshot.filePath and reason", () => {
+    // The message format is: 'hydrateNote-invariant-violation: <filePath>: <reason>'
+    const snapshot = makeSnapshot("2026-04-28-120000-011", "/vault/path-in-message.md", 2000);
+    const input = makeScannedVaultWithDivergentParser([snapshot]);
+
+    let thrownError: Error | undefined;
+    try {
+      hydrateFeed(input);
+    } catch (e) {
+      thrownError = e as Error;
+    }
+
+    expect(thrownError).toBeDefined();
+    if (thrownError) {
+      // Message must contain the filePath
+      expect(thrownError.message).toContain("/vault/path-in-message.md");
+      // Message must contain the reason (block-parse)
+      expect(thrownError.message).toContain("block-parse");
+      // Full regex shape
+      expect(thrownError.message).toMatch(/^hydrateNote-invariant-violation: .+: .+$/);
+    }
+  });
+
+  test("PROP-032 — corruptedFiles[] does NOT gain new entries from Step-3 divergent-stub Err (throw aborts)", () => {
+    // PROP-032: hydrateFeed MUST NOT route Step-3 HydrateNote failures to corruptedFiles[].
+    // Since the throw aborts hydrateFeed, corruptedFiles cannot be inspected from the return value.
+    // We verify the throw happens (not a normal return), confirming no routing occurred.
+    const step2CorruptedFile = makeCorruptedFile("/vault/step2-already-bad.md");
+    const snapshot = makeSnapshot("2026-04-28-120000-012", "/vault/divergent2.md", 2000);
+    const input = makeScannedVaultWithDivergentParser([snapshot], [step2CorruptedFile]);
+
+    // Verify the call throws (not a normal return)
+    expect(() => hydrateFeed(input)).toThrow();
+
+    // Confirm it IS a hydrateNote-invariant-violation (not some other error)
+    let thrownError: unknown;
+    try {
+      hydrateFeed(input);
+    } catch (e) {
+      thrownError = e;
+    }
+    expect(thrownError).toBeInstanceOf(Error);
+    if (thrownError instanceof Error) {
+      expect(thrownError.message).toMatch(/^hydrateNote-invariant-violation:/);
+    }
+  });
+
+  test("PROP-032 — does NOT throw when all hydrateNote calls return Ok (happy path)", () => {
+    // Negative test: when all snapshots hydrate successfully, no throw occurs.
+    // The normal case must not regress.
+    const snapshot1 = makeSnapshot("2026-04-28-120000-013", "/vault/ok1.md", 2000);
+    const snapshot2 = makeSnapshot("2026-04-28-120000-014", "/vault/ok2.md", 3000);
+
+    // No injected parser → hydrateNote uses the real parser on the snapshot.body ("body")
+    const input = makeScannedVault([snapshot1, snapshot2]);
+
+    // Must NOT throw
+    expect(() => hydrateFeed(input)).not.toThrow();
+
+    const result = hydrateFeed(input);
+    expect(result.kind).toBe("HydratedFeed");
+    expect(result.feed.noteRefs).toHaveLength(2);
+  });
+
+  test("PROP-032 — throws even when 1 snapshot succeeds and 1 diverges (any Err triggers throw)", () => {
+    // PROP-032: even partial failure (1 of N snapshots fails hydrateNote) MUST throw.
+    // The ok snapshots do NOT rescue the failing one.
+    const okSnapshot = makeSnapshot("2026-04-28-120000-015", "/vault/ok.md", 2000);
+    const badSnapshot = makeSnapshot("2026-04-28-120000-016", "/vault/bad.md", 3000);
+
+    // Divergent parser: only fails for snapshots whose body is "body" — which is the default
+    // in makeSnapshot. We need a parser that fails for exactly the bad snapshot.
+    // Use a counter to fail on the second call.
+    let callCount = 0;
+    const selectiveFailParser = (_markdown: string): { ok: boolean; value?: unknown; error?: unknown } => {
+      callCount++;
+      if (callCount === 2) {
+        return { ok: false as const, error: { kind: "unterminated-code-fence" as const, line: 1 } };
+      }
+      return {
+        ok: true as const,
+        value: [
+          {
+            id: "block-0",
+            type: "paragraph",
+            content: _markdown,
+          },
+        ],
+      };
+    };
+
+    const input: ScannedVault = {
+      kind: "ScannedVault",
+      snapshots: [okSnapshot, badSnapshot],
+      corruptedFiles: [],
+      parseMarkdownToBlocks: selectiveFailParser as unknown as ScannedVault["parseMarkdownToBlocks"],
+    } as unknown as ScannedVault;
+
+    // Must throw even though only 1 of 2 snapshots diverges
+    expect(() => hydrateFeed(input)).toThrow(/^hydrateNote-invariant-violation:/);
+  });
+});
+
 // ── REQ-008: HydratedFeed shape ───────────────────────────────────────────
 
 describe("REQ-008: HydratedFeed shape", () => {

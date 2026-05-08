@@ -516,6 +516,111 @@ describe("PROP-029 (Q4) — parseMarkdownToBlocks Ok([]) → CorruptedFile reaso
   });
 });
 
+// ── PROP-029 (Q5=A reachability) — real parser + whitespace-only body → block-parse ──
+
+describe("PROP-029 (Q5=A reachable) — whitespace-only body produces Ok([]) from real parser, folded to reason='block-parse'", () => {
+  // PROP-029 / Q4=A: parseMarkdownToBlocks(snapshot.body) returning Ok([]) folds to
+  // CorruptedFile.failure: { kind: 'hydrate', reason: 'block-parse' }.
+  // Q5=A (rev8): this is the ONLY way Ok([]) is produced — whitespace-only body.
+  //
+  // This test uses the REAL parseMarkdownToBlocks (not a stub) to confirm the
+  // end-to-end path: real whitespace-only body → real parser → Ok([]) → block-parse.
+  //
+  // Red phase: the current parseMarkdownToBlocks emits paragraph('') for '\n\n\n',
+  // so it does NOT return Ok([]) — scanVault would receive a non-empty Block[], and
+  // the file would land in snapshots rather than corruptedFiles. FAIL expected.
+
+  test("PROP-029 (Q5=A reachable) — snapshot with body='\\n\\n\\n' → real parser Ok([]) → CorruptedFile reason='block-parse'", async () => {
+    // Uses the REAL parseMarkdownToBlocks (imported at the top of the test environment
+    // via the scanVault ports mechanism — we inject it explicitly here).
+    // The real parser MUST return Ok([]) for whitespace-only body (rev8 contract).
+    // scanVault MUST then route Ok([]) → reason='block-parse'.
+    const { parseMarkdownToBlocks: realParser } = await import(
+      "$lib/domain/capture-auto-save/parse-markdown-to-blocks"
+    );
+
+    const vaultPath = makeVaultPath("/vault");
+
+    const ports: ScanVaultPorts = {
+      listMarkdown: makeListMarkdown(["/vault/2026-04-28-120000-099.md"]),
+      readFile: makeReadFile({
+        "/vault/2026-04-28-120000-099.md": {
+          ok: true,
+          value: makeValidMarkdownContent("2026-04-28-120000-099"),
+        },
+      }),
+      // Parser returns body that is whitespace-only: '\n\n\n'
+      // The real parseMarkdownToBlocks MUST return Ok([]) for this (rev8).
+      parseNote: (_raw: string) => ({
+        ok: true as const,
+        value: {
+          body: makeBody("\n\n\n"),
+          fm: makeFrontmatter(),
+        },
+      }),
+      // Inject the real parser — NOT a stub. This verifies the real parser + Step 2 integration.
+      parseMarkdownToBlocks: realParser,
+    } as unknown as ScanVaultPorts;
+
+    const result = await scanVault(vaultPath, ports);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      // PROP-029: whitespace-only body → real parser returns Ok([]) → block-parse
+      expect(result.value.snapshots).toHaveLength(0);
+      expect(result.value.corruptedFiles).toHaveLength(1);
+
+      const corrupted = result.value.corruptedFiles[0];
+      expect(corrupted.filePath).toBe("/vault/2026-04-28-120000-099.md");
+      expect(corrupted.failure.kind).toBe("hydrate");
+      if (corrupted.failure.kind === "hydrate") {
+        expect(corrupted.failure.reason).toBe("block-parse");
+      }
+    }
+  });
+
+  test("PROP-029 (Q5=A reachable) — snapshot with body='   ' (spaces only) → real parser Ok([]) → block-parse", async () => {
+    // Spaces-only body: another whitespace-only variant → Ok([]) → block-parse.
+    const { parseMarkdownToBlocks: realParser } = await import(
+      "$lib/domain/capture-auto-save/parse-markdown-to-blocks"
+    );
+
+    const vaultPath = makeVaultPath("/vault");
+
+    const ports: ScanVaultPorts = {
+      listMarkdown: makeListMarkdown(["/vault/2026-04-28-120000-098.md"]),
+      readFile: makeReadFile({
+        "/vault/2026-04-28-120000-098.md": {
+          ok: true,
+          value: makeValidMarkdownContent("2026-04-28-120000-098"),
+        },
+      }),
+      parseNote: (_raw: string) => ({
+        ok: true as const,
+        value: {
+          body: makeBody("   "),
+          fm: makeFrontmatter(),
+        },
+      }),
+      parseMarkdownToBlocks: realParser,
+    } as unknown as ScanVaultPorts;
+
+    const result = await scanVault(vaultPath, ports);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.snapshots).toHaveLength(0);
+      expect(result.value.corruptedFiles).toHaveLength(1);
+
+      const corrupted = result.value.corruptedFiles[0];
+      expect(corrupted.failure.kind).toBe("hydrate");
+      if (corrupted.failure.kind === "hydrate") {
+        expect(corrupted.failure.reason).toBe("block-parse");
+      }
+    }
+  });
+});
+
 // ── REQ-002 rev7: HydrateNote NOT invoked in Step 2 ─────────────────────────
 
 describe("REQ-002 (rev7) — HydrateNote NOT invoked in Step 2; ScannedVault.snapshots is NoteFileSnapshot[]", () => {
