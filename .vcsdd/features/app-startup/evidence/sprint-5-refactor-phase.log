@@ -1,0 +1,67 @@
+## Sprint 5 — Phase 2c (Refactor Phase) Evidence
+
+**Feature**: app-startup
+**Sprint**: 5
+**Phase**: 2c (Refactor)
+**Date**: 2026-05-08
+
+---
+
+## Gate Result
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+---
+
+## Test Suite Summary (Phase 2c — Post-Refactor)
+
+```
+bun test v1.3.11 (af24e281)
+
+ 1915 pass
+ 4 skip
+ 4 todo
+ 0 fail
+ 27885 expect() calls
+Ran 1923 tests across 156 files. [14.72s]
+```
+
+---
+
+## Refactoring Changes Applied
+
+### Phase 2c refactoring decisions
+
+1. **`scan-vault.ts`: Simplified `isKnownHydrationReason` return type**
+   - Changed return type from `reason is HydrationFailureReason` (confusing type predicate)
+     to `boolean` (clearer: "is this a statically-known variant?")
+   - No functional change; improved readability
+
+2. **`hydrate-note.ts`: Default parameter retained for arity compliance**
+   - `blockParser: BlockParser = moduleParseMarkdownToBlocks` keeps `fn.length === 1`
+   - Attempted `blockParser?: BlockParser` refactor but reverted: optional (`?`) params
+     compile to arity-2 at runtime, breaking the PROP-027 arity test (`expect(hydrateNote.length).toBe(1)`)
+   - Default parameter form (`= defaultValue`) gives arity-1 at runtime ✓
+
+3. **`hydrate-feed.ts`: Conditional preserved**
+   - `blockParser !== undefined ? hydrateNote(snapshot, blockParser) : hydrateNote(snapshot)`
+     remains because TypeScript rejects passing `undefined` to `blockParser: BlockParser`
+     (no `| undefined` in the parameter type)
+   - Comment updated for clarity
+
+4. **No extraction of duplicate try/catch logic**
+   - Only one try/catch site exists in the per-file loop (inside `scan-vault.ts`)
+   - No duplication to extract
+
+### Non-functional changes
+
+- Removed stale comment "Fresh BlockIds are assigned on each parse (counter-based)"
+  from `parse-markdown-to-blocks.ts` file header (replaced with positional scheme description)
+- Added PROP-030 cross-reference to `stages.ts` `ScannedVault` docstring
+
+---
+
+## Typecheck
+
+TypeScript: `bunx tsc --noEmit` → 74 errors (all pre-existing, no new errors introduced by sprint-5 changes)

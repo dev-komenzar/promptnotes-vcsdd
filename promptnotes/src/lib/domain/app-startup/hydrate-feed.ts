@@ -7,12 +7,18 @@
 // PROP-001: pure — same ScannedVault input → identical HydratedFeed.
 // PROP-002: hydrateFeed excludes all corrupted-file entries from Feed.noteRefs.
 // PROP-015: Feed sort order is updatedAt descending.
+// PROP-027: HydrateNote purity enables hydrateFeed purity.
+// PROP-030: parseMarkdownToBlocks called exactly twice per non-corrupt file:
+//   once in Step 2 (via ScanVaultPorts, result discarded) and once here via hydrateNote.
+//   scannedVault.parseMarkdownToBlocks carries the injected reference so both
+//   invocations use the same function.
 
 import type { NoteId, Tag, Timestamp } from "promptnotes-domain-types/shared/value-objects";
-import type { NoteFileSnapshot } from "promptnotes-domain-types/shared/snapshots";
+import type { NoteFileSnapshot, CorruptedFile } from "promptnotes-domain-types/shared/snapshots";
 import type { Feed } from "promptnotes-domain-types/curate/aggregates";
 import type { TagEntry, TagInventory } from "promptnotes-domain-types/curate/read-models";
 import type { HydratedFeed, ScannedVault } from "./stages.js";
+import { hydrateNote } from "./hydrate-note.js";
 
 /**
  * Step 3 of the AppStartup pipeline — pure transformation.
@@ -22,12 +28,40 @@ import type { HydratedFeed, ScannedVault } from "./stages.js";
  *
  * PROP-001: referentially transparent — deterministic for any fixed input.
  * lastBuiltAt is set to epochMillis: 0 to avoid Date.now() impurity.
+ *
+ * PROP-030: calls hydrateNote per snapshot using scannedVault.parseMarkdownToBlocks
+ * (the same function reference used in Step 2), satisfying the two-call budget.
+ * Snapshots whose hydrateNote call fails in Step 3 are added to corruptedFiles.
  */
 export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
-  const { snapshots, corruptedFiles } = scannedVault;
+  const { snapshots, corruptedFiles: step2CorruptedFiles } = scannedVault;
+
+  // PROP-030: use the same parseMarkdownToBlocks that was injected in Step 2
+  // (carried on scannedVault) so call-count tracking works correctly.
+  const blockParser = scannedVault.parseMarkdownToBlocks;
+
+  const step3CorruptedFiles: CorruptedFile[] = [];
+  const hydratedSnapshots: NoteFileSnapshot[] = [];
+
+  for (const snapshot of snapshots) {
+    // PROP-027: hydrateNote is pure — same snapshot always produces same Result.
+    const noteResult = blockParser !== undefined
+      ? hydrateNote(snapshot, blockParser)
+      : hydrateNote(snapshot);
+
+    if (!noteResult.ok) {
+      // Step 3 hydration failure: add to corruptedFiles, exclude from noteRefs.
+      step3CorruptedFiles.push({
+        filePath: snapshot.filePath,
+        failure: { kind: "hydrate", reason: noteResult.error },
+      });
+    } else {
+      hydratedSnapshots.push(snapshot);
+    }
+  }
 
   // PROP-015: sort noteRefs by updatedAt descending (stable copy, no mutation).
-  const sorted = [...snapshots].sort(
+  const sorted = [...hydratedSnapshots].sort(
     (a, b) =>
       (b.frontmatter.updatedAt.epochMillis as unknown as number) -
       (a.frontmatter.updatedAt.epochMillis as unknown as number)
@@ -47,13 +81,19 @@ export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
 
   // Build TagInventory from successfully hydrated snapshots only.
   // PROP-001: lastBuiltAt fixed to epochMillis: 0 (deterministic, no Date.now()).
-  const tagInventory = buildTagInventory(snapshots);
+  const tagInventory = buildTagInventory(hydratedSnapshots);
+
+  // Merge Step 2 and Step 3 corrupted files.
+  const allCorruptedFiles: readonly CorruptedFile[] = [
+    ...step2CorruptedFiles,
+    ...step3CorruptedFiles,
+  ];
 
   return {
     kind: "HydratedFeed",
     feed,
     tagInventory,
-    corruptedFiles,
+    corruptedFiles: allCorruptedFiles,
   };
 }
 

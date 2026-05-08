@@ -4,6 +4,8 @@
 // REQ-002: Scans vault, accumulates per-file results.
 // REQ-007: list-failed terminates the workflow immediately.
 // REQ-016: Per-file readFile failure → read-kind ScanFileFailure (workflow continues).
+// REQ-017: parseMarkdownToBlocks failure / Ok([]) → hydrate-kind reason='block-parse'.
+// REQ-018: Per-file parser exception / unrecognised Err variant → reason='unknown'.
 // PROP-008: list-failed terminates before Steps 3 and 4.
 // PROP-009: per-file readFile failure accumulates CorruptedFile, workflow continues.
 // PROP-010: zero-byte file → hydrate kind, missing-field.
@@ -11,6 +13,9 @@
 // PROP-012: all-corrupted vault succeeds, empty Feed.
 // PROP-018: total invariant: snapshots.length + corruptedFiles.length === input count.
 // PROP-020: permission-denied readFile → failure {kind:'read', fsError:{kind:'permission'}}.
+// PROP-026: parseMarkdownToBlocks Err → failure {kind:'hydrate', reason:'block-parse'}.
+// PROP-028: uncaught exception / unrecognised Err variant → reason:'unknown'.
+// PROP-029: parseMarkdownToBlocks Ok([]) → failure {kind:'hydrate', reason:'block-parse'}.
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type {
@@ -26,7 +31,19 @@ import type {
   HydrationFailureReason,
   NoteFileSnapshot,
 } from "promptnotes-domain-types/shared/snapshots";
+import type { Block } from "promptnotes-domain-types/shared/note";
+import type { BlockParseError } from "../capture-auto-save/parse-markdown-to-blocks.js";
 import type { ParsedNote, ScannedVault } from "./stages.js";
+
+// ── Known HydrationFailureReason variants ─────────────────────────────────
+
+const KNOWN_HYDRATION_REASONS = new Set<string>([
+  "yaml-parse",
+  "missing-field",
+  "invalid-value",
+  "block-parse",
+  "unknown",
+]);
 
 // ── Port definitions ────────────────────────────────────────────────────────
 
@@ -41,6 +58,15 @@ export type ScanVaultPorts = {
   readonly parseNote: (
     raw: string
   ) => Result<ParsedNote, HydrationFailureReason>;
+  /**
+   * REQ-002 (rev7): Optional block parser port.
+   * When provided, scanVault calls it after parseNote succeeds to validate
+   * block structure. Err(BlockParseError) or Ok([]) → CorruptedFile reason='block-parse'.
+   * The parsed Block[] is discarded — NoteFileSnapshot carries the raw body.
+   */
+  readonly parseMarkdownToBlocks?: (
+    markdown: string
+  ) => Result<ReadonlyArray<Block>, BlockParseError>;
 };
 
 // ── Implementation ─────────────────────────────────────────────────────────
@@ -51,6 +77,9 @@ export type ScanVaultPorts = {
  * Processes each file independently: a failure on one file produces a
  * CorruptedFile entry and does NOT terminate the overall workflow.
  * Only listMarkdown failure terminates early (REQ-007 / PROP-008).
+ *
+ * Defensive try/catch per file: parser exceptions and unrecognised Err variants
+ * fold to failure:{kind:'hydrate', reason:'unknown'} (REQ-018 / PROP-028).
  */
 export async function scanVault(
   vaultPath: VaultPath,
@@ -85,15 +114,54 @@ export async function scanVault(
       continue;
     }
 
-    const parseResult = ports.parseNote(readResult.value);
+    // REQ-018 / PROP-028: wrap parsing in try/catch to catch synchronous exceptions.
+    let parseResult: Result<ParsedNote, HydrationFailureReason>;
+    try {
+      parseResult = ports.parseNote(readResult.value);
+    } catch (err) {
+      corruptedFiles.push(
+        makeUnknownFailure(filePath, err)
+      );
+      continue;
+    }
 
     if (!parseResult.ok) {
-      // PROP-010: parse failure (including zero-byte) → kind='hydrate'.
+      // PROP-028: fold unrecognised Err variants to 'unknown'.
+      const reason = isKnownHydrationReason(parseResult.error)
+        ? parseResult.error
+        : "unknown";
       corruptedFiles.push({
         filePath,
-        failure: { kind: "hydrate", reason: parseResult.error },
+        failure: { kind: "hydrate", reason },
       });
       continue;
+    }
+
+    // REQ-017 / PROP-026 / PROP-029: block-parse validation (when port is provided).
+    if (ports.parseMarkdownToBlocks !== undefined) {
+      let blockResult: Result<ReadonlyArray<Block>, BlockParseError>;
+      try {
+        blockResult = ports.parseMarkdownToBlocks(
+          parseResult.value.body as unknown as string
+        );
+      } catch (err) {
+        corruptedFiles.push(makeUnknownFailure(filePath, err));
+        continue;
+      }
+
+      // Err(BlockParseError) or Ok([]) both → reason='block-parse' (REQ-017 / PROP-029).
+      if (!blockResult.ok || blockResult.value.length === 0) {
+        const detail = blockResult.ok
+          ? "empty block array"
+          : blockResultDetail(blockResult.error);
+        corruptedFiles.push({
+          filePath,
+          failure: { kind: "hydrate", reason: "block-parse" },
+          detail,
+        });
+        continue;
+      }
+      // Validated Block[] is discarded — NoteFileSnapshot carries the raw body (REQ-002 rev7).
     }
 
     // FIND-004: validate the file stem against the NoteId VO format
@@ -136,7 +204,14 @@ export async function scanVault(
   // PROP-018 invariant: snapshots.length + corruptedFiles.length === filePaths.length
   return {
     ok: true,
-    value: { kind: "ScannedVault", snapshots, corruptedFiles },
+    value: {
+      kind: "ScannedVault",
+      snapshots,
+      corruptedFiles,
+      // PROP-030: carry the injected block parser so hydrateFeed can use the same
+      // reference for Step 3 call-budget counting.
+      parseMarkdownToBlocks: ports.parseMarkdownToBlocks,
+    },
   };
 }
 
@@ -169,4 +244,34 @@ function isValidTag(raw: unknown): boolean {
 
 function areAllTagsValid(tags: readonly unknown[]): boolean {
   return tags.every(isValidTag);
+}
+
+/**
+ * REQ-018: check if a runtime value is a statically-known HydrationFailureReason.
+ * A future value from an upgraded shared type would fail this check and fold to 'unknown'.
+ */
+function isKnownHydrationReason(reason: HydrationFailureReason): boolean {
+  return KNOWN_HYDRATION_REASONS.has(reason as unknown as string);
+}
+
+/** REQ-018 / PROP-028: build a CorruptedFile with reason='unknown' from a caught exception. */
+function makeUnknownFailure(filePath: string, err: unknown): CorruptedFile {
+  const detail =
+    err instanceof Error
+      ? err.message
+      : typeof err === "string"
+        ? err
+        : String(err);
+  return {
+    filePath,
+    failure: { kind: "hydrate", reason: "unknown" },
+    detail,
+  };
+}
+
+/** Produce a human-readable description of a BlockParseError for the detail field. */
+function blockResultDetail(error: BlockParseError): string {
+  return error.kind === "unterminated-code-fence"
+    ? `unterminated code fence at line ${error.line}`
+    : `malformed structure at line ${error.line}: ${error.detail}`;
 }

@@ -19,7 +19,8 @@
 // Structural failures (returning BlockParseError):
 //   - unterminated code fence (EOF reached before closing ```)
 //
-// Fresh BlockIds are assigned on each parse (counter-based).
+// BlockIds are positional: block-0, block-1, ... (zero-indexed, reset per call).
+// REQ-002 (rev7): deterministic BlockId allocation for round-trip reproducibility.
 
 import type { Result } from "promptnotes-domain-types/util/result";
 import type { Block } from "promptnotes-domain-types/shared/note";
@@ -36,20 +37,11 @@ export type BlockParseError =
   | { kind: "unterminated-code-fence"; line: number }
   | { kind: "malformed-structure"; line: number; detail: string };
 
-// ── ID generation ─────────────────────────────────────────────────────────
-
-let _blockCounter = 0;
-
-function freshBlockId(): BlockId {
-  _blockCounter += 1;
-  return `block-${String(_blockCounter).padStart(4, "0")}` as unknown as BlockId;
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-function makeBlock(type: BlockType, content: string): Block {
+function makeBlock(type: BlockType, content: string, index: number): Block {
   return {
-    id: freshBlockId(),
+    id: `block-${index}` as unknown as BlockId,
     type,
     content: content as unknown as BlockContent,
   } as unknown as Block;
@@ -63,16 +55,21 @@ function makeBlock(type: BlockType, content: string): Block {
  * Lenient: unknown lines fall back to paragraph.
  * Returns Err only for structural failures (e.g., unterminated code fence).
  *
- * Pure function — no I/O.
- * Note: BlockIds are freshly assigned per call (counter-based); not deterministic
- * across calls, but type + content are deterministic.
+ * Pure function — no I/O, no hidden state.
+ * REQ-002 (rev7): BlockIds are positional (block-0, block-1, ...) and reset per call.
+ * Same Markdown input always produces identical output (PROP-025 determinism).
  */
 export function parseMarkdownToBlocks(
   markdown: string,
 ): Result<ReadonlyArray<Block>, BlockParseError> {
+  // Per-call local counter — resets on every invocation (PROP-025).
+  let blockIndex = 0;
+  const nextBlock = (type: BlockType, content: string): Block =>
+    makeBlock(type, content, blockIndex++);
+
   // Empty string → single empty paragraph (matches round-trip for empty paragraph block).
   if (markdown === "") {
-    return { ok: true, value: [makeBlock("paragraph", "")] };
+    return { ok: true, value: [nextBlock("paragraph", "")] };
   }
 
   const lines = markdown.split("\n");
@@ -99,63 +96,63 @@ export function parseMarkdownToBlocks(
       }
       // Advance past the closing "```"
       i++;
-      blocks.push(makeBlock("code", contentLines.join("\n")));
+      blocks.push(nextBlock("code", contentLines.join("\n")));
       continue;
     }
 
     // Divider: exactly "---"
     if (line === "---") {
-      blocks.push(makeBlock("divider", ""));
+      blocks.push(nextBlock("divider", ""));
       i++;
       continue;
     }
 
     // heading-3 before heading-2 before heading-1 (longest prefix first)
     if (line.startsWith("### ")) {
-      blocks.push(makeBlock("heading-3", line.slice(4)));
+      blocks.push(nextBlock("heading-3", line.slice(4)));
       i++;
       continue;
     }
     if (line.startsWith("## ")) {
-      blocks.push(makeBlock("heading-2", line.slice(3)));
+      blocks.push(nextBlock("heading-2", line.slice(3)));
       i++;
       continue;
     }
     if (line.startsWith("# ")) {
-      blocks.push(makeBlock("heading-1", line.slice(2)));
+      blocks.push(nextBlock("heading-1", line.slice(2)));
       i++;
       continue;
     }
 
     // Bullet
     if (line.startsWith("- ")) {
-      blocks.push(makeBlock("bullet", line.slice(2)));
+      blocks.push(nextBlock("bullet", line.slice(2)));
       i++;
       continue;
     }
 
     // Numbered (only "1. " prefix — per serializeBlock convention)
     if (line.startsWith("1. ")) {
-      blocks.push(makeBlock("numbered", line.slice(3)));
+      blocks.push(nextBlock("numbered", line.slice(3)));
       i++;
       continue;
     }
 
     // Quote
     if (line.startsWith("> ")) {
-      blocks.push(makeBlock("quote", line.slice(2)));
+      blocks.push(nextBlock("quote", line.slice(2)));
       i++;
       continue;
     }
 
     // Paragraph (lenient fallback for everything else, including unknown lines)
-    blocks.push(makeBlock("paragraph", line));
+    blocks.push(nextBlock("paragraph", line));
     i++;
   }
 
   // Guarantee at least one block
   if (blocks.length === 0) {
-    blocks.push(makeBlock("paragraph", ""));
+    blocks.push(nextBlock("paragraph", ""));
   }
 
   return { ok: true, value: blocks };
