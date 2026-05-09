@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1a",
+  "currentPhase": "1c",
   "phaseHistory": [
     {
       "from": "init",
@@ -288,6 +288,20 @@
       "reason": "Phase 1c sprint-4 iter-2 FAIL routing: 3 new findings (high=1, medium=2). All 11 iter-1 findings resolved. New findings: wire-shape AC gap, PROP Required mismatch, Tooling Map gap. Return to 1a for iter-3.",
       "sprint": 4,
       "iteration": "1c-sprint-4-iter-2"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-09T10:00:00.000Z",
+      "reason": "Sprint 4 iter-3 spec fix: 3 iter-2 findings resolved (FIND-S4-SPEC-iter2-001/002/003). parse_markdown_to_blocks contract strengthened (non-empty), ケース(3) wire禁止",
+      "sprint": 4
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-09T10:00:00.000Z",
+      "reason": "Sprint 4 iter-3 verification-architecture fix: PROP-FEED-S4-016 Required→true, §5/§6 amendments",
+      "sprint": 4
     }
   ],
   "iterations": {
@@ -1506,5 +1520,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T09:30:00.000Z"
+  "updatedAt": "2026-05-09T10:00:00.000Z"
 }

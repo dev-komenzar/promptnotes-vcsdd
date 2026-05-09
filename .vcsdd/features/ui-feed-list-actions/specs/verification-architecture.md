@@ -20,7 +20,7 @@ coherence:
 
 **Feature**: `ui-feed-list-actions`
 **Phase**: 1b
-**Revision**: 5
+**Revision**: 6
 **Mode**: strict
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 **Source of truth**:
@@ -212,6 +212,7 @@ Path: `promptnotes/src/lib/feed/__tests__/*.property.test.ts`
 
 - `feedRowPredicates.property.test.ts` — PROP-FEED-001, PROP-FEED-002, PROP-FEED-003, PROP-FEED-004, PROP-FEED-033, PROP-FEED-034
 - `feedReducer.property.test.ts` — PROP-FEED-005, PROP-FEED-006, PROP-FEED-007a, PROP-FEED-007b, PROP-FEED-007c, PROP-FEED-007d, PROP-FEED-035
+  **Sprint 4 amendment (FIND-S4-SPEC-iter2-003 解消)**: PROP-FEED-S4-006 (`pendingNextFocus` mirroring fast-check) をこのファイルに追加する。PROP-FEED-007a の arbitrary を `pendingNextFocus: { noteId, blockId } | null` に更新する (PROP-FEED-007a → PROP-FEED-S4-006 置換の一環)。
 - `deleteConfirmPredicates.property.test.ts` — PROP-FEED-008, PROP-FEED-009, PROP-FEED-010
 
 Run command: `bun run test` inside `promptnotes/`
@@ -224,6 +225,7 @@ Pattern: vitest + jsdom + `mount`/`unmount`/`flushSync` from `svelte` + `vi.fn()
 
 Files:
 - `feed-row.dom.vitest.ts` — PROP-FEED-013, PROP-FEED-014, PROP-FEED-015, PROP-FEED-023
+  **Sprint 4 amendment (FIND-S4-SPEC-iter2-003 解消)**: PROP-FEED-S4-015 (`pendingNextFocus?.noteId` 判定の DOM integration test) をこのファイルに追加する。
 - `feed-list-state.dom.vitest.ts` — PROP-FEED-020, PROP-FEED-021, PROP-FEED-022, PROP-FEED-024
 - `delete-confirm-modal.dom.vitest.ts` — PROP-FEED-016, PROP-FEED-017, PROP-FEED-018
 - `deletion-failure-banner.dom.vitest.ts` — PROP-FEED-019
@@ -251,6 +253,29 @@ Target: **≥ 95% branch coverage** per file.
 - Svelte store audit: `grep -r "from 'svelte/store'" src/lib/feed/` — ゼロヒット (PROP-FEED-030)
 - IPC boundary audit: `grep "listen" src/lib/feed/tauriFeedAdapter.ts` ゼロヒット; `grep "invoke" src/lib/feed/feedStateChannel.ts` ゼロヒット (PROP-FEED-032)
 - Design token audit: DESIGN.md conformance checklist (grep PROP-FEED-027, PROP-FEED-028)
+
+### Sprint 4 Tooling Map Additions (FIND-S4-SPEC-iter2-003 解消)
+
+Sprint 4 PROP の正規テストファイル配置 (Phase 2a 実装者向け一覧):
+
+| PROP-ID | テストファイル (正規パス) | 追加種別 |
+|---------|----------------------|---------|
+| PROP-FEED-S4-001 | `promptnotes/src-tauri/tests/feed_handlers.rs` | Rust unit test 追加 |
+| PROP-FEED-S4-002 | `promptnotes/src-tauri/tests/feed_handlers.rs` | Rust unit test 追加 |
+| PROP-FEED-S4-003 | `promptnotes/src-tauri/tests/feed_handlers.rs` | Rust serde test 追加 |
+| PROP-FEED-S4-004 | CI scripts / `Makefile` grep audit target | grep audit |
+| PROP-FEED-S4-005 | tsc CI (`tsc --noEmit --strict`) | Tier 0 / tsc |
+| PROP-FEED-S4-006 | `promptnotes/src/lib/feed/__tests__/feedReducer.property.test.ts` | fast-check test 追加 (PROP-FEED-007a 更新) |
+| PROP-FEED-S4-007 | CI scripts / grep audit | grep audit |
+| PROP-FEED-S4-008 | CI scripts / grep audit (`FeedRow.svelte`) | grep audit |
+| PROP-FEED-S4-009 | CI scripts / grep audit | grep audit |
+| PROP-FEED-S4-010 | `promptnotes/src-tauri/tests/feed_handlers.rs` | Rust serde round-trip test 追加 |
+| PROP-FEED-S4-011 | tsc CI + grep audit | Tier 0 / tsc + grep |
+| PROP-FEED-S4-012 | `promptnotes/src-tauri/tests/feed_handlers.rs` | Rust unit test 追加 |
+| PROP-FEED-S4-013 | `promptnotes/src-tauri/tests/feed_handlers.rs` | Rust unit test 追加 |
+| PROP-FEED-S4-014 | `promptnotes/src-tauri/tests/feed_handlers.rs` | Rust unit test 追加 |
+| PROP-FEED-S4-015 | `promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts` | DOM integration test 追加 |
+| PROP-FEED-S4-016 | Rust: `promptnotes/src-tauri/tests/feed_handlers.rs` (または新規 `promptnotes/src-tauri/tests/parse_markdown_to_blocks_parity.rs`); TS: `promptnotes/src/lib/feed/__tests__/parserParity.test.ts` (新規) | Rust snapshot test + vitest snapshot test |
 
 ---
 
@@ -290,6 +315,14 @@ Target: **≥ 95% branch coverage** per file.
 | EC-FEED-013 | PROP-FEED-007a, PROP-FEED-023 | 2 + Integration | `feedReducer.property.test.ts`, `feed-row.dom.vitest.ts` |
 | EC-FEED-014 | PROP-FEED-020, PROP-FEED-024 | Integration | `feed-list-state.dom.vitest.ts` |
 | EC-FEED-015 | PROP-FEED-022 | Integration | `feed-list-state.dom.vitest.ts` |
+
+> **Sprint 4 Coverage Matrix Additions (FIND-S4-SPEC-iter2-003 解消)**:
+> 以下の行は §6 主テーブルへの Sprint 4 追記として §13 の独立 table に加えて本テーブルにも記載する。
+
+| REQ-FEED-024 (S4) | PROP-FEED-S4-012, PROP-FEED-S4-013, PROP-FEED-S4-014 | 1 | `promptnotes/src-tauri/tests/feed_handlers.rs` (AppHandle-free unit test) |
+| REQ-FEED-025 | PROP-FEED-S4-001, PROP-FEED-S4-002, PROP-FEED-S4-003, PROP-FEED-S4-004, PROP-FEED-S4-016 | 0 + 1 | `feed_handlers.rs` (Rust unit + serde), grep audit, `parserParity.test.ts` (vitest snapshot) |
+| REQ-FEED-026 | PROP-FEED-S4-005, PROP-FEED-S4-006, PROP-FEED-S4-007, PROP-FEED-S4-008, PROP-FEED-S4-015 | 0 + 2 + Integration | tsc, grep audit, `feedReducer.property.test.ts` (fast-check), `FeedRow.dom.vitest.ts` (jsdom) |
+| REQ-FEED-027 | PROP-FEED-S4-009, PROP-FEED-S4-010, PROP-FEED-S4-011 | 0 + 1 | grep audit, `feed_handlers.rs` (Rust serde), tsc |
 
 ---
 
@@ -604,7 +637,7 @@ File: `promptnotes/src-tauri/src/feed.rs`
 | PROP-FEED-S4-013 | REQ-FEED-024 | `compose_state_for_select_past_note(note_id, Some(blocks)) → make_editing_state_changed_payload(...)` の chain を JSON serialize した結果に `focusedBlockId` フィールドが存在し、`blocks[0].id` と等しいこと (FIND-S4-SPEC-011 解消: AppHandle 不要な Rust unit test)。 | 1 | cargo test (unit) | true |
 | PROP-FEED-S4-014 | REQ-FEED-024, EC-FEED-016 | `compose_state_for_select_past_note(note_id, None) → make_editing_state_changed_payload(...)` の chain を JSON serialize した結果で `focusedBlockId: null`、`blocks` キー absent、`isNoteEmpty: true` であること (FIND-S4-SPEC-011 解消: AppHandle 不要な Rust unit test; ケース 1 対応)。 | 1 | cargo test (unit) | true |
 | PROP-FEED-S4-015 | REQ-FEED-026 | DOM integration: `pendingNextFocus?.noteId === noteId` かつ `editingStatus ∈ {'switching', 'save-failed'}` のとき `data-testid="pending-switch-indicator"` が存在する。`pendingNextFocus?.noteId !== noteId` のとき不在。 | Integration | vitest + jsdom + Svelte 5 mount | false |
-| PROP-FEED-S4-016 | REQ-FEED-025 | Rust `parse_markdown_to_blocks` と TS `parseMarkdownToBlocks` の output 一致 (FIND-S4-SPEC-008 / FIND-S4-SPEC-002 解消)。Sprint 4 スコープ: 基本ケースのスナップショット比較 — `parse_markdown_to_blocks("# heading\n\nparagraph")` の Rust 出力 (JSON) と TS 出力を手動スナップショットで比較し、block `type`/`content`/`id` 構造が一致することを cargo test + vitest の両方で assert する。fast-check による全 markdown 任意入力 property test は Sprint 5 へ deferral。 | 1 | cargo test + vitest (snapshot) | false |
+| PROP-FEED-S4-016 | REQ-FEED-025 | Rust `parse_markdown_to_blocks` と TS `parseMarkdownToBlocks` の output 一致 (FIND-S4-SPEC-008 / FIND-S4-SPEC-002 / FIND-S4-SPEC-iter2-002 解消)。Sprint 4 スコープ: 基本ケースのスナップショット比較 — `parse_markdown_to_blocks("# heading\n\nparagraph")` の Rust 出力 (JSON) と TS 出力を手動スナップショットで比較し、block `type`/`content`/`id` 構造が一致することを cargo test + vitest の両方で assert する。fast-check による全 markdown 任意入力 property test は Sprint 5 へ deferral。**Sprint 4 ゲートでは基本ケーススナップショット 1 ペアの PASS をもって Phase 5 gate を満たすとする。** | 1 | cargo test + vitest (snapshot) | true |
 
 > **Sprint 4 deprecation note (FIND-S4-SPEC-010 解消)**:
 > PROP-FEED-007a は Sprint 4 で **PROP-FEED-S4-006 に置換**される。

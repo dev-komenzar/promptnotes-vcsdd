@@ -43,7 +43,7 @@ coherence:
 
 **Feature**: `ui-feed-list-actions`
 **Phase**: 1a
-**Revision**: 5
+**Revision**: 6
 **Mode**: strict
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 **Source of truth**:
@@ -713,9 +713,17 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 > - `is_note_empty`: `blocks.as_ref().map_or(true, |b| b.is_empty() || (b.len() == 1 && b[0].content.is_empty() && b[0].block_type == BlockTypeDto::Paragraph))`
 > - `blocks` フィールド: `Option<Vec<DtoBlock>>` をそのまま `Editing` arm の `blocks` フィールドに格納 (`None` のとき `skip_serializing_if = "Option::is_none"` により JSON から省略)
 >
-> **Rust 側 `parse_markdown_to_blocks` (FIND-S4-SPEC-002 解消)**:
+> **Rust 側 `parse_markdown_to_blocks` 契約 (FIND-S4-SPEC-002 解消 / FIND-S4-SPEC-iter2-001 解消)**:
 > シグネチャ: `pub fn parse_markdown_to_blocks(body: &str) -> Result<Vec<DtoBlock>, BlockParseError>`
 > - TS 規範 (`docs/domain/code/ts/src/shared/blocks.ts::parseMarkdownToBlocks`) と同一 output を保証する。
+> - **Non-empty 不変条件**: `Ok` を返すとき **必ず 1 件以上** の `DtoBlock` を含む `Vec<DtoBlock>` を返す。
+>   空文字列 body を含むいかなる入力に対しても `Ok(vec![])` (空 Vec) を返すことは**契約違反**とする。
+>   空文字列 body の場合は `vec![DtoBlock { id: <uuid>, block_type: BlockTypeDto::Paragraph, content: "".to_string() }]`
+>   (空 paragraph 1 件) を返す。これは TS 側 `parseMarkdownToBlocks` の「最低 1 ブロック保持」不変条件
+>   (`docs/domain/aggregates.md §1` Note 不変条件) と一致する。
+> - **帰結**: この不変条件により `Ok(vec![])` (ケース 3) はランタイムで到達不能となる。
+>   3 ケース固定表のケース (3) は「契約上到達不能 (forbidden by `parse_markdown_to_blocks` contract)」として
+>   仕様上禁止される。wire shape は ケース (1) absent または ケース (2) non-empty の 2 通りに収束する。
 > - `BlockParseError` 発生時の挙動: `compose_state_for_select_past_note(note_id, None)` に fallback する。
 >   note 未存在ケースと同一ペイロードで emit し、EditorPane 側が空 paragraph fallback を担当する。
 >
@@ -728,18 +736,23 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 > ```
 > note が `note_metadata` に存在しない場合: `compose_state_for_select_past_note(note_id, None)`
 
-**3 ケース固定表 (FIND-S4-SPEC-006 解消)**:
+**3 ケース固定表 (FIND-S4-SPEC-006 解消 / FIND-S4-SPEC-iter2-001 解消)**:
 
-| ケース | 呼び出し形式 | blocks (JSON) | focusedBlockId | isNoteEmpty |
-|--------|------------|---------------|----------------|-------------|
-| (1) note_id が note_metadata 未存在 / parse error | `compose_state_for_select_past_note(note_id, None)` | フィールド absent (`None`) | `null` | `true` |
-| (2) note 存在、blocks 非空 (`len >= 1`、空 paragraph ではない) | `compose_state_for_select_past_note(note_id, Some(blocks))` | `[...]` (full array) | `blocks[0].id` | `false` |
-| (3) note 存在、blocks 空 vec (`Some(vec![])`) | `compose_state_for_select_past_note(note_id, Some(vec![]))` | `[]` | `null` | `true` |
+| ケース | 呼び出し形式 | blocks (JSON) | focusedBlockId | isNoteEmpty | 到達可能性 |
+|--------|------------|---------------|----------------|-------------|-----------|
+| (1) note_id が note_metadata 未存在 / parse error | `compose_state_for_select_past_note(note_id, None)` | フィールド absent (`None`) | `null` | `true` | 到達可能 |
+| (2) note 存在、blocks 非空 (`len >= 1`) | `compose_state_for_select_past_note(note_id, Some(blocks))` | `[...]` (full array, len >= 1) | `blocks[0].id` | `false` または `true` (空 paragraph 1 件なら `true`) | 到達可能 |
+| (3) note 存在、blocks 空 vec (`Some(vec![])`) | `compose_state_for_select_past_note(note_id, Some(vec![]))` | `[]` | `null` | `true` | **契約上到達不能 (forbidden by `parse_markdown_to_blocks` contract)** |
 
-> ケース (3) は `parse_markdown_to_blocks` が空文字列 body を返したとき到達する。
-> 通常は到達不能 (dead code) だが仕様上は明記する。
-> ケース (1) と (3) の wire 表現の違い: (1) は `blocks` フィールド自体が JSON に不在、(3) は `blocks: []` として出在する。
-> ケース (3) の場合 `skip_serializing_if = "Option::is_none"` は `Some(vec![])` に適用されないため `[]` として serialize される。
+> **ケース (3) 禁止の根拠 (FIND-S4-SPEC-iter2-001 解消)**:
+> `parse_markdown_to_blocks` の non-empty 不変条件 (上記参照) により、呼び出し元が
+> `compose_state_for_select_past_note(note_id, Some(vec![]))` を渡すことは実装上起こらない。
+> よって wire 上に `blocks: []` という形式は登場しない。wire shape は以下の 2 通りに収束する:
+> - ケース (1): `blocks` フィールド自体が JSON に不在 (`None` → `skip_serializing_if = "Option::is_none"` 適用)。
+> - ケース (2): `blocks` フィールドが `[...]` (len >= 1 の配列) として存在する。
+> TS 側受信ロジック (5-arm rehydration) は `blocks` フィールド absent (`undefined`) と
+> `blocks: [...]` (非空配列) の 2 通りを処理すればよく、`blocks: []` (空配列) の処理は不要。
+> ケース (3) に対応する TS 側 AC (空配列の semantic-equivalent 処理) は不要とする。
 
 **Rust/TS parity (FIND-S4-SPEC-002, FIND-S4-SPEC-008 解消)**:
 - Sprint 4 では基本ケースのスナップショット比較のみ実施する:
@@ -747,16 +760,16 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 - fast-check による全 markdown 任意入力での parity 検証は Sprint 5 へ deferral する。
 
 **Edge Cases**:
-- `blocks` が `None` (ケース 1): `is_note_empty: true`、`focused_block_id: None`。
-- `blocks` が `Some(vec![])` (ケース 3): `is_note_empty: true`、`focused_block_id: None`。Markdown parse が空文字列を返した場合。
-- `blocks` が単一空 paragraph (`Some([{ id, Paragraph, "" }])`): `is_note_empty: true`、`focused_block_id: Some(blocks[0].id)` (ケース 2 の特殊形、`is_note_empty` 計算ロジックによる)。
-- `blocks` が複数 (ケース 2): `is_note_empty: false`、`focused_block_id: Some(blocks[0].id)` (先頭 block)。
+- `blocks` が `None` (ケース 1): `is_note_empty: true`、`focused_block_id: None`。note が vault に存在しないか parse error 発生時。
+- `blocks` が `Some(vec![])` (ケース 3): **契約上到達不能**。`parse_markdown_to_blocks` non-empty 不変条件により、空 Vec が `Ok` で返ることはない。実装は `Some(vec![])` を受け取った場合の処理を追加する必要はないが、防御的に実装する場合はケース (1) と同一扱い (`is_note_empty: true`、`focused_block_id: None`) とする。
+- `blocks` が単一空 paragraph (`Some([{ id, Paragraph, "" }])`) (ケース 2 特殊形): `is_note_empty: true`、`focused_block_id: Some(blocks[0].id)`。空文字列 body に対して `parse_markdown_to_blocks` が返す正規形。
+- `blocks` が単一非空 paragraph または複数 block (ケース 2): `is_note_empty: false`、`focused_block_id: Some(blocks[0].id)` (先頭 block)。
 - `BlockParseError` 発生時: ケース (1) と同一 fallback。
 
 **Acceptance Criteria**:
 - `compose_state_for_select_past_note(note_id, Some(blocks))` が `EditingSessionStateDto::Editing` を返し、`blocks: Some(blocks)` フィールドが設定されている (Rust unit test, ケース 2)。
 - `compose_state_for_select_past_note(note_id, None)` が `blocks: None`、`focused_block_id: None`、`is_note_empty: true` を返す (Rust unit test, ケース 1)。
-- `compose_state_for_select_past_note(note_id, Some(vec![]))` が `blocks: Some(vec![])`、`focused_block_id: None`、`is_note_empty: true` を返す (Rust unit test, ケース 3)。
+- `compose_state_for_select_past_note(note_id, Some(vec![]))` が `blocks: Some(vec![])`、`focused_block_id: None`、`is_note_empty: true` を返す (Rust unit test, ケース 3 — 契約上到達不能だが防御的テストとして維持)。
 - `focused_block_id` が `blocks.as_ref().and_then(|b| b.first().map(|b| b.id.clone()))` の結果と等しい (Rust unit test)。
 - `make_editing_state_changed_payload` に `Some(blocks)` を渡したとき、JSON に `blocks` 配列が含まれる (Rust serde test)。
 - `make_editing_state_changed_payload` に `None` を渡したとき、JSON に `blocks` フィールドが存在しない (Rust serde test)。
