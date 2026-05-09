@@ -1215,7 +1215,7 @@ Sprint 8's scope is the **big-bang migration** of the Rust DTO and all Rust call
 #### Sub-DTO shapes
 
 - **REQ-IPC-008** — `PendingNextFocusDto` shall serialize as `{ "noteId": string, "blockId": string }` (camelCase, both fields required).
-- **REQ-IPC-009** — `DtoBlock` shall serialize as `{ "id": string, "type": string, "content": string }`. The Rust `block_type: String` field shall serialize under the JSON key `type`. Permitted `type` values mirror the TS `BlockType` literal union (`paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider`).
+- **REQ-IPC-009** — `DtoBlock` shall serialize as `{ "id": string, "type": string, "content": string }`. The Rust `block_type` field shall be of type `BlockTypeDto` (per §15.5) and shall serialize under the JSON key `type`, with serde rename rules producing the 9 kebab-case literals. Permitted `type` values mirror the TS `BlockType` literal union (`paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider`).
 - **REQ-IPC-010** — `SaveErrorDto` shall serialize as `{ "kind": "fs" | "validation", "reason"?: { "kind": "permission" | "disk-full" | "lock" | "not-found" | "unknown" } }`. When `reason` is `None`, the JSON key shall be omitted (`skip_serializing_if = "Option::is_none"`).
 
 #### Optionality rules

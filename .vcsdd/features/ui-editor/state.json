@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -429,6 +429,27 @@
       "timestamp": "2026-05-09T01:35:00Z",
       "reason": "Sprint 8 verification arch updated (PROP-IPC-013..023 added)",
       "sprint": 8
+    },
+    {
+      "from": "1c",
+      "to": "1a",
+      "timestamp": "2026-05-09T02:00:00Z",
+      "reason": "Phase 1c iter-2 FAIL: 1 major finding (FIND-087); routing to 1a",
+      "sprint": 8
+    },
+    {
+      "from": "1a",
+      "to": "1c",
+      "timestamp": "2026-05-09T02:05:00Z",
+      "reason": "REQ-IPC-009 stale block_type: String reference fixed",
+      "sprint": 8
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-09T02:30:00Z",
+      "reason": "Sprint 8 Phase 1c PASS",
+      "sprint": 8
     }
   ],
   "iterations": {
@@ -438,7 +459,7 @@
     "6": 2,
     "1a": 3,
     "1b": 2,
-    "1c": 5,
+    "1c": 6,
     "2a": 6,
     "2b": 6,
     "2c": 5,
@@ -3461,6 +3482,21 @@
         "createdInPhase": "1b",
         "externalId": "PROP-IPC-023",
         "sprint": 8
+      },
+      {
+        "beadId": "BEAD-248",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-7/output/findings/FIND-087.json",
+        "status": "resolved-iter-3",
+        "linkedBeads": [
+          "BEAD-186"
+        ],
+        "createdAt": "2026-05-09T02:00:00Z",
+        "resolvedAt": "2026-05-09T02:05:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-087",
+        "sprint": 8,
+        "severity": "major"
       }
     ]
   },
@@ -3711,9 +3747,16 @@
         "deferredMinorFindings": 2,
         "convergenceReportPath": ".vcsdd/features/ui-editor/convergence-report.md"
       }
+    },
+    "1c-sprint-8": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T02:30:00Z",
+      "reviewedBy": "adversary",
+      "iteration": 3,
+      "details": "Sprint 8 Phase 1c PASS at iter-3 after iter-1 (14 findings resolved) + iter-2 (FIND-087 resolved). All 5 dimensions PASS, 0 open findings."
     }
   },
   "sprintCount": 8,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-09T01:30:00Z"
+  "updatedAt": "2026-05-09T02:30:00Z"
 }
