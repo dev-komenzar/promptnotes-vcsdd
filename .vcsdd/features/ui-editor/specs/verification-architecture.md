@@ -542,3 +542,73 @@ The following concerns are explicitly out of scope for `ui-editor` verification:
 - **Tauri command handler implementation** — owned by backend save-handler / capture-auto-save features.
 
 ---
+
+## 10. Sprint 8 Addendum — IPC Wire Contract (Rust DTO migration)
+
+Sprint 8 extends this verification architecture to cover the Rust-side `EditingSessionStateDto` enum and its emit sites. The verification target is **wire-shape compatibility** between Rust serde JSON output and the TypeScript discriminated-union narrowing in `promptnotes/src/lib/editor/types.ts`.
+
+### 10.1 Sprint 8 purity boundary additions
+
+| Module | Layer | Rationale |
+|---|---|---|
+| `promptnotes/src-tauri/src/editor.rs::EditingSessionStateDto` (Rust enum) | pure (Tier 0 / data) | Pure data definition with `#[derive(Serialize, Deserialize)]`. No I/O, no clock, no random. The 5 `enum` variants and their fields ARE the wire contract. |
+| `promptnotes/src-tauri/src/editor.rs::PendingNextFocusDto` / `DtoBlock` / `SaveErrorDto` / `FsErrorDto` | pure (Tier 0 / data) | Same justification. |
+| `promptnotes/src-tauri/src/editor.rs::make_*_payload` helpers (variant-aware) | pure (Tier 0 / constructor) | Pure JSON-value constructors over the enum. No `tauri::AppHandle` access, no clock, no random. They wrap an `EditingSessionStateDto` into `serde_json::json!({"state": <dto>})`. |
+| `promptnotes/src-tauri/src/editor.rs::emit_state_changed*` family | impure shell | Holds the `AppHandle::emit(...)` side-effect. Forwards a payload constructed by the pure helper. |
+| `promptnotes/src-tauri/src/editor.rs::save_note_and_emit` and the per-command handlers (`trigger_idle_save`, `trigger_blur_save`, `retry_save`, `discard_current_session`, `cancel_switch`, `request_new_note`) | impure shell | Perform the FS I/O (atomic write) and the IPC emit. The I/O remains the same; the emit body is rewritten to dispatch on variant. |
+| `promptnotes/src-tauri/src/feed.rs::select_past_note` | impure shell | Same — performs vault scan I/O and emits both `feed_state_changed` and `editing_session_state_changed`. Sprint 8 only changes the SECOND emit (rewritten to use the new variant constructor). |
+
+### 10.2 Sprint 8 proof obligations (PROP-IPC-001..012)
+
+These obligations are added on top of the existing PROP-EDIT-001..016 set. Phase 5 (formal hardening) will execute these as `cargo test` cases and serde round-trip property tests. Tier assignments follow the Sprint 7 convention.
+
+| PROP-ID | Tier | Obligation | Verification mechanism |
+|---|---|---|---|
+| **PROP-IPC-001** | 0 (compile-time) | The Rust enum `EditingSessionStateDto` has exactly 5 variants matching the TS union arms: `Idle`, `Editing`, `Saving`, `Switching`, `SaveFailed`. | A unit test pattern-matches on every variant in an exhaustive `match`; adding a new variant without updating the match is a compile error. |
+| **PROP-IPC-002** | 1 (unit) | `serde_json::to_value(EditingSessionStateDto::Idle)` produces exactly `{"status":"idle"}` (no other keys). | Direct equality assertion. |
+| **PROP-IPC-003** | 1 (unit) | Each non-`Idle` variant serializes with `status` set to the kebab-case discriminant (`editing`, `saving`, `switching`, `save-failed`). | Per-variant `to_string` containment assertion + JSON `status` key extraction. |
+| **PROP-IPC-004** | 1 (unit) | The `Editing` variant serializes the keys `status`, `currentNoteId`, `focusedBlockId`, `isDirty`, `isNoteEmpty`, `lastSaveResult` (and optionally `blocks`). | Sorted-keys snapshot or per-key presence assertion. |
+| **PROP-IPC-005** | 1 (unit) | The `SaveFailed` variant serializes the keys `status`, `currentNoteId`, `priorFocusedBlockId`, `pendingNextFocus`, `lastSaveError`, `isNoteEmpty` (and optionally `blocks`); when `priorFocusedBlockId` is None, the JSON value is `null` (key present), and when `pendingNextFocus` is None, the JSON value is `null` (key present, NOT skipped). | Per-variant fixture assertion in `tests/editor_handlers.rs`. |
+| **PROP-IPC-006** | 1 (unit) | The `Switching` variant always carries a `pendingNextFocus` object with `noteId` and `blockId` keys (never null). | Direct serialization assertion. |
+| **PROP-IPC-007** | 1 (unit) | `SaveErrorDto` with `reason: None` serializes WITHOUT the `reason` key (`skip_serializing_if = "Option::is_none"`). | `assert!(!json.contains("reason"))`. |
+| **PROP-IPC-008** | 1 (unit) | The `blocks` field on `Editing` / `Saving` / `Switching` / `SaveFailed`: when `Some([])` it serializes as `"blocks":[]`, when `None` the key is omitted. | Two complementary fixture cases per variant. |
+| **PROP-IPC-009** | 1 (unit) | `make_editing_state_changed_payload`-family helpers wrap the variant in `{"state": <variant>}` exactly once. | `serde_json::Value::Object` shape assertion. |
+| **PROP-IPC-010** | 2 (property / round-trip) | For every `EditingSessionStateDto` value `v` in the variant-cover set (one fixture per variant × {blocks=None, blocks=Some([])} × {priorFocusedBlockId=None, Some} × {pendingNextFocus=None, Some} where applicable), `serde_json::from_str::<EditingSessionStateDto>(&serde_json::to_string(&v).unwrap()).unwrap() == v`. | `proptest` with a hand-rolled strategy producing each variant; OR an explicit fixture list traversed by a `for` loop. |
+| **PROP-IPC-011** | 1 (TS↔Rust shape) | The Rust JSON output for each variant fixture is consumed by a TypeScript test that performs a runtime narrowing on the `EditingSessionStateDto` discriminated union (`switch (state.status) { ... }`) with an exhaustive check (`assertNever`); no fixture causes an exhaustiveness failure or an unexpected key. | `vitest` + a JSON fixture dropped into `promptnotes/src/lib/editor/__tests__/dom/` that mirrors the Rust output. (No actual cross-process call; the JSON is a frozen fixture string.) |
+| **PROP-IPC-012** | 1 (caller emit-site) | Every emit site listed in REQ-IPC-013 / REQ-IPC-014 calls only the new helper API; no test or production code path constructs a flat `{"status": ..., "isDirty": ...}` object directly. | grep/CI guard: `tests/editor_handlers.rs`, `tests/feed_handlers.rs`, `src-tauri/src/**/*.rs` shall NOT match the legacy 6-flat-key set; verified by a grep-driven test or by structural review during Phase 5. |
+
+### 10.3 Sprint 8 forbidden-API additions (Rust)
+
+The Rust `editor.rs` and `feed.rs` files involved in Sprint 8 must NOT introduce any of the following while doing the migration:
+
+```
+unsafe\b|::transmute|panic!\(|unwrap\(\)|expect\(|todo!\(|unimplemented!\(
+```
+
+Existing `expect("…")` calls in test code are tolerated (they predate Sprint 8 and live under `#[cfg(test)]`); new production-side `unwrap` / `panic` introductions are forbidden. The atomicity-related `unwrap_or_else` on `Path::parent` (existing) is grandfathered.
+
+### 10.4 Sprint 8 PROP cross-reference table
+
+| PROP-ID | REQ-IPC mapping | EC-IPC mapping |
+|---|---|---|
+| PROP-IPC-001 | REQ-IPC-001 | — |
+| PROP-IPC-002 | REQ-IPC-001, REQ-IPC-016 | EC-IPC-009 |
+| PROP-IPC-003 | REQ-IPC-001, REQ-IPC-002, REQ-IPC-017 | — |
+| PROP-IPC-004 | REQ-IPC-002, REQ-IPC-003, REQ-IPC-004 | EC-IPC-001, EC-IPC-007 |
+| PROP-IPC-005 | REQ-IPC-002, REQ-IPC-003, REQ-IPC-007, REQ-IPC-010 | EC-IPC-006, EC-IPC-008 |
+| PROP-IPC-006 | REQ-IPC-006, REQ-IPC-008 | — |
+| PROP-IPC-007 | REQ-IPC-010 | EC-IPC-002 |
+| PROP-IPC-008 | REQ-IPC-011 | EC-IPC-004, EC-IPC-005 |
+| PROP-IPC-009 | REQ-IPC-012 | — |
+| PROP-IPC-010 | REQ-IPC-001..012, REQ-IPC-020 | EC-IPC-001..010 |
+| PROP-IPC-011 | REQ-IPC-019, REQ-IPC-020 | EC-IPC-009 |
+| PROP-IPC-012 | REQ-IPC-013, REQ-IPC-014 | — |
+
+### 10.5 Sprint 8 verification tooling
+
+- **Tier 0**: `cargo build` exhaustiveness via `match` on the enum.
+- **Tier 1**: `cargo test --manifest-path promptnotes/src-tauri/Cargo.toml` (existing test directory). Every PROP-IPC-002..009 PROP corresponds to a `#[test]` function.
+- **Tier 2**: `proptest` round-trip in `tests/editor_handlers.rs` (PROP-IPC-010). If `proptest` is not yet a dev-dependency on this repo, the obligation is fulfilled with an explicit fixture-table iteration that enumerates the cover set; the choice is documented in the Phase 5 verifier report.
+- **Tier 1 (TS side)**: `vitest run` over the new fixture-narrowing test in `promptnotes/src/lib/editor/__tests__/dom/editorStateChannelWireFixtures.dom.vitest.ts` (PROP-IPC-011).
+
+---

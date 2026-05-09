@@ -1180,3 +1180,93 @@ The previous (Sprint 1–6) `ui-editor` spec was anchored on a single textarea +
 The numbering of REQ / EC IDs has been re-issued to match the new logical layout (REQ-EDIT-001..038, EC-EDIT-001..014). Prior IDs are not preserved across the respec — implementation, tests, contracts, and Phase 5 audit artefacts will be re-keyed during Sprint 7 TDD.
 
 ---
+
+## 15. Sprint 8 — IPC Payload Rust Block Migration (Option B)
+
+**Sprint**: 8
+**Profile**: Rust (`promptnotes/src-tauri/`) + TypeScript boundary verification
+**Source of truth (additions)**:
+- `promptnotes/src-tauri/src/editor.rs` — Rust IPC handlers and `EditingSessionStateDto` definition (current Sprint-7 6-flat-field shape)
+- `promptnotes/src-tauri/src/feed.rs::select_past_note` — sole non-`editor.rs` caller of `make_editing_state_changed_payload`
+- `promptnotes/src/lib/editor/types.ts:99-162` — TS `EditingSessionStateDto` 5-arm tagged union (the wire contract Sprint 8 anchors on)
+- `promptnotes/src/lib/editor/editorStateChannel.ts:22-40` — INBOUND channel that decodes `event.payload.state` into the TS union
+- `docs/tasks/ipc-payload-rust-block-migration.md` — Sprint 8 instruction (Option B: Rust full 5-arm migration)
+
+### 15.1 Background and scope
+
+Sprint 7 migrated the TS-side `EditingSessionStateDto` to a 5-arm discriminated union (`idle | editing | saving | switching | save-failed`) that carries block-aware fields (`focusedBlockId`, `pendingNextFocus`, `priorFocusedBlockId`, optional `blocks`). The Rust side, however, kept the legacy 6-flat-field DTO (`status, isDirty, currentNoteId, pendingNextNoteId, lastError, body`) and the `make_editing_state_changed_payload(status, isDirty, currentNoteId, pendingNextNoteId, lastError, body)` constructor. The two shapes are wire-incompatible: any payload emitted from Rust today fails the TS type-guard's discriminated-union narrowing for arms other than the legacy ones, and the Rust side has no way to express `focusedBlockId` / `priorFocusedBlockId` / `pendingNextFocus` / `blocks`.
+
+Sprint 8's scope is the **big-bang migration** of the Rust DTO and all Rust callers to the 5-arm tagged union. TS-side application logic (reducer, view-state, DOM tests) is **out of scope** except where the channel contract changes.
+
+### 15.2 IPC wire contract requirements (REQ-IPC-001..020)
+
+#### Tag and variant shape
+
+- **REQ-IPC-001** — When the Rust backend emits `editing_session_state_changed`, the wrapped `state` JSON object shall be a tagged union whose discriminant is the field name `status`, with one of the literal kebab-case string values `"idle"`, `"editing"`, `"saving"`, `"switching"`, `"save-failed"`.
+- **REQ-IPC-002** — Each non-`idle` variant shall carry a `currentNoteId: string` field. The `idle` variant shall NOT carry `currentNoteId`.
+- **REQ-IPC-003** — Each non-`idle` variant shall carry an `isNoteEmpty: boolean` field. The `idle` variant shall NOT carry `isNoteEmpty`.
+- **REQ-IPC-004** — When an emitted state is the `editing` variant, the JSON object shall additionally contain `focusedBlockId: string | null`, `isDirty: boolean`, and `lastSaveResult: "success" | null`.
+- **REQ-IPC-005** — When an emitted state is the `saving` variant, the JSON object shall NOT contain `isDirty`, `focusedBlockId`, `pendingNextFocus`, `priorFocusedBlockId`, `lastSaveResult`, or `lastSaveError`.
+- **REQ-IPC-006** — When an emitted state is the `switching` variant, the JSON object shall contain `pendingNextFocus: { noteId: string, blockId: string }` (always present, never null).
+- **REQ-IPC-007** — When an emitted state is the `save-failed` variant, the JSON object shall contain `priorFocusedBlockId: string | null`, `pendingNextFocus: { noteId: string, blockId: string } | null`, and `lastSaveError: SaveErrorDto`.
+
+#### Sub-DTO shapes
+
+- **REQ-IPC-008** — `PendingNextFocusDto` shall serialize as `{ "noteId": string, "blockId": string }` (camelCase, both fields required).
+- **REQ-IPC-009** — `DtoBlock` shall serialize as `{ "id": string, "type": string, "content": string }`. The Rust `block_type: String` field shall serialize under the JSON key `type`. Permitted `type` values mirror the TS `BlockType` literal union (`paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider`).
+- **REQ-IPC-010** — `SaveErrorDto` shall serialize as `{ "kind": "fs" | "validation", "reason"?: { "kind": "permission" | "disk-full" | "lock" | "not-found" | "unknown" } }`. When `reason` is `None`, the JSON key shall be omitted (`skip_serializing_if = "Option::is_none"`).
+
+#### Optionality rules
+
+- **REQ-IPC-011** — When the optional `blocks` field on the `editing` / `saving` / `switching` / `save-failed` variant is `None`, the JSON key `blocks` shall be omitted from the serialized object. When it is `Some(vec)`, the JSON key shall be present and carry an array of `DtoBlock` (possibly empty).
+- **REQ-IPC-012** — All `editing_session_state_changed` events shall carry the payload wrapper `{ "state": <variant object> }` (ie the existing `make_editing_state_changed_payload` wrapping contract).
+
+#### Caller-site contracts
+
+- **REQ-IPC-013** — All emit sites in `promptnotes/src-tauri/src/editor.rs` (`save_note_and_emit`, `discard_current_session`, `cancel_switch`, `request_new_note`) shall construct payloads through the new variant-aware helper API. No emit site shall hand-construct a flat 6-field object.
+- **REQ-IPC-014** — `promptnotes/src-tauri/src/feed.rs::select_past_note` shall emit `editing_session_state_changed` with the `editing` variant. The emitted variant shall include `focusedBlockId` set to the first `Block.id` of the loaded note (or `null` if the note has no blocks), `isDirty: false`, `lastSaveResult: null`, and `isNoteEmpty: <body == "">`.
+- **REQ-IPC-015** — `cancel_switch` shall emit the `editing` variant for the cancelled `currentNoteId`, with `isDirty: true`, `focusedBlockId: null`, `lastSaveResult: null`, and `isNoteEmpty: false`. (RD-018: the prior block id restoration on Cancel is owned by the TS reducer; the Rust handler does not have access to the prior focus and shall emit `null` so the TS side can resolve from its retained `priorFocusedBlockId`.)
+- **REQ-IPC-016** — `discard_current_session` shall emit the `idle` variant. The serialized state object shall contain only `{"status":"idle"}` and no other fields.
+- **REQ-IPC-017** — `trigger_idle_save`, `trigger_blur_save`, and `retry_save` shall emit the `editing` variant on `Ok(())` from `fs_write_file_atomic` (with `isDirty: false`, `focusedBlockId: null`, `lastSaveResult: "success"`, `isNoteEmpty: <body == "">`), and the `save-failed` variant on `Err(io_err)` (with `priorFocusedBlockId: null`, `pendingNextFocus: null`, `lastSaveError: { kind: "fs", reason: <FsErrorDto> }`, `isNoteEmpty: <body == "">`).
+- **REQ-IPC-018** — `request_new_note` shall emit the `editing` variant for the newly-created note path with `isDirty: false`, `focusedBlockId: null`, `lastSaveResult: null`, `isNoteEmpty: true` (new note has empty body).
+
+#### Boundary contracts
+
+- **REQ-IPC-019** — `promptnotes/src/lib/editor/editorStateChannel.ts::subscribeToEditorState` shall continue to type the listener as `(state: EditingSessionStateDto) => void` and read `event.payload.state` without modification. Sprint 8 shall NOT introduce a runtime type-guard or coercion at the channel boundary; correctness is established by the wire contract above plus the Phase 5 round-trip property.
+- **REQ-IPC-020** — For every Rust emit-site listed in REQ-IPC-013 and REQ-IPC-014, `serde_json::to_string(&dto)` followed by parsing back into the Rust `EditingSessionStateDto` enum shall be the identity (round-trip preservation). Equivalently, the JSON output of the Rust serializer, when fed into a `JSON.parse`-then-`EditingSessionStateDto` narrowing in TypeScript, shall successfully match exactly one of the 5 union arms with no extra fields the TS `EditingSessionStateDto` does not declare.
+
+### 15.3 Edge cases (EC-IPC-001..010)
+
+| ID | Description |
+|----|-------------|
+| EC-IPC-001 | Save success (`fs_write_file_atomic` returns `Ok(())`): emitted variant is `editing`, **not** `idle`. The TS reducer relies on `editing` to keep the editor mounted. |
+| EC-IPC-002 | `lastSaveError.reason` is `None` (validation error): the JSON shall NOT contain the `reason` key (`skip_serializing_if`). |
+| EC-IPC-003 | `lastSaveError.reason` is `Some(FsErrorDto { kind: "permission" })`: serialized shape is `{"kind":"fs","reason":{"kind":"permission"}}`. |
+| EC-IPC-004 | `blocks` is `None` (Sprint 8 default for backwards-compatible emits): the JSON object shall NOT contain `blocks`. |
+| EC-IPC-005 | `blocks` is `Some(vec![])` (note with no blocks): the JSON object shall contain `"blocks":[]`. |
+| EC-IPC-006 | `priorFocusedBlockId` is `null` in `save-failed`: the JSON shall serialize the literal `"priorFocusedBlockId":null` (NOT skip), to match the TS narrowing of `priorFocusedBlockId: string \| null` (always present). |
+| EC-IPC-007 | `focusedBlockId` is `null` in `editing`: the JSON shall serialize `"focusedBlockId":null` (always present, NOT skipped) — same reason as EC-IPC-006. |
+| EC-IPC-008 | `pendingNextFocus` is `null` in `save-failed`: the JSON shall serialize `"pendingNextFocus":null` (always present in this variant; NOT skipped). |
+| EC-IPC-009 | TS reducer receives an emitted `idle` variant: matching narrows on `state.status === 'idle'`. The Rust JSON `{"status":"idle"}` (no other fields) shall successfully narrow under TS's union narrowing without runtime errors. |
+| EC-IPC-010 | `select_past_note` is called for a note whose body is empty (`""`): emitted `editing` variant shall have `focusedBlockId: null` and `isNoteEmpty: true`. (Body parsing into blocks for the `blocks` field is OUT-OF-SCOPE in Sprint 8 and shall remain `None`.) |
+
+### 15.4 Out-of-scope for Sprint 8 (explicit)
+
+- Block parsing on the Rust side (`parseMarkdownToBlocks` analogue): Sprint 8 emits `blocks: None` from all Rust handlers. Block-aware payload emission from `select_past_note` is deferred to `ui-feed-list-actions` Sprint 4.
+- TS-side reducer / view-state changes: the TS layer is already block-aware.
+- New REQ-EDIT requirements: this sprint is wire-contract only and does not alter the user-visible behaviour of `ui-editor` (REQ-EDIT-001..038 remain authoritative).
+- `note.isEmpty()` evaluation on the Rust side from raw bytes: Sprint 8 emits `isNoteEmpty = body.is_empty()` as a conservative byte-level check; richer block-based emptiness (whitespace-only) is owned by `capture-auto-save`.
+
+### 15.5 Migration deltas vs Sprint 7
+
+- `EditingSessionStateDto` (Rust): `struct { status, is_dirty, current_note_id, pending_next_note_id, last_error, body }` → `enum` with 5 variants (`Idle | Editing { … } | Saving { … } | Switching { … } | SaveFailed { … }`) using `#[serde(tag = "status", rename_all = "kebab-case")]`.
+- `make_editing_state_changed_payload(status, isDirty, currentNoteId, pendingNextNoteId, lastError, body)` (8 positional args, all required) → variant-aware helpers (e.g. `make_idle_payload()`, `make_editing_payload(...)`, `make_saving_payload(...)`, `make_switching_payload(...)`, `make_save_failed_payload(...)`) OR a single helper that takes `&EditingSessionStateDto` enum value. Either shape is acceptable as long as REQ-IPC-013 (no flat construction at emit sites) holds.
+- The `body` parameter on the legacy helper is **removed** from the public API: the Rust DTO no longer carries `body` (the TS DTO never did; bodies travel separately through `select_past_note`'s editor-payload path or through the `feed_state_changed` snapshot's `note_metadata`).
+- Tests in `src-tauri/tests/editor_handlers.rs` and `src-tauri/tests/feed_handlers.rs` that assert the legacy 6-flat-field JSON keys (`isDirty`, `currentNoteId`, `pendingNextNoteId`, `lastError`, `body`) are rewritten to assert the corresponding variant-shape keys, OR the assertion is loosened to `status` + `currentNoteId` per the Sprint 8 instruction document §影響範囲リスト.
+
+### 15.6 Acceptance signals
+
+- `cargo test --manifest-path promptnotes/src-tauri/Cargo.toml` shall PASS (existing tests rewritten to new shape + new round-trip and per-variant serde tests).
+- `bun run vitest run` (TS) shall PASS — DOM tests for `EditorPanel` / `editorStateChannel` shall remain green without source changes outside scope.
+- `bun run tauri dev` smoke: opening a past note via the feed shall populate the editor with the correct body (REQ-IPC-014 manual check).
+
