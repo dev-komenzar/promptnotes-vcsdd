@@ -101,11 +101,49 @@
   }
 
   function handleFocusOut(): void {
-    // Block-level blur — EditorPanel handles all-blocks blur
+    // Block-level blur. The "all-blocks blur" detection (which raises
+    // EditorBlurredAllBlocks for the blur-save trigger) is the responsibility of
+    // the wrapper that owns the block list — currently FeedRow.svelte from
+    // ui-feed-list-actions Sprint 5. BlockElement intentionally does not raise
+    // any Internal Event here.
+  }
+
+  /**
+   * NFR-BE-006 / PROP-BE-046: Strip control chars from textContent before
+   * dispatching to keep `BlockContent` VO Smart Constructor happy on the
+   * domain side.
+   *
+   * - paragraph / heading / list / quote / divider: strip `\n`, `\t`, U+0000–U+001F
+   *   (excluding `\n` and `\t` is irrelevant since both are stripped here),
+   *   and U+007F.
+   * - code: preserve `\n` and `\t`; strip the rest of U+0000–U+001F and U+007F.
+   */
+  function sanitiseContent(raw: string, type: BlockType): string {
+    if (type === 'code') {
+      // Keep \n (U+000A) and \t (U+0009); drop U+0000–U+0008, U+000B–U+001F, U+007F
+      let out = '';
+      for (let i = 0; i < raw.length; i++) {
+        const code = raw.charCodeAt(i);
+        const isControl = (code >= 0x00 && code <= 0x1f) || code === 0x7f;
+        if (isControl && code !== 0x0a && code !== 0x09) continue;
+        out += raw[i];
+      }
+      return out;
+    }
+    // Non-code blocks strip all U+0000–U+001F (incl. \n, \t) and U+007F.
+    let out = '';
+    for (let i = 0; i < raw.length; i++) {
+      const code = raw.charCodeAt(i);
+      const isControl = (code >= 0x00 && code <= 0x1f) || code === 0x7f;
+      if (isControl) continue;
+      out += raw[i];
+    }
+    return out;
   }
 
   function handleInput(): void {
-    const content = getTextContent();
+    const rawContent = getTextContent();
+    const content = sanitiseContent(rawContent, block.type);
 
     // Dispatch EditBlockContent
     adapter.dispatchEditBlockContent({
@@ -141,6 +179,14 @@
   }
 
   function handleKeyDown(event: KeyboardEvent): void {
+    // PROP-BE-039 / REQ-BE-006 §Exclusivity: when SlashMenu is open the menu owns
+    // navigation/selection keys. BlockElement's keydown handler must skip Enter /
+    // Backspace / Delete / arrow keys so the menu's `<svelte:window onkeydown>`
+    // can consume them without the BlockElement also firing Insert/Split/Remove.
+    if (slashMenuOpen) {
+      return;
+    }
+
     const content = getTextContent();
 
     if (event.key === 'Enter') {
@@ -234,17 +280,6 @@
   function handleSlashClose(): void {
     slashMenuOpen = false;
     slashQuery = '';
-  }
-
-  // Map block type to element tag and CSS class
-  function getBlockTag(): string {
-    switch (block.type) {
-      case 'heading-1': return 'h1';
-      case 'heading-2': return 'h2';
-      case 'heading-3': return 'h3';
-      case 'divider': return 'hr';
-      default: return 'div';
-    }
   }
 
   const isDivider = $derived(block.type === 'divider');

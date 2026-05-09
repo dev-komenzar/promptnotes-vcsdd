@@ -34,6 +34,12 @@
       "phase2bGreen": "auto-green",
       "phase2cRefactor": "deferred-to-sprint-4",
       "testsAdded": 74
+    },
+    "sprint2": {
+      "phase2aRed": "PASS (5 fails initial)",
+      "phase2bGreen": "PASS (29 tests)",
+      "phase2cRefactor": "partial (FIND-017, 018 done)",
+      "testsAdded": 29
     }
   },
   "proofObligations": [
@@ -245,7 +251,7 @@
       "reqs": [
         "REQ-BE-001"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-022",
@@ -255,7 +261,7 @@
       "reqs": [
         "REQ-BE-002"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-023",
@@ -265,7 +271,7 @@
       "reqs": [
         "REQ-BE-003"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-024",
@@ -275,7 +281,7 @@
       "reqs": [
         "REQ-BE-004"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-025",
@@ -285,7 +291,7 @@
       "reqs": [
         "REQ-BE-005"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-026",
@@ -295,7 +301,7 @@
       "reqs": [
         "REQ-BE-006"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-027",
@@ -305,7 +311,7 @@
       "reqs": [
         "REQ-BE-007"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-028",
@@ -315,7 +321,7 @@
       "reqs": [
         "REQ-BE-008"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-029",
@@ -325,7 +331,7 @@
       "reqs": [
         "REQ-BE-009"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-030",
@@ -335,7 +341,7 @@
       "reqs": [
         "REQ-BE-010"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-031",
@@ -443,7 +449,7 @@
       "reqs": [
         "REQ-BE-002b"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-039",
@@ -453,7 +459,7 @@
       "reqs": [
         "REQ-BE-006"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-043",
@@ -491,7 +497,7 @@
       "reqs": [
         "NFR-BE-006"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-047",
@@ -501,7 +507,7 @@
       "reqs": [
         "adapter contract"
       ],
-      "status": "pending"
+      "status": "green-tested"
     }
   ],
   "traceability": {
@@ -521,7 +527,7 @@
       "iterations": 2
     }
   },
-  "sprintCount": 1,
+  "sprintCount": 2,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T12:32:45.036Z"
+  "updatedAt": "2026-05-09T12:37:27.922Z"
 }
