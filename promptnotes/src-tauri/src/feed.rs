@@ -256,10 +256,9 @@ pub fn select_past_note(
         .map(|m| m.body.as_str())
         .unwrap_or("");
 
-    // REQ-FEED-024: Emit editing_session_state_changed so EditorPane receives the past note body
-    let editor_payload = crate::editor::make_editing_state_changed_payload(
-        "editing", false, Some(note_id.clone()), None, None, body,
-    );
+    // REQ-FEED-024 / REQ-IPC-014: Emit editing_session_state_changed with the editing variant.
+    let editor_state = crate::editor::compose_state_for_select_past_note(&note_id, body);
+    let editor_payload = crate::editor::make_editing_state_changed_payload(&editor_state);
     app.emit("editing_session_state_changed", editor_payload)
         .map_err(|e| e.to_string())?;
 

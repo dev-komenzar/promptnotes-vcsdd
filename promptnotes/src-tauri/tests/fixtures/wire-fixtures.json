@@ -1,0 +1,182 @@
+[
+  {
+    "status": "idle"
+  },
+  {
+    "currentNoteId": "n1",
+    "focusedBlockId": null,
+    "isDirty": false,
+    "isNoteEmpty": true,
+    "lastSaveResult": null,
+    "status": "editing"
+  },
+  {
+    "blocks": [],
+    "currentNoteId": "n1",
+    "focusedBlockId": "blk-1",
+    "isDirty": true,
+    "isNoteEmpty": false,
+    "lastSaveResult": "success",
+    "status": "editing"
+  },
+  {
+    "blocks": [
+      {
+        "content": "para",
+        "id": "b1",
+        "type": "paragraph"
+      },
+      {
+        "content": "title",
+        "id": "b2",
+        "type": "heading-1"
+      },
+      {
+        "content": "fn f() {}",
+        "id": "b3",
+        "type": "code"
+      },
+      {
+        "content": "",
+        "id": "b4",
+        "type": "divider"
+      }
+    ],
+    "currentNoteId": "n1",
+    "focusedBlockId": "blk-2",
+    "isDirty": false,
+    "isNoteEmpty": false,
+    "lastSaveResult": null,
+    "status": "editing"
+  },
+  {
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "status": "saving"
+  },
+  {
+    "blocks": [
+      {
+        "content": "text",
+        "id": "b1",
+        "type": "paragraph"
+      }
+    ],
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "status": "saving"
+  },
+  {
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "pendingNextFocus": {
+      "blockId": "blk-1",
+      "noteId": "n2"
+    },
+    "status": "switching"
+  },
+  {
+    "blocks": [],
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "pendingNextFocus": {
+      "blockId": "blk-1",
+      "noteId": "n2"
+    },
+    "status": "switching"
+  },
+  {
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "lastSaveError": {
+      "kind": "fs",
+      "reason": {
+        "kind": "permission"
+      }
+    },
+    "pendingNextFocus": null,
+    "priorFocusedBlockId": null,
+    "status": "save-failed"
+  },
+  {
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "lastSaveError": {
+      "kind": "fs",
+      "reason": {
+        "kind": "disk-full"
+      }
+    },
+    "pendingNextFocus": null,
+    "priorFocusedBlockId": "blk-1",
+    "status": "save-failed"
+  },
+  {
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "lastSaveError": {
+      "kind": "fs",
+      "reason": {
+        "kind": "lock"
+      }
+    },
+    "pendingNextFocus": {
+      "blockId": "blk-1",
+      "noteId": "n2"
+    },
+    "priorFocusedBlockId": "blk-1",
+    "status": "save-failed"
+  },
+  {
+    "currentNoteId": "n1",
+    "isNoteEmpty": true,
+    "lastSaveError": {
+      "kind": "validation"
+    },
+    "pendingNextFocus": null,
+    "priorFocusedBlockId": null,
+    "status": "save-failed"
+  },
+  {
+    "blocks": [],
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "lastSaveError": {
+      "kind": "fs",
+      "reason": {
+        "kind": "unknown"
+      }
+    },
+    "pendingNextFocus": {
+      "blockId": "blk-1",
+      "noteId": "n2"
+    },
+    "priorFocusedBlockId": null,
+    "status": "save-failed"
+  },
+  {
+    "blocks": [
+      {
+        "content": "sub",
+        "id": "b1",
+        "type": "heading-2"
+      },
+      {
+        "content": "item",
+        "id": "b2",
+        "type": "bullet"
+      }
+    ],
+    "currentNoteId": "n1",
+    "isNoteEmpty": false,
+    "lastSaveError": {
+      "kind": "fs",
+      "reason": {
+        "kind": "not-found"
+      }
+    },
+    "pendingNextFocus": null,
+    "priorFocusedBlockId": "blk-1",
+    "status": "save-failed"
+  }
+]

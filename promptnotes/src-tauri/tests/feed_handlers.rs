@@ -5,11 +5,14 @@
 ///   PROP-FEED-S2-002: TrashErrorDto serializes with correct kind discriminator
 ///   PROP-FEED-S2-003: feed module is accessible (module-level compilation test)
 ///
-/// These tests call functions from the feed module. They MUST FAIL in Phase 2a
-/// because the feed module does not yet exist.
-
-// Phase 2a: These tests fail because `promptnotes_lib::feed` does not exist yet.
-// Once feed.rs is implemented (Phase 2b), all tests must pass.
+/// Sprint 3 Phase 2b (GREEN phase):
+///   PROP-FEED-S2-008: select_past_note emits editing_session_state_changed
+///
+/// Sprint 8 Phase 2b migration:
+///   - make_editing_state_changed_payload now takes &EditingSessionStateDto (1 arg)
+///   - select_past_note tests loosened to assert status + currentNoteId
+///     per Sprint 8 instruction §影響範囲リスト (block-aware assertions deferred to
+///     ui-feed-list-actions Sprint 4)
 
 use promptnotes_lib::feed::{fs_trash_file_impl, TrashErrorDto};
 
@@ -94,14 +97,14 @@ fn trash_error_dto_serializes_unknown_kind_no_detail() {
     );
 }
 
-// ── Sprint 3 Phase 2a (RED phase): select_past_note editing_session_state_changed emit ─
+// ── Sprint 3 Phase 2b (GREEN): select_past_note editing_session_state_changed emit ─
+// Sprint 8 migration: assertions loosened to status + currentNoteId
+// per §影響範囲リスト (detailed block-aware assertions deferred to ui-feed-list-actions Sprint 4).
 
 /// Sprint 3 / REQ-FEED-024 / PROP-FEED-S2-008:
 /// `select_past_note` must emit editing_session_state_changed before feed_state_changed.
 ///
-/// RED phase: This test verifies the VCSDD spec requirement. The test currently
-/// FAILS because select_past_note does not yet emit editing_session_state_changed.
-/// It will PASS after the Green phase implementation.
+/// Sprint 8: Loosened to assert status="editing" + currentNoteId only.
 #[test]
 fn test_select_past_note_emits_editing_session_state_changed() {
     use std::io::Write;
@@ -140,22 +143,21 @@ fn test_select_past_note_emits_editing_session_state_changed() {
         body
     );
 
-    // Construct the editing_session_state_changed payload (as select_past_note should)
-    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(
-        "editing", false, Some(note_path.clone()), None, None, body,
-    );
+    // Construct the editing_session_state_changed payload using the new Sprint 8 API.
+    // REQ-IPC-014: compose_state_for_select_past_note sets status="editing",
+    // currentNoteId=note_path, focusedBlockId=null, isDirty=false, isNoteEmpty=body.is_empty().
+    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(&note_path, body);
+    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
 
-    // Verify payload structure matches REQ-FEED-024 acceptance criteria
+    // Sprint 8 loosened assertions: status + currentNoteId only.
     let state = editor_payload
         .get("state")
         .expect("payload must have 'state' wrapper per editor.rs make_editing_state_changed_payload");
 
     assert_eq!(state["status"], "editing", "status must be 'editing'");
-    assert_eq!(state["isDirty"], false, "isDirty must be false");
     assert_eq!(state["currentNoteId"], note_path, "currentNoteId must match");
-    assert!(state["pendingNextNoteId"].is_null(), "pendingNextNoteId must be null");
-    assert!(state["lastError"].is_null(), "lastError must be null");
-    assert_eq!(state["body"], body_content, "body must match file content");
+    assert_eq!(state["isDirty"], false, "isDirty must be false");
+    assert_eq!(state["isNoteEmpty"], false, "isNoteEmpty must be false (non-empty body)");
 
     // Emit-order verification note (FIND-S3-006):
     // The editing_session_state_changed emit must occur BEFORE feed_state_changed.
@@ -167,7 +169,9 @@ fn test_select_past_note_emits_editing_session_state_changed() {
 
 /// Sprint 3 / REQ-FEED-024:
 /// When select_past_note is called with a note_id that exists in the vault,
-/// the editing_session_state_changed payload must contain the note body from the file system.
+/// the editing_session_state_changed payload must have correct status and currentNoteId.
+///
+/// Sprint 8: Loosened from 6-field check to status + currentNoteId + key-set check.
 #[test]
 fn test_select_past_note_editing_payload_contains_body() {
     use std::io::Write;
@@ -203,43 +207,41 @@ fn test_select_past_note_editing_payload_contains_body() {
         "Body from note_metadata must match file content exactly"
     );
 
-    // Verify full payload has 6 fields
-    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(
-        "editing", false, Some(note_path.clone()), None, None, body,
-    );
+    // Sprint 8: Verify payload via new singular API.
+    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(&note_path, body);
+    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
     let state = &editor_payload["state"];
+
+    // Sprint 8 loosened assertions: status + currentNoteId + key-set.
+    assert_eq!(state["status"], "editing", "status must be 'editing'");
+    assert_eq!(state["currentNoteId"], note_path, "currentNoteId must match");
+    assert_eq!(state["isDirty"], false, "isDirty must be false");
+    assert!(
+        state.get("isNoteEmpty").is_some(),
+        "isNoteEmpty must be present in the editing variant"
+    );
+    // Verify the Sprint 8 editing variant key set is present
     let fields: Vec<&str> = state.as_object().unwrap().keys().map(|k| k.as_str()).collect();
-    assert!(
-        fields.contains(&"status"),
-        "payload must contain 'status' field; got: {:?}", fields
-    );
-    assert!(
-        fields.contains(&"isDirty"),
-        "payload must contain 'isDirty' field"
-    );
-    assert!(
-        fields.contains(&"currentNoteId"),
-        "payload must contain 'currentNoteId' field"
-    );
-    assert!(
-        fields.contains(&"pendingNextNoteId"),
-        "payload must contain 'pendingNextNoteId' field"
-    );
-    assert!(
-        fields.contains(&"lastError"),
-        "payload must contain 'lastError' field"
-    );
-    assert!(
-        fields.contains(&"body"),
-        "payload must contain 'body' field"
-    );
+    assert!(fields.contains(&"status"), "payload must contain 'status'");
+    assert!(fields.contains(&"isDirty"), "payload must contain 'isDirty'");
+    assert!(fields.contains(&"currentNoteId"), "payload must contain 'currentNoteId'");
+    assert!(fields.contains(&"focusedBlockId"), "payload must contain 'focusedBlockId'");
+    assert!(fields.contains(&"isNoteEmpty"), "payload must contain 'isNoteEmpty'");
+    assert!(fields.contains(&"lastSaveResult"), "payload must contain 'lastSaveResult'");
+    // Sprint 8: body field REMOVED from editor channel per §15.5 design notes.
+    assert!(!fields.contains(&"body"), "body field must NOT be present in Sprint 8 editor channel");
+    // Sprint 8: blocks is None → absent
+    assert!(!fields.contains(&"blocks"), "blocks must be absent (None in Sprint 8)");
 
     // Cleanup
     let _ = std::fs::remove_file(&note_path);
 }
 
 /// Sprint 3 / REQ-FEED-024 / EC-FEED-016:
-/// When note_id is not found in note_metadata, body must be empty string.
+/// When note_id is not found in note_metadata, body must be empty string,
+/// and isNoteEmpty must be true.
+///
+/// Sprint 8: Loosened to assert status + currentNoteId + isNoteEmpty.
 #[test]
 fn test_select_past_note_nonexistent_body_is_empty() {
     // Simulate a non-existent note_id by looking up a key that doesn't exist
@@ -255,12 +257,15 @@ fn test_select_past_note_nonexistent_body_is_empty() {
 
     assert_eq!(body, "", "Body must be empty for non-existent note_id");
 
-    // Verify payload with empty body still has all 6 fields
-    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(
-        "editing", false, Some(nonexistent_id.to_string()), None, None, body,
-    );
+    // Sprint 8: Verify payload via new singular API.
+    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(nonexistent_id, body);
+    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
     let state = &editor_payload["state"];
-    assert_eq!(state["status"], "editing");
-    assert_eq!(state["body"], "");
-    assert_eq!(state["currentNoteId"], nonexistent_id);
+
+    // Sprint 8 loosened assertions.
+    assert_eq!(state["status"], "editing", "status must be 'editing'");
+    assert_eq!(state["currentNoteId"], nonexistent_id, "currentNoteId must match");
+    assert_eq!(state["isNoteEmpty"], true, "isNoteEmpty must be true for empty body");
+    // body field MUST NOT be present on the editor channel in Sprint 8.
+    assert!(state.get("body").is_none(), "body must NOT be present in Sprint 8 editor channel");
 }
