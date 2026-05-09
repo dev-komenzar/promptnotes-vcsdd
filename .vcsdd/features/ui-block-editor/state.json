@@ -2,7 +2,7 @@
   "featureName": "ui-block-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "phase": "1a",
@@ -33,6 +33,12 @@
       "sprints": 4,
       "totalTests": 141,
       "totalProps": 47
+    },
+    {
+      "phase": "3",
+      "completedAt": "2026-05-09T13:13:36.830Z",
+      "iterations": 2,
+      "totalTests": 152
     }
   ],
   "iterations": {
@@ -542,6 +548,17 @@
     "beads": []
   },
   "gates": {
+    "3": {
+      "status": "PASS",
+      "adversaryVerdict": "PASS",
+      "iter1": "reviews/phase-3/verdict.json (FAIL)",
+      "iter2": "reviews/phase-3/verdict-iter2.json (PASS)",
+      "carryOverMinors": [
+        "FIND-BE-3-009",
+        "FIND-BE-3-010",
+        "FIND-BE-3-011"
+      ]
+    },
     "1c": {
       "status": "PASS",
       "adversaryVerdict": "PASS",
@@ -556,5 +573,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T13:05:32.957Z"
+  "updatedAt": "2026-05-09T13:13:36.830Z"
 }
