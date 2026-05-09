@@ -1,0 +1,24 @@
+{
+  "findingId": "FIND-092",
+  "criterion": "CRIT-801",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "major",
+  "description": "CRIT-801 maps EC-IPC-013 (whitespace-only body) to `prop_ipc_017 (relies on body.is_empty() byte-level check)` at editor_wire_sprint8.rs:64. Inspection of `prop_ipc_017_compose_select_past_note` (lines 1041-1071) shows it tests exactly two body inputs: `\"# Hello\"` (line 1043) and `\"\"` (line 1064). It NEVER constructs a whitespace-only body input like `\"   \"`, `\"\\n\\n\"`, or `\"\\t\"`. The map's hand-wave 'relies on body.is_empty() byte-level check' is a code-inference claim, not a test assertion. Critically, `body.is_empty()` returns FALSE for whitespace strings (e.g., `\"   \".is_empty() == false`), so the implementation classifies a whitespace-only body as `is_note_empty: false` — and no test currently verifies whether this is the spec-correct behavior for EC-IPC-013. The edge case is mechanically counted by the wc -l == 14 regex but semantically uncovered. Phase 5 graders following the map will discover that EC-IPC-013's behavior is implementation-defined, not test-anchored. This is a softer version of FIND-091: the structural map passes the regex but a real reviewer must read the underlying test and discover the gap.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+    "lineRange": "64",
+    "snippet": "///   EC-IPC-013 (whitespace-only body)        — prop_ipc_017 (relies on body.is_empty() byte-level check)"
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+    "lineRange": "1040-1071",
+    "snippet": "fn prop_ipc_017_compose_select_past_note() {\n    // Non-empty body\n    let state = compose_state_for_select_past_note(\"note-1\", \"# Hello\");\n    ...\n    // Empty body\n    let state_empty = compose_state_for_select_past_note(\"note-2\", \"\");\n    ... [no whitespace-only case]"
+  },
+  "remediationOptions": [
+    "Extend prop_ipc_017_compose_select_past_note with a third input case `compose_state_for_select_past_note(\"note-3\", \"   \")` and explicitly assert is_note_empty == false (matching the spec EC-IPC-013 expected behavior, whatever that is).",
+    "If the spec EC-IPC-013 actually says whitespace-only should be treated as empty, then add a trim-or-equivalent step in compose_state_for_select_past_note AND add the assertion is_note_empty == true for the whitespace-only input. Either way, anchor the EC in a real assertion.",
+    "Update the coverage map comment from 'relies on body.is_empty() byte-level check' (which describes implementation behavior) to a test name that DOES assert the EC-IPC-013 behavior."
+  ],
+  "routeToPhase": "1c"
+}

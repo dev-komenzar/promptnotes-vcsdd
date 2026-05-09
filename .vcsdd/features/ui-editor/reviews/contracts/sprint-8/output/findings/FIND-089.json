@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-089",
+  "criterion": "CRIT-801",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "CRIT-801's threshold (weight 0.08) requires `grep -n \"EC-IPC-\" promptnotes/src-tauri/tests/` to return matches covering at least EC-IPC-001 through EC-IPC-014 (14 distinct IDs). Inspection of `tests/editor_wire_sprint8.rs` and the other Rust tests under `promptnotes/src-tauri/tests/` finds no `EC-IPC-NNN` substrings. Test names follow the `prop_ipc_NNN_*` convention and the docstrings document only PROP-IPC obligations; edge cases EC-IPC-001..014 are folded into the §10.2.1 14-fixture cover set (one fixture per row) but the EC-IPC ID itself is not used as an inline tag. As with FIND-088, the threshold's grep cannot find any of the 14 required IDs and CRIT-801 is mechanically unsatisfiable at Phase 5. The contract should either (a) drop the EC-IPC grep requirement and instead require the cover-set table to be enumerated (e.g. `jq 'length' wire-fixtures.json == 14` plus per-fixture key-set assertions, which CRIT-803 already covers), or (b) require Phase 2b to add inline `// EC-IPC-NNN` tags to the Rust fixtures and assertions before grading.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "lineRange": "57-60",
+    "snippet": "passThreshold: >\n  `grep -n \"EC-IPC-\" promptnotes/src-tauri/tests/` returns matches covering at least\n  EC-IPC-001 through EC-IPC-014 (14 distinct IDs). Each test that references an EC-IPC\n  ID has at least one assertion against the documented behaviour."
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+    "lineRange": "596-731",
+    "snippet": "fn wire_fixtures() -> Vec<EditingSessionStateDto> {\n    vec![\n        // F01 — Idle\n        EditingSessionStateDto::Idle,\n        // F02 — Editing, blocks:None, focused_block_id:None ...\n        ...\n    ]\n}\n// [Cover set covers EC-IPC-001..014 by construction but no EC-IPC-NNN tag is present in source]"
+  },
+  "routeToPhase": "1c"
+}

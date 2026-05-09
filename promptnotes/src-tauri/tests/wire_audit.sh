@@ -15,6 +15,7 @@
 # relative to its own location or the current directory.
 
 set -euo pipefail
+shopt -s globstar nullglob
 
 # ── Path resolution ────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -155,14 +156,69 @@ echo "=== PROP-IPC-021: No legacy 6-arg make_editing_state_changed_payload ==="
 
 LEGACY_PATTERN='make_editing_state_changed_payload[[:space:]]*([^)]+,[^)]+,[^)]+,[^)]+,[^)]+,[^)]+)'
 
-# Use grep -E on all .rs files in src/
+# Single-line check (catches the original 6-positional one-liner form)
 legacy_hits=$(grep -rn -E "$LEGACY_PATTERN" "$SRC_TAURI/src/" 2>/dev/null || true)
 
-if [[ -z "$legacy_hits" ]]; then
-    pass "PROP-IPC-021: No legacy 6-arg make_editing_state_changed_payload found"
+# Multi-line check: scan for any `make_editing_state_changed_payload(` call site
+# in src/ and verify each one's argument list (between `(` and the matching `)`)
+# contains at most one comma at the top level. Two or more top-level commas in a
+# single call expression is the legacy positional shape, regardless of whether
+# the args span multiple lines.
+PROP_021_PASS=true
+if [[ -n "$legacy_hits" ]]; then
+    PROP_021_PASS=false
+fi
+
+# Multi-line scan via awk: emit each call-site's flattened arg list.
+multiline_hits=$(awk '
+  BEGIN { in_call = 0; depth = 0; args = ""; start_line = 0; commas = 0 }
+  {
+    line = $0
+    while (length(line) > 0) {
+      if (in_call == 0) {
+        idx = index(line, "make_editing_state_changed_payload(")
+        if (idx == 0) { line = ""; continue }
+        in_call = 1
+        depth = 1
+        commas = 0
+        args = ""
+        start_line = NR
+        line = substr(line, idx + length("make_editing_state_changed_payload("))
+        continue
+      }
+      # in_call: scan for matching close paren, track top-level commas
+      ch = substr(line, 1, 1)
+      line = substr(line, 2)
+      if (ch == "(") { depth += 1; args = args ch; continue }
+      if (ch == ")") {
+        depth -= 1
+        if (depth == 0) {
+          if (commas >= 5) {
+            print FILENAME ":" start_line ": legacy form with " (commas+1) " positional args -> " args
+          }
+          in_call = 0
+          continue
+        }
+        args = args ch
+        continue
+      }
+      if (ch == "," && depth == 1) { commas += 1; args = args ch; continue }
+      args = args ch
+    }
+  }
+' "$SRC_TAURI"/src/**/*.rs 2>/dev/null || true)
+
+if [[ -n "$multiline_hits" ]]; then
+    PROP_021_PASS=false
+    echo "  Multi-line scan found legacy call sites:"
+    echo "$multiline_hits" | sed 's/^/    /'
+fi
+
+if $PROP_021_PASS; then
+    pass "PROP-IPC-021: No legacy 6-arg make_editing_state_changed_payload found (single+multi-line scan)"
 else
     fail "PROP-IPC-021: Legacy 6-arg form still present (must be removed in Phase 2b):"
-    echo "$legacy_hits" | sed 's/^/  /'
+    [[ -n "$legacy_hits" ]] && echo "$legacy_hits" | sed 's/^/  /'
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────

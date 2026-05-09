@@ -1,0 +1,111 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "mode": "strict",
+  "sprint": 8,
+  "iteration": 4,
+  "reviewedAt": "2026-05-09T05:00:00Z",
+  "reviewType": "contract",
+  "overallVerdict": "PASS",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "criteria": ["CRIT-800", "CRIT-801", "CRIT-808", "CRIT-809"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-8.md:40-43",
+          "description": "FIND-094 fix VERIFIED. CRIT-800 passThreshold now reads `cargo test --tests` exits 0 with all 91 tests passing (43 unit + 18 editor_handlers + 22 editor_wire_sprint8 + 8 feed_handlers; the editor_wire_sprint8 count includes the iter-3 additions of `prop_ipc_006_saving_key_set_equality` and `ec_ipc_013_whitespace_only_body_is_not_empty`). Arithmetic: 43 + 18 + 22 + 8 = 91 — internally coherent. The previously self-falsifying clause `no additions or removals expected during contract review` was removed and replaced with an explicit reference to the iter-3 additions, restoring meta-consistency."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1135-1161",
+          "description": "`ec_ipc_013_whitespace_only_body_is_not_empty` test (added in iter-3) is present at line 1136 and asserts the byte-level `is_note_empty` semantics on `[\"\\n\", \"  \", \"\\n\\n   \\n\", \" \\t \\n\"]` for both compose_state_for_select_past_note and compose_state_for_save_ok. Test is unchanged from iter-3 PASS state."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:30-65",
+          "description": "Coverage map header is intact: 20 REQ-IPC entries (lines 31-50, matching `^///\\s+REQ-IPC-0(0[1-9]|1[0-9]|20)`) and 14 EC-IPC entries (lines 52-65, matching `^///\\s+EC-IPC-0(0[1-9]|1[0-4])`). Line 35 references prop_ipc_006_saving_key_set_equality and line 64 references ec_ipc_013_whitespace_only_body_is_not_empty — both added in iter-3, both present and named consistently in the test file."
+        }
+      ]
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "PASS",
+      "criteria": ["CRIT-802"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh",
+          "description": "Iter-4 patch is scoped to sprint-8.md:40-43; wire_audit.sh is unchanged. FIND-093 fix from iter-3 (shopt -s globstar nullglob at line 18, recursive `**/*.rs` glob at line 209) remains intact. Three grep audits (PROP-IPC-012/020/021) execute as documented."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1172-1191",
+          "description": "print_wire_fixtures emits 14-fixture cover set with assertion arr.len() == 14 (line 1190). Unchanged from iter-3."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "criteria": ["CRIT-803", "CRIT-811"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+          "description": "Iter-4 patch did not touch wire_fixtures() / prop_ipc_010 / the 14-fixture cover set. CRIT-803 (round-trip cover set) and CRIT-811 (TS suite non-regression) remain at iter-3 PASS state."
+        }
+      ]
+    },
+    {
+      "name": "wire_contract_consistency",
+      "verdict": "PASS",
+      "criteria": ["CRIT-804", "CRIT-805", "CRIT-806"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/editor.rs",
+          "description": "Iter-4 patch is contract-only (sprint-8.md:40-43); no source changes. CRIT-804 (no legacy 6-arg form), CRIT-805 (skip_serializing_if allow-list, null-literal preservation), CRIT-806 (BlockTypeDto 9-variant kebab-case enum) all remain at iter-3 PASS state."
+        }
+      ]
+    },
+    {
+      "name": "out_of_scope_discipline",
+      "verdict": "PASS",
+      "criteria": ["CRIT-807", "CRIT-810"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-8.md:40-43",
+          "description": "Iter-4 amendment is strictly limited to the CRIT-800 passThreshold counts; no scope creep into TS-side reducer, Capture domain, or ui-feed-list-actions Sprint 4 deferrals. The CRIT-807 / CRIT-810 deferred-item prohibitions remain intact and unmodified."
+        }
+      ]
+    }
+  ],
+  "summary": "PASS: Iter-4 amendment to sprint-8.md:40-43 successfully resolves FIND-094. The CRIT-800 passThreshold now correctly states 91 tests with the breakdown 43 unit + 18 editor_handlers + 22 editor_wire_sprint8 + 8 feed_handlers (sum = 91, arithmetically coherent), and explicitly attributes the editor_wire_sprint8 increase from 20 to 22 to the iter-3 additions of `prop_ipc_006_saving_key_set_equality` and `ec_ipc_013_whitespace_only_body_is_not_empty`. The previously self-falsifying meta-clause `no additions or removals expected during contract review` was replaced with the explicit iter-3 attribution, eliminating the self-incoherence flagged by FIND-094. Both newly-named tests are present in the test file (lines 314-361 and 1135-1161 respectively) and are referenced from the coverage map (lines 35 and 64). The iter-4 patch is correctly scoped: it touches only the threshold text on sprint-8.md:40-43 and introduces no new contradictions in any other criterion. CRIT-801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811 are unchanged from their iter-3 PASS state. All five strict-mode dimensions PASS; all 12 criteria evaluated and PASS. The Sprint 8 contract is now ready for the strict-mode convergence checker.",
+  "convergenceSignals": {
+    "findingCount": 0,
+    "criticalCount": 0,
+    "majorCount": 0,
+    "minorCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-800", "CRIT-801", "CRIT-802", "CRIT-803", "CRIT-804",
+      "CRIT-805", "CRIT-806", "CRIT-807", "CRIT-808", "CRIT-809",
+      "CRIT-810", "CRIT-811"
+    ],
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "contractDigest": null
+  }
+}

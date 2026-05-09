@@ -26,6 +26,43 @@
 ///   PROP-IPC-017 — compose_state_for_select_past_note
 ///   PROP-IPC-018 — BlockTypeDto 9-variant exhaustive match (Tier 0 compile-time)
 ///   PROP-IPC-019 — BlockTypeDto round-trip (valid and invalid)
+///
+/// Spec REQ / EC coverage map (CRIT-800 / CRIT-801):
+///   REQ-IPC-001 (5-arm union)               — prop_ipc_001
+///   REQ-IPC-002 (currentNoteId on non-idle)  — prop_ipc_004 / 005 / 006 (per-variant key-set)
+///   REQ-IPC-003 (isNoteEmpty on non-idle)    — prop_ipc_004 / 005 / 006
+///   REQ-IPC-004 (Editing exact key set)      — prop_ipc_004
+///   REQ-IPC-005 (Saving exact key set)       — prop_ipc_006_saving_key_set_equality
+///   REQ-IPC-006 (Switching exact key set)    — prop_ipc_006
+///   REQ-IPC-007 (SaveFailed exact key set)   — prop_ipc_005
+///   REQ-IPC-008 (PendingNextFocusDto shape)  — prop_ipc_006
+///   REQ-IPC-009 (DtoBlock + BlockTypeDto)    — prop_ipc_018 / prop_ipc_019
+///   REQ-IPC-010 (SaveErrorDto skip-when-None)— prop_ipc_007
+///   REQ-IPC-011 (blocks optionality)         — prop_ipc_008
+///   REQ-IPC-012 (state wrapper)              — prop_ipc_009
+///   REQ-IPC-013 (caller-site contract)       — prop_ipc_013..017 + wire_audit.sh PROP-IPC-012
+///   REQ-IPC-014 (select_past_note Editing)   — prop_ipc_017
+///   REQ-IPC-015 (cancel_switch Editing)      — prop_ipc_014
+///   REQ-IPC-016 (discard idle-only)          — prop_ipc_013
+///   REQ-IPC-017 (save Ok/Err variants)       — prop_ipc_016
+///   REQ-IPC-018 (request_new_note Editing)   — prop_ipc_015
+///   REQ-IPC-019 (TS↔Rust shape)              — editorStateChannelWireFixtures.dom.vitest.ts
+///   REQ-IPC-020 (round-trip preservation)    — prop_ipc_010
+///
+///   EC-IPC-001 (save success → editing)      — prop_ipc_016
+///   EC-IPC-002 (validation reason None)      — prop_ipc_007
+///   EC-IPC-003 (fs+permission reason Some)   — prop_ipc_007
+///   EC-IPC-004 (blocks=None key absent)      — prop_ipc_008
+///   EC-IPC-005 (blocks=Some([]) emits [])    — prop_ipc_008
+///   EC-IPC-006 (priorFocusedBlockId null)    — prop_ipc_005_save_failed_null_literals_present
+///   EC-IPC-007 (focusedBlockId null)         — prop_ipc_004 (with focused_block_id: None fixture)
+///   EC-IPC-008 (pendingNextFocus null)       — prop_ipc_005_save_failed_null_literals_present
+///   EC-IPC-009 (idle narrowing)              — prop_ipc_002 + TS fixture test
+///   EC-IPC-010 (select_past_note empty body) — prop_ipc_017
+///   EC-IPC-011 (vault scan miss)             — feed_handlers.rs::test_select_past_note_nonexistent_body_is_empty
+///   EC-IPC-012 (cancel without save-failed)  — prop_ipc_014 (focused_block_id=None always)
+///   EC-IPC-013 (whitespace-only body)        — ec_ipc_013_whitespace_only_body_is_not_empty
+///   EC-IPC-014 (emit-before-subscribe)       — DOCUMENTATION-ONLY edge case; runtime obligation on EditorPanel mount order
 
 // Phase 2a: import NEW Sprint-8 symbols that do NOT exist yet.
 // This import triggers a compile error ("cannot find type `EditingSessionStateDto`
@@ -262,6 +299,63 @@ fn prop_ipc_004_editing_key_set_equality() {
     assert_eq!(
         actual_keys_with_blocks, expected_with_blocks,
         "Editing (blocks:Some([])) key set mismatch.\nGot: {:?}\nExpected: {:?}",
+        actual_keys_with_blocks, expected_with_blocks
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROP-IPC-006 (Saving variant): REQ-IPC-005 exact key set
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// PROP-IPC-006 (Saving) — REQ-IPC-005: Saving variant has EXACTLY the keys
+/// {status, currentNoteId, isNoteEmpty} (and blocks iff Some). No isDirty,
+/// focusedBlockId, pendingNextFocus, priorFocusedBlockId, lastSaveResult,
+/// lastSaveError keys may appear.
+#[test]
+fn prop_ipc_006_saving_key_set_equality() {
+    let saving_no_blocks = EditingSessionStateDto::Saving {
+        current_note_id: "n1".to_string(),
+        is_note_empty: false,
+        blocks: None,
+    };
+    let value = serde_json::to_value(&saving_no_blocks).expect("serialize");
+    let actual_keys: BTreeSet<String> = value
+        .as_object()
+        .expect("must be object")
+        .keys()
+        .cloned()
+        .collect();
+    let expected_keys: BTreeSet<String> = ["status", "currentNoteId", "isNoteEmpty"]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+    assert_eq!(
+        actual_keys, expected_keys,
+        "Saving (blocks:None) key set mismatch.\nGot: {:?}\nExpected: {:?}",
+        actual_keys, expected_keys
+    );
+
+    // With blocks
+    let saving_with_blocks = EditingSessionStateDto::Saving {
+        current_note_id: "n1".to_string(),
+        is_note_empty: false,
+        blocks: Some(vec![]),
+    };
+    let value = serde_json::to_value(&saving_with_blocks).expect("serialize");
+    let actual_keys_with_blocks: BTreeSet<String> = value
+        .as_object()
+        .expect("must be object")
+        .keys()
+        .cloned()
+        .collect();
+    let expected_with_blocks: BTreeSet<String> =
+        ["status", "currentNoteId", "isNoteEmpty", "blocks"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+    assert_eq!(
+        actual_keys_with_blocks, expected_with_blocks,
+        "Saving (blocks:Some([])) key set mismatch.\nGot: {:?}\nExpected: {:?}",
         actual_keys_with_blocks, expected_with_blocks
     );
 }
@@ -1030,6 +1124,39 @@ fn prop_ipc_017_compose_select_past_note() {
             assert!(is_note_empty, "empty body → isNoteEmpty:true");
         }
         _ => panic!("Expected Editing for select_past_note (empty)"),
+    }
+}
+
+/// EC-IPC-013 — Whitespace-only body (`"\n"`, `"  "`, `"\n\n   \n"`):
+/// `body.is_empty()` returns false (byte-level check), so emitted variant must
+/// carry `is_note_empty: false`. This intentionally diverges from the
+/// `NoteOps.isEmpty()` semantics (which would treat whitespace-only as empty).
+/// Sprint 8 documents this divergence in §15.4 / behavioral-spec.md.
+#[test]
+fn ec_ipc_013_whitespace_only_body_is_not_empty() {
+    for body in &["\n", "  ", "\n\n   \n", " \t \n"] {
+        let state = compose_state_for_select_past_note("note-ws", body);
+        match state {
+            EditingSessionStateDto::Editing { is_note_empty, .. } => {
+                assert!(
+                    !is_note_empty,
+                    "whitespace-only body {:?} must yield isNoteEmpty:false (byte-level check, EC-IPC-013)",
+                    body
+                );
+            }
+            _ => panic!("Expected Editing variant for select_past_note"),
+        }
+
+        let state_save_ok = compose_state_for_save_ok("note-ws", body);
+        match state_save_ok {
+            EditingSessionStateDto::Editing { is_note_empty, .. } => {
+                assert!(
+                    !is_note_empty,
+                    "save_ok with whitespace-only body must yield isNoteEmpty:false (EC-IPC-013)"
+                );
+            }
+            _ => panic!("Expected Editing variant for save_ok"),
+        }
     }
 }
 
