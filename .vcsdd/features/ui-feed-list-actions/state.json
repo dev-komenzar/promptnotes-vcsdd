@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "2c",
   "phaseHistory": [
     {
       "from": "init",
@@ -355,6 +355,14 @@
       "timestamp": "2026-05-09T14:00:00.000Z",
       "reason": "iter-2 fixes: parserParity.test.ts (TS half of PROP-FEED-S4-016) added, prop_s4_016b canonical snapshot added, integration_smoke_select_past_note_handler_logic added (Tauri test feature deferred to Sprint 5). All tests PASS (cargo 19+, bun 1965, vitest 225).",
       "sprint": 4
+    },
+    {
+      "from": "3",
+      "to": "2c",
+      "timestamp": "2026-05-09T14:30:00.000Z",
+      "reason": "Phase 3 sprint-4 iter-2 FAIL: 2 medium new findings (parser parity scope contradiction + handler antipattern recurrence). Routing to 2c for narrow scope adjustment + select_past_note compose split.",
+      "sprint": 4,
+      "iteration": "3-sprint-4-iter-2"
     }
   ],
   "iterations": {
@@ -373,7 +381,7 @@
     "1c-sprint-3": 1,
     "1a-sprint-4": 0,
     "1c-sprint-4": 3,
-    "3-sprint-4": 1
+    "3-sprint-4": 2
   },
   "proofObligations": [
     {
@@ -1153,11 +1161,33 @@
         "beadId": "BEAD-043",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output/findings/FIND-S4-IMPL-003.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T13:30:00.000Z",
         "createdInPhase": "3-sprint-4",
-        "externalId": "FIND-S4-IMPL-003"
+        "externalId": "FIND-S4-IMPL-003",
+        "resolvedAt": "2026-05-09T14:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-044",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output-iter-2/findings/FIND-S4-IMPL-iter2-001.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T14:30:00.000Z",
+        "createdInPhase": "3-sprint-4",
+        "externalId": "FIND-S4-IMPL-iter2-001"
+      },
+      {
+        "beadId": "BEAD-045",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output-iter-2/findings/FIND-S4-IMPL-iter2-002.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T14:30:00.000Z",
+        "createdInPhase": "3-sprint-4",
+        "externalId": "FIND-S4-IMPL-iter2-002"
       }
     ]
   },
@@ -1447,7 +1477,7 @@
       "timestamp": "2026-05-09T13:30:00.000Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 1,
+        "iteration": 2,
         "sprint": 4,
         "findings": {
           "critical": 0,
@@ -1468,6 +1498,26 @@
             "FIND-S4-IMPL-002",
             "FIND-S4-IMPL-003"
           ]
+        },
+        "iter2": {
+          "verdict": "FAIL",
+          "timestamp": "2026-05-09T14:30:00.000Z",
+          "findings": {
+            "critical": 0,
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "iter1FindingsResolved": "1.5/3",
+          "newFindingIds": [
+            "FIND-S4-IMPL-iter2-001",
+            "FIND-S4-IMPL-iter2-002"
+          ],
+          "spec_fidelity": "FAIL",
+          "test_quality": "FAIL",
+          "implementation_correctness": "PASS",
+          "purity_boundary": "PASS",
+          "wire_compatibility": "PASS"
         }
       }
     },
@@ -1642,5 +1692,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T14:00:00.000Z"
+  "updatedAt": "2026-05-09T14:30:00.000Z"
 }

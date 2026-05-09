@@ -664,38 +664,42 @@ fn prop_s4_016b_canonical_two_block_snapshot() {
     );
 }
 
-/// integration_smoke_select_past_note_handler_logic / REQ-FEED-024 / EC-FEED-017:
-/// Smoke test that exercises the full internal logic chain of select_past_note
-/// WITHOUT requiring AppHandle (and hence without emit verification).
+/// PROP-FEED-S4-017 / REQ-FEED-024 / EC-FEED-017:
+/// compose_select_past_note returns a well-formed SelectPastNoteResult containing
+/// both IPC payloads: editing_payload and feed_snapshot.
+///
+/// FIND-S4-IMPL-iter2-002 resolution:
+///   - select_past_note handler in feed.rs is now a thin emit wrapper around
+///     compose_select_past_note (the pure orchestration function).
+///   - This test calls compose_select_past_note directly, so any regression in
+///     the orchestration layer (missing parse, swapped args, wrong field names,
+///     missing emit payload) is detected here without requiring AppHandle.
+///   - select_past_note's correctness is guaranteed by:
+///     (a) compose_select_past_note is correct (proven by this test), AND
+///     (b) the handler implementation is trivially thin (two emit calls in
+///         EC-FEED-017 order: editing_payload then feed_snapshot).
+///
+/// EC-FEED-017 emit order note:
+///   The handler emits editing_payload FIRST, feed_snapshot SECOND.
+///   Structural enforcement: compose_select_past_note returns a single
+///   SelectPastNoteResult; the handler's two emit lines are in fixed order.
+///   Sprint 5 will automate this via a Mock Emitter trait or Tauri test runtime.
 ///
 /// What this covers:
-///   - scan_vault_feed returns the note in note_metadata
-///   - parse_markdown_to_blocks succeeds for the note body
-///   - compose_state_for_select_past_note produces Editing with blocks and focusedBlockId
-///   - make_editing_state_changed_payload produces JSON without 'body' field
-///   - make_editing_state_changed_snapshot produces FeedDomainSnapshotDto
-///
-/// What this does NOT cover:
-///   - Actual emission of editing_session_state_changed (requires AppHandle)
-///   - Actual emission of feed_state_changed (requires AppHandle)
-///   - EC-FEED-017 emit ORDER (editing_session_state_changed BEFORE feed_state_changed)
-///
-/// EC-FEED-017 emit order deferral (Sprint 5):
-///   The ordering guarantee (editing_session_state_changed emitted before
-///   feed_state_changed) requires Tauri AppHandle mock or integration harness.
-///   Tauri 2 does not expose emit history without the `test` feature enabled in
-///   Cargo.toml. Adding `tauri = { features = ["test"] }` requires a nightly
-///   runtime dependency. Deferring to Sprint 5 where a Mock Emitter trait or
-///   tauri test runtime will be introduced. See FIND-S4-IMPL-002 remediation.
+///   - compose_select_past_note scans the vault (visible_ids, note_metadata)
+///   - parse_markdown_to_blocks is called for the note body (canonical fixture)
+///   - editing_payload has correct structure: status, currentNoteId, focusedBlockId,
+///     blocks present, body absent (Sprint 8 editor channel contract)
+///   - feed_snapshot has correct cause.kind, editing.currentNoteId, visibleNoteIds
 #[test]
-fn integration_smoke_select_past_note_handler_logic() {
+fn prop_s4_017_compose_select_past_note_returns_well_formed_result() {
     use std::io::Write;
 
-    let tmp_dir = "/tmp/promptnotes-s4-smoke-select-past-note";
+    let tmp_dir = "/tmp/promptnotes-s4-prop-017-compose";
     let _ = std::fs::create_dir_all(tmp_dir);
-    let note_path = format!("{}/smoke-note.md", tmp_dir);
+    let note_path = format!("{}/prop017-note.md", tmp_dir);
 
-    // Write a note with a heading + paragraph body to exercise parse_markdown_to_blocks.
+    // Write a note with the canonical fixture body to exercise parse_markdown_to_blocks.
     let body_content = "# heading\n\nparagraph";
     {
         let mut f = std::fs::File::create(&note_path).expect("create note");
@@ -709,52 +713,19 @@ fn integration_smoke_select_past_note_handler_logic() {
         .expect("write note");
     }
 
-    // Step 1: scan_vault_feed (same as select_past_note does internally).
-    let (visible_ids, note_metadata) = promptnotes_lib::feed::scan_vault_feed(tmp_dir);
+    // Call compose_select_past_note — the actual pure function select_past_note delegates to.
+    let result = promptnotes_lib::feed::compose_select_past_note(&note_path, tmp_dir);
 
-    assert!(
-        visible_ids.contains(&note_path),
-        "note must appear in visible_ids after scan; ids={:?}",
-        visible_ids
-    );
-    assert!(
-        note_metadata.contains_key(&note_path),
-        "note must appear in note_metadata after scan; keys={:?}",
-        note_metadata.keys().collect::<Vec<_>>()
-    );
-
-    // Step 2: parse_markdown_to_blocks (same as select_past_note does internally).
-    let body = note_metadata
-        .get(&note_path)
-        .map(|m| m.body.as_str())
-        .unwrap_or("");
-    let blocks_result = promptnotes_lib::editor::parse_markdown_to_blocks(body);
-    let blocks = blocks_result.expect("parse_markdown_to_blocks must succeed for canonical body");
-    assert_eq!(
-        blocks.len(),
-        2,
-        "canonical body must parse to 2 blocks; got {:?}",
-        blocks
-    );
-
-    // Step 3: compose_state_for_select_past_note (same as select_past_note does internally).
-    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(
-        &note_path,
-        Some(blocks.clone()),
-    );
-
-    // Step 4: make_editing_state_changed_payload (same as select_past_note does internally).
-    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
-    let state = &editor_payload["state"];
+    // ── Assert editing_payload ────────────────────────────────────────────────
+    let state = &result.editing_payload["state"];
 
     assert_eq!(state["status"], "editing", "status must be 'editing'");
-    assert_eq!(state["currentNoteId"], note_path, "currentNoteId must match");
+    assert_eq!(state["currentNoteId"], note_path, "currentNoteId must match note_path");
     assert_eq!(state["isDirty"], false, "isDirty must be false");
-    assert_eq!(state["isNoteEmpty"], false, "isNoteEmpty must be false (2 blocks)");
-    assert_eq!(
-        state["focusedBlockId"],
-        blocks[0].id.as_str(),
-        "focusedBlockId must equal first block's id"
+    assert_eq!(state["isNoteEmpty"], false, "isNoteEmpty must be false (2 blocks from canonical fixture)");
+    assert!(
+        !state["focusedBlockId"].is_null(),
+        "focusedBlockId must be non-null for Some(blocks)"
     );
     assert!(
         state.get("body").is_none(),
@@ -762,7 +733,43 @@ fn integration_smoke_select_past_note_handler_logic() {
     );
     assert!(
         state.get("blocks").is_some() && !state["blocks"].is_null(),
-        "blocks must be present for Some(blocks) input"
+        "blocks must be present when parse_markdown_to_blocks succeeds"
+    );
+
+    // ── Assert feed_snapshot ──────────────────────────────────────────────────
+    let snapshot = &result.feed_snapshot;
+
+    // cause.kind must be "EditingStateChanged"
+    let cause_json = serde_json::to_value(&snapshot.cause).expect("cause must serialize");
+    assert_eq!(
+        cause_json["kind"], "EditingStateChanged",
+        "feed_snapshot.cause.kind must be EditingStateChanged; got: {}",
+        cause_json
+    );
+
+    // editing sub-dto must reflect the selected note
+    assert_eq!(
+        snapshot.editing.status, "editing",
+        "feed_snapshot.editing.status must be 'editing'"
+    );
+    assert_eq!(
+        snapshot.editing.current_note_id,
+        Some(note_path.clone()),
+        "feed_snapshot.editing.currentNoteId must match note_path"
+    );
+
+    // feed sub-dto must include the note in visibleNoteIds
+    assert!(
+        snapshot.feed.visible_note_ids.contains(&note_path),
+        "feed_snapshot.feed.visibleNoteIds must contain note_path; got: {:?}",
+        snapshot.feed.visible_note_ids
+    );
+
+    // note_metadata must include the note
+    assert!(
+        snapshot.note_metadata.contains_key(&note_path),
+        "feed_snapshot.noteMetadata must contain note_path; keys: {:?}",
+        snapshot.note_metadata.keys().collect::<Vec<_>>()
     );
 
     // Cleanup

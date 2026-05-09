@@ -1,23 +1,36 @@
 /**
  * parserParity.test.ts — PROP-FEED-S4-016 TS side.
  *
- * PROP-FEED-S4-016: parser parity verification — TS half.
+ * PROP-FEED-S4-016: structural parser agreement (non-empty inputs) — TS half.
  * Paired with: promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_016* (Rust half)
  *
- * Purpose: Assert that the TS parseMarkdownToBlocks function produces
- * structurally equivalent output to the Rust parse_markdown_to_blocks for
- * the canonical fixture and the basic 6-case suite.
+ * Scope: TS production parser (`$lib/domain/capture-auto-save/parse-markdown-to-blocks`)
+ * と Rust IPC parser (`promptnotes/src-tauri/src/editor.rs::parse_markdown_to_blocks`)
+ * が **non-empty 入力に対して同一の構造的 Block 配列を返す** ことを保証する。
+ *
+ * Empty/whitespace-only inputs are intentionally out of scope for this
+ * parity test. The two implementations have **architecturally distinct
+ * empty-input semantics** (固定済):
+ * - TS production: REQ-018 / PROP-031 に従い `Ok([])` を返す
+ *   (capture-auto-save の round-trip / blank-line separator policy)
+ * - Rust IPC: REQ-FEED-025 に従い `Ok([paragraph("")])` を返す
+ *   (IPC boundary の non-empty 不変条件)
+ *
+ * Empty input is normalized at the IPC boundary on the Rust side.
+ * Both behaviors are documented in their respective specs and not
+ * subject to parity assertion.
+ *
+ * FIND-S4-IMPL-iter2-001 resolution: test scope narrowed to "structural
+ * parser agreement on non-empty inputs". The empty-string case has been
+ * removed from this parity suite. The TS Ok([]) behavior for empty input
+ * continues to be tested in capture-auto-save spec tests (REQ-018/PROP-031).
+ * The Rust non-empty invariant is asserted by prop_s4_002/prop_s4_003
+ * (compose_state_for_select_past_note None-input path) in feed_handlers.rs.
  *
  * Design notes:
  *   - ID fields are excluded from assertions (positional scheme block-N is
  *     identical in both implementations, but IDs are not a cross-language
  *     contract guarantee).
- *   - The TS implementation returns Ok([]) for empty / whitespace-only input
- *     (PROP-031 invariant), whereas the Rust implementation returns
- *     Ok([{type:"paragraph", content:""}]) (non-empty invariant). This
- *     intentional divergence is documented here and does NOT constitute a
- *     parity failure for the Sprint 4 gate: the gate requires parity on the
- *     CANONICAL FIXTURE ("# heading\n\nparagraph"), not on the empty case.
  *   - Spec reference: verification-architecture.md §13 PROP-FEED-S4-016,
  *     behavioral-spec.md line 759.
  */
@@ -48,27 +61,13 @@ describe('PROP-FEED-S4-016 canonical fixture snapshot (TS half)', () => {
   });
 });
 
-// ── Basic 6-case suite (mirroring prop_s4_016_parse_markdown_to_blocks_basic_cases) ──
+// ── Non-empty input parity suite ──────────────────────────────────────────────
+//
+// PROP-FEED-S4-016 structural agreement on non-empty inputs (TS half).
+// Mirrors prop_s4_016_parse_markdown_to_blocks_basic_cases in feed_handlers.rs
+// for Cases 2-6 (empty string case excluded — see module doc above).
 
-/**
- * PROP-FEED-S4-016 basic 6-case parity suite.
- *
- * NOTE on empty-string divergence:
- *   TS:   Ok([])             — PROP-031 invariant (no paragraph("") for blank input)
- *   Rust: Ok([paragraph("")]) — non-empty invariant
- * This divergence is intentional and spec-acknowledged. The empty case is
- * tested here to document the TS behavior; cross-language parity is only
- * required for the canonical fixture above.
- */
-describe('PROP-FEED-S4-016 basic 6-case parity (TS half)', () => {
-  test('empty string → Ok([]) (TS PROP-031: no paragraph("") for blank input)', () => {
-    const result = parseMarkdownToBlocks('');
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    // TS returns empty array for blank input (contrast: Rust returns [paragraph("")])
-    expect(result.value).toHaveLength(0);
-  });
-
+describe('PROP-FEED-S4-016 structural parser agreement (non-empty inputs) (TS half)', () => {
   test('single paragraph "hello" → Ok([{ type: "paragraph", content: "hello" }])', () => {
     const result = parseMarkdownToBlocks('hello');
     expect(result.ok).toBe(true);

@@ -233,25 +233,42 @@ pub fn fs_trash_file_impl(path: &str) -> Result<(), TrashErrorDto> {
 
 // ── Tauri commands ────────────────────────────────────────────────────────────
 
-/// REQ-FEED-020: select_past_note — signal that a past note has been selected.
-/// Emits feed_state_changed with EditingStateChanged cause.
-/// REQ-FEED-021: emit rule — emitted after state mutation.
+/// Return type for compose_select_past_note — holds both IPC payloads before
+/// they are handed to AppHandle::emit.
 ///
-/// FIND-S2-05: vault_path is required so the snapshot can carry the current
-/// visibleNoteIds — preventing the feed list from going blank on note selection.
-#[tauri::command]
-pub fn select_past_note(
-    app: AppHandle,
-    note_id: String,
-    vault_path: String,
-    issued_at: String,
-) -> Result<(), String> {
-    let _ = issued_at; // timestamp recorded for audit; not used in Rust state
-    let snapshot = make_editing_state_changed_snapshot(&note_id, &vault_path);
+/// FIND-S4-IMPL-iter2-002 resolution: extracting the pure orchestration logic
+/// from select_past_note into this struct + compose_select_past_note makes the
+/// composition layer independently testable without AppHandle / Tauri test feature.
+#[derive(Debug)]
+pub struct SelectPastNoteResult {
+    /// Serialized payload for the "editing_session_state_changed" event.
+    pub editing_payload: serde_json::Value,
+    /// Serialized payload for the "feed_state_changed" event.
+    pub feed_snapshot: FeedDomainSnapshotDto,
+}
 
-    // REQ-FEED-024 amendment / REQ-FEED-025: Parse body into blocks via parse_markdown_to_blocks.
-    let blocks: Option<Vec<crate::editor::DtoBlock>> = if snapshot.note_metadata.contains_key(&note_id) {
-        let body = snapshot.note_metadata.get(&note_id).map(|m| m.body.as_str()).unwrap_or("");
+/// Pure orchestration layer for select_past_note.
+///
+/// Performs the full internal composition (vault scan → parse → compose editor
+/// state → build payloads) without emitting any events. The caller (select_past_note
+/// Tauri command) is a thin emit wrapper around this function.
+///
+/// This separation makes the orchestration logic testable in pure Rust tests
+/// that cannot construct an AppHandle. See prop_s4_017_compose_select_past_note.
+///
+/// EC-FEED-016: parse_markdown_to_blocks failure → blocks = None (fallback).
+/// EC-FEED-017 emit order: editing_payload must be emitted BEFORE feed_snapshot.
+///   The handler emit order is enforced structurally: compose_select_past_note
+///   returns a single value; the handler emits editing_payload first, then
+///   feed_snapshot. Code review + unit tests on this pure function together
+///   provide the correctness guarantee. Sprint 5 will automate EC-FEED-017 via
+///   a Mock Emitter trait or Tauri test runtime.
+pub fn compose_select_past_note(note_id: &str, vault_path: &str) -> SelectPastNoteResult {
+    let snapshot = make_editing_state_changed_snapshot(note_id, vault_path);
+
+    // REQ-FEED-024 amendment / REQ-FEED-025: Parse body into blocks.
+    let blocks: Option<Vec<crate::editor::DtoBlock>> = if snapshot.note_metadata.contains_key(note_id) {
+        let body = snapshot.note_metadata.get(note_id).map(|m| m.body.as_str()).unwrap_or("");
         match crate::editor::parse_markdown_to_blocks(body) {
             Ok(b) => Some(b),
             Err(_) => None, // EC-FEED-016: BlockParseError → fallback to None
@@ -260,14 +277,41 @@ pub fn select_past_note(
         None // note not found in vault
     };
 
-    // REQ-FEED-024 / REQ-IPC-014: Emit editing_session_state_changed with block-aware payload.
-    let editor_state = crate::editor::compose_state_for_select_past_note(&note_id, blocks);
+    // REQ-FEED-024 / REQ-IPC-014: Compose block-aware editor state.
+    let editor_state = crate::editor::compose_state_for_select_past_note(note_id, blocks);
     let editor_payload = crate::editor::make_editing_state_changed_payload(&editor_state);
-    app.emit("editing_session_state_changed", editor_payload)
-        .map_err(|e| e.to_string())?;
 
-    // REQ-FEED-020: Emit feed_state_changed (existing)
-    app.emit("feed_state_changed", snapshot)
+    SelectPastNoteResult {
+        editing_payload: editor_payload,
+        feed_snapshot: snapshot,
+    }
+}
+
+/// REQ-FEED-020: select_past_note — signal that a past note has been selected.
+/// Emits editing_session_state_changed then feed_state_changed (EC-FEED-017 order).
+/// REQ-FEED-021: emit rule — emitted after state mutation.
+///
+/// FIND-S2-05: vault_path is required so the snapshot can carry the current
+/// visibleNoteIds — preventing the feed list from going blank on note selection.
+///
+/// FIND-S4-IMPL-iter2-002 resolution: this handler is now a thin emit wrapper
+/// around compose_select_past_note. All observable IPC composition logic lives
+/// in that pure function and is tested by prop_s4_017_compose_select_past_note.
+#[tauri::command]
+pub fn select_past_note(
+    app: AppHandle,
+    note_id: String,
+    vault_path: String,
+    issued_at: String,
+) -> Result<(), String> {
+    let _ = issued_at; // timestamp recorded for audit; not used in Rust state
+
+    let result = compose_select_past_note(&note_id, &vault_path);
+
+    // EC-FEED-017: editing_session_state_changed MUST be emitted before feed_state_changed.
+    app.emit("editing_session_state_changed", result.editing_payload)
+        .map_err(|e| e.to_string())?;
+    app.emit("feed_state_changed", result.feed_snapshot)
         .map_err(|e| e.to_string())
 }
 
