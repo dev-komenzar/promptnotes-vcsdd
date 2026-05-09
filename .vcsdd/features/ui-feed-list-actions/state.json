@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "complete",
+  "currentPhase": "1a",
   "phaseHistory": [
     {
       "from": "init",
@@ -250,6 +250,14 @@
       "timestamp": "2026-05-05T05:15:00.000Z",
       "reason": "Phase 6 PASS: 4D convergence achieved. Finding diminishment 9→0 (all resolved), all 9 file paths valid, all criteria evaluated, 0 duplicates, 45 cargo + 1475 bun tests PASS. Sprint 3 complete.",
       "sprint": 3
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-09T08:00:00.000Z",
+      "reason": "Sprint 4: block migration spec patch — REQ-FEED-002/009/024 を block-aware に書き直し (per docs/tasks/block-migration-spec-impact.md §ui-feed-list-actions)。Option B (ui-editor sprint-8) で Rust DTO が 5-arm tagged union に migrate 済みであることを前提とする",
+      "sprint": 3,
+      "nextSprintHint": 4
     }
   ],
   "iterations": {
@@ -265,7 +273,8 @@
     "complete": 2,
     "3-sprint-2": 2,
     "3-sprint-3": 1,
-    "1c-sprint-3": 1
+    "1c-sprint-3": 1,
+    "1a-sprint-4": 0
   },
   "proofObligations": [
     {
@@ -1259,7 +1268,7 @@
       }
     }
   },
-  "sprintCount": 3,
+  "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-05T05:00:00.000Z"
+  "updatedAt": "2026-05-09T08:00:00.000Z"
 }
