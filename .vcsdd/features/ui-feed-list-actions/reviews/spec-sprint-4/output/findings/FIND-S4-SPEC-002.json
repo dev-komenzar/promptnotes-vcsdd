@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-002",
+  "severity": "critical",
+  "dimension": "spec_fidelity",
+  "title": "Rust 側 `parseMarkdownToBlocks(body)` の実装義務と失敗経路が REQ-FEED-025 で定義されていない",
+  "location": "behavioral-spec.md:715-718",
+  "description": "REQ-FEED-025 は呼び出し元 `feed.rs::select_past_note` に対して `NoteRowMetadata.body` から `parseMarkdownToBlocks(body)` 経由で `Vec<DtoBlock>` を生成する責務を課しているが、(1) この Rust 実装の存在は確認されておらず (`feed.rs` 現状では `body` をそのまま compose に渡している)、(2) `parseMarkdownToBlocks` の TS 規範実装と Rust 移植版の output 一致を保証する Acceptance Criteria が無い、(3) `BlockParseError` (shared/blocks.ts に定義) が発生した場合の挙動 (fallback / Err 返却 / `compose_state_for_select_past_note` のスキップ) が未規定。Sprint 8 の 5-arm 正規形では `editing` arm に block-parse 失敗を表現する手段が無いため、ここで失敗時挙動を定義しなければ実装者が任意決定し wire 契約と再分裂するリスクがある。",
+  "evidence": "behavioral-spec.md:716-718 `scan_vault_feed が返す NoteRowMetadata から blocks を復元し、DtoBlock に変換してから compose_state_for_select_past_note に渡す。NoteRowMetadata.body から parseMarkdownToBlocks(body) 経由で block リストを得る（Rust 側で実装）。`\nfeed.rs:253-257 (現状) `let body = snapshot.note_metadata.get(&note_id).map(|m| m.body.as_str()).unwrap_or(\"\"); let editor_state = crate::editor::compose_state_for_select_past_note(&note_id, body);` — Rust 側に parseMarkdownToBlocks 実装は無い。\nshared/blocks.ts (Source of truth, line 57 で参照) — `parseMarkdownToBlocks` / `BlockParseError` を定義。",
+  "remediation": "REQ-FEED-025 に以下を追加: (a) Rust 側 `parse_markdown_to_blocks(body: &str) -> Result<Vec<DtoBlock>, BlockParseError>` のシグネチャ確定 (または既存の Rust 実装パスを明示)、(b) TS 規範実装との output 一致を保証する property test を新規 PROP として追加 (例: 同一 markdown 入力で Rust と TS が同一 block 配列を生成する round-trip)、(c) `BlockParseError` 発生時の挙動を明示 — 推奨は `app-startup` Hydration の `corruptedFiles` パスと整合させ、`select_past_note` で parse 失敗時は `blocks: None` + `focused_block_id: None` で emit して EditorPane に空 paragraph fallback を任せる。Acceptance Criteria に Rust 側のテストを cargo test で固定する。"
+}

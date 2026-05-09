@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-010",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "title": "PROP-FEED-007a / §4 既存命題が Sprint 4 amendment で更新されておらず、PROP-FEED-S4-006 と二重定義状態",
+  "location": "verification-architecture.md:108, 162-165, verification-architecture.md:588",
+  "description": "Sprint 4 で `pendingNextNoteId` mirror 命題は PROP-FEED-S4-006 (line 588) として新設されたが、§4 の既存 PROP-FEED-007a (line 162) は依然として `pendingNextNoteId` を mirror 対象として記述しており削除も deprecate もされていない。同様に §3 Tier 2 の PROP-FEED-007a 説明 (line 108) と §9b (line 429) も旧フィールド名のまま。Phase 2a 実装者は PROP-FEED-007a と PROP-FEED-S4-006 のどちらを書くべきか判断できず、両方書くと一方が必ず失敗する (旧フィールドが型に存在しない場合)。Sprint 4 spec が既存 PROP の deprecation や置換を明示していないため、検証契約として整合性が壊れている。",
+  "evidence": "verification-architecture.md:108 `PROP-FEED-007a (feedReducer.ts): Snapshot mirroring (editing fields) — ...state.{editingStatus, editingNoteId, pendingNextNoteId} が S.editing.{status, currentNoteId, pendingNextNoteId} と等しい`\nverification-architecture.md:162 `| PROP-FEED-007a | REQ-FEED-009, REQ-FEED-013 | DomainSnapshotReceived mirroring — editingStatus / editingNoteId / pendingNextNoteId が S.editing.* から完全に mirror される`\nverification-architecture.md:588 `PROP-FEED-S4-006 | REQ-FEED-026 | feedReducer(s, { kind: 'DomainSnapshotReceived', snapshot: S }).state.pendingNextFocus が S.editing.pendingNextFocus と deep-equal`",
+  "remediation": "Sprint 4 §13 verification extensions に明示的な deprecation note を追加: 「PROP-FEED-007a は Sprint 4 で PROP-FEED-S4-006 に置換される。`pendingNextNoteId` の文字列はすべて `pendingNextFocus` に読み替える」。または §4 PROP table の PROP-FEED-007a 行を Sprint 4 amendment 矢印付きで `pendingNextFocus` に書き換える (REQ-FEED-009 と同じパターンで)。§3 説明文と §9b 説明文も同様に更新。"
+}

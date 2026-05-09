@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-011",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "title": "PROP-FEED-S4-012 (`body` フィールド absent 検証) の確認手段が unit test か integration test か曖昧、tier 割当も矛盾",
+  "location": "verification-architecture.md:594",
+  "description": "PROP-FEED-S4-012 は『改訂 select_past_note が emit する editing_session_state_changed ペイロードに body フィールドが存在しない (Rust integration test: JSON parse で body キーが absent)』と書き、Tool 列は `cargo test` で Tier `1`。しかし `select_past_note` は `AppHandle` を要求するためフル integration test には mock AppHandle が必要であり、これは §11 の Sprint 2 Rust Testing Tier (verification-architecture.md:518-522) で『AppHandle-requiring handlers ... Full integration (with mock AppHandle) is deferred to Phase 5 if needed』と明示的に deferred されている。PROP-FEED-S4-012 を Sprint 4 で Required: true として cargo test に固定する場合、AppHandle の mock 機構がないと実行不能。`make_editing_state_changed_payload(compose_state_for_select_past_note(...))` の serialize 結果を JSON parse する単純な serde test なら可能だが、それは『integration test』ではなく Tier 1 unit test。命題 / tier / tool が三重に矛盾している。",
+  "evidence": "verification-architecture.md:594 `PROP-FEED-S4-012 | REQ-FEED-024 | 改訂 select_past_note が emit する editing_session_state_changed ペイロードに body フィールドが存在しない (Rust integration test: JSON parse で body キーが absent)。 | 1 | cargo test | true`\nverification-architecture.md:521-522 `Limitation: AppHandle-requiring handlers (select_past_note, confirm_note_deletion) are verified by compilation correctness ... Full integration (with mock AppHandle) is deferred to Phase 5 if needed.`",
+  "remediation": "PROP-FEED-S4-012 の検証手段を `compose_state_for_select_past_note(...) → make_editing_state_changed_payload(...) → serde_json::to_string` の Rust unit test として明示し、『integration test』表現を削除する。同様に PROP-FEED-S4-013 / PROP-FEED-S4-014 も AppHandle 不要な経路で記述。PROP-FEED-S4-010 は serde round-trip として既に整合しているので形を踏襲する。Tier 列と Tool 列を整合させ、cargo test (unit) として実行可能なシグネチャを記述する。"
+}

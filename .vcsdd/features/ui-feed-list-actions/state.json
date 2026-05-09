@@ -258,6 +258,14 @@
       "reason": "Sprint 4: block migration spec patch — REQ-FEED-002/009/024 を block-aware に書き直し (per docs/tasks/block-migration-spec-impact.md §ui-feed-list-actions)。Option B (ui-editor sprint-8) で Rust DTO が 5-arm tagged union に migrate 済みであることを前提とする",
       "sprint": 3,
       "nextSprintHint": 4
+    },
+    {
+      "from": "1c",
+      "to": "1a",
+      "timestamp": "2026-05-09T08:30:00.000Z",
+      "reason": "Phase 1c sprint-4 iter-1 FAIL routing: 11 findings (critical=2, high=4, medium=5). spec_fidelity and verification_readiness both FAIL. Return to earliest impacted phase (1a) for spec/PROP fixes.",
+      "sprint": 4,
+      "iteration": "1c-sprint-4-iter-1"
     }
   ],
   "iterations": {
@@ -274,7 +282,8 @@
     "3-sprint-2": 2,
     "3-sprint-3": 1,
     "1c-sprint-3": 1,
-    "1a-sprint-4": 0
+    "1a-sprint-4": 0,
+    "1c-sprint-4": 1
   },
   "proofObligations": [
     {
@@ -855,6 +864,116 @@
         "createdAt": "2026-05-05T01:18:00.439Z",
         "createdInPhase": "6",
         "externalId": "FIND-S2-11"
+      },
+      {
+        "beadId": "BEAD-027",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-001.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-001"
+      },
+      {
+        "beadId": "BEAD-028",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-002.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-002"
+      },
+      {
+        "beadId": "BEAD-029",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-003.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-003"
+      },
+      {
+        "beadId": "BEAD-030",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-004.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-004"
+      },
+      {
+        "beadId": "BEAD-031",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-005.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-005"
+      },
+      {
+        "beadId": "BEAD-032",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-006.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-006"
+      },
+      {
+        "beadId": "BEAD-033",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-007.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-007"
+      },
+      {
+        "beadId": "BEAD-034",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-008.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-008"
+      },
+      {
+        "beadId": "BEAD-035",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-009.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-009"
+      },
+      {
+        "beadId": "BEAD-036",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-010.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-010"
+      },
+      {
+        "beadId": "BEAD-037",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-011.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-011"
       }
     ]
   },
@@ -1039,6 +1158,31 @@
           "FIND-S3-006 (low, resolved)"
         ],
         "scope": "spec patch only — REQ-FEED-024 appended, no scope reduction"
+      }
+    },
+    "1c-sprint-4": {
+      "verdict": "FAIL",
+      "timestamp": "2026-05-09T08:30:00.000Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 1,
+        "sprint": 4,
+        "iter1Verdict": "FAIL",
+        "iter1Findings": [
+          "FIND-S4-SPEC-001",
+          "FIND-S4-SPEC-002",
+          "FIND-S4-SPEC-003",
+          "FIND-S4-SPEC-004",
+          "FIND-S4-SPEC-005",
+          "FIND-S4-SPEC-006",
+          "FIND-S4-SPEC-007",
+          "FIND-S4-SPEC-008",
+          "FIND-S4-SPEC-009",
+          "FIND-S4-SPEC-010",
+          "FIND-S4-SPEC-011"
+        ],
+        "spec_fidelity": "FAIL",
+        "verification_readiness": "FAIL"
       }
     },
     "3-sprint-2": {
@@ -1270,5 +1414,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T08:00:00.000Z"
+  "updatedAt": "2026-05-09T08:30:00.000Z"
 }

@@ -1,0 +1,33 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "1c",
+  "sprint": 4,
+  "iteration": 1,
+  "timestamp": "2026-05-09T12:00:00Z",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-S4-SPEC-001",
+        "FIND-S4-SPEC-002",
+        "FIND-S4-SPEC-003",
+        "FIND-S4-SPEC-004",
+        "FIND-S4-SPEC-005",
+        "FIND-S4-SPEC-006"
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-S4-SPEC-007",
+        "FIND-S4-SPEC-008",
+        "FIND-S4-SPEC-009",
+        "FIND-S4-SPEC-010",
+        "FIND-S4-SPEC-011"
+      ]
+    }
+  },
+  "overallVerdict": "FAIL",
+  "reviewer": "adversary",
+  "freshContext": true
+}

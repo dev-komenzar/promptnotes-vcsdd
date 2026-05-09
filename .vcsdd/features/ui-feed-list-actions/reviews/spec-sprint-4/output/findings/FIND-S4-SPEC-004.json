@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-004",
+  "severity": "high",
+  "dimension": "spec_fidelity",
+  "title": "Edge Case Catalog の EC-FEED-013 が Sprint 4 amendment で更新されておらず、`pendingNextNoteId` を依然として参照している",
+  "location": "behavioral-spec.md:460",
+  "description": "REQ-FEED-009 / REQ-FEED-026 が `pendingNextNoteId` を `pendingNextFocus` に置換した一方、Edge Case Catalog の EC-FEED-013 (line 460) は `pendingNextNoteId 非 null + editingStatus ∈ {'switching', 'save-failed'}` のままで、Sprint 4 amendment ブロックを持たない。Edge Case Catalog は behavioral-spec の正規セクションであり、ここが旧フィールドを保持していると Phase 2a の test ファイル設計が混乱し、また adversary レビューでも block-aware 移行が完了していないと判断される。",
+  "evidence": "behavioral-spec.md:460 `| EC-FEED-013 | pendingNextNoteId 非 null + editingStatus ∈ {'switching', 'save-failed'} | pending 行に視覚的キュー表示 |`\nbehavioral-spec.md:268 (REQ-FEED-009 amendment) `FeedViewState.pendingNextFocus !== null のとき、pendingNextFocus.noteId に対応する行に data-testid=\"pending-switch-indicator\" が存在する。`",
+  "remediation": "EC-FEED-013 の行を `pendingNextFocus 非 null + editingStatus ∈ {'switching', 'save-failed'}` に書き換える。または該当行に **Sprint 4 amendment** を明示的に注記する (REQ-FEED-009 と同じパターン)。"
+}
