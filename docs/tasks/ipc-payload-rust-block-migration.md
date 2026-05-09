@@ -1,4 +1,4 @@
-# IPC Payload Rust 側 Block 化 — 別セッション向け作業指示
+# IPC Payload Rust 側 Block 化 — 先行作業セッション指示
 
 > **背景**: `feature/inplace-edit-migration` ブランチで TypeScript 側の
 > `EditingSessionStateDto` (`promptnotes/src/lib/editor/types.ts`) は既に
@@ -9,13 +9,16 @@
 > 形式 (`status, isDirty, currentNoteId, pendingNextNoteId, lastError, body`)**
 > のままで、ワイヤ互換性が崩れています。
 >
-> このドキュメントは **Rust 側を TS 側 DTO に追従** させる作業を別の
-> セッションへ引き継ぐための指示書です。
+> このドキュメントは **Rust 側を TS 側 DTO に追従** させる
+> （Option B：Rust 全面 5-arm 化）作業の指示書です。
 >
-> 並行して進む `ui-feed-list-actions` Sprint 4 (本ブランチで自走中) は
-> **Option A** を採用しており、`select_past_note` のためだけに
-> `make_editing_state_changed_payload` を optional 引数で拡張する方針です。
-> 本作業 (Option B) は **Sprint 4 完了後に着手** することを想定しています。
+> **本作業を先に完了させてから `ui-feed-list-actions` Sprint 4 に着手します。**
+> したがって `ui-feed-list-actions` Sprint 4 では Option A
+> （`make_editing_state_changed_payload` の optional 引数による局所拡張）は
+> **採用しません**。Sprint 4 は本作業 (Option B) によって 5-arm 化済みの
+> `EditingSessionStateDto` を前提に、`select_past_note` の payload を
+> `Editing` arm の正規形 (`focusedBlockId` / `blocks` 込み) で書き直す
+> 方針となります。
 
 ---
 
@@ -38,21 +41,28 @@
 
 - TS 側 `EditingSessionStateDto` の更なる修正（既に block-aware なため）
 - Capture ドメインモデル (`docs/domain/code/ts/src/capture/states.ts`) の修正
-- `ui-feed-list-actions` Sprint 4 で導入される `select_past_note` の
-  block-aware 拡張（先行で **Option A** として merge 済みのはず）
+- `ui-feed-list-actions` Sprint 4 の spec 改訂・実装
+  （**本作業 (Option B) 完了後に別セッションで着手**。
+  本作業では `select_past_note` の呼び出し側まで update が及ぶが、
+  feed 側の REQ-FEED-002 / REQ-FEED-009 / REQ-FEED-024 の spec patch は
+  Sprint 4 セッションが担当する）
 - `ui-editor` の TS 側挙動 spec の改訂（既に block-aware）
 
 ---
 
 ## 作業前提
 
-1. `feature/inplace-edit-migration` ブランチから派生
-   （Sprint 4 完了コミットを base にする）
+1. `feature/inplace-edit-migration` ブランチで作業
+   （`ui-feed-list-actions` Sprint 4 着手 **前** の commit を base にする）
 2. 関連 feature: 新規 VCSDD feature `ipc-editor-payload-block-migration`
    を init するか、既存 `ui-editor` の Sprint X として再オープンするか
    オーケストレータと相談
 3. Mode: **strict** 推奨（Rust ↔ TS の payload 互換性は強い contract が必要）
 4. Language profile: **rust** （cargo / serde 中心）+ TS 側 verify
+5. **本作業中は `ui-feed-list-actions` のアクティブ化を解除**しておく
+   （Sprint 4 セッション側の state.json は既に Sprint 4 / phase 1a を
+   開いている場合があるため、Option B 着手前に
+   `.vcsdd/active-feature.txt` を切り替え、index.json も整合させること）
 
 ---
 
@@ -68,8 +78,11 @@
 - `promptnotes/src/lib/editor/editorStateChannel.ts:28-42` —
   `event.payload.state` 経路
 - `promptnotes/src-tauri/src/editor.rs` 全体（特に L32-220）
-- `promptnotes/src-tauri/src/feed.rs::select_past_note` (Sprint 4 完了後)
-- `docs/tasks/block-migration-spec-impact.md` — Sprint 4 完了範囲の確認用
+- `promptnotes/src-tauri/src/feed.rs::select_past_note`
+  （Sprint 3 で実装された現行の `make_editing_state_changed_payload`
+  呼び出し箇所。Option B では合わせて新 API へ書き換える）
+- `docs/tasks/block-migration-spec-impact.md` — Sprint 4 で予定されている
+  feed 側 spec patch の参考として確認
 
 ---
 
@@ -179,10 +192,15 @@ pub struct DtoBlock {
 
 - `promptnotes/src-tauri/src/editor.rs` (DTO + ヘルパ + 全ハンドラ)
 - `promptnotes/src-tauri/src/feed.rs::select_past_note`
-  (Sprint 4 で導入された呼び出し)
+  (Sprint 3 時点の既存呼び出し。新 API のシグネチャに追従)
 - `promptnotes/src-tauri/tests/editor_handlers.rs` (存在する場合)
 - `promptnotes/src-tauri/tests/feed_handlers.rs` の
-  `test_select_past_note_*`
+  `test_select_past_note_*`（旧 6 フィールド payload を assert している
+  3 テストは新 5-arm 形式に書き換える。`ui-feed-list-actions` Sprint 4 の
+  spec 改訂と整合させる必要があるため、当該テストの assert 内容は
+  最低限「`status` field の存在」「`currentNoteId` 一致」「`focusedBlockId` の
+  default 動作（first block id か null）」程度に留め、
+  block-aware な詳細 assert は Sprint 4 側で再強化する）
 
 ### TypeScript (検証用)
 
@@ -218,5 +236,10 @@ pub struct DtoBlock {
 
 ## 履歴
 
-- **2026-05-09**: 初版作成。`ui-feed-list-actions` Sprint 4 セッション
-  で Option A を採用し、Rust 側全面 migrate を本ドキュメントに切り出し。
+- **2026-05-09**: 初版作成。当初は `ui-feed-list-actions` Sprint 4 で
+  Option A を採用し、Rust 全面 migrate (Option B) を後続セッションへ
+  切り出す方針だった。
+- **2026-05-09 (改訂)**: 方針変更。**Option B を先に完了** させてから
+  `ui-feed-list-actions` Sprint 4 に着手することに決定。
+  Sprint 4 では Option A は採用せず、5-arm 化済み DTO を前提に
+  `select_past_note` payload を Editing arm 正規形で書き直す。
