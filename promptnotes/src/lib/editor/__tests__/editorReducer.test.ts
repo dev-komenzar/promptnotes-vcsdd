@@ -338,3 +338,40 @@ describe('same-note BlockFocused (PROP-EDIT-015, REQ-EDIT-017, REQ-EDIT-018, EC-
     expect(hasCancelTimer).toBe(false);
   });
 });
+
+// ── PROP-IPC-023: cancel-switch transition robustness ─────────────────────────
+//
+// behavioral-spec.md §15.2 EC-IPC-012, verification-architecture.md §10.2 PROP-IPC-023
+//
+// Following EC-IPC-012: the TS reducer applied to a DomainSnapshotReceived whose
+// snapshot is `Editing { focusedBlockId: null }` and whose PRIOR state was
+// `switching` must NOT throw and must produce focusedBlockId: null.
+//
+// The Svelte EditorPanel is responsible for focus restoration via its own
+// retained DOM reference (RD-022); the reducer's responsibility ends at
+// mirroring the snapshot faithfully.
+
+describe('PROP-IPC-023: cancel-switch DomainSnapshotReceived from switching state (EC-IPC-012)', () => {
+  // TODO PROP-IPC-023 (Phase 2b): Replace this it.todo with the full assertion
+  // once the Rust cancel_switch handler emits the Editing variant.
+  //
+  // Required assertion (mechanically replaceable):
+  //   const switchingState: EditorViewState = makeSwitchingView();
+  //   const snapshot: EditingSessionStateDto = {
+  //     status: 'editing',
+  //     currentNoteId: 'note-1',
+  //     focusedBlockId: null,   // REQ-IPC-015: Rust emits null
+  //     isDirty: true,
+  //     isNoteEmpty: false,
+  //     lastSaveResult: null,
+  //   };
+  //   const action: EditorAction = { kind: 'DomainSnapshotReceived', snapshot };
+  //   let result: ReturnType<typeof editorReducer>;
+  //   expect(() => { result = editorReducer(switchingState, action); }).not.toThrow();
+  //   expect(result!.state).toBeDefined();
+  //   expect(result!.state.focusedBlockId).toBeNull();
+  //   expect(result!.state.status).toBe('editing');
+  test.todo(
+    'PROP-IPC-023: switching → DomainSnapshotReceived(Editing{focusedBlockId:null}) does not throw; result.focusedBlockId is null',
+  );
+});

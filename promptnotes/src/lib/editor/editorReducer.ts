@@ -192,6 +192,13 @@ export function editorReducer(
 
     // ── Domain snapshot mirror ─────────────────────────────────────────────────
     case 'DomainSnapshotReceived': {
+      // TODO PROP-IPC-023 (Phase 2b): When prior state is 'switching' and the
+      // incoming snapshot is Editing { focusedBlockId: null } (emitted by
+      // cancel_switch per REQ-IPC-015), this reducer must NOT throw and must
+      // produce state.focusedBlockId: null. Focus restoration is the responsibility
+      // of EditorPanel.svelte's retained DOM reference (RD-022), NOT the reducer.
+      // See behavioral-spec.md §15.2 EC-IPC-012 and verification-architecture.md
+      // §10.2 PROP-IPC-023.
       const newState = mirrorSnapshot(action.snapshot, state.blocks);
       const commands: EditorCommand[] = [];
 
