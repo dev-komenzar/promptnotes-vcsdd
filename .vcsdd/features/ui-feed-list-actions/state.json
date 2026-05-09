@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -363,6 +363,21 @@
       "reason": "Phase 3 sprint-4 iter-2 FAIL: 2 medium new findings (parser parity scope contradiction + handler antipattern recurrence). Routing to 2c for narrow scope adjustment + select_past_note compose split.",
       "sprint": 4,
       "iteration": "3-sprint-4-iter-2"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-09T15:00:00.000Z",
+      "reason": "iter-3 fixes: parserParity scope narrowed (empty case removed, divergence documented), compose_select_past_note pure function extracted, prop_s4_017 verifies handler chain via pure compose. All tests PASS.",
+      "sprint": 4
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-09T15:30:00.000Z",
+      "reason": "Phase 3 sprint-4 iter-3 PASS at iteration limit (3/3). All 5 dimensions PASS, 0 new findings. iter-1 3 findings + iter-2 2 findings all resolved. compose_select_past_note pure refactor + parser parity scope adjustment achieved test_quality PASS.",
+      "sprint": 4,
+      "iteration": "3-sprint-4-iter-3"
     }
   ],
   "iterations": {
@@ -381,7 +396,7 @@
     "1c-sprint-3": 1,
     "1a-sprint-4": 0,
     "1c-sprint-4": 3,
-    "3-sprint-4": 2
+    "3-sprint-4": 3
   },
   "proofObligations": [
     {
@@ -1141,21 +1156,25 @@
         "beadId": "BEAD-041",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output/findings/FIND-S4-IMPL-001.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T13:30:00.000Z",
         "createdInPhase": "3-sprint-4",
-        "externalId": "FIND-S4-IMPL-001"
+        "externalId": "FIND-S4-IMPL-001",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
       },
       {
         "beadId": "BEAD-042",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output/findings/FIND-S4-IMPL-002.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T13:30:00.000Z",
         "createdInPhase": "3-sprint-4",
-        "externalId": "FIND-S4-IMPL-002"
+        "externalId": "FIND-S4-IMPL-002",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
       },
       {
         "beadId": "BEAD-043",
@@ -1173,21 +1192,25 @@
         "beadId": "BEAD-044",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output-iter-2/findings/FIND-S4-IMPL-iter2-001.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T14:30:00.000Z",
         "createdInPhase": "3-sprint-4",
-        "externalId": "FIND-S4-IMPL-iter2-001"
+        "externalId": "FIND-S4-IMPL-iter2-001",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
       },
       {
         "beadId": "BEAD-045",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output-iter-2/findings/FIND-S4-IMPL-iter2-002.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T14:30:00.000Z",
         "createdInPhase": "3-sprint-4",
-        "externalId": "FIND-S4-IMPL-iter2-002"
+        "externalId": "FIND-S4-IMPL-iter2-002",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
       }
     ]
   },
@@ -1473,11 +1496,11 @@
       }
     },
     "3-sprint-4": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-09T13:30:00.000Z",
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T15:30:00.000Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 2,
+        "iteration": 3,
         "sprint": 4,
         "findings": {
           "critical": 0,
@@ -1518,7 +1541,24 @@
           "implementation_correctness": "PASS",
           "purity_boundary": "PASS",
           "wire_compatibility": "PASS"
-        }
+        },
+        "iter3": {
+          "verdict": "PASS",
+          "timestamp": "2026-05-09T15:30:00.000Z",
+          "findings": {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "iter2FindingsResolved": "2/2",
+          "spec_fidelity": "PASS",
+          "implementation_correctness": "PASS",
+          "test_quality": "PASS",
+          "purity_boundary": "PASS",
+          "wire_compatibility": "PASS"
+        },
+        "iterationLimitReached": true
       }
     },
     "6-sprint-2": {
@@ -1692,5 +1732,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T14:30:00.000Z"
+  "updatedAt": "2026-05-09T15:30:00.000Z"
 }
