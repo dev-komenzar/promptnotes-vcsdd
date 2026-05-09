@@ -2,7 +2,7 @@
   "featureName": "ui-block-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "phase": "1a",
@@ -17,9 +17,25 @@
       "artifacts": [
         "specs/verification-architecture.md"
       ]
+    },
+    {
+      "phase": "1c",
+      "completedAt": "2026-05-09T12:28:40.164Z",
+      "artifacts": [
+        "reviews/phase-1c/verdict-rev2.json",
+        "reviews/phase-1c/findings-rev2.md"
+      ],
+      "iterations": 2
     }
   ],
-  "iterations": {},
+  "iterations": {
+    "sprint1": {
+      "phase2aRed": "PASS",
+      "phase2bGreen": "auto-green",
+      "phase2cRefactor": "deferred-to-sprint-4",
+      "testsAdded": 74
+    }
+  },
   "proofObligations": [
     {
       "id": "PROP-BE-001",
@@ -29,7 +45,7 @@
       "reqs": [
         "REQ-BE-017"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-002",
@@ -39,7 +55,7 @@
       "reqs": [
         "REQ-BE-017"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-003",
@@ -49,7 +65,7 @@
       "reqs": [
         "REQ-BE-018"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-004",
@@ -59,7 +75,7 @@
       "reqs": [
         "REQ-BE-018"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-005",
@@ -69,7 +85,7 @@
       "reqs": [
         "REQ-BE-019"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-006",
@@ -79,7 +95,7 @@
       "reqs": [
         "REQ-BE-019"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-007",
@@ -89,7 +105,7 @@
       "reqs": [
         "REQ-BE-019"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-008",
@@ -99,7 +115,7 @@
       "reqs": [
         "REQ-BE-019"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-009",
@@ -109,7 +125,7 @@
       "reqs": [
         "REQ-BE-020"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-010",
@@ -119,7 +135,7 @@
       "reqs": [
         "REQ-BE-020"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-011",
@@ -129,7 +145,7 @@
       "reqs": [
         "REQ-BE-021"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-012",
@@ -139,7 +155,7 @@
       "reqs": [
         "REQ-BE-022"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-013",
@@ -149,7 +165,7 @@
       "reqs": [
         "REQ-BE-023"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-014",
@@ -159,7 +175,7 @@
       "reqs": [
         "REQ-BE-024"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-015",
@@ -169,7 +185,7 @@
       "reqs": [
         "REQ-BE-024"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-016",
@@ -179,7 +195,7 @@
       "reqs": [
         "REQ-BE-024"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-017",
@@ -189,7 +205,7 @@
       "reqs": [
         "REQ-BE-025"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-018",
@@ -199,7 +215,7 @@
       "reqs": [
         "REQ-BE-025"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-019",
@@ -209,7 +225,7 @@
       "reqs": [
         "REQ-BE-025"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-020",
@@ -219,7 +235,7 @@
       "reqs": [
         "REQ-BE-025"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-021",
@@ -492,8 +508,20 @@
     "epicId": "VCSDD-ui-block-editor-1778322745472",
     "beads": []
   },
-  "gates": {},
-  "sprintCount": 0,
+  "gates": {
+    "1c": {
+      "status": "PASS",
+      "adversaryVerdict": "PASS",
+      "adversaryReview": "reviews/phase-1c/verdict-rev2.json",
+      "humanApproval": {
+        "approvedBy": "takuya",
+        "approvedAt": "2026-05-09T12:28:40.163Z",
+        "method": "chat-approval-ok"
+      },
+      "iterations": 2
+    }
+  },
+  "sprintCount": 1,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T11:14:58.765Z"
+  "updatedAt": "2026-05-09T12:32:45.036Z"
 }

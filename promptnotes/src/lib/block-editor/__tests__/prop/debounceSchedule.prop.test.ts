@@ -1,213 +1,188 @@
 /**
- * debounceSchedule.property.test.ts — Tier 2 fast-check property tests (bun:test)
+ * debounceSchedule.prop.test.ts — Tier 2 fast-check property tests
  *
- * Sprint 7 Red phase. All tests MUST FAIL because the stubs throw.
+ * Sprint 1 of ui-block-editor (Phase 2a Red).
  *
  * Coverage:
- *   PROP-EDIT-003 (debounce-semantics: shouldFireIdleSave and computeNextFireAt)
- *   PROP-EDIT-004 (blur-cancels-idle: pure model)
- *
- * REQ-EDIT references appear in test description strings for CRIT-700/CRIT-701 grep.
+ *   PROP-BE-013 / REQ-BE-023 — nextFireAt addition (purity)
+ *   PROP-BE-014 / REQ-BE-024 — computeNextFireAt saved suppression
+ *   PROP-BE-015 / REQ-BE-024 — computeNextFireAt debounce boundary
+ *   PROP-BE-016 / REQ-BE-024 — computeNextFireAt purity
+ *   PROP-BE-019 / REQ-BE-025 — shouldFireIdleSave debounce boundary
+ *   PROP-BE-020 / REQ-BE-025 — shouldFireIdleSave order independence
  */
 
 import { describe, test } from 'bun:test';
 import * as fc from 'fast-check';
 import {
-  IDLE_SAVE_DEBOUNCE_MS,
   computeNextFireAt,
-  shouldFireIdleSave,
   nextFireAt,
+  shouldFireIdleSave,
 } from '$lib/block-editor/debounceSchedule';
 
-// ── PROP-EDIT-003: debounce-semantics ─────────────────────────────────────────
+// Bounded positive ints to avoid IEEE quirks
+const intArb = fc.integer({ min: 0, max: 1_000_000_000 });
+const debounceArb = fc.integer({ min: 0, max: 60_000 });
 
-describe("PROP-EDIT-003: 'debounce-semantics' (REQ-EDIT-012, EC-EDIT-001)", () => {
-  test('PROP-EDIT-003a: given lastEditAt, nowMs >= lastEditAt+debounceMs, lastSaveAt < lastEditAt → shouldFire=true (≥100 runs)', () => {
-    fc.assert(
-      fc.property(
-        fc.nat({ max: 10000 }),
-        fc.nat({ max: 5000 }),
-        (lastEditAt, extra) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const nowMs = lastEditAt + debounceMs + extra;
-          const lastSaveAt = 0;
-          return shouldFireIdleSave([lastEditAt], lastSaveAt, debounceMs, nowMs) === true;
-        }
-      ),
-      { numRuns: 100 }
-    );
-  });
+// ──────────────────────────────────────────────────────────────────────
+// PROP-BE-013 / REQ-BE-023: nextFireAt addition
+// ──────────────────────────────────────────────────────────────────────
 
-  test('PROP-EDIT-003b: given lastEditAt, nowMs < lastEditAt+debounceMs → shouldFire=false (≥100 runs)', () => {
+describe('PROP-BE-013 / REQ-BE-023: nextFireAt — addition', () => {
+  test('nextFireAt(t, d) === t + d', () => {
     fc.assert(
-      fc.property(
-        fc.integer({ min: 1, max: 10000 }),
-        fc.nat({ max: 1999 }),
-        (lastEditAt, deficit) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const nowMs = lastEditAt + debounceMs - 1 - (deficit % debounceMs);
-          if (nowMs < lastEditAt) return true; // skip invalid
-          const lastSaveAt = 0;
-          return shouldFireIdleSave([lastEditAt], lastSaveAt, debounceMs, nowMs) === false;
-        }
-      ),
-      { numRuns: 100 }
-    );
-  });
-
-  test('PROP-EDIT-003c: computeNextFireAt returns shouldFire=true exactly when nowMs >= lastEditAt+debounceMs and lastSaveAt <= lastEditAt (≥100 runs)', () => {
-    fc.assert(
-      fc.property(
-        fc.nat({ max: 10000 }),
-        fc.nat({ max: 5000 }),
-        (lastEditAt, extra) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const nowMs = lastEditAt + debounceMs + extra;
-          const result = computeNextFireAt({
-            lastEditAt,
-            lastSaveAt: 0,
-            debounceMs,
-            nowMs,
-          });
-          return result.shouldFire === true && result.fireAt === lastEditAt + debounceMs;
-        }
-      ),
-      { numRuns: 100 }
-    );
-  });
-
-  test('PROP-EDIT-003d: computeNextFireAt returns shouldFire=false when debounce not elapsed (≥100 runs)', () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 1, max: 10000 }),
-        (lastEditAt) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const nowMs = lastEditAt + debounceMs - 1;
-          const result = computeNextFireAt({
-            lastEditAt,
-            lastSaveAt: 0,
-            debounceMs,
-            nowMs,
-          });
-          return result.shouldFire === false;
-        }
-      ),
-      { numRuns: 100 }
-    );
-  });
-
-  test('PROP-EDIT-003e: computeNextFireAt returns shouldFire=false and fireAt=null when lastSaveAt > lastEditAt (≥100 runs)', () => {
-    fc.assert(
-      fc.property(
-        fc.nat({ max: 10000 }),
-        fc.integer({ min: 1, max: 5000 }),
-        (lastEditAt, gap) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const lastSaveAt = lastEditAt + gap;
-          const nowMs = lastSaveAt + debounceMs + 1;
-          const result = computeNextFireAt({
-            lastEditAt,
-            lastSaveAt,
-            debounceMs,
-            nowMs,
-          });
-          return result.shouldFire === false && result.fireAt === null;
-        }
-      ),
-      { numRuns: 100 }
-    );
-  });
-
-  test('PROP-EDIT-003f: burst of edits — last edit governs, shouldFire=false until last+debounce elapsed (≥100 runs)', () => {
-    fc.assert(
-      fc.property(
-        fc.nat({ max: 5000 }),
-        fc.array(fc.nat({ max: 3000 }), { minLength: 2, maxLength: 10 }),
-        (baseTime, offsets) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const timestamps = offsets.map(o => baseTime + o);
-          const lastEdit = Math.max(...timestamps);
-          // Just before window closes — should NOT fire
-          const nowMs = lastEdit + debounceMs - 1;
-          if (nowMs < 0) return true;
-          return shouldFireIdleSave(timestamps, 0, debounceMs, nowMs) === false;
-        }
-      ),
-      { numRuns: 100 }
-    );
-  });
-
-  test('PROP-EDIT-003g: empty editTimestamps always returns false (≥100 runs)', () => {
-    fc.assert(
-      fc.property(
-        fc.nat({ max: 100000 }),
-        (nowMs) => {
-          return shouldFireIdleSave([], 0, IDLE_SAVE_DEBOUNCE_MS, nowMs) === false;
-        }
-      ),
-      { numRuns: 100 }
+      fc.property(intArb, debounceArb, (t, d) => nextFireAt(t, d) === t + d),
+      { numRuns: 500 },
     );
   });
 });
 
-// ── PROP-EDIT-004: blur-cancels-idle ─────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────
+// PROP-BE-014 / REQ-BE-024: computeNextFireAt saved suppression
+// ──────────────────────────────────────────────────────────────────────
 
-describe("PROP-EDIT-004: 'blur-cancels-idle' (REQ-EDIT-014, REQ-EDIT-015)", () => {
-  test('PROP-EDIT-004a: if blur-save timestamp > lastEditAt, idle should not fire (≥100 runs)', () => {
+describe('PROP-BE-014 / REQ-BE-024: computeNextFireAt — saved suppression', () => {
+  test('lastSaveAt !== 0 && lastSaveAt >= lastEditAt ⇒ shouldFire=false, fireAt=null', () => {
     fc.assert(
       fc.property(
-        fc.nat({ max: 10000 }),
-        fc.integer({ min: 1, max: 5000 }),
-        (lastEditAt, blurOffset) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const blurSaveAt = lastEditAt + blurOffset;
-          // Well past the idle window
-          const nowMs = lastEditAt + debounceMs + blurOffset + 1000;
-          // If blur-save already happened after last edit, idle must not fire
-          return shouldFireIdleSave([lastEditAt], blurSaveAt, debounceMs, nowMs) === false;
-        }
+        fc
+          .tuple(
+            fc.integer({ min: 0, max: 1_000_000 }),
+            fc.integer({ min: 1, max: 1_000_000 }),
+            debounceArb,
+            intArb,
+          )
+          .filter(([lastEditAt, lastSaveAt]) => lastSaveAt >= lastEditAt),
+        ([lastEditAt, lastSaveAt, debounceMs, nowMs]) => {
+          const r = computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs, nowMs });
+          return r.shouldFire === false && r.fireAt === null;
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 300 },
+    );
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// PROP-BE-015 / REQ-BE-024: computeNextFireAt debounce boundary
+// ──────────────────────────────────────────────────────────────────────
+
+describe('PROP-BE-015 / REQ-BE-024: computeNextFireAt — debounce boundary', () => {
+  test('lastSaveAt=0 sentinel + nowMs >= lastEditAt+debounceMs ⇒ shouldFire=true, fireAt=lastEditAt+debounceMs', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 1_000_000 }),
+        debounceArb,
+        fc.integer({ min: 0, max: 1_000_000 }),
+        (lastEditAt, debounceMs, extra) => {
+          const nowMs = lastEditAt + debounceMs + extra;
+          const r = computeNextFireAt({ lastEditAt, lastSaveAt: 0, debounceMs, nowMs });
+          return r.shouldFire === true && r.fireAt === lastEditAt + debounceMs;
+        },
+      ),
+      { numRuns: 300 },
     );
   });
 
-  test('PROP-EDIT-004b: computeNextFireAt with lastSaveAt (blur) after lastEditAt returns shouldFire=false (≥100 runs)', () => {
+  test('lastSaveAt=0 sentinel + nowMs < lastEditAt+debounceMs ⇒ shouldFire=false, fireAt=lastEditAt+debounceMs', () => {
     fc.assert(
       fc.property(
-        fc.nat({ max: 10000 }),
-        fc.integer({ min: 1, max: 5000 }),
-        (lastEditAt, blurOffset) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          const blurSaveAt = lastEditAt + blurOffset;
-          const nowMs = blurSaveAt + debounceMs + 1;
-          const result = computeNextFireAt({
-            lastEditAt,
-            lastSaveAt: blurSaveAt,
-            debounceMs,
-            nowMs,
-          });
-          return result.shouldFire === false;
-        }
+        fc
+          .tuple(
+            fc.integer({ min: 0, max: 1_000_000 }),
+            fc.integer({ min: 1, max: 60_000 }),
+            fc.integer({ min: 0, max: 60_000 }),
+          )
+          .filter(([_, debounceMs, gap]) => gap < debounceMs),
+        ([lastEditAt, debounceMs, gap]) => {
+          const nowMs = lastEditAt + debounceMs - 1 - gap;
+          if (nowMs < 0) return true; // skip negative now
+          const r = computeNextFireAt({ lastEditAt, lastSaveAt: 0, debounceMs, nowMs });
+          return r.shouldFire === false && r.fireAt === lastEditAt + debounceMs;
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 300 },
     );
   });
+});
 
-  test('PROP-EDIT-004c: for any blur timing before idle window: blur save takes precedence (≥100 runs)', () => {
+// ──────────────────────────────────────────────────────────────────────
+// PROP-BE-016 / REQ-BE-024: purity
+// ──────────────────────────────────────────────────────────────────────
+
+describe('PROP-BE-016 / REQ-BE-024: computeNextFireAt purity', () => {
+  test('same input → deep-equal output', () => {
     fc.assert(
       fc.property(
-        fc.integer({ min: 100, max: 10000 }),
-        fc.nat({ max: 1999 }), // blur within debounce window
-        (lastEditAt, blurDelay) => {
-          const debounceMs = IDLE_SAVE_DEBOUNCE_MS;
-          // blur fires before idle window closes
-          const blurAt = lastEditAt + blurDelay;
-          // After blur, lastSaveAt = blurAt; idle should not fire even when debounce elapses
-          const nowMs = lastEditAt + debounceMs + 500;
-          return shouldFireIdleSave([lastEditAt], blurAt, debounceMs, nowMs) === false;
-        }
+        fc.integer({ min: 0, max: 1_000_000 }),
+        fc.integer({ min: 0, max: 1_000_000 }),
+        debounceArb,
+        intArb,
+        (lastEditAt, lastSaveAt, debounceMs, nowMs) => {
+          const a = computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs, nowMs });
+          const b = computeNextFireAt({ lastEditAt, lastSaveAt, debounceMs, nowMs });
+          return a.shouldFire === b.shouldFire && a.fireAt === b.fireAt;
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 200 },
+    );
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// PROP-BE-019 / REQ-BE-025: shouldFireIdleSave debounce boundary
+// ──────────────────────────────────────────────────────────────────────
+
+describe('PROP-BE-019 / REQ-BE-025: shouldFireIdleSave — debounce boundary', () => {
+  test('non-empty edits, lastSave=0, now >= max(edits)+debounce ⇒ true', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 0, max: 1_000_000 }), { minLength: 1, maxLength: 30 }),
+        debounceArb,
+        fc.integer({ min: 0, max: 100_000 }),
+        (edits, debounceMs, extra) => {
+          const maxEdit = Math.max(...edits);
+          const nowMs = maxEdit + debounceMs + extra;
+          return shouldFireIdleSave(edits, 0, debounceMs, nowMs) === true;
+        },
+      ),
+      { numRuns: 200 },
+    );
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// PROP-BE-020 / REQ-BE-025: order independence
+// ──────────────────────────────────────────────────────────────────────
+
+function shuffle<T>(arr: readonly T[], seed: number): T[] {
+  // Deterministic Fisher-Yates using a simple LCG seeded with `seed`.
+  const a = arr.slice();
+  let s = (seed >>> 0) || 1;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    [a[i]!, a[j]!] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
+describe('PROP-BE-020 / REQ-BE-025: shouldFireIdleSave — order independence', () => {
+  test('result invariant under permutation of editTimestamps', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 0, max: 1_000_000 }), { minLength: 0, maxLength: 30 }),
+        fc.integer({ min: 0, max: 1_000_000 }),
+        debounceArb,
+        fc.integer({ min: 0, max: 1_000_000 }),
+        fc.integer({ min: 1, max: 100_000 }),
+        (edits, lastSave, debounceMs, nowMs, seed) => {
+          const a = shouldFireIdleSave(edits, lastSave, debounceMs, nowMs);
+          const b = shouldFireIdleSave(shuffle(edits, seed), lastSave, debounceMs, nowMs);
+          return a === b;
+        },
+      ),
+      { numRuns: 200 },
     );
   });
 });
