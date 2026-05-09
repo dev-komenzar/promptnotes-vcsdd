@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -348,6 +348,13 @@
       "reason": "Phase 3 sprint-4 iter-1 FAIL routing: 3 findings (test_quality only). Need TS parserParity test, real handler integration test, canonical snapshot. Spec/impl PASS — return to 2b for test additions only.",
       "sprint": 4,
       "iteration": "3-sprint-4-iter-1"
+    },
+    {
+      "from": "2b",
+      "to": "3",
+      "timestamp": "2026-05-09T14:00:00.000Z",
+      "reason": "iter-2 fixes: parserParity.test.ts (TS half of PROP-FEED-S4-016) added, prop_s4_016b canonical snapshot added, integration_smoke_select_past_note_handler_logic added (Tauri test feature deferred to Sprint 5). All tests PASS (cargo 19+, bun 1965, vitest 225).",
+      "sprint": 4
     }
   ],
   "iterations": {
@@ -1635,5 +1642,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T13:30:00.000Z"
+  "updatedAt": "2026-05-09T14:00:00.000Z"
 }

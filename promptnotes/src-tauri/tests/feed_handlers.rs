@@ -616,6 +616,159 @@ fn prop_s4_014_payload_chain_none_blocks_gives_null_focused_and_empty() {
     );
 }
 
+/// PROP-FEED-S4-016b / REQ-FEED-025:
+/// Canonical fixture snapshot: parse_markdown_to_blocks("# heading\n\nparagraph").
+///
+/// Spec reference: behavioral-spec.md line 759 / verification-architecture.md §13.
+/// Paired with: parserParity.test.ts canonical fixture test (TS half).
+///
+/// This is the GATING snapshot for PROP-FEED-S4-016:
+///   "Sprint 4 ゲートでは基本ケーススナップショット 1 ペアの PASS をもって Phase 5 gate を満たすとする"
+///
+/// Asserts:
+///   - len() == 2
+///   - [0].block_type == Heading1, [0].content == "heading"
+///   - [1].block_type == Paragraph, [1].content == "paragraph"
+#[test]
+fn prop_s4_016b_canonical_two_block_snapshot() {
+    use promptnotes_lib::editor::BlockTypeDto;
+
+    let blocks = promptnotes_lib::editor::parse_markdown_to_blocks("# heading\n\nparagraph")
+        .expect("canonical fixture must parse without error");
+
+    assert_eq!(
+        blocks.len(),
+        2,
+        "canonical fixture must produce exactly 2 blocks, got: {:?}",
+        blocks
+    );
+    assert_eq!(
+        blocks[0].block_type,
+        BlockTypeDto::Heading1,
+        "first block must be heading-1"
+    );
+    assert_eq!(
+        blocks[0].content,
+        "heading",
+        "first block content must be 'heading'"
+    );
+    assert_eq!(
+        blocks[1].block_type,
+        BlockTypeDto::Paragraph,
+        "second block must be paragraph"
+    );
+    assert_eq!(
+        blocks[1].content,
+        "paragraph",
+        "second block content must be 'paragraph'"
+    );
+}
+
+/// integration_smoke_select_past_note_handler_logic / REQ-FEED-024 / EC-FEED-017:
+/// Smoke test that exercises the full internal logic chain of select_past_note
+/// WITHOUT requiring AppHandle (and hence without emit verification).
+///
+/// What this covers:
+///   - scan_vault_feed returns the note in note_metadata
+///   - parse_markdown_to_blocks succeeds for the note body
+///   - compose_state_for_select_past_note produces Editing with blocks and focusedBlockId
+///   - make_editing_state_changed_payload produces JSON without 'body' field
+///   - make_editing_state_changed_snapshot produces FeedDomainSnapshotDto
+///
+/// What this does NOT cover:
+///   - Actual emission of editing_session_state_changed (requires AppHandle)
+///   - Actual emission of feed_state_changed (requires AppHandle)
+///   - EC-FEED-017 emit ORDER (editing_session_state_changed BEFORE feed_state_changed)
+///
+/// EC-FEED-017 emit order deferral (Sprint 5):
+///   The ordering guarantee (editing_session_state_changed emitted before
+///   feed_state_changed) requires Tauri AppHandle mock or integration harness.
+///   Tauri 2 does not expose emit history without the `test` feature enabled in
+///   Cargo.toml. Adding `tauri = { features = ["test"] }` requires a nightly
+///   runtime dependency. Deferring to Sprint 5 where a Mock Emitter trait or
+///   tauri test runtime will be introduced. See FIND-S4-IMPL-002 remediation.
+#[test]
+fn integration_smoke_select_past_note_handler_logic() {
+    use std::io::Write;
+
+    let tmp_dir = "/tmp/promptnotes-s4-smoke-select-past-note";
+    let _ = std::fs::create_dir_all(tmp_dir);
+    let note_path = format!("{}/smoke-note.md", tmp_dir);
+
+    // Write a note with a heading + paragraph body to exercise parse_markdown_to_blocks.
+    let body_content = "# heading\n\nparagraph";
+    {
+        let mut f = std::fs::File::create(&note_path).expect("create note");
+        f.write_all(
+            format!(
+                "---\ncreatedAt: 1000\nupdatedAt: 2000\ntags: []\n---\n{}",
+                body_content
+            )
+            .as_bytes(),
+        )
+        .expect("write note");
+    }
+
+    // Step 1: scan_vault_feed (same as select_past_note does internally).
+    let (visible_ids, note_metadata) = promptnotes_lib::feed::scan_vault_feed(tmp_dir);
+
+    assert!(
+        visible_ids.contains(&note_path),
+        "note must appear in visible_ids after scan; ids={:?}",
+        visible_ids
+    );
+    assert!(
+        note_metadata.contains_key(&note_path),
+        "note must appear in note_metadata after scan; keys={:?}",
+        note_metadata.keys().collect::<Vec<_>>()
+    );
+
+    // Step 2: parse_markdown_to_blocks (same as select_past_note does internally).
+    let body = note_metadata
+        .get(&note_path)
+        .map(|m| m.body.as_str())
+        .unwrap_or("");
+    let blocks_result = promptnotes_lib::editor::parse_markdown_to_blocks(body);
+    let blocks = blocks_result.expect("parse_markdown_to_blocks must succeed for canonical body");
+    assert_eq!(
+        blocks.len(),
+        2,
+        "canonical body must parse to 2 blocks; got {:?}",
+        blocks
+    );
+
+    // Step 3: compose_state_for_select_past_note (same as select_past_note does internally).
+    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(
+        &note_path,
+        Some(blocks.clone()),
+    );
+
+    // Step 4: make_editing_state_changed_payload (same as select_past_note does internally).
+    let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
+    let state = &editor_payload["state"];
+
+    assert_eq!(state["status"], "editing", "status must be 'editing'");
+    assert_eq!(state["currentNoteId"], note_path, "currentNoteId must match");
+    assert_eq!(state["isDirty"], false, "isDirty must be false");
+    assert_eq!(state["isNoteEmpty"], false, "isNoteEmpty must be false (2 blocks)");
+    assert_eq!(
+        state["focusedBlockId"],
+        blocks[0].id.as_str(),
+        "focusedBlockId must equal first block's id"
+    );
+    assert!(
+        state.get("body").is_none(),
+        "body field must NOT be present (Sprint 8 editor channel contract)"
+    );
+    assert!(
+        state.get("blocks").is_some() && !state["blocks"].is_null(),
+        "blocks must be present for Some(blocks) input"
+    );
+
+    // Cleanup
+    let _ = std::fs::remove_file(&note_path);
+}
+
 /// PROP-FEED-S4-016 / REQ-FEED-025:
 /// parse_markdown_to_blocks Rust implementation snapshot comparison.
 ///
