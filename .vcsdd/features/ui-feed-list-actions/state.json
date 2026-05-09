@@ -302,6 +302,15 @@
       "timestamp": "2026-05-09T10:00:00.000Z",
       "reason": "Sprint 4 iter-3 verification-architecture fix: PROP-FEED-S4-016 Required→true, §5/§6 amendments",
       "sprint": 4
+    },
+    {
+      "from": "1c",
+      "to": "1c",
+      "timestamp": "2026-05-09T10:30:00.000Z",
+      "reason": "Sprint 4 iter-3 adversary verdict PASS (spec_fidelity PASS, verification_readiness PASS, 0 new findings, 3/3 iter-2 resolved). Awaiting human approval before transition to 2a.",
+      "sprint": 4,
+      "iteration": "1c-sprint-4-iter-3",
+      "verdict": "ADVERSARY_PASS_PENDING_HUMAN"
     }
   ],
   "iterations": {
@@ -319,7 +328,7 @@
     "3-sprint-3": 1,
     "1c-sprint-3": 1,
     "1a-sprint-4": 0,
-    "1c-sprint-4": 2
+    "1c-sprint-4": 3
   },
   "proofObligations": [
     {
@@ -1037,37 +1046,43 @@
         "beadId": "BEAD-038",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output-iter-2/findings/FIND-S4-SPEC-iter2-001.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T09:30:00.000Z",
         "createdInPhase": "1c-sprint-4",
         "externalId": "FIND-S4-SPEC-iter2-001",
         "severity": "high",
-        "category": "spec_fidelity"
+        "category": "spec_fidelity",
+        "resolvedAt": "2026-05-09T10:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-3"
       },
       {
         "beadId": "BEAD-039",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output-iter-2/findings/FIND-S4-SPEC-iter2-002.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T09:30:00.000Z",
         "createdInPhase": "1c-sprint-4",
         "externalId": "FIND-S4-SPEC-iter2-002",
         "severity": "medium",
-        "category": "verification_readiness"
+        "category": "verification_readiness",
+        "resolvedAt": "2026-05-09T10:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-3"
       },
       {
         "beadId": "BEAD-040",
         "type": "adversary-finding",
         "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output-iter-2/findings/FIND-S4-SPEC-iter2-003.json",
-        "status": "open",
+        "status": "resolved",
         "linkedBeads": [],
         "createdAt": "2026-05-09T09:30:00.000Z",
         "createdInPhase": "1c-sprint-4",
         "externalId": "FIND-S4-SPEC-iter2-003",
         "severity": "medium",
-        "category": "verification_readiness"
+        "category": "verification_readiness",
+        "resolvedAt": "2026-05-09T10:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-3"
       }
     ]
   },
@@ -1255,12 +1270,18 @@
       }
     },
     "1c-sprint-4": {
-      "verdict": "FAIL",
-      "timestamp": "2026-05-09T09:30:00.000Z",
+      "verdict": "PENDING_HUMAN",
+      "adversaryVerdict": "PASS",
+      "humanVerdict": null,
+      "humanApproved": false,
+      "timestamp": "2026-05-09T10:30:00.000Z",
       "reviewedBy": "adversary",
       "details": {
-        "iteration": 2,
+        "iteration": 3,
         "sprint": 4,
+        "iterationLimitReached": true,
+        "spec_fidelity": "PASS",
+        "verification_readiness": "PASS",
         "iter1Verdict": "FAIL",
         "iter1Findings": [
           "FIND-S4-SPEC-001",
@@ -1282,13 +1303,9 @@
           "FIND-S4-SPEC-iter2-002",
           "FIND-S4-SPEC-iter2-003"
         ],
-        "spec_fidelity": "FAIL",
-        "verification_readiness": "FAIL",
-        "iter1Details": {
-          "spec_fidelity": "FAIL",
-          "verification_readiness": "FAIL",
-          "timestamp": "2026-05-09T08:30:00.000Z"
-        }
+        "iter2FindingsResolved": "3/3",
+        "iter3Verdict": "PASS",
+        "iter3Findings": []
       }
     },
     "3-sprint-2": {
@@ -1520,5 +1537,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T10:00:00.000Z"
+  "updatedAt": "2026-05-09T10:30:00.000Z"
 }
