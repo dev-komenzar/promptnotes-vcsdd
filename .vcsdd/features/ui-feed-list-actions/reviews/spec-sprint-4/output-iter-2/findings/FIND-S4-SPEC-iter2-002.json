@@ -1,0 +1,11 @@
+{
+  "id": "FIND-S4-SPEC-iter2-002",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "title": "PROP-FEED-S4-016 (Rust↔TS parser parity) が Required: false で iter-1 FIND-S4-SPEC-008 (high) の verification gap を完全には閉じていない",
+  "location": "verification-architecture.md:607",
+  "description": "iter-1 FIND-S4-SPEC-008 は high 重大度で Rust 側 `parse_markdown_to_blocks` と TS 側 `parseMarkdownToBlocks` の output 一致を検証する PROP の追加を要求した。iter-2 で PROP-FEED-S4-016 が新設されたが、Required 列が `false` に設定されている (verification-architecture.md:607)。§7 Verification Gates (line 300, 313) によると Required: true の PROP のみが Phase 2 (Red phase entry) と Phase 3 (adversarial review) のゲート判定に使われ、Required: false の PROP は失敗していてもゲート通過する。これは block-aware migration の wire 契約 (Rust と TS が同一 markdown から同一 block 配列を生成する) を保証するゲートが存在しないことを意味する。さらに PROP-FEED-S4-016 自体も「基本ケースのスナップショット比較のみ」「fast-check による全 markdown 任意入力での parity 検証は Sprint 5 へ deferral」と限定されており、edge case (code block, nested list, escaped backslash 等) における parity divergence を検知できない。Sprint 4 の verification ゲートがこの parity を強制しないなら、Sprint 4 完了時点で Rust と TS の parser は乖離可能であり、その時点で同一 note を select_past_note 経由 (Rust parse) と app-startup hydration 経由 (TS parse) で開いた場合に異なる block 構造が表示されうる。これは block-aware migration の単一情報源原則に反する。",
+  "evidence": "verification-architecture.md:607 `| PROP-FEED-S4-016 | REQ-FEED-025 | Rust parse_markdown_to_blocks と TS parseMarkdownToBlocks の output 一致 ... | 1 | cargo test + vitest (snapshot) | false |` (Required 列が false)\nverification-architecture.md:300 `Required: true の全 PROP-FEED-XXX に対応する failing test が存在すること` (Phase 2 gate)\nverification-architecture.md:313 `Required: true の全 PROP-FEED-XXX が PASS` (Phase 3 gate)\nverification-architecture.md:607 (続き) `Sprint 4 スコープ: 基本ケースのスナップショット比較のみ ... fast-check による全 markdown 任意入力 property test は Sprint 5 へ deferral`",
+  "remediation": "PROP-FEED-S4-016 の Required 列を `true` に変更し、Sprint 4 ゲートで失敗時にブロックする。Sprint 4 スコープ縮小は許容する (基本ケーススナップショットのみ) が、それでも Required にすることで「最低限の parity 保証」をゲート化する。あるいは Required: false を維持する場合は、§7 Verification Gates に「Sprint 4 では Rust↔TS parser parity の完全保証は提供されない (Sprint 5 で fast-check 拡張)」を明記し、Sprint 4 完了時点での既知の verification gap として block-migration リスクレジスタに記録する。FIND-S4-SPEC-008 の severity (high) を考えると Required: true が適切。"
+}
