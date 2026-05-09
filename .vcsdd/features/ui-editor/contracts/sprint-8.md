@@ -230,9 +230,9 @@ criteria:
       migration. The new fixture narrowing test (4 tests) is additive.
     weight: 0.05
     passThreshold: >
-      `cd promptnotes && bun run vitest run` exits 0 with 220+/220+ tests passing
-      (220 pre-Sprint 8 + 4 new = 224, exact count may vary by ±1 if the
-      editorReducer.test.ts placeholder is added).
+      `cd promptnotes && bun run vitest run` exits 0 with 220 tests passing across 19 test
+      files (216 pre-Sprint-8 + 4 new fixture narrowing tests in
+      `editorStateChannelWireFixtures.dom.vitest.ts`).
 ---
 
 # Sprint 8 Contract — IPC Payload Rust Block Migration (Option B)

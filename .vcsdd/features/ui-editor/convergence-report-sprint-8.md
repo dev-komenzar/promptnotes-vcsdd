@@ -89,7 +89,7 @@ iter-4 verdict cover the full criteria set, distributed as documented in
 | CRIT-808 | Singular helper used at every emit site | Phase 5; `wire_audit.sh` PROP-IPC-012 PASS |
 | CRIT-809 | Per-handler integration tests (PROP-IPC-013..017) | Phase 3; `prop_ipc_013/014/015/016/017` PASS |
 | CRIT-810 | Deferred items remain deferred | Phase 3; `compose_state_for_select_past_note` always returns `blocks: None` |
-| CRIT-811 | TS test suite unregressed (224 tests) | Phase 5; `bun run vitest run` 224/224 PASS |
+| CRIT-811 | TS test suite unregressed (220 tests) | Phase 5; `bun run vitest run` 220/220 PASS |
 
 `convergenceSignals.allCriteriaEvaluated === true` in the Phase 3 verdict.
 
@@ -137,7 +137,7 @@ All three required artifacts were re-generated during Phase 5 for Sprint 8:
 | Check | Result |
 |-------|--------|
 | `cd promptnotes/src-tauri && cargo test` | 91/91 PASS (43 unit + 18 editor_handlers + 22 editor_wire_sprint8 + 8 feed_handlers) |
-| `cd promptnotes && bun run vitest run` | 224/224 PASS (220 pre-Sprint-8 + 4 new fixture narrowing tests) |
+| `cd promptnotes && bun run vitest run` | 220/220 PASS (216 pre-Sprint-8 + 4 new fixture narrowing tests) |
 | `bash promptnotes/src-tauri/tests/wire_audit.sh` | 3/3 PASS (PROP-IPC-012 / 020 / 021) |
 | `jq 'length' promptnotes/src-tauri/tests/fixtures/wire-fixtures.json` | 14 (matches §10.2.1) |
 
