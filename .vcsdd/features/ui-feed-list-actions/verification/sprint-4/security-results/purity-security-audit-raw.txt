@@ -1,0 +1,18 @@
+=== PURITY AUDIT: canonical grep on pure TS modules ===
+ZERO HITS
+=== PROP-FEED-030: svelte/store ===
+src/lib/feed/__tests__/purityAudit.test.ts:6: * PROP-FEED-030: grep -r "from 'svelte/store'" src/lib/feed/ → zero hits
+src/lib/feed/__tests__/purityAudit.test.ts:42:  test("no file in src/lib/feed/ imports from 'svelte/store'", () => {
+src/lib/feed/__tests__/purityAudit.test.ts:47:        `grep -r --include="*.ts" --include="*.svelte" --exclude-dir="__tests__" "from 'svelte/store'" "${FEED_DIR}" 2>&1`
+=== PROP-FEED-032: IPC boundary ===
+no listen in tauriFeedAdapter
+no invoke in feedStateChannel
+=== PROP-FEED-S4-007: pendingNextNoteId in feed/ routes/ non-test ===
+ZERO HITS
+=== PROP-FEED-S4-008: FeedRow showPendingSwitch ===
+56:   * FIND-006 fix / REQ-FEED-026: showPendingSwitch requires BOTH pendingNextFocus.noteId match AND
+60:    viewState.pendingNextFocus?.noteId === noteId &&
+=== PROP-FEED-S4-009: Rust pending_next_note_id ===
+ZERO HITS
+=== XSS: no innerHTML in feed/ production svelte ===
+ZERO HITS
