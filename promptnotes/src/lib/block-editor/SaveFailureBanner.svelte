@@ -5,8 +5,8 @@
    * Renders when status === 'save-failed' with an fs-type SaveError.
    * validation errors are silent — this component renders nothing for them.
    *
-   * REQ-EDIT-025..030, NFR-EDIT-005..007
-   * PROP-EDIT-016..019, PROP-EDIT-041, PROP-EDIT-049
+   * REQ-BE-015, REQ-BE-016, NFR-BE-003, NFR-BE-004
+   * PROP-BE-035, PROP-BE-036
    */
 
   import type { SaveError } from './types.js';
@@ -14,15 +14,17 @@
 
   interface Props {
     error: SaveError;
-    priorFocusedBlockId: string | null;
-    noteId: string;
-    issuedAt: string;
     onRetry: () => void;
     onDiscard: () => void;
     onCancel: () => void;
   }
 
-  const { error, priorFocusedBlockId: _priorFocusedBlockId, noteId: _noteId, issuedAt: _issuedAt, onRetry, onDiscard, onCancel }: Props = $props();
+  // REQ-BE-015 / REQ-BE-016: SaveFailureBanner is stateless and consumes only
+  // `error` for visibility/message and the 3 callbacks for user actions. The
+  // dispatch payload (noteId / priorFocusedBlockId / issuedAt) is owned by the
+  // wrapper component (FeedRow / SessionStore), which constructs the actual
+  // adapter calls inside its own onRetry/onDiscard/onCancel handlers.
+  const { error, onRetry, onDiscard, onCancel }: Props = $props();
 
   const message = $derived(bannerMessageFor(error));
 </script>
@@ -61,7 +63,7 @@
 {/if}
 
 <style>
-  /* REQ-EDIT-030, NFR-EDIT-005: 5-layer Deep Shadow + #dd5b00 left accent + 8px radius */
+  /* REQ-BE-015 / NFR-BE-004: 5-layer Deep Shadow + #dd5b00 left accent + 8px radius */
   .save-failure-banner {
     padding: 16px;
     background: #ffffff;
@@ -92,7 +94,7 @@
     flex-wrap: wrap;
   }
 
-  /* NFR-EDIT-006: button typography 15px / 600 */
+  /* NFR-BE-004: button typography 15px / 600 */
   .banner-btn {
     padding: 8px 16px;
     font-size: 15px;

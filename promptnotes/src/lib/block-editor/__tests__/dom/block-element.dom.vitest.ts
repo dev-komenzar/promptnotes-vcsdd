@@ -195,11 +195,16 @@ describe('PROP-BE-038 / REQ-BE-002b: focusin → dispatchFocusBlock', () => {
     });
   });
 
-  test('click ⇒ dispatchFocusBlock called (via .focus() → focusin)', () => {
+  test('click ⇒ dispatchFocusBlock called exactly once with full payload (FIND-BE-3-006)', () => {
     const el = mountBlockElement({ block: makeBlock() });
     el.click();
     flushSync();
-    expect(adapter.dispatchFocusBlock).toHaveBeenCalled();
+    expect(adapter.dispatchFocusBlock).toHaveBeenCalledTimes(1);
+    expect(adapter.dispatchFocusBlock).toHaveBeenCalledWith({
+      noteId: 'note-1',
+      blockId: 'block-1',
+      issuedAt: '2026-05-09T00:00:00Z',
+    });
   });
 });
 
@@ -273,7 +278,7 @@ describe('PROP-BE-025 / REQ-BE-005: markdown prefix dispatch + invocation order'
 // PROP-BE-039 / REQ-BE-006: SlashMenu open exclusion
 // ──────────────────────────────────────────────────────────────────────
 
-describe('PROP-BE-026 / REQ-BE-006: Enter dispatch', () => {
+describe('PROP-BE-026 / REQ-BE-006: Enter dispatch — insert branch', () => {
   test('Enter at end ⇒ dispatchInsertBlockAfter (paragraph, empty content)', () => {
     const el = mountBlockElement({ block: makeBlock({ content: 'hello' }) });
     el.textContent = 'hello'; // ensure
@@ -290,22 +295,62 @@ describe('PROP-BE-026 / REQ-BE-006: Enter dispatch', () => {
       issuedAt: '2026-05-09T00:00:00Z',
     });
     expect(enter.defaultPrevented).toBe(true);
+    expect(adapter.dispatchSplitBlock).not.toHaveBeenCalled();
+  });
+});
+
+describe('PROP-BE-026 / REQ-BE-006: Enter dispatch — split branch (FIND-BE-3-002)', () => {
+  test('Enter mid-block ⇒ dispatchSplitBlock with caret offset; no InsertBlockAfter', () => {
+    const el = mountBlockElement({ block: makeBlock({ content: 'hello' }) });
+    el.textContent = 'hello';
+    // Place caret at offset 3 (between 'l' and 'l')
+    const range = document.createRange();
+    const textNode = el.firstChild!;
+    range.setStart(textNode, 3);
+    range.collapse(true);
+    const sel = window.getSelection()!;
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    el.dispatchEvent(enter);
+    flushSync();
+    expect(adapter.dispatchSplitBlock).toHaveBeenCalledTimes(1);
+    expect(adapter.dispatchSplitBlock).toHaveBeenCalledWith({
+      noteId: 'note-1',
+      blockId: 'block-1',
+      offset: 3,
+      issuedAt: '2026-05-09T00:00:00Z',
+    });
+    expect(adapter.dispatchInsertBlockAfter).not.toHaveBeenCalled();
+    expect(enter.defaultPrevented).toBe(true);
   });
 });
 
 describe('PROP-BE-039 / REQ-BE-006: SlashMenu open ⇒ Enter is skipped', () => {
-  test('after "/" pressed (slash menu open), Enter does not fire Insert/Split', () => {
+  test('after "/" pressed (slash menu open), Enter does not fire Insert/Split, only ChangeBlockType (FIND-BE-3-003)', () => {
     const el = mountBlockElement({ block: makeBlock({ content: '' }) });
     // open slash menu
     const slash = new KeyboardEvent('keydown', { key: '/', bubbles: true });
     el.dispatchEvent(slash);
     flushSync();
-    // Now press Enter
+    // Now press Enter — SlashMenu's <svelte:window onkeydown> consumes it
+    // and fires onSelect with the currently-selected (default index 0 = 'paragraph') type.
     const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
-    el.dispatchEvent(enter);
+    window.dispatchEvent(enter);
     flushSync();
+    // Negative: BlockElement must NOT have fired Insert/Split.
     expect(adapter.dispatchInsertBlockAfter).not.toHaveBeenCalled();
     expect(adapter.dispatchSplitBlock).not.toHaveBeenCalled();
+    // Positive: SlashMenu → handleSlashSelect dispatches ChangeBlockType for the
+    // currently selected entry.
+    expect(adapter.dispatchChangeBlockType).toHaveBeenCalledTimes(1);
+    expect(adapter.dispatchChangeBlockType).toHaveBeenCalledWith({
+      noteId: 'note-1',
+      blockId: 'block-1',
+      newType: 'paragraph',
+      issuedAt: '2026-05-09T00:00:00Z',
+    });
   });
 });
 
@@ -414,6 +459,34 @@ describe('PROP-BE-029 / REQ-BE-009: SlashMenu open via "/"', () => {
     flushSync();
     expect(target.querySelector('[data-testid="slash-menu"]')).not.toBe(null);
   });
+
+  test('content stops starting with "/" ⇒ slash menu closes (EC-BE-003 / FIND-BE-3-004)', () => {
+    const el = mountBlockElement({ block: makeBlock({ content: '' }) });
+    // open slash menu
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }));
+    flushSync();
+    expect(target.querySelector('[data-testid="slash-menu"]')).not.toBe(null);
+    // user removes the leading slash; oninput fires
+    el.textContent = '';
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    flushSync();
+    expect(target.querySelector('[data-testid="slash-menu"]')).toBe(null);
+  });
+
+  test('content "/heading" ⇒ slash menu remains open and filter narrows (EC-BE-002 / FIND-BE-3-004)', () => {
+    const el = mountBlockElement({ block: makeBlock({ content: '' }) });
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }));
+    flushSync();
+    el.textContent = '/heading';
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    flushSync();
+    const menu = target.querySelector('[data-testid="slash-menu"]');
+    expect(menu).not.toBe(null);
+    const options = menu!.querySelectorAll<HTMLButtonElement>('[role="option"]');
+    expect(options.length).toBe(3);
+    const types = Array.from(options).map((b) => b.getAttribute('data-block-type'));
+    expect(types).toEqual(['heading-1', 'heading-2', 'heading-3']);
+  });
 });
 
 describe('PROP-BE-030 / REQ-BE-010: SlashMenu click → dispatchChangeBlockType', () => {
@@ -444,7 +517,7 @@ describe('PROP-BE-030 / REQ-BE-010: SlashMenu click → dispatchChangeBlockType'
 describe('PROP-BE-046 / NFR-BE-006: control char strip', () => {
   test('paragraph: input "a\\u0001b" → dispatchEditBlockContent content === "ab"', () => {
     const el = mountBlockElement({ block: makeBlock({ type: 'paragraph', content: '' }) });
-    el.textContent = 'ab';
+    el.textContent = 'a\u0001b';
     el.dispatchEvent(new Event('input', { bubbles: true }));
     flushSync();
     expect(adapter.dispatchEditBlockContent).toHaveBeenCalledTimes(1);
@@ -466,7 +539,7 @@ describe('PROP-BE-046 / NFR-BE-006: control char strip', () => {
 
   test('paragraph: U+007F strip', () => {
     const el = mountBlockElement({ block: makeBlock({ type: 'paragraph', content: '' }) });
-    el.textContent = 'ab';
+    el.textContent = 'a\u007Fb';
     el.dispatchEvent(new Event('input', { bubbles: true }));
     flushSync();
     expect(adapter.dispatchEditBlockContent.mock.calls[0]![0].content).toBe('ab');
@@ -482,7 +555,7 @@ describe('PROP-BE-046 / NFR-BE-006: control char strip', () => {
 
   test('code: U+0001 stripped', () => {
     const el = mountBlockElement({ block: makeBlock({ type: 'code', content: '' }) });
-    el.textContent = 'ab';
+    el.textContent = 'a\u0001b';
     el.dispatchEvent(new Event('input', { bubbles: true }));
     flushSync();
     expect(adapter.dispatchEditBlockContent.mock.calls[0]![0].content).toBe('ab');

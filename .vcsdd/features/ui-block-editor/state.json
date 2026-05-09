@@ -58,6 +58,15 @@
       "phase2cRefactor": "PASS",
       "phase2bGreen": "PASS (7 gate tests)",
       "testsAdded": 7
+    },
+    "phase4Iter1": {
+      "routedFindings": [
+        "FIND-BE-3-001..008",
+        "FIND-BE-3-012"
+      ],
+      "fixedAt": "2026-05-09T13:05:32.957Z",
+      "testsAdded": 11,
+      "description": "Phase 4 routing: 2 CRITICAL + 6 MAJOR + 1 MINOR fixes — strip tests realised, split branch test added, SlashMenu open positive assertion + close-on-removed-/ + filter, dispatchFocusBlock tightened, classifyMarkdownPrefix property test all prefixes, SaveFailureBanner unused props removed, PROP-BE-044 grep widened, dead-code import gate added"
     }
   },
   "proofObligations": [
@@ -547,5 +556,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T12:48:17.318Z"
+  "updatedAt": "2026-05-09T13:05:32.957Z"
 }

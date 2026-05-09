@@ -128,28 +128,31 @@ describe('PROP-BE-004 / REQ-BE-018: splitOrInsert purity', () => {
 // PROP-BE-005 / REQ-BE-019: priority
 // ──────────────────────────────────────────────────────────────────────
 
-describe('PROP-BE-005 / REQ-BE-019: classifyMarkdownPrefix priority order', () => {
-  test('"### x" returns heading-3 (not heading-2 or heading-1)', () => {
-    fc.assert(
-      fc.property(fc.string({ minLength: 0, maxLength: 30 }), (suffix) => {
-        const result = classifyMarkdownPrefix('### ' + suffix);
-        if (result === null) return false;
-        return result.newType === 'heading-3' && result.trimmedContent === suffix;
-      }),
-      { numRuns: 100 },
-    );
-  });
+describe('PROP-BE-005 / REQ-BE-019: classifyMarkdownPrefix priority order (FIND-BE-3-008)', () => {
+  // Each entry: [prefix, expectedNewType]. Order mirrors the spec table.
+  const cases: Array<[string, string]> = [
+    ['### ', 'heading-3'],
+    ['## ', 'heading-2'],
+    ['# ', 'heading-1'],
+    ['- ', 'bullet'],
+    ['* ', 'bullet'],
+    ['1. ', 'numbered'],
+    ['```', 'code'],
+    ['> ', 'quote'],
+  ];
 
-  test('"## x" returns heading-2 (not heading-1)', () => {
-    fc.assert(
-      fc.property(fc.string({ minLength: 0, maxLength: 30 }), (suffix) => {
-        const result = classifyMarkdownPrefix('## ' + suffix);
-        if (result === null) return false;
-        return result.newType === 'heading-2' && result.trimmedContent === suffix;
-      }),
-      { numRuns: 100 },
-    );
-  });
+  for (const [prefix, newType] of cases) {
+    test(`"${prefix}x" returns ${newType} with trimmedContent === suffix`, () => {
+      fc.assert(
+        fc.property(fc.string({ minLength: 0, maxLength: 30 }), (suffix) => {
+          const result = classifyMarkdownPrefix(prefix + suffix);
+          if (result === null) return false;
+          return result.newType === newType && result.trimmedContent === suffix;
+        }),
+        { numRuns: 100 },
+      );
+    });
+  }
 });
 
 // ──────────────────────────────────────────────────────────────────────

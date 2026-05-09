@@ -12,7 +12,8 @@
    * - onfocusout → BlockBlurred
    * - '/' key → open SlashMenu
    *
-   * PROP-EDIT-025..030, REQ-EDIT-001..011, EC-EDIT-011..013
+   * REQ-BE-001..010, REQ-BE-002b, EC-BE-001..005, NFR-BE-006
+   * PROP-BE-021..030, PROP-BE-038, PROP-BE-039, PROP-BE-046
    */
 
   import type { BlockType, BlockEditorAdapter } from './types.js';

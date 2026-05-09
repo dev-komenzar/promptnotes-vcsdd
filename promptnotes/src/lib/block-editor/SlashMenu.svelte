@@ -5,8 +5,8 @@
    * Floating block-type selection menu. Shown when user types '/' in a block.
    * Supports keyboard navigation (arrow keys, Enter, Escape) and mouse click.
    *
-   * REQ-EDIT-010, EC-EDIT-013
-   * PROP-EDIT-030
+   * REQ-BE-010, REQ-BE-011, REQ-BE-012
+   * PROP-BE-030, PROP-BE-031, PROP-BE-032
    */
 
   import type { BlockType } from './types.js';

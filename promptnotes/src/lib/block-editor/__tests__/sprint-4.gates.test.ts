@@ -134,13 +134,15 @@ describe('PROP-BE-043 / REQ-BE-022: `2000` literal forbidden outside debounceSch
 // PROP-BE-044 / NFR-BE-007: REQ-EDIT / PROP-EDIT IDs absent post Phase 2c
 // ──────────────────────────────────────────────────────────────────────
 
-describe('PROP-BE-044 / NFR-BE-007: legacy REQ-EDIT / PROP-EDIT IDs renamed', () => {
-  test('blockPredicates.ts and debounceSchedule.ts have no REQ-EDIT- or PROP-EDIT- references', () => {
+describe('PROP-BE-044 / NFR-BE-007: legacy REQ-EDIT / PROP-EDIT / EC-EDIT / NFR-EDIT IDs renamed', () => {
+  test('whole src/lib/block-editor/ tree (excluding __tests__) has no legacy IDs (FIND-BE-3-005)', () => {
     const lines = grepLines([
-      '-nE',
-      `'\\b(REQ-EDIT|PROP-EDIT|EC-EDIT)-[0-9]+\\b'`,
-      path.join(BLOCK_EDITOR_DIR, 'blockPredicates.ts'),
-      path.join(BLOCK_EDITOR_DIR, 'debounceSchedule.ts'),
+      '-rnE',
+      `'\\b(REQ-EDIT|PROP-EDIT|EC-EDIT|NFR-EDIT)-[0-9]+\\b'`,
+      BLOCK_EDITOR_DIR,
+      `--include='*.ts'`,
+      `--include='*.svelte'`,
+      `--exclude-dir=__tests__`,
     ]);
     expect(lines).toEqual([]);
   });
@@ -149,6 +151,57 @@ describe('PROP-BE-044 / NFR-BE-007: legacy REQ-EDIT / PROP-EDIT IDs renamed', ()
 // ──────────────────────────────────────────────────────────────────────
 // PROP-BE-045: PROP-BE ID continuity in spec files
 // ──────────────────────────────────────────────────────────────────────
+
+// ──────────────────────────────────────────────────────────────────────
+// EC-BE-013 / FIND-BE-3-012: keyboardListener.ts and clipboardAdapter.ts are
+// reserved-but-unused; verify they have no importers anywhere in src/.
+// ──────────────────────────────────────────────────────────────────────
+
+describe('EC-BE-013 / FIND-BE-3-012: reserved-unused modules have zero importers', () => {
+  // Use a simpler regex `keyboardListener[.|"|']` and rely on TS/Svelte import
+  // syntax conventions to avoid shell-quote nightmares with parens / escaped quotes.
+  test('no source file imports keyboardListener except itself', () => {
+    const lines = grepLines([
+      '-rn',
+      `'keyboardListener'`,
+      path.join(PROJECT_ROOT, 'src'),
+      `--include='*.ts'`,
+      `--include='*.svelte'`,
+      `--exclude-dir=__tests__`,
+    ]);
+    const violations = lines.filter((l) => {
+      // Only consider lines that look like module imports/requires.
+      const idx = l.indexOf(':', l.indexOf(':') + 1);
+      const content = idx >= 0 ? l.slice(idx + 1) : l;
+      const looksLikeImport = /\b(import|require|from)\b/.test(content);
+      if (!looksLikeImport) return false;
+      // Exclude the module itself.
+      if (l.startsWith(path.join(BLOCK_EDITOR_DIR, 'keyboardListener.ts'))) return false;
+      return true;
+    });
+    expect(violations).toEqual([]);
+  });
+
+  test('no source file imports clipboardAdapter except itself', () => {
+    const lines = grepLines([
+      '-rn',
+      `'clipboardAdapter'`,
+      path.join(PROJECT_ROOT, 'src'),
+      `--include='*.ts'`,
+      `--include='*.svelte'`,
+      `--exclude-dir=__tests__`,
+    ]);
+    const violations = lines.filter((l) => {
+      const idx = l.indexOf(':', l.indexOf(':') + 1);
+      const content = idx >= 0 ? l.slice(idx + 1) : l;
+      const looksLikeImport = /\b(import|require|from)\b/.test(content);
+      if (!looksLikeImport) return false;
+      if (l.startsWith(path.join(BLOCK_EDITOR_DIR, 'clipboardAdapter.ts'))) return false;
+      return true;
+    });
+    expect(violations).toEqual([]);
+  });
+});
 
 describe('PROP-BE-045: PROP-BE ID continuity in spec files', () => {
   test('catalog uses contiguous IDs (no gaps)', () => {

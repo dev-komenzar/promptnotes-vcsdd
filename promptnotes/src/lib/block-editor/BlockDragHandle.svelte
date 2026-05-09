@@ -5,7 +5,7 @@
    * Drag handle adornment for a block. Handles drag-and-drop reordering
    * and Alt+Shift+Up/Down keyboard fallback.
    *
-   * REQ-EDIT-011, PROP-EDIT-031
+   * REQ-BE-013, REQ-BE-014, REQ-BE-014b, PROP-BE-033, PROP-BE-034
    */
 
   import type { BlockType } from './types.js';
