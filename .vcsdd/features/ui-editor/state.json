@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -492,6 +492,13 @@
       "timestamp": "2026-05-09T05:30:00Z",
       "reason": "Sprint 8 Phase 3 PASS, 2 minor deferred",
       "sprint": 8
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-09T07:30:00Z",
+      "reason": "Sprint 8 Phase 5 PASS (22/23 PROPs, 1 deferred)",
+      "sprint": 8
     }
   ],
   "iterations": {
@@ -780,6 +787,190 @@
       "required": true,
       "status": "proved",
       "artifact": "promptnotes/src/lib/editor/__tests__/editorPredicates.test.ts"
+    },
+    {
+      "id": "PROP-IPC-001",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_001_enum_has_five_variants",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_002_idle_serializes_status_only",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-003",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_003_status_kebab_case",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-004",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_004_editing_key_set_equality",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-005",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_005_save_failed_key_set_equality + prop_ipc_005_save_failed_null_literals_present",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-006",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_006_saving_key_set_equality + prop_ipc_006_switching_key_set_equality",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-007",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_007_save_error_skip_reason_when_none",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-008",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_008_blocks_optionality",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-009",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_009_helper_wraps_in_state",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-010",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_010_round_trip_cover_set (14 fixtures)",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-011",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/editor/__tests__/dom/editorStateChannelWireFixtures.dom.vitest.ts (4/4 PASS)",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-012",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/wire_audit.sh::PROP-IPC-012 (5 emit sites verified)",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-013",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_013_compose_idle",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-014",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_014_compose_cancel_switch",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-015",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_015_compose_request_new_note",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-016",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_016_compose_save_ok_and_err",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-017",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_017_compose_select_past_note",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-018",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_018_block_type_dto_nine_variants",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-019",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs::prop_ipc_019_block_type_dto_round_trip_valid + prop_ipc_019_block_type_dto_invalid_strings",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-020",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/wire_audit.sh::PROP-IPC-020 (6 annotations checked, all on allow-list)",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-021",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src-tauri/tests/wire_audit.sh::PROP-IPC-021 (single+multi-line scan, 0 legacy patterns)",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-022",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/editor/__tests__/dom/editorStateChannelWireFixtures.dom.vitest.ts (Set-equality on Object.keys per variant)",
+      "sprint": 8
+    },
+    {
+      "id": "PROP-IPC-023",
+      "tier": 1,
+      "required": false,
+      "status": "skipped",
+      "artifact": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts::test.todo (deferred — placeholder with full assertion body at lines 355-376)",
+      "sprint": 8
     }
   ],
   "traceability": {
@@ -3939,9 +4130,37 @@
       "reviewedBy": "adversary",
       "iteration": 1,
       "details": "Sprint 8 Phase 3 PASS at iter-1: all 5 dimensions PASS, 0 critical / 0 major / 2 minor (FIND-095 deferred-sprint-9, FIND-096 deferred). Implementation faithful to REQ-IPC-001..020."
+    },
+    "5-sprint-8": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T07:15:00Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "sprint": 8,
+        "iteration": 1,
+        "propObligations": {
+          "required": 22,
+          "proved": 22,
+          "failed": 0,
+          "skipped_non_required": 1
+        },
+        "rustTests": "91/91 PASS (43 unit + 18 editor_handlers + 22 editor_wire_sprint8 + 8 feed_handlers)",
+        "vitestTests": "220/220 PASS (19 test files)",
+        "wireAudit": "PASS: 3/3 (PROP-IPC-012/020/021)",
+        "tsFixtureNarrowing": "4/4 PASS (editorStateChannelWireFixtures.dom.vitest.ts)",
+        "wireFixtureCount": 14,
+        "securityAudit": "PASS — zero unsafe/panic/unwrap in production code; zero XSS patterns; no new PII surface",
+        "purityAudit": "PASS — compose_state_* functions are pure; make_editing_state_changed_payload is pure; handler shells keep I/O at boundary",
+        "artifacts": [
+          ".vcsdd/features/ui-editor/verification/verification-report.md",
+          ".vcsdd/features/ui-editor/verification/security-report.md",
+          ".vcsdd/features/ui-editor/verification/purity-audit.md",
+          ".vcsdd/features/ui-editor/verification/security-results/audit-run-sprint-8.txt"
+        ]
+      }
     }
   },
   "sprintCount": 8,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-09T05:30:00Z"
+  "updatedAt": "2026-05-09T07:30:00Z"
 }

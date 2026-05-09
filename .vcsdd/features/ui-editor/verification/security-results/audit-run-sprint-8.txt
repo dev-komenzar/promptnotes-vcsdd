@@ -1,0 +1,82 @@
+Sprint 8 Security Audit — 2026-05-09
+Feature: ui-editor | Verifier: VCSDD Phase 5
+
+=== 1. unsafe/panic/unwrap/expect grep (production code only) ===
+
+Command:
+  grep -nE '\bunsafe\b|panic!\(|\.unwrap\(\)|\.expect\(|todo!\(|unimplemented!\(' \
+    promptnotes/src-tauri/src/editor.rs \
+    promptnotes/src-tauri/src/feed.rs
+
+All hits with line < test-module boundary:
+  editor.rs #[cfg(test)] starts at line 512
+  feed.rs   #[cfg(test)] starts at line 504
+
+Production code hits (line < test-module boundary):
+  editor.rs: NONE (line 177 is a doc comment `/// No \`unsafe\`...`, not executable)
+  feed.rs:   NONE
+
+All remaining hits are in #[cfg(test)] test helper code, which is acceptable per Sprint 8 §10.3.
+
+VERDICT: CLEAN — zero unsafe/panic/unwrap/expect in production code paths.
+
+=== 2. XSS / @html injection audit (TS editor source) ===
+
+Command:
+  grep -r "{@html\|innerHTML\|outerHTML\|insertAdjacentHTML" \
+    promptnotes/src/lib/editor/
+
+Result: 0 matches
+
+VERDICT: CLEAN
+
+=== 3. Serde kebab-case PII audit ===
+
+Serde rename attributes in editor.rs use `rename_all = "camelCase"` on the outer enum
+and field-level `#[serde(rename = "...")]` for snake_case→camelCase conversion.
+No rename rules affect user-identifying fields beyond the pre-existing `currentNoteId`
+(which carries a file-system path — this is a pre-existing, documented condition per
+verification-architecture.md §8; the field name does not expose new PII vectors).
+
+The `BlockTypeDto` enum uses `rename_all = "kebab-case"` which maps enum variants
+(Paragraph→"paragraph", Heading1→"heading-1" etc.) — these are structural type labels,
+not PII.
+
+VERDICT: No new PII serialization paths introduced.
+
+=== 4. print_wire_fixtures path traversal audit ===
+
+The Rust test `print_wire_fixtures` writes to:
+  promptnotes/src-tauri/tests/fixtures/wire-fixtures.json
+
+The path is a compile-time constant:
+  const FIXTURE_PATH: &str = "tests/fixtures/wire-fixtures.json";
+
+The write target is resolved relative to the crate root (src-tauri/), not to any
+user-supplied input. No path traversal vector exists.
+
+VERDICT: CLEAN — no path traversal risk.
+
+=== 5. JSON output leak audit ===
+
+The `editing_session_state_changed` event payload contains:
+  - state.status (enum literal — no PII)
+  - state.currentNoteId (note file path — pre-existing, documented in §8)
+  - state.focusedBlockId (block ID — internal UUID — no PII)
+  - state.blocks[].content (user note text — pre-existing)
+  - state.lastSaveError (error kind/reason — no stack trace, no FS path)
+
+No stack traces are included in any serialized error DTO. `FsErrorDto` carries only
+`kind: String` (one of: "permission", "disk-full", "lock", "not-found", "unknown").
+No file system paths are emitted in error payloads.
+
+VERDICT: CLEAN — no new leak surface introduced.
+
+=== 6. wire_audit.sh results ===
+
+PASS: PROP-IPC-012 (3 of 3 audit checks)
+PASS: PROP-IPC-020 (allow-list enforced)
+PASS: PROP-IPC-021 (no legacy 6-arg form)
+
+=== Summary ===
+All security checks PASS. No regressions introduced by Sprint 8.

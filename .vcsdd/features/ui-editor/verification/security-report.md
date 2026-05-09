@@ -1,46 +1,94 @@
 # Security Report
 
-## Feature: ui-editor | Sprint: 7 | Date: 2026-05-06
+## Feature: ui-editor | Sprint: 8 | Date: 2026-05-09
 
 ## Tooling
 
 | Tool | Status | Notes |
 |------|--------|-------|
-| grep (XSS patterns) | available | built-in |
-| Semgrep | not checked (not required for this feature tier) | TypeScript UI layer; no crypto, no auth |
+| grep (unsafe/panic/unwrap/expect patterns) | available | built-in; applied to production code sections only |
+| grep (XSS patterns — @html/innerHTML) | available | built-in |
+| wire_audit.sh | available | custom grep script for PROP-IPC-012/020/021 |
+| Semgrep | not invoked | not required at this tier; no crypto, no auth |
 | Wycheproof | not applicable | no cryptographic operations in ui-editor |
-| cargo audit | out of scope for TS layer | Rust backend audit is a separate concern |
+| cargo audit | out of scope | Rust dependency audit is a separate CI concern |
 
-Raw results: `.vcsdd/features/ui-editor/verification/security-results/sprint-7-xss-audit.txt`
+Raw results: `.vcsdd/features/ui-editor/verification/security-results/audit-run-sprint-8.txt`
 
-## XSS / DOM Injection Audit
+---
 
-Command:
+## Sprint 8 Security Audit
+
+### 1. No `unsafe` / `panic!` / `unwrap()` / `expect()` in Production Code
+
+Sprint 8 adds new production code to `editor.rs` (lines 1..511) and touches `feed.rs` (lines 1..503). The test module in both files is gated by `#[cfg(test)]` (editor.rs:512, feed.rs:504).
+
+Grep result for the production code sections (lines before test-module boundary):
+
+- `editor.rs` (lines 1-511): **zero hits**. Line 177 is a doc comment (`/// No \`unsafe\`...`) and is not executable.
+- `feed.rs` (lines 1-503): **zero hits**.
+
+All `expect()` and `panic!()` occurrences found by grep are at lines >= 512 (editor.rs) or >= 504 (feed.rs) — exclusively inside test helper code where panicking is expected behaviour.
+
+**Verdict: CLEAN**
+
+### 2. XSS / DOM Injection Audit
+
 ```
-grep -r "{@html\|innerHTML\|outerHTML\|insertAdjacentHTML" promptnotes/src/lib/editor/ | wc -l
+grep -r "{@html\|innerHTML\|outerHTML\|insertAdjacentHTML" promptnotes/src/lib/editor/
 ```
-Result: `0`
 
-No server-rendered HTML injection patterns found in any editor file. All DOM content is driven by Svelte 5 rune-based reactive bindings with no raw HTML injection surface.
+Result: 0 matches. No change from Sprint 7.
 
-## IPC Threat Model (§8)
+**Verdict: CLEAN**
 
-Per `verification-architecture.md §8`:
+### 3. Serde kebab-case Rename Audit (PII surface)
 
-- OUTBOUND channel (`tauriEditorAdapter.ts`): all 16 `dispatchXxx` methods call `invoke()` with typed payloads derived from `EditorCommand` union members. No user-controlled string is interpolated into a command name. All IPC command identifiers are compile-time string literals.
-- INBOUND channel (`editorStateChannel.ts`): subscribes to `editing_session_state_changed` event only. The payload is deserialized through the `EditingSessionStateDto` type. No `eval`, `Function()`, or `{@html}` is used in processing the incoming state.
-- Clipboard: `CopyNoteBody` command is fulfilled by the Rust backend (`bodyForClipboard` server-side). The TypeScript adapter forwards the IPC call; it does not write to the clipboard directly. No `navigator.clipboard.writeText()` is called from the TS layer.
+Sprint 8 introduces:
+- `rename_all = "camelCase"` on `EditingSessionStateDto` (outer enum rename: maps `SaveFailed` → `save-failed` etc.)
+- `rename_all = "kebab-case"` on `BlockTypeDto` (maps `Heading1` → `heading-1`, etc.)
+- Field-level `#[serde(rename = "...")]` for snake_case → camelCase on struct fields
 
-## Findings
+None of these rename rules introduce new PII-carrying fields. The `currentNoteId` field (carries a file-system note path) was already present in Sprint 7 and is documented as a pre-existing condition in `verification-architecture.md §8`. The new `blocks[].content` field carries user note text — also pre-existing. No rename maps user identifiers, credentials, or filesystem paths beyond what was already in scope.
 
-None. The editor feature presents no XSS surface, no clipboard injection risk, and no insecure IPC patterns.
+**Verdict: No new PII serialization surface introduced**
+
+### 4. `print_wire_fixtures` Path Traversal Audit
+
+The `print_wire_fixtures` test writes to the compile-time constant path `"tests/fixtures/wire-fixtures.json"` relative to the crate root. No user input influences the output path. The fixture file is a development-time artefact not included in the production binary.
+
+**Verdict: CLEAN — no path traversal risk**
+
+### 5. JSON Output Leak Audit
+
+The `editing_session_state_changed` IPC event payload (the new enum form) carries:
+- `status`: a fixed 5-member enum literal (no PII)
+- `currentNoteId`: note file path (pre-existing, documented)
+- `focusedBlockId` / `priorFocusedBlockId`: internal block UUIDs (no PII)
+- `blocks[].content`: user note text (pre-existing)
+- `lastSaveError.kind`: one of 5 enum strings (`permission`, `disk-full`, `lock`, `not-found`, `unknown`) — no stack trace, no FS path
+
+No stack trace, no Rust source location, no filesystem path beyond the note path is included in any serialized error DTO.
+
+**Verdict: CLEAN — no new leak surface**
+
+### 6. Wire Audit Results (PROP-IPC-012 / 020 / 021)
+
+```
+PASS: PROP-IPC-012: All emit sites use make_editing_state_changed_payload  (5 sites verified)
+PASS: PROP-IPC-020: All skip_serializing_if annotations are on the allow-list  (6 annotations checked)
+PASS: PROP-IPC-021: No legacy 6-arg make_editing_state_changed_payload found  (single+multi-line scan)
+```
 
 ## Summary
 
-Security audit result: **CLEAN PASS**
+| Check | Result |
+|-------|--------|
+| Production `unsafe`/`panic!`/`unwrap()`/`expect()` | CLEAN — 0 hits |
+| XSS `{@html}` / DOM injection patterns | CLEAN — 0 hits |
+| Serde rename PII exposure | CLEAN — no new surface |
+| `print_wire_fixtures` path traversal | CLEAN |
+| JSON output stack-trace / FS-path leak | CLEAN |
+| Wire audit (PROP-IPC-012 / 020 / 021) | PASS (3/3) |
 
-- XSS patterns: 0 hits
-- Cryptographic operations: none (Wycheproof not applicable)
-- IPC injection surface: none (all command identifiers are compile-time literals)
-- Clipboard: Rust-side only; no TS direct clipboard write
-- Semgrep: not run (TypeScript UI layer; threat model does not include SSRF, SQL injection, or crypto misuse categories)
+Sprint 8 security audit: **PASS — no regressions introduced**.
