@@ -85,9 +85,9 @@
       "status": "active",
       "createdAt": "2026-05-03T22:48:00.742Z",
       "mode": "strict",
-      "language": "typescript",
-      "currentPhase": "complete",
-      "updatedAt": "2026-05-07T03:30:00Z"
+      "language": "rust",
+      "currentPhase": "1a",
+      "updatedAt": "2026-05-09T00:00:00Z"
     },
     "ui-feed-list-actions": {
       "status": "active",
@@ -114,5 +114,5 @@
       "updatedAt": "2026-05-06T07:30:01.000Z"
     }
   },
-  "activeFeature": "handle-save-failure"
+  "activeFeature": "ui-editor"
 }

@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "complete",
+  "currentPhase": "1a",
   "phaseHistory": [
     {
       "from": "init",
@@ -394,6 +394,13 @@
       "timestamp": "2026-05-06T15:30:00Z",
       "reason": "Sprint 7 4-dimensional convergence achieved; Phase 6 gate PASS",
       "sprint": 7
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-09T00:00:00Z",
+      "reason": "Sprint 8 reopen: IPC payload Rust block migration (Option B)",
+      "sprint": 8
     }
   ],
   "iterations": {
@@ -2826,7 +2833,7 @@
       }
     }
   },
-  "sprintCount": 7,
+  "sprintCount": 8,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-06T15:30:00Z"
+  "updatedAt": "2026-05-09T00:00:00Z"
 }
