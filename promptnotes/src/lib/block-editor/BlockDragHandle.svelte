@@ -22,12 +22,18 @@
     totalBlocks: number;
     noteId: string;
     issuedAt: () => string;
-    onMoveBlock: (payload: { noteId: string; blockId: string; toIndex: number; issuedAt: string }) => void;
+    /**
+     * Drop receiver callback (parent's responsibility — currently FeedRow in
+     * ui-feed-list-actions Sprint 5). REQ-BE-014b: this prop is OPTIONAL because
+     * BlockDragHandle itself never invokes it; the wrapper that owns
+     * `ondragover` / `ondrop` is the one that fires move dispatches.
+     */
+    onMoveBlock?: (payload: { noteId: string; blockId: string; toIndex: number; issuedAt: string }) => void;
     /** Notify parent panel when drag starts, so it can track the dragging block ID. */
     onDragStart?: (blockId: string) => void;
   }
 
-  const { block, blockIndex, totalBlocks, noteId, issuedAt, onMoveBlock, onDragStart }: Props = $props();
+  const { block, blockIndex, totalBlocks, noteId, issuedAt, onMoveBlock: _onMoveBlock, onDragStart }: Props = $props();
 
   let isDragging = $state(false);
 

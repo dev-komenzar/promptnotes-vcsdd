@@ -40,6 +40,12 @@
       "phase2bGreen": "PASS (29 tests)",
       "phase2cRefactor": "partial (FIND-017, 018 done)",
       "testsAdded": 29
+    },
+    "sprint3": {
+      "phase2aRed": "PASS (1 fail initial — DataTransfer)",
+      "phase2bGreen": "PASS (25 tests)",
+      "phase2cRefactor": "BlockDragHandle.onMoveBlock optional",
+      "testsAdded": 25
     }
   },
   "proofObligations": [
@@ -351,7 +357,7 @@
       "reqs": [
         "REQ-BE-011"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-032",
@@ -361,7 +367,7 @@
       "reqs": [
         "REQ-BE-012"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-033",
@@ -371,7 +377,7 @@
       "reqs": [
         "REQ-BE-013"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-034",
@@ -381,7 +387,7 @@
       "reqs": [
         "REQ-BE-014"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-035",
@@ -391,7 +397,7 @@
       "reqs": [
         "REQ-BE-015"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-036",
@@ -401,7 +407,7 @@
       "reqs": [
         "REQ-BE-016"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-037",
@@ -527,7 +533,7 @@
       "iterations": 2
     }
   },
-  "sprintCount": 2,
+  "sprintCount": 3,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T12:37:27.922Z"
+  "updatedAt": "2026-05-09T12:40:34.210Z"
 }
