@@ -143,6 +143,14 @@
 - **何が変わるか**：検索対象 `body` が派生プロパティ (`serializeBlocksToMarkdown(blocks)`) になる旨が明示された。型シグネチャは不変。
 - **参照すべき型契約**：`curate/aggregates.ts` の `SearchScope`。
 - **推奨アクション**：spec の検索対象記述に「派生 body」と注記。test cases は変更不要見込み。
+- **ワークフロー形態**：完全な VCSDD pipeline (1a→1c→2a→…→6) は **不要**。
+  本ファイル「後続セッションへの推奨ワークフロー」#3 に従い、behavioral-spec.md の
+  検索対象記述（`SearchScope` 参照箇所）と implementation notes に「派生 body
+  (`serializeBlocksToMarkdown(blocks)` の出力) を検索対象とする」旨を加える
+  **1 commit のドキュメントパッチ**で完了する。
+  `.vcsdd/features/apply-filter-or-search/` 配下の `state.json` には
+  Sprint X の phaseHistory を追加せず、`coherence.json` の `block-migration-acknowledged`
+  フィールドを `true` に更新するだけで declare 済みとみなす。
 
 ---
 
@@ -151,11 +159,29 @@
 | feature | 理由 |
 |---------|------|
 | `delete-note` | NoteId 中心。Block の概念は登場しない |
-| `tag-chip-update` | Frontmatter 経路、blocks には触らない |
+| `tag-chip-update` | Frontmatter 経路、blocks には触らない (※下記補足参照) |
 | `configure-vault` | Vault 設定のみ |
 | `ui-app-shell` | レイアウトのみ |
 | `ui-filter-search` | Curate 側 UI、検索対象の意味付けは spec に反映済み |
 | `ui-tag-chip` | UI コンポーネントのみ |
+
+#### `tag-chip-update` 補足
+
+- **Sprint としての block 化は不要**。frontmatter (`tags: []`) のみを書き換える
+  経路で、note の本体 (blocks / body) には触らないため、block migration は機能要件に
+  影響しない。
+- 「後続セッションへの推奨ワークフロー」#4 に従い、本セッションで **declare 済み**
+  として扱う。新たな Sprint を切らない。
+- ただし `ui-feed-list-actions` の §「強く影響」推奨アクション #4 で言及されている
+  reducer action payload (`add-tag-via-chip` / `remove-tag-via-chip` の `body: string`
+  field) は **Single Source of Truth 最適化**として将来 `blocks: BlockDTO[]` に
+  置き換える余地がある。これはあくまで **任意の refactor** であり、
+  - 機能要件: 影響なし（現行 payload のままで save 経路は正常）
+  - 整合性最適化: payload を blocks 化すると note 全体の Source of Truth が
+    `blocks` に一元化される
+  - 実施判断は将来のリファクタ Sprint または `tag-chip-update` の機能追加時に
+    付随で行う。**block migration の必須タスクではない**。
+- すなわち block migration プロジェクトとしては `tag-chip-update` は **完了**。
 
 ---
 
@@ -163,9 +189,28 @@
 
 1. 影響度 **「強く影響」** の feature を 1 つずつ `/vcsdd-spec` で開き、本ファイルの「参照すべき型契約」を読みながら spec を改訂
 2. spec 改訂後は `/vcsdd-spec-review`（adversary レビュー）→ 必要なら `/vcsdd-feedback` で 1a/1b に戻す
-3. **「中程度」** は spec の対応箇所のみコメント更新でよい
-4. **「影響なし」** は本セッションで完了とみなす（sprint contract 上で declare）
+3. **「中程度」** は spec の対応箇所のみコメント更新でよい（**新たな Sprint は切らない**。1 commit のドキュメントパッチで完了させる）
+4. **「影響なし」** は本セッションで完了とみなす（sprint contract 上で declare）。**追加の Sprint や spec 改訂は不要**
 5. 全 feature の spec が型契約と整合したら、`promptnotes/` 実装フェーズ（Phase 11+）へ進む
+
+### feature 別ワークフロー実施形態の早見表
+
+| feature | 影響度 | 必要なワークフロー |
+|---------|-------|-------------------|
+| `ui-editor` | 強 | 完全 VCSDD pipeline (Sprint X として実施。Sprint 8 で IPC 移行完了) |
+| `capture-auto-save` | 強 | 完全 VCSDD pipeline (Sprint 完了済) |
+| `edit-past-note-start` | 強 | 完全 VCSDD pipeline (Sprint 完了済) |
+| `copy-body` | 強 | 完全 VCSDD pipeline (Sprint 完了済) |
+| `app-startup` | 強 | 完全 VCSDD pipeline (Sprint 5 完了済) |
+| `handle-save-failure` | 強 | 完全 VCSDD pipeline (Sprint 2 完了済) |
+| `ui-feed-list-actions` | 強 | 完全 VCSDD pipeline (Sprint 4 で実施中) |
+| `apply-filter-or-search` | 中 | **1 commit のドキュメントパッチのみ**（Sprint 不要） |
+| `delete-note` | 無 | 何もしない |
+| `tag-chip-update` | 無 | 何もしない（※`ui-feed-list-actions` 推奨 #4 の payload 最適化は任意） |
+| `configure-vault` | 無 | 何もしない |
+| `ui-app-shell` | 無 | 何もしない |
+| `ui-filter-search` | 無 | 何もしない |
+| `ui-tag-chip` | 無 | 何もしない |
 
 ## 関連コミット
 
