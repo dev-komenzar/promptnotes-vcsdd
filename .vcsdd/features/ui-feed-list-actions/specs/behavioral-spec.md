@@ -43,7 +43,7 @@ coherence:
 
 **Feature**: `ui-feed-list-actions`
 **Phase**: 1a
-**Revision**: 4
+**Revision**: 5
 **Mode**: strict
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 **Source of truth**:
@@ -457,7 +457,7 @@ coherence:
 | EC-FEED-009 | `fs.trashFile` 失敗 (unknown) | 削除失敗バナー + 再試行 |
 | EC-FEED-011 | Esc キーでモーダルを閉じる | `CancelNoteDeletion` 発行、モーダル閉じる |
 | EC-FEED-012 | Backdrop クリックでモーダルを閉じる | `CancelNoteDeletion` 発行、モーダル閉じる |
-| EC-FEED-013 | `pendingNextNoteId` 非 null + `editingStatus ∈ {'switching', 'save-failed'}` | pending 行に視覚的キュー表示 |
+| EC-FEED-013 | `pendingNextFocus` 非 null + `editingStatus ∈ {'switching', 'save-failed'}` | pending 行に視覚的キュー表示 | **Sprint 4 amendment**: `pendingNextNoteId` → `pendingNextFocus` (REQ-FEED-009 / REQ-FEED-026 参照)|
 | EC-FEED-014 | 削除後に残り 0 件になる | 空状態表示 |
 | EC-FEED-015 | ローディング中の行クリック | クリック抑止 (REQ-FEED-008) |
 | EC-FEED-016 | `select_past_note` で `note_id` が `note_metadata` に存在しない | **Sprint 4 amendment**: `compose_state_for_select_past_note` は `blocks: None`・`focused_block_id: None` で emit。EditorPane 側がデフォルトの空 paragraph を生成する責任を持つ。~~旧: `body: ""` で emit~~ (REQ-FEED-024) |
@@ -680,11 +680,11 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 - `pendingNextNoteId` field is absent from the payload (not a field of the `Editing` arm).
 - `focusedBlockId` is the id of the first block in the note when `note_metadata` contains the note; `null` when not found.
 - `blocks` field carries the full `DtoBlock[]` array from `compose_state_for_select_past_note`.
-- Note not found in vault → emit with `focusedBlockId: null`, `blocks: []` (or omitted), `isNoteEmpty: true`.
+- Note not found in vault → emit with `focusedBlockId: null`, `blocks` field absent (omitted by `skip_serializing_if`), `isNoteEmpty: true`.
 - EditorPane can rehydrate correctly from the emitted payload using the existing 5-arm dispatch (cross-reference: `ui-editor` REQ-EDIT-019..023).
 
 **Edge Cases**:
-- EC-FEED-016 (Sprint 4 amendment): `note_id` not found in `note_metadata` (e.g., file deleted between scan and emit): `compose_state_for_select_past_note` emits with `blocks: None` (field omitted), `focused_block_id: None` (serialized as `null`), `is_note_empty: true`. EditorPane receives `focusedBlockId: null` and generates a default empty paragraph block on its own initiative.
+- EC-FEED-016 (Sprint 4 amendment): `note_id` not found in `note_metadata` (e.g., file deleted between scan and emit): `compose_state_for_select_past_note(note_id, None)` is called; returns `EditingSessionStateDto::Editing` with `blocks: None` (field omitted by `skip_serializing_if = "Option::is_none"`), `focused_block_id: None` (serialized as `null`), `is_note_empty: true`. EditorPane receives `focusedBlockId: null` and generates a default empty paragraph block on its own initiative.
 - EC-FEED-017 (unchanged): `editing_session_state_changed` is always emitted before `feed_state_changed` to ensure EditorPane receives state before the feed list re-renders. This ordering is maintained in Sprint 8 Rust implementation.
 
 ---
@@ -698,38 +698,73 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 
 ### REQ-FEED-025: `compose_state_for_select_past_note` — block-aware シグネチャ拡張
 
-**EARS**: WHEN `select_past_note` Rust handler が呼び出される THEN `compose_state_for_select_past_note` は `blocks: Vec<DtoBlock>` と `focused_block_id: Option<String>` を受け取り、`EditingSessionStateDto::Editing` の `blocks: Some(Vec<DtoBlock>)` フィールドを設定して返さなければならない。
+**EARS**: WHEN `select_past_note` Rust handler が呼び出される THEN `compose_state_for_select_past_note` は `blocks: Option<Vec<DtoBlock>>` を受け取り、内部で `focused_block_id` を導出し、`EditingSessionStateDto::Editing` を返さなければならない。
 
 > **現行シグネチャ (Sprint 3 まで)**:
 > `pub fn compose_state_for_select_past_note(note_id: &str, body: &str) -> EditingSessionStateDto`
 > `body` から `is_note_empty` を導出し、`focused_block_id: None`、`blocks: None` を固定で返す。
 >
-> **Sprint 4 新シグネチャ**:
-> `pub fn compose_state_for_select_past_note(note_id: &str, blocks: Vec<DtoBlock>, focused_block_id: Option<String>) -> EditingSessionStateDto`
+> **Sprint 4 新シグネチャ (FIND-S4-SPEC-001 解消)**:
+> `pub fn compose_state_for_select_past_note(note_id: &str, blocks: Option<Vec<DtoBlock>>) -> EditingSessionStateDto`
 >
-> - `is_note_empty`: `blocks.len() == 1 && blocks[0].content.is_empty() && blocks[0].block_type == BlockTypeDto::Paragraph`
-> - `focused_block_id`: 呼び出し元 (`select_past_note` handler) が note の先頭 block id を渡す。
->   `blocks` が空の場合は `None`。
-> - `blocks`: `Some(blocks)` として `Editing` arm に格納。
+> 内部導出ロジック:
+> - `focused_block_id`: `blocks.as_ref().and_then(|b| b.first().map(|b| b.id.clone()))`
+>   (呼び出し元は note の有無だけ知っていればよい; `focused_block_id` は関数が計算する)
+> - `is_note_empty`: `blocks.as_ref().map_or(true, |b| b.is_empty() || (b.len() == 1 && b[0].content.is_empty() && b[0].block_type == BlockTypeDto::Paragraph))`
+> - `blocks` フィールド: `Option<Vec<DtoBlock>>` をそのまま `Editing` arm の `blocks` フィールドに格納 (`None` のとき `skip_serializing_if = "Option::is_none"` により JSON から省略)
+>
+> **Rust 側 `parse_markdown_to_blocks` (FIND-S4-SPEC-002 解消)**:
+> シグネチャ: `pub fn parse_markdown_to_blocks(body: &str) -> Result<Vec<DtoBlock>, BlockParseError>`
+> - TS 規範 (`docs/domain/code/ts/src/shared/blocks.ts::parseMarkdownToBlocks`) と同一 output を保証する。
+> - `BlockParseError` 発生時の挙動: `compose_state_for_select_past_note(note_id, None)` に fallback する。
+>   note 未存在ケースと同一ペイロードで emit し、EditorPane 側が空 paragraph fallback を担当する。
 >
 > **呼び出し元の責務** (`feed.rs::select_past_note`):
-> `scan_vault_feed` が返す `NoteRowMetadata` から blocks を復元し、`DtoBlock` に変換してから
-> `compose_state_for_select_past_note` に渡す。`NoteRowMetadata.body` から
-> `parseMarkdownToBlocks(body)` 経由で block リストを得る（Rust 側で実装）。
+> ```
+> match parse_markdown_to_blocks(&body) {
+>     Ok(blocks) => compose_state_for_select_past_note(note_id, Some(blocks)),
+>     Err(_)     => compose_state_for_select_past_note(note_id, None),   // fallback
+> }
+> ```
+> note が `note_metadata` に存在しない場合: `compose_state_for_select_past_note(note_id, None)`
+
+**3 ケース固定表 (FIND-S4-SPEC-006 解消)**:
+
+| ケース | 呼び出し形式 | blocks (JSON) | focusedBlockId | isNoteEmpty |
+|--------|------------|---------------|----------------|-------------|
+| (1) note_id が note_metadata 未存在 / parse error | `compose_state_for_select_past_note(note_id, None)` | フィールド absent (`None`) | `null` | `true` |
+| (2) note 存在、blocks 非空 (`len >= 1`、空 paragraph ではない) | `compose_state_for_select_past_note(note_id, Some(blocks))` | `[...]` (full array) | `blocks[0].id` | `false` |
+| (3) note 存在、blocks 空 vec (`Some(vec![])`) | `compose_state_for_select_past_note(note_id, Some(vec![]))` | `[]` | `null` | `true` |
+
+> ケース (3) は `parse_markdown_to_blocks` が空文字列 body を返したとき到達する。
+> 通常は到達不能 (dead code) だが仕様上は明記する。
+> ケース (1) と (3) の wire 表現の違い: (1) は `blocks` フィールド自体が JSON に不在、(3) は `blocks: []` として出在する。
+> ケース (3) の場合 `skip_serializing_if = "Option::is_none"` は `Some(vec![])` に適用されないため `[]` として serialize される。
+
+**Rust/TS parity (FIND-S4-SPEC-002, FIND-S4-SPEC-008 解消)**:
+- Sprint 4 では基本ケースのスナップショット比較のみ実施する:
+  `parse_markdown_to_blocks("# heading\n\nparagraph")` の Rust 出力を JSON 化し、TS 側 `parseMarkdownToBlocks` 出力と手動比較する (PROP-FEED-S4-016 参照)。
+- fast-check による全 markdown 任意入力での parity 検証は Sprint 5 へ deferral する。
 
 **Edge Cases**:
-- `blocks` が空: `is_note_empty: true`、`focused_block_id: None`。Markdown parse が空文字列を返した場合。
-- `blocks` が単一空 paragraph: `is_note_empty: true`、`focused_block_id: Some(blocks[0].id)`。
-- `blocks` が複数: `is_note_empty: false`、`focused_block_id: Some(blocks[0].id)` (先頭 block)。
-- `note_id` が `note_metadata` に未存在: 呼び出し元が `blocks: vec![]`、`focused_block_id: None` を渡す。
+- `blocks` が `None` (ケース 1): `is_note_empty: true`、`focused_block_id: None`。
+- `blocks` が `Some(vec![])` (ケース 3): `is_note_empty: true`、`focused_block_id: None`。Markdown parse が空文字列を返した場合。
+- `blocks` が単一空 paragraph (`Some([{ id, Paragraph, "" }])`): `is_note_empty: true`、`focused_block_id: Some(blocks[0].id)` (ケース 2 の特殊形、`is_note_empty` 計算ロジックによる)。
+- `blocks` が複数 (ケース 2): `is_note_empty: false`、`focused_block_id: Some(blocks[0].id)` (先頭 block)。
+- `BlockParseError` 発生時: ケース (1) と同一 fallback。
 
 **Acceptance Criteria**:
-- `compose_state_for_select_past_note(note_id, blocks, focused_block_id)` が `EditingSessionStateDto::Editing` を返し、`blocks: Some(blocks)` フィールドが設定されている (Rust unit test)。
-- 返り値の `focused_block_id` フィールドが引数 `focused_block_id` に等しい (Rust unit test)。
-- 空 blocks 入力で `is_note_empty: true` となる (Rust unit test)。
-- 非空 blocks 入力で `is_note_empty: false` となる（単一空 paragraph 除く）(Rust unit test)。
-- `make_editing_state_changed_payload` に渡したとき、JSON に `blocks` 配列が含まれる (Rust serde test)。
-- 旧シグネチャ `(note_id, body: &str)` を参照するコードが存在しない (grep audit: `grep "body:" src-tauri/src/editor.rs` に `compose_state_for_select_past_note` 行がゼロヒット)。
+- `compose_state_for_select_past_note(note_id, Some(blocks))` が `EditingSessionStateDto::Editing` を返し、`blocks: Some(blocks)` フィールドが設定されている (Rust unit test, ケース 2)。
+- `compose_state_for_select_past_note(note_id, None)` が `blocks: None`、`focused_block_id: None`、`is_note_empty: true` を返す (Rust unit test, ケース 1)。
+- `compose_state_for_select_past_note(note_id, Some(vec![]))` が `blocks: Some(vec![])`、`focused_block_id: None`、`is_note_empty: true` を返す (Rust unit test, ケース 3)。
+- `focused_block_id` が `blocks.as_ref().and_then(|b| b.first().map(|b| b.id.clone()))` の結果と等しい (Rust unit test)。
+- `make_editing_state_changed_payload` に `Some(blocks)` を渡したとき、JSON に `blocks` 配列が含まれる (Rust serde test)。
+- `make_editing_state_changed_payload` に `None` を渡したとき、JSON に `blocks` フィールドが存在しない (Rust serde test)。
+- 旧シグネチャ `(note_id, body: &str)` を参照するコードが存在しない (FIND-S4-SPEC-007 解消 grep audit):
+  ```
+  rg -n 'fn compose_state_for_select_past_note\([^)]*body: ?&str' promptnotes/src-tauri/src/
+  ```
+  0 ヒットを assertion とする。
 
 ---
 
@@ -822,3 +857,21 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 - TS 側 `FeedDomainSnapshot.editing.pendingNextFocus` が JSON parse で `{ noteId: string; blockId: string } | null` として型付けられる (tsc 検証)。
 - `pending_next_focus: null` のとき `feedReducer` が `pendingNextFocus: null` を `FeedViewState` に設定する (pure unit test)。
 - `pending_next_focus: { noteId: "n1", blockId: "b1" }` のとき `feedReducer` が `pendingNextFocus: { noteId: "n1", blockId: "b1" }` を設定する (pure unit test)。
+
+---
+
+### Out-of-scope deferrals (Sprint 4) (FIND-S4-SPEC-005 解消)
+
+Sprint 4 のスコープを `select_past_note` IPC + mirror state migration (`pendingNextFocus` / `compose_state_for_select_past_note` block-aware 拡張) に絞るため、以下を明示的に Sprint 5 以降へ deferral する。
+
+**deferral-1: `add-tag-via-chip` / `remove-tag-via-chip` の payload block 化**
+
+現状 `types.ts` の `add-tag-via-chip` / `remove-tag-via-chip` payload は `body: string` を含む。
+この `body` は Rust 側で `serializeBlocksToMarkdown(blocks)` から導出される派生値として扱い、
+Sprint 4 では `body: string` のまま維持する。block payload (`blocks: ReadonlyArray<DtoBlock>`) への変換は
+Sprint 5 (`tag-chip-update` block migration) で実施し、その際に本 spec を改訂する。
+
+**deferral-2: `apply-filter-or-search` の検索対象 body**
+
+`apply-filter-or-search` の検索対象も現状 `NoteRowMetadata.body` (派生 Markdown 文字列) のまま維持する。
+完全な block payload 化 (blocks フィールドで検索) は Sprint 5 の `tag-chip-update` / `apply-filter-or-search` block migration 時に決定する。
