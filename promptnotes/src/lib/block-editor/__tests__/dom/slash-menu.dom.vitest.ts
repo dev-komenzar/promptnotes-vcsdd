@@ -41,7 +41,11 @@ afterEach(() => {
 function mountMenu(query: string): HTMLElement {
   component = mount(SlashMenu, {
     target,
-    props: { query, onSelect, onClose },
+    props: {
+      query,
+      onSelect: onSelect as unknown as ((type: BlockType) => void),
+      onClose: onClose as unknown as (() => void),
+    },
   });
   flushSync();
   return target.querySelector<HTMLElement>('[data-testid="slash-menu"]')!;

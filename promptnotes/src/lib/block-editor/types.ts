@@ -135,3 +135,34 @@ export interface BlockEditorAdapter {
   dispatchCopyNoteBody(payload: { noteId: string; issuedAt: string }): Promise<void>;
   dispatchRequestNewNote(payload: { source: NewNoteSource; issuedAt: string }): Promise<void>;
 }
+
+// ── Tier 0 structural-conformance assertions ──────────────────────────────────
+//
+// PROP-BE-037 / NFR-BE-005: assert that key dispatch payload shapes are stable.
+// These compile-time checks prevent silent shape regressions of BlockEditorAdapter
+// methods that the BlockElement / SaveFailureBanner DOM tier asserts on.
+//
+// `Enforce<T extends true>` returns `T` only when `T` is `true`. If a future
+// regression makes any of the `extends` checks below degrade to `never`,
+// `Enforce<never>` produces a compile error because `never` does not satisfy
+// `extends true`.
+
+type Enforce<T extends true> = T;
+
+export type _AssertEditBlockContentShape =
+  Parameters<BlockEditorAdapter['dispatchEditBlockContent']>[0] extends
+    { noteId: string; blockId: string; content: string; issuedAt: string } ? true : never;
+
+export type _AssertSplitBlockShape =
+  Parameters<BlockEditorAdapter['dispatchSplitBlock']>[0] extends
+    { noteId: string; blockId: string; offset: number; issuedAt: string } ? true : never;
+
+export type _AssertCopyNoteBodyShape =
+  Parameters<BlockEditorAdapter['dispatchCopyNoteBody']>[0] extends
+    { noteId: string; issuedAt: string } ? true : never;
+
+// These three lines are pure type-level usages that force `tsc --strict` to
+// evaluate the assertion types. No runtime code is generated.
+export type _CheckEditShape = Enforce<_AssertEditBlockContentShape>;
+export type _CheckSplitShape = Enforce<_AssertSplitBlockShape>;
+export type _CheckCopyShape = Enforce<_AssertCopyNoteBodyShape>;

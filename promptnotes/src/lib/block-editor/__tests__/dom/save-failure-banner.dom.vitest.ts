@@ -48,9 +48,9 @@ function mountBanner(error: SaveError): HTMLElement | null {
       priorFocusedBlockId: 'block-1',
       noteId: 'note-1',
       issuedAt: '2026-05-09T00:00:00Z',
-      onRetry,
-      onDiscard,
-      onCancel,
+      onRetry: onRetry as unknown as (() => void),
+      onDiscard: onDiscard as unknown as (() => void),
+      onCancel: onCancel as unknown as (() => void),
     },
   });
   flushSync();

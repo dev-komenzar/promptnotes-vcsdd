@@ -46,19 +46,27 @@ interface BlockProp {
 }
 
 function mountHandle(props: { block?: BlockProp; withOptional?: boolean }): HTMLElement {
-  const block = props.block ?? { id: 'block-1', type: 'paragraph', content: 'p' };
-  const passProps: Record<string, unknown> = {
+  const block = props.block ?? { id: 'block-1', type: 'paragraph' as BlockType, content: 'p' };
+  const baseProps = {
     block,
     blockIndex: 0,
     totalBlocks: 3,
     noteId: 'note-1',
     issuedAt: () => '2026-05-09T00:00:00Z',
-    onDragStart,
+    onDragStart: onDragStart as unknown as ((blockId: string) => void),
   };
-  if (props.withOptional !== false) {
-    passProps.onMoveBlock = onMoveBlock;
-  }
-  component = mount(BlockDragHandle, { target, props: passProps });
+  const propsWithOptional = props.withOptional === false
+    ? baseProps
+    : {
+        ...baseProps,
+        onMoveBlock: onMoveBlock as unknown as ((payload: {
+          noteId: string;
+          blockId: string;
+          toIndex: number;
+          issuedAt: string;
+        }) => void),
+      };
+  component = mount(BlockDragHandle, { target, props: propsWithOptional });
   flushSync();
   return target.querySelector<HTMLElement>('[data-testid="block-drag-handle"]')!;
 }

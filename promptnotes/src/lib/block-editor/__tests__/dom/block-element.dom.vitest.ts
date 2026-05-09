@@ -35,7 +35,11 @@ import type { BlockEditorAdapter, BlockType } from '$lib/block-editor/types';
 // Mock factory
 // ──────────────────────────────────────────────────────────────────────
 
-function makeMockAdapter(): BlockEditorAdapter & Record<string, ReturnType<typeof vi.fn>> {
+type MockedAdapter = {
+  [K in keyof BlockEditorAdapter]: BlockEditorAdapter[K] & ReturnType<typeof vi.fn>;
+};
+
+function makeMockAdapter(): MockedAdapter {
   return {
     dispatchFocusBlock: vi.fn().mockResolvedValue(undefined),
     dispatchEditBlockContent: vi.fn().mockResolvedValue(undefined),
@@ -53,7 +57,7 @@ function makeMockAdapter(): BlockEditorAdapter & Record<string, ReturnType<typeo
     dispatchCancelSwitch: vi.fn().mockResolvedValue(undefined),
     dispatchCopyNoteBody: vi.fn().mockResolvedValue(undefined),
     dispatchRequestNewNote: vi.fn().mockResolvedValue(undefined),
-  };
+  } as unknown as MockedAdapter;
 }
 
 interface BlockProp {
@@ -110,7 +114,7 @@ function mountBlockElement(props: {
       isEditable: props.isEditable ?? true,
       issuedAt: () => '2026-05-09T00:00:00Z',
       adapter,
-      onBlockEdit,
+      onBlockEdit: onBlockEdit as unknown as (() => void),
     },
   });
   flushSync();

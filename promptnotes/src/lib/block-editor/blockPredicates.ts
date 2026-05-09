@@ -13,7 +13,7 @@
 import type { SaveError, BlockType } from './types.js';
 
 /**
- * REQ-EDIT-025, REQ-EDIT-026, PROP-EDIT-005, PROP-EDIT-042
+ * REQ-BE-017, PROP-BE-001, PROP-BE-002
  * Returns user-facing Japanese message for fs errors; null for validation errors.
  * Exhaustive switch enforced at compile time.
  */
@@ -49,7 +49,7 @@ export function bannerMessageFor(error: SaveError): string | null {
 }
 
 /**
- * REQ-EDIT-037, PROP-EDIT-002
+ * REQ-BE-021, PROP-BE-011
  * Pure mapping from trigger kind to domain save source.
  * 'idle' → 'capture-idle'; 'blur' → 'capture-blur'.
  */
@@ -68,7 +68,7 @@ export function classifySource(triggerKind: 'idle' | 'blur'): 'capture-idle' | '
 }
 
 /**
- * REQ-EDIT-006, REQ-EDIT-007, PROP-EDIT-001, EC-EDIT-012
+ * REQ-BE-018, PROP-BE-003, PROP-BE-004
  * Returns 'insert' iff offset === contentLength (Enter at end of block);
  * returns 'split' for any offset strictly inside the block.
  */
@@ -77,7 +77,7 @@ export function splitOrInsert(offset: number, contentLength: number): 'split' | 
 }
 
 /**
- * REQ-EDIT-010, PROP-EDIT-010, EC-EDIT-013
+ * REQ-BE-019, PROP-BE-005, PROP-BE-006, PROP-BE-007, PROP-BE-008
  * Returns { newType, trimmedContent } for recognised Markdown prefix; null otherwise.
  * Divider rule: returns { newType: 'divider', trimmedContent: '' } iff content === '---' exactly.
  * Any other string beginning with '---' returns null.
@@ -111,7 +111,7 @@ export function classifyMarkdownPrefix(
 }
 
 /**
- * REQ-EDIT-008, PROP-EDIT-011, EC-EDIT-011
+ * REQ-BE-020, PROP-BE-009, PROP-BE-010
  * Returns:
  * - 'first-block-noop'  iff focusedIndex === 0
  * - 'merge'             iff 0 < focusedIndex < blockCount

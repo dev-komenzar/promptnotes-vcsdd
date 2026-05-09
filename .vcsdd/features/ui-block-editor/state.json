@@ -2,7 +2,7 @@
   "featureName": "ui-block-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "phase": "1a",
@@ -26,6 +26,13 @@
         "reviews/phase-1c/findings-rev2.md"
       ],
       "iterations": 2
+    },
+    {
+      "phase": "2",
+      "completedAt": "2026-05-09T12:48:17.317Z",
+      "sprints": 4,
+      "totalTests": 141,
+      "totalProps": 47
     }
   ],
   "iterations": {
@@ -46,6 +53,11 @@
       "phase2bGreen": "PASS (25 tests)",
       "phase2cRefactor": "BlockDragHandle.onMoveBlock optional",
       "testsAdded": 25
+    },
+    "sprint4": {
+      "phase2cRefactor": "PASS",
+      "phase2bGreen": "PASS (7 gate tests)",
+      "testsAdded": 7
     }
   },
   "proofObligations": [
@@ -417,7 +429,7 @@
       "reqs": [
         "REQ-BE-026"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-040",
@@ -427,7 +439,7 @@
       "reqs": [
         "REQ-BE-027"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-041",
@@ -437,7 +449,7 @@
       "reqs": [
         "NFR-BE-001"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-042",
@@ -445,7 +457,7 @@
       "target": "src/lib/editor/",
       "predicate": "directory absence",
       "reqs": [],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-038",
@@ -475,7 +487,7 @@
       "reqs": [
         "REQ-BE-022"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-044",
@@ -485,7 +497,7 @@
       "reqs": [
         "NFR-BE-007"
       ],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-045",
@@ -493,7 +505,7 @@
       "target": "specs/*.md",
       "predicate": "PROP-BE ID continuity",
       "reqs": [],
-      "status": "pending"
+      "status": "green-tested"
     },
     {
       "id": "PROP-BE-046",
@@ -533,7 +545,7 @@
       "iterations": 2
     }
   },
-  "sprintCount": 3,
+  "sprintCount": 4,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T12:40:34.210Z"
+  "updatedAt": "2026-05-09T12:48:17.318Z"
 }

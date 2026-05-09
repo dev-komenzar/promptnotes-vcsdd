@@ -12,13 +12,13 @@
  */
 
 /**
- * REQ-EDIT-012: Named exported constant for the idle-save debounce window.
- * Value locked to 2000ms per behavioral-spec.md §3.3 IDLE_SAVE_DEBOUNCE_MS.
+ * REQ-BE-022 / PROP-BE-012: Named exported constant for the idle-save debounce window.
+ * Value locked to 2000ms per ui-block-editor behavioral-spec.md REQ-BE-022.
  */
 export const IDLE_SAVE_DEBOUNCE_MS = 2000;
 
 /**
- * PROP-EDIT-003, CRIT-705
+ * REQ-BE-023 / PROP-BE-013
  * Pure helper: the timestamp at which the idle save should fire.
  */
 export function nextFireAt(lastEditTimestamp: number, debounceMs: number): number {
@@ -26,7 +26,7 @@ export function nextFireAt(lastEditTimestamp: number, debounceMs: number): numbe
 }
 
 /**
- * PROP-EDIT-003, CRIT-705
+ * REQ-BE-024 / PROP-BE-014, PROP-BE-015, PROP-BE-016
  * Given the latest edit timestamp, last save timestamp, debounce window, and current
  * clock time, returns whether and when the idle save should fire.
  *
@@ -57,7 +57,7 @@ export function computeNextFireAt(params: {
 }
 
 /**
- * PROP-EDIT-003, PROP-EDIT-004
+ * REQ-BE-025 / PROP-BE-017, PROP-BE-018, PROP-BE-019, PROP-BE-020
  * Property-test predicate accepting a sequence of edit timestamps.
  * Returns true iff an idle save should fire given:
  * - editTimestamps: all edit events
