@@ -853,10 +853,10 @@ fn prop_ipc_019_block_type_dto_invalid_strings() {
 #[test]
 fn prop_ipc_013_compose_idle() {
     let state = compose_state_idle();
-    match state {
+    match &state {
         EditingSessionStateDto::Idle => {}
         other => panic!("Expected Idle, got a different variant; status in JSON: {}", {
-            let v = serde_json::to_value(&other).unwrap();
+            let v = serde_json::to_value(other).unwrap();
             v["status"].as_str().unwrap_or("?").to_string()
         }),
     }
@@ -872,7 +872,7 @@ fn prop_ipc_013_compose_idle() {
 #[test]
 fn prop_ipc_014_compose_cancel_switch() {
     let state = compose_state_for_cancel_switch("/v/n.md");
-    match state {
+    match &state {
         EditingSessionStateDto::Editing {
             current_note_id,
             focused_block_id,
@@ -882,15 +882,15 @@ fn prop_ipc_014_compose_cancel_switch() {
             blocks,
         } => {
             assert_eq!(current_note_id, "/v/n.md");
-            assert_eq!(focused_block_id, None, "focusedBlockId must be null");
-            assert!(is_dirty, "isDirty must be true after cancel_switch");
-            assert!(!is_note_empty, "isNoteEmpty must be false (conservative)");
-            assert_eq!(last_save_result, None, "lastSaveResult must be null");
-            assert_eq!(blocks, None, "blocks must be None in Sprint 8");
+            assert_eq!(*focused_block_id, None, "focusedBlockId must be null");
+            assert!(*is_dirty, "isDirty must be true after cancel_switch");
+            assert!(!*is_note_empty, "isNoteEmpty must be false (conservative)");
+            assert_eq!(*last_save_result, None, "lastSaveResult must be null");
+            assert_eq!(*blocks, None, "blocks must be None in Sprint 8");
         }
         other => panic!(
             "Expected Editing variant, got: {}",
-            serde_json::to_value(&other).unwrap()["status"]
+            serde_json::to_value(other).unwrap()["status"]
                 .as_str()
                 .unwrap_or("?")
         ),
@@ -906,7 +906,7 @@ fn prop_ipc_014_compose_cancel_switch() {
 #[test]
 fn prop_ipc_015_compose_request_new_note() {
     let state = compose_state_for_request_new_note("/v/new.md");
-    match state {
+    match &state {
         EditingSessionStateDto::Editing {
             current_note_id,
             is_note_empty,
@@ -916,15 +916,15 @@ fn prop_ipc_015_compose_request_new_note() {
             blocks,
         } => {
             assert_eq!(current_note_id, "/v/new.md");
-            assert!(is_note_empty, "new note must have isNoteEmpty:true");
-            assert!(!is_dirty, "new note must have isDirty:false");
-            assert_eq!(focused_block_id, None);
-            assert_eq!(last_save_result, None);
-            assert_eq!(blocks, None);
+            assert!(*is_note_empty, "new note must have isNoteEmpty:true");
+            assert!(!*is_dirty, "new note must have isDirty:false");
+            assert_eq!(*focused_block_id, None);
+            assert_eq!(*last_save_result, None);
+            assert_eq!(*blocks, None);
         }
         other => panic!(
             "Expected Editing variant, got: {}",
-            serde_json::to_value(&other).unwrap()["status"]
+            serde_json::to_value(other).unwrap()["status"]
                 .as_str()
                 .unwrap_or("?")
         ),
@@ -958,7 +958,7 @@ fn prop_ipc_016_compose_save_ok_and_err() {
             assert_eq!(focused_block_id, None);
             assert_eq!(blocks, None);
         }
-        other => panic!("Expected Editing for save_ok, got different variant"),
+        _ => panic!("Expected Editing for save_ok, got different variant"),
     }
 
     // Save OK — empty body
@@ -990,7 +990,7 @@ fn prop_ipc_016_compose_save_ok_and_err() {
             assert!(!is_note_empty, "non-empty body → isNoteEmpty:false");
             assert_eq!(blocks, None);
         }
-        other => panic!("Expected SaveFailed for save_err, got different variant"),
+        _ => panic!("Expected SaveFailed for save_err, got different variant"),
     }
 }
 

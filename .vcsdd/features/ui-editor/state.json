@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "contract-review",
   "phaseHistory": [
     {
       "from": "init",
@@ -471,6 +471,13 @@
       "timestamp": "2026-05-09T03:30:00Z",
       "reason": "Sprint 8 Green: cargo 89/89, vitest 220/220, wire_audit 3/3 PASS",
       "sprint": 8
+    },
+    {
+      "from": "2c",
+      "to": "contract-review",
+      "timestamp": "2026-05-09T03:45:00Z",
+      "reason": "Sprint 8 Refactor: clippy unused-vars cleaned, all tests still 89/89 PASS",
+      "sprint": 8
     }
   ],
   "iterations": {
@@ -483,7 +490,7 @@
     "1c": 6,
     "2a": 7,
     "2b": 7,
-    "2c": 5,
+    "2c": 6,
     "complete": 2,
     "contract-review": 3
   },
@@ -3779,5 +3786,5 @@
   },
   "sprintCount": 8,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-09T03:30:00Z"
+  "updatedAt": "2026-05-09T03:45:00Z"
 }
