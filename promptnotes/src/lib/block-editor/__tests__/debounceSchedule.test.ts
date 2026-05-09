@@ -17,7 +17,7 @@ import {
   computeNextFireAt,
   shouldFireIdleSave,
   nextFireAt,
-} from '$lib/editor/debounceSchedule';
+} from '$lib/block-editor/debounceSchedule';
 
 // ── IDLE_SAVE_DEBOUNCE_MS constant ───────────────────────────────────────────
 

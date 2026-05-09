@@ -1,0 +1,17 @@
+{
+  "featureName": "ui-block-editor",
+  "mode": "strict",
+  "language": "typescript",
+  "currentPhase": "init",
+  "phaseHistory": [],
+  "iterations": {},
+  "proofObligations": [],
+  "traceability": {
+    "epicId": "VCSDD-ui-block-editor-1778322745472",
+    "beads": []
+  },
+  "gates": {},
+  "sprintCount": 0,
+  "createdAt": "2026-05-09T10:32:25.472Z",
+  "updatedAt": "2026-05-09T10:32:25.472Z"
+}

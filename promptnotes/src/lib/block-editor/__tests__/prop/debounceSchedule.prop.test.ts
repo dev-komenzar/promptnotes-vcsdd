@@ -17,7 +17,7 @@ import {
   computeNextFireAt,
   shouldFireIdleSave,
   nextFireAt,
-} from '$lib/editor/debounceSchedule';
+} from '$lib/block-editor/debounceSchedule';
 
 // ── PROP-EDIT-003: debounce-semantics ─────────────────────────────────────────
 

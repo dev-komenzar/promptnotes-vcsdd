@@ -4176,5 +4176,8 @@
   },
   "sprintCount": 8,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-09T07:45:00Z"
+  "updatedAt": "2026-05-09T07:45:00Z",
+  "deprecatedAt": "2026-05-09T10:32:25.472Z",
+  "deprecationReason": "Superseded by ui-block-editor. EditorPane architecture abolished in block-based-ui-spec-migration.",
+  "supersededBy": "ui-block-editor"
 }

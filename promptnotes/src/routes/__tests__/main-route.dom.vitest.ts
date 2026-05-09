@@ -1,19 +1,14 @@
 /**
  * main-route.dom.vitest.ts — DOM integration test for main route layout.
  *
- * Sprint 2 Phase 2a (RED phase):
- *   PROP-FEED-S2-005: Configured state mounts both FeedList (.feed-sidebar)
- *                     and EditorPane (.editor-main) in the two-column layout.
- *   PROP-FEED-S2-006: Layout uses grid with 320px 1fr columns.
- *   PROP-FEED-S2-007: Sidebar border uses #e9e9e7.
+ * Block-based UI migration:
+ *   - 旧 2 カラム (FeedList sidebar + EditorPane main) は廃止。
+ *   - 新レイアウトは単一カラム (.feed-main) で FeedList が全幅を占める。
+ *   - 旧 PROP-FEED-S2-006 / PROP-FEED-S2-007 / FIND-S2-02 の構造アサーションは
+ *     ui-feed-list-actions Sprint 5（block-based-ui-spec-migration Step 2）で
+ *     正式に再定義される。本ファイルでは単一カラム構造の暫定検証のみ行う。
  *
  * Pattern: vitest + jsdom + raw Svelte 5 mount API (NO @testing-library/svelte).
- * Same pattern as src/lib/feed/__tests__/dom/*.dom.vitest.ts.
- *
- * FIND-S2-04: Tests now mount the actual FeedList component (not a manually
- * constructed DOM scaffold) and assert structural invariants directly.
- * PROP-FEED-S2-006 / PROP-FEED-S2-007 are verified via source grep (structural
- * analysis), not tautological expect(true).toBe(true) placeholders.
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -183,39 +178,30 @@ describe('Main route two-column layout (PROP-FEED-S2-005)', () => {
   });
 });
 
-describe('Main route source structure assertions (PROP-FEED-S2-006, PROP-FEED-S2-007)', () => {
-  // FIND-S2-04: These assertions read the actual +page.svelte source file.
-  // They verify structural invariants without relying on tautological expect(true).
+describe('Main route source structure assertions (block-based UI: single column)', () => {
+  // Block-based UI migration: 旧 2 カラム構造アサーションは ui-feed-list-actions
+  // Sprint 5 で正式に再定義される。ここでは単一カラム化の最低限の構造確認のみ行う。
 
-  // Test file is at src/routes/__tests__/main-route.dom.vitest.ts
-  // +page.svelte is at src/routes/+page.svelte — one level up.
   const pageSveltePath = path.resolve(
     import.meta.dirname,
     '../+page.svelte',
   );
 
-  test('+page.svelte contains grid-template-columns: 320px 1fr (PROP-FEED-S2-006)', () => {
+  test('+page.svelte は EditorPanel の import を持たない（block migration）', () => {
     const source = fs.readFileSync(pageSveltePath, 'utf-8');
-    expect(source).toContain('grid-template-columns: 320px 1fr');
+    expect(source).not.toContain('EditorPanel');
+    expect(source).not.toContain('editorStateChannel');
+    expect(source).not.toContain('tauriEditorAdapter');
   });
 
-  test('+page.svelte uses DESIGN.md whisper border #e9e9e7 (PROP-FEED-S2-007)', () => {
+  test('+page.svelte は単一カラム .feed-main を採用する（block migration）', () => {
     const source = fs.readFileSync(pageSveltePath, 'utf-8');
-    expect(source).toContain('#e9e9e7');
-  });
-
-  test('+page.svelte has .feed-sidebar and .editor-main CSS classes (FIND-S2-02)', () => {
-    // FIND-S2-02: +page.svelte must use <div class="editor-main">, NOT <main class="editor-main">.
-    const source = fs.readFileSync(pageSveltePath, 'utf-8');
-    expect(source).toContain('.feed-sidebar');
-    expect(source).toContain('.editor-main');
-    // Must NOT have a nested <main> element inside AppShell slot.
-    // The pattern <main class="editor-main"> would produce double-main.
-    expect(source).not.toMatch(/<main\s[^>]*class="[^"]*editor-main[^"]*"/);
+    expect(source).toContain('.feed-main');
+    // 旧 2 カラム grid 定義は除去されていること
+    expect(source).not.toMatch(/grid-template-columns:\s*320px\s+1fr/);
   });
 
   test('+page.svelte passes vaultPath to FeedList (FIND-S2-01/05/06)', () => {
-    // FIND-S2-05/06: FeedList must receive vaultPath from +page.svelte.
     const source = fs.readFileSync(pageSveltePath, 'utf-8');
     expect(source).toContain('vaultPath');
   });

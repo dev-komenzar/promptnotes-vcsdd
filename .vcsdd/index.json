@@ -82,12 +82,15 @@
       "updatedAt": "2026-05-03T15:51:03.312Z"
     },
     "ui-editor": {
-      "status": "active",
+      "status": "deprecated",
       "createdAt": "2026-05-03T22:48:00.742Z",
       "mode": "strict",
       "language": "rust",
       "currentPhase": "complete",
-      "updatedAt": "2026-05-09T07:45:00Z"
+      "updatedAt": "2026-05-09T07:45:00Z",
+      "deprecatedAt": "2026-05-09T10:32:25.472Z",
+      "deprecationReason": "Superseded by ui-block-editor. EditorPane architecture abolished in block-based-ui-spec-migration.",
+      "supersededBy": "ui-block-editor"
     },
     "ui-feed-list-actions": {
       "status": "active",
@@ -112,7 +115,15 @@
       "language": "typescript",
       "currentPhase": "2a",
       "updatedAt": "2026-05-06T07:30:01.000Z"
+    },
+    "ui-block-editor": {
+      "status": "active",
+      "createdAt": "2026-05-09T10:32:25.472Z",
+      "mode": "strict",
+      "language": "typescript",
+      "currentPhase": "init",
+      "updatedAt": "2026-05-09T10:32:25.472Z"
     }
   },
-  "activeFeature": "ui-feed-list-actions"
+  "activeFeature": "ui-block-editor"
 }

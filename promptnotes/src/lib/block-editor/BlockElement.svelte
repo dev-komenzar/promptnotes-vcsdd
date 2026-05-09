@@ -15,8 +15,8 @@
    * PROP-EDIT-025..030, REQ-EDIT-001..011, EC-EDIT-011..013
    */
 
-  import type { BlockType, EditorIpcAdapter } from './types.js';
-  import { splitOrInsert, classifyMarkdownPrefix, classifyBackspaceAtZero } from './editorPredicates.js';
+  import type { BlockType, BlockEditorAdapter } from './types.js';
+  import { splitOrInsert, classifyMarkdownPrefix, classifyBackspaceAtZero } from './blockPredicates.js';
   import SlashMenu from './SlashMenu.svelte';
 
   interface Block {
@@ -34,7 +34,7 @@
     isEditable: boolean;
     /** Returns current ISO timestamp string. */
     issuedAt: () => string;
-    adapter: EditorIpcAdapter;
+    adapter: BlockEditorAdapter;
     /** Called whenever the block content is edited (for idle-timer scheduling). */
     onBlockEdit?: () => void;
   }

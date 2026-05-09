@@ -1,36 +1,16 @@
 /**
- * editorPredicates.ts — pure predicates for the block-based ui-editor (Sprint 7)
+ * blockPredicates.ts — pure predicates for ui-block-editor primitives
  *
- * Phase 2b implementation: all stubs replaced with real logic.
+ * 旧 ui-editor (EditorPane) feature の `editorPredicates.ts` を継承。
+ * EditorPane を廃止したため `canCopy(view: EditorViewState)` は除去した
+ * （Copy ボタンの可視性判定は FeedRow 側のロジックへ移管予定）。
  *
  * Pure core module: must never import @tauri-apps/api or any forbidden API.
- * Signatures match verification-architecture.md §2 exactly.
+ * Signatures aligned with verification-architecture.md (旧 ui-editor §2) for
+ * 移行期の互換性。
  */
 
-import type { EditorViewState, SaveError, BlockType } from './types.js';
-
-/**
- * REQ-EDIT-005, REQ-EDIT-032, PROP-EDIT-006
- * Returns true iff the Copy button should be enabled.
- * - false for status ∈ {'idle', 'switching', 'save-failed'} regardless of isNoteEmpty.
- * - !view.isNoteEmpty for status ∈ {'editing', 'saving'}.
- */
-export function canCopy(view: EditorViewState): boolean {
-  switch (view.status) {
-    case 'idle':
-    case 'switching':
-    case 'save-failed':
-      return false;
-    case 'editing':
-    case 'saving':
-      return !view.isNoteEmpty;
-    default: {
-      const _exhaustive: never = view.status;
-      void _exhaustive;
-      return false;
-    }
-  }
-}
+import type { SaveError, BlockType } from './types.js';
 
 /**
  * REQ-EDIT-025, REQ-EDIT-026, PROP-EDIT-005, PROP-EDIT-042
@@ -105,12 +85,10 @@ export function splitOrInsert(offset: number, contentLength: number): 'split' | 
 export function classifyMarkdownPrefix(
   content: string
 ): { newType: BlockType; trimmedContent: string } | null {
-  // Exact match for divider — must be exactly '---', no more no less.
   if (content === '---') {
     return { newType: 'divider', trimmedContent: '' };
   }
 
-  // Ordered from most specific to least specific to avoid prefix clashes.
   const prefixes: Array<[string, BlockType]> = [
     ['### ', 'heading-3'],
     ['## ', 'heading-2'],

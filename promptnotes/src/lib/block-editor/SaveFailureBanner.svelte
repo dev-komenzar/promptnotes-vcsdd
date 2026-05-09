@@ -10,7 +10,7 @@
    */
 
   import type { SaveError } from './types.js';
-  import { bannerMessageFor } from './editorPredicates.js';
+  import { bannerMessageFor } from './blockPredicates.js';
 
   interface Props {
     error: SaveError;
