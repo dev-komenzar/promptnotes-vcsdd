@@ -143,10 +143,10 @@ fn test_select_past_note_emits_editing_session_state_changed() {
         body
     );
 
-    // Construct the editing_session_state_changed payload using the new Sprint 8 API.
-    // REQ-IPC-014: compose_state_for_select_past_note sets status="editing",
-    // currentNoteId=note_path, focusedBlockId=null, isDirty=false, isNoteEmpty=body.is_empty().
-    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(&note_path, body);
+    // Sprint 4: Parse body into blocks using parse_markdown_to_blocks.
+    let blocks = promptnotes_lib::editor::parse_markdown_to_blocks(body)
+        .expect("parse_markdown_to_blocks must succeed for non-empty body");
+    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(&note_path, Some(blocks));
     let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
 
     // Sprint 8 loosened assertions: status + currentNoteId only.
@@ -207,8 +207,10 @@ fn test_select_past_note_editing_payload_contains_body() {
         "Body from note_metadata must match file content exactly"
     );
 
-    // Sprint 8: Verify payload via new singular API.
-    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(&note_path, body);
+    // Sprint 4: Parse body into blocks using parse_markdown_to_blocks.
+    let blocks = promptnotes_lib::editor::parse_markdown_to_blocks(body)
+        .expect("parse_markdown_to_blocks must succeed");
+    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(&note_path, Some(blocks));
     let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
     let state = &editor_payload["state"];
 
@@ -230,8 +232,8 @@ fn test_select_past_note_editing_payload_contains_body() {
     assert!(fields.contains(&"lastSaveResult"), "payload must contain 'lastSaveResult'");
     // Sprint 8: body field REMOVED from editor channel per §15.5 design notes.
     assert!(!fields.contains(&"body"), "body field must NOT be present in Sprint 8 editor channel");
-    // Sprint 8: blocks is None → absent
-    assert!(!fields.contains(&"blocks"), "blocks must be absent (None in Sprint 8)");
+    // Sprint 4: blocks is Some(parsed) → present in JSON
+    assert!(fields.contains(&"blocks"), "blocks must be present after Sprint 4 parse");
 
     // Cleanup
     let _ = std::fs::remove_file(&note_path);
@@ -257,15 +259,15 @@ fn test_select_past_note_nonexistent_body_is_empty() {
 
     assert_eq!(body, "", "Body must be empty for non-existent note_id");
 
-    // Sprint 8: Verify payload via new singular API.
-    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(nonexistent_id, body);
+    // Sprint 4: non-existent note → None blocks (not found in vault).
+    let editor_state = promptnotes_lib::editor::compose_state_for_select_past_note(nonexistent_id, None);
     let editor_payload = promptnotes_lib::editor::make_editing_state_changed_payload(&editor_state);
     let state = &editor_payload["state"];
 
     // Sprint 8 loosened assertions.
     assert_eq!(state["status"], "editing", "status must be 'editing'");
     assert_eq!(state["currentNoteId"], nonexistent_id, "currentNoteId must match");
-    assert_eq!(state["isNoteEmpty"], true, "isNoteEmpty must be true for empty body");
+    assert_eq!(state["isNoteEmpty"], true, "isNoteEmpty must be true for None blocks");
     // body field MUST NOT be present on the editor channel in Sprint 8.
     assert!(state.get("body").is_none(), "body must NOT be present in Sprint 8 editor channel");
 }

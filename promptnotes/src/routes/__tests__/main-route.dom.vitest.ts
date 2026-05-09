@@ -23,7 +23,7 @@ import * as path from 'path';
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn().mockResolvedValue({
-    editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+    editing: { status: 'idle', currentNoteId: null, pendingNextFocus: null },
     feed: { visibleNoteIds: [], filterApplied: false },
     delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
     noteMetadata: {},
@@ -58,7 +58,7 @@ function makeMockFeedStateChannel() {
 const INITIAL_VIEW_STATE: FeedViewState = {
   editingStatus: 'idle',
   editingNoteId: null,
-  pendingNextNoteId: null,
+  pendingNextFocus: null,
   visibleNoteIds: [],
   allNoteIds: [],
   loadingStatus: 'ready',

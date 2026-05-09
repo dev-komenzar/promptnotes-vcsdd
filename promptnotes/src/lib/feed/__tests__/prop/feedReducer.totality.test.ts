@@ -58,7 +58,7 @@ const arbNoteMetadata = fc.dictionary(arbNoteId, arbNoteRowMetadata);
 const arbSearchFeedViewState = fc.record({
   editingStatus: arbEditingStatus,
   editingNoteId: arbNoteIdOrNull,
-  pendingNextNoteId: arbNoteIdOrNull,
+  pendingNextFocus: fc.constant(null),
   visibleNoteIds: arbNoteIds,
   allNoteIds: arbNoteIds,
   loadingStatus: arbLoadingStatus,
@@ -83,7 +83,7 @@ const arbFeedDomainSnapshot: fc.Arbitrary<FeedDomainSnapshot> = fc.record({
   editing: fc.record({
     status: arbEditingStatus,
     currentNoteId: arbNoteIdOrNull,
-    pendingNextNoteId: arbNoteIdOrNull,
+    pendingNextFocus: fc.constant(null),
   }),
   feed: fc.record({
     visibleNoteIds: arbNoteIds,

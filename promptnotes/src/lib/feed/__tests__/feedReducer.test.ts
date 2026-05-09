@@ -68,10 +68,18 @@ const arbNoteRowMetadata = fc.record({
 const arbNoteMetadata: fc.Arbitrary<Readonly<Record<string, import('$lib/feed/types').NoteRowMetadata>>> =
   fc.dictionary(arbNoteId, arbNoteRowMetadata);
 
+const arbPendingNextFocusOrNull: fc.Arbitrary<{ noteId: string; blockId: string } | null> = fc.option(
+  fc.record({
+    noteId: arbNoteId,
+    blockId: arbNoteId,
+  }),
+  { nil: null }
+);
+
 const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   editingStatus: arbEditingStatus,
   editingNoteId: arbNoteIdOrNull,
-  pendingNextNoteId: arbNoteIdOrNull,
+  pendingNextFocus: arbPendingNextFocusOrNull,
   visibleNoteIds: arbVisibleNoteIds,
   allNoteIds: arbVisibleNoteIds,
   loadingStatus: arbLoadingStatus,
@@ -80,6 +88,8 @@ const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   noteMetadata: arbNoteMetadata,
   tagAutocompleteVisibleFor: fc.constant(null),
   activeFilterTags: fc.constant([] as readonly string[]),
+  searchQuery: fc.constant(''),
+  sortDirection: fc.constantFrom('asc' as const, 'desc' as const),
 });
 
 const arbCause: fc.Arbitrary<FeedDomainSnapshot['cause']> = fc.oneof(
@@ -94,7 +104,7 @@ const arbFeedDomainSnapshot: fc.Arbitrary<FeedDomainSnapshot> = fc.record({
   editing: fc.record({
     status: arbEditingStatus,
     currentNoteId: arbNoteIdOrNull,
-    pendingNextNoteId: arbNoteIdOrNull,
+    pendingNextFocus: arbPendingNextFocusOrNull,
   }),
   feed: fc.record({
     visibleNoteIds: arbVisibleNoteIds,
@@ -127,7 +137,7 @@ function makeInitialState(overrides: Partial<FeedViewState> = {}): FeedViewState
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: [],
     allNoteIds: [],
     loadingStatus: 'loading',
@@ -136,6 +146,8 @@ function makeInitialState(overrides: Partial<FeedViewState> = {}): FeedViewState
     noteMetadata: {},
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
+    searchQuery: '',
+    sortDirection: 'desc',
     ...overrides,
   };
 }
@@ -145,7 +157,7 @@ function makeSnapshot(overrides: Partial<FeedDomainSnapshot> = {}): FeedDomainSn
     editing: {
       status: 'editing',
       currentNoteId: 'note-001',
-      pendingNextNoteId: null,
+      pendingNextFocus: null,
     },
     feed: {
       visibleNoteIds: ['note-001', 'note-002'],
@@ -241,15 +253,15 @@ describe('PROP-FEED-006: feedReducer referential transparency', () => {
 describe('PROP-FEED-007a: DomainSnapshotReceived mirrors editing fields', () => {
   test('PROP-FEED-007a-example: editingStatus mirrors S.editing.status', () => {
     const state = makeInitialState({ editingStatus: 'idle' });
-    const snapshot = makeSnapshot({ editing: { status: 'saving', currentNoteId: 'note-x', pendingNextNoteId: 'note-y' } });
+    const snapshot = makeSnapshot({ editing: { status: 'saving', currentNoteId: 'note-x', pendingNextFocus: { noteId: 'note-y', blockId: 'b1' } } });
     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
     const result = feedReducer(state, action);
     expect(result.state.editingStatus).toBe('saving');
     expect(result.state.editingNoteId).toBe('note-x');
-    expect(result.state.pendingNextNoteId).toBe('note-y');
+    expect(result.state.pendingNextFocus).toEqual({ noteId: 'note-y', blockId: 'b1' });
   });
 
-  test('PROP-FEED-007a-fast-check: editingStatus/editingNoteId/pendingNextNoteId mirrored (≥200 runs)', () => {
+  test('PROP-FEED-007a-fast-check: editingStatus/editingNoteId/pendingNextFocus mirrored (≥200 runs)', () => {
     fc.assert(
       fc.property(arbFeedViewState, arbFeedDomainSnapshot, (state, snapshot) => {
         const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
@@ -257,7 +269,7 @@ describe('PROP-FEED-007a: DomainSnapshotReceived mirrors editing fields', () => 
         return (
           result.state.editingStatus === snapshot.editing.status &&
           result.state.editingNoteId === snapshot.editing.currentNoteId &&
-          result.state.pendingNextNoteId === snapshot.editing.pendingNextNoteId
+          JSON.stringify(result.state.pendingNextFocus) === JSON.stringify(snapshot.editing.pendingNextFocus)
         );
       }),
       { numRuns: 200 }
@@ -650,9 +662,9 @@ describe('REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allo
 // We use @ts-expect-error to suppress type errors and allow the assertion
 // logic to execute, producing a genuine runtime failure when the field is absent.
 
-describe('PROP-FEED-S4-006 / REQ-FEED-026: pendingNextFocus mirror biconditional (Sprint 4 RED)', () => {
+describe('PROP-FEED-S4-006 / REQ-FEED-026: pendingNextFocus mirror biconditional (Sprint 4 GREEN)', () => {
   // Arbitrary for PendingNextFocus: null | { noteId, blockId }
-  const arbPendingNextFocus = fc.option(
+  const arbPendingNextFocusS4 = fc.option(
     fc.record({
       noteId: fc.string({ minLength: 1, maxLength: 40 }),
       blockId: fc.string({ minLength: 1, maxLength: 40 }),
@@ -663,43 +675,16 @@ describe('PROP-FEED-S4-006 / REQ-FEED-026: pendingNextFocus mirror biconditional
   function makeSnapshotWithPendingNextFocus(
     pendingNextFocus: { noteId: string; blockId: string } | null
   ): FeedDomainSnapshot {
-    // @ts-expect-error — FeedDomainSnapshot.editing.pendingNextFocus does not exist yet
-    // (currently has pendingNextNoteId). Sprint 4 Phase 2b will add pendingNextFocus.
     return {
-      // @ts-expect-error — FeedDomainSnapshot.editing.pendingNextNoteId exists but
-      // pendingNextFocus does not. We cast to bypass the type check for the red test.
       editing: {
-        status: 'switching' as const,
+        status: 'switching',
         currentNoteId: 'note-1',
         pendingNextFocus,
       },
       feed: { visibleNoteIds: ['note-1', 'note-2'], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: {},
-      cause: { kind: 'EditingStateChanged' as const },
-    };
-  }
-
-  function makeStateWithPendingNextFocus(
-    pendingNextFocus: { noteId: string; blockId: string } | null
-  ): FeedViewState {
-    // @ts-expect-error — FeedViewState.pendingNextFocus does not exist yet
-    // (currently has pendingNextNoteId). Sprint 4 Phase 2b will rename the field.
-    return {
-      editingStatus: 'switching' as const,
-      editingNoteId: 'note-1',
-      // @ts-expect-error
-      pendingNextFocus,
-      visibleNoteIds: ['note-1'],
-      allNoteIds: ['note-1'],
-      loadingStatus: 'ready' as const,
-      activeDeleteModalNoteId: null,
-      lastDeletionError: null,
-      noteMetadata: {},
-      tagAutocompleteVisibleFor: null,
-      activeFilterTags: [],
-      searchQuery: '',
-      sortDirection: 'desc' as const,
+      cause: { kind: 'EditingStateChanged' },
     };
   }
 
@@ -709,7 +694,6 @@ describe('PROP-FEED-S4-006 / REQ-FEED-026: pendingNextFocus mirror biconditional
     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
     const result = feedReducer(state, action);
 
-    // @ts-expect-error — state.pendingNextFocus does not exist yet; will fail at runtime
     expect(result.state.pendingNextFocus).toBeNull();
   });
 
@@ -720,19 +704,17 @@ describe('PROP-FEED-S4-006 / REQ-FEED-026: pendingNextFocus mirror biconditional
     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
     const result = feedReducer(state, action);
 
-    // @ts-expect-error — state.pendingNextFocus does not exist yet; will fail at runtime
     expect(result.state.pendingNextFocus).toEqual(pnf);
   });
 
   test('PROP-FEED-S4-006c: fast-check biconditional — pendingNextFocus mirrors for all inputs (≥200 runs)', () => {
     fc.assert(
-      fc.property(arbPendingNextFocus, (pendingNextFocus) => {
+      fc.property(arbPendingNextFocusS4, (pendingNextFocus) => {
         const snapshot = makeSnapshotWithPendingNextFocus(pendingNextFocus);
         const state = makeInitialState();
         const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
         const result = feedReducer(state, action);
 
-        // @ts-expect-error — result.state.pendingNextFocus does not exist yet
         const mirrored = result.state.pendingNextFocus;
         return JSON.stringify(mirrored) === JSON.stringify(pendingNextFocus);
       }),

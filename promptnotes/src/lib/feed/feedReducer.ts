@@ -57,7 +57,7 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       const nextState: FeedViewState = {
         editingStatus: snapshot.editing.status,
         editingNoteId: snapshot.editing.currentNoteId,
-        pendingNextNoteId: snapshot.editing.pendingNextNoteId,
+        pendingNextFocus: snapshot.editing.pendingNextFocus,
         visibleNoteIds: visibleIds,
         allNoteIds: unfilteredIds,
         loadingStatus: state.loadingStatus,

@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -319,6 +319,27 @@
       "reason": "Phase 1c sprint-4 PASS (adversary iter-3 PASS + human approved). spec_fidelity PASS, verification_readiness PASS. iter1 11 findings → 0, iter2 3 findings → 0, iter3 0 findings.",
       "sprint": 4,
       "iteration": "1c-sprint-4-iter-3"
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-09T11:30:00.000Z",
+      "reason": "Red phase: 17 Sprint 4 tests (9 Rust + 4 TS reducer + 5 vitest DOM) all confirmed genuine red. Regression baseline intact (43 cargo lib + 1954 bun + 37 vitest pass).",
+      "sprint": 4
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-09T13:00:00.000Z",
+      "reason": "Green phase: 17 Sprint 4 tests + regression baseline all PASS. Rust 113 tests, bun 1958 tests, vitest 225 tests. compose_state_for_select_past_note signature migrated, parse_markdown_to_blocks added, EditingSubDto.pending_next_focus, TS feed types/reducer/FeedRow migrated.",
+      "sprint": 4
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-09T13:00:00.000Z",
+      "reason": "Refactor: ec_ipc_013 doc comment updated, make_editing_state_changed_payload_idempotent migrated to parse_markdown_to_blocks. All tests remain green. Grep audits clean.",
+      "sprint": 4
     }
   ],
   "iterations": {
@@ -1546,5 +1567,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T11:00:00.000Z"
+  "updatedAt": "2026-05-09T13:00:00.000Z"
 }

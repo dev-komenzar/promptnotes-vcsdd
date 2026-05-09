@@ -1093,11 +1093,15 @@ fn prop_ipc_016_compose_save_ok_and_err() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// PROP-IPC-017 — compose_state_for_select_past_note produces Editing with
-/// isNoteEmpty:body.is_empty(), isDirty:false, focusedBlockId:null.
+/// isNoteEmpty based on blocks presence, isDirty:false.
+/// Sprint 4: signature is (note_id, Option<Vec<DtoBlock>>).
 #[test]
 fn prop_ipc_017_compose_select_past_note() {
-    // Non-empty body
-    let state = compose_state_for_select_past_note("note-1", "# Hello");
+    use promptnotes_lib::editor::{parse_markdown_to_blocks};
+
+    // Non-empty body: parse to blocks, pass Some(blocks) → isNoteEmpty:false
+    let blocks_non_empty = parse_markdown_to_blocks("# Hello").expect("parse must succeed");
+    let state = compose_state_for_select_past_note("note-1", Some(blocks_non_empty));
     match state {
         EditingSessionStateDto::Editing {
             current_note_id,
@@ -1108,34 +1112,36 @@ fn prop_ipc_017_compose_select_past_note() {
             blocks,
         } => {
             assert_eq!(current_note_id, "note-1");
-            assert!(!is_note_empty, "non-empty body → isNoteEmpty:false");
+            assert!(!is_note_empty, "non-empty blocks → isNoteEmpty:false");
             assert!(!is_dirty);
-            assert_eq!(focused_block_id, None);
+            assert!(focused_block_id.is_some(), "focused_block_id must be Some for non-empty blocks");
             assert_eq!(last_save_result, None);
-            assert_eq!(blocks, None);
+            assert!(blocks.is_some(), "blocks must be Some for non-empty input");
         }
         _ => panic!("Expected Editing for select_past_note"),
     }
 
-    // Empty body
-    let state_empty = compose_state_for_select_past_note("note-2", "");
-    match state_empty {
+    // None (note not found) → isNoteEmpty:true
+    let state_none = compose_state_for_select_past_note("note-2", None);
+    match state_none {
         EditingSessionStateDto::Editing { is_note_empty, .. } => {
-            assert!(is_note_empty, "empty body → isNoteEmpty:true");
+            assert!(is_note_empty, "None blocks → isNoteEmpty:true");
         }
-        _ => panic!("Expected Editing for select_past_note (empty)"),
+        _ => panic!("Expected Editing for select_past_note (None)"),
     }
 }
 
 /// EC-IPC-013 — Whitespace-only body (`"\n"`, `"  "`, `"\n\n   \n"`):
-/// `body.is_empty()` returns false (byte-level check), so emitted variant must
-/// carry `is_note_empty: false`. This intentionally diverges from the
-/// `NoteOps.isEmpty()` semantics (which would treat whitespace-only as empty).
-/// Sprint 8 documents this divergence in §15.4 / behavioral-spec.md.
+/// `parse_markdown_to_blocks` applies the non-empty invariant: whitespace-only
+/// input yields at least one paragraph block, so `is_note_empty` must be false.
+/// This intentionally diverges from `NoteOps.isEmpty()` semantics (which treats
+/// whitespace-only as empty). Sprint 8 documents this divergence in §15.4.
 #[test]
 fn ec_ipc_013_whitespace_only_body_is_not_empty() {
     for body in &["\n", "  ", "\n\n   \n", " \t \n"] {
-        let state = compose_state_for_select_past_note("note-ws", body);
+        let blocks = promptnotes_lib::editor::parse_markdown_to_blocks(body)
+            .expect("parse_markdown_to_blocks must not fail on whitespace-only input");
+        let state = compose_state_for_select_past_note("note-ws", Some(blocks));
         match state {
             EditingSessionStateDto::Editing { is_note_empty, .. } => {
                 assert!(

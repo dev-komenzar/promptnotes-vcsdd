@@ -39,7 +39,7 @@ function makeState(overrides: Partial<SearchFeedViewState> = {}): SearchFeedView
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: [],
     allNoteIds: [],
     loadingStatus: 'ready',
@@ -60,7 +60,7 @@ function makeMetadata(body: string, tags: string[], updatedAt: number = 1000): N
 
 function makeSnapshot(overrides: Partial<FeedDomainSnapshot> = {}): FeedDomainSnapshot {
   return {
-    editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+    editing: { status: 'idle', currentNoteId: null, pendingNextFocus: null },
     feed: { visibleNoteIds: [], filterApplied: false },
     delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
     noteMetadata: {},

@@ -47,12 +47,17 @@ function makeViewState(overrides: Partial<FeedViewState> = {}): FeedViewState {
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: ['note-001'],
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
     lastDeletionError: null,
-    noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [], allNoteIds: [],
+    noteMetadata: {},
+    tagAutocompleteVisibleFor: null,
+    activeFilterTags: [],
+    allNoteIds: [],
+    searchQuery: '',
+    sortDirection: 'desc',
     ...overrides,
   };
 }
@@ -231,12 +236,12 @@ describe('PROP-FEED-015 / REQ-FEED-011: valid delete button click dispatches Req
 
 // ── PROP-FEED-023: pending-switch-indicator ───────────────────────────────────
 
-describe('PROP-FEED-023 / REQ-FEED-009: pending-switch-indicator when pendingNextNoteId matches', () => {
-  test('pending-switch-indicator present when pendingNextNoteId === noteId and switching (EC-FEED-013)', () => {
+describe('PROP-FEED-023 / REQ-FEED-009: pending-switch-indicator when pendingNextFocus.noteId matches', () => {
+  test('pending-switch-indicator present when pendingNextFocus.noteId === noteId and switching (EC-FEED-013)', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({
       editingStatus: 'switching',
-      pendingNextNoteId: 'note-001',
+      pendingNextFocus: { noteId: 'note-001', blockId: '' },
     });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
@@ -247,11 +252,11 @@ describe('PROP-FEED-023 / REQ-FEED-009: pending-switch-indicator when pendingNex
     unmount(app);
   });
 
-  test('pending-switch-indicator present when save-failed + pendingNextNoteId === noteId', () => {
+  test('pending-switch-indicator present when save-failed + pendingNextFocus.noteId === noteId', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({
       editingStatus: 'save-failed',
-      pendingNextNoteId: 'note-001',
+      pendingNextFocus: { noteId: 'note-001', blockId: '' },
     });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
@@ -262,9 +267,9 @@ describe('PROP-FEED-023 / REQ-FEED-009: pending-switch-indicator when pendingNex
     unmount(app);
   });
 
-  test('no pending-switch-indicator when pendingNextNoteId is null', () => {
+  test('no pending-switch-indicator when pendingNextFocus is null', () => {
     const adapter = makeMockAdapter();
-    const viewState = makeViewState({ pendingNextNoteId: null });
+    const viewState = makeViewState({ pendingNextFocus: null });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
@@ -383,12 +388,12 @@ describe('FeedRow DOM structure requirements', () => {
 // ── FIND-006: showPendingSwitch editingStatus guard ────────────────────────────
 
 describe('FIND-006 / REQ-FEED-009: showPendingSwitch requires editingStatus guard (defense-in-depth)', () => {
-  test('NO pending-switch-indicator when editingStatus=editing even if pendingNextNoteId===noteId', () => {
+  test('NO pending-switch-indicator when editingStatus=editing even if pendingNextFocus.noteId===noteId', () => {
     const adapter = makeMockAdapter();
-    // Malformed state: pendingNextNoteId set but editingStatus is 'editing' (not switching/save-failed)
+    // Malformed state: pendingNextFocus set but editingStatus is 'editing' (not switching/save-failed)
     const viewState = makeViewState({
       editingStatus: 'editing',
-      pendingNextNoteId: 'note-001',
+      pendingNextFocus: { noteId: 'note-001', blockId: '' },
     });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
@@ -399,11 +404,11 @@ describe('FIND-006 / REQ-FEED-009: showPendingSwitch requires editingStatus guar
     unmount(app);
   });
 
-  test('NO pending-switch-indicator when editingStatus=idle even if pendingNextNoteId===noteId', () => {
+  test('NO pending-switch-indicator when editingStatus=idle even if pendingNextFocus.noteId===noteId', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({
       editingStatus: 'idle',
-      pendingNextNoteId: 'note-001',
+      pendingNextFocus: { noteId: 'note-001', blockId: '' },
     });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
@@ -414,11 +419,11 @@ describe('FIND-006 / REQ-FEED-009: showPendingSwitch requires editingStatus guar
     unmount(app);
   });
 
-  test('pending-switch-indicator shown when editingStatus=switching AND pendingNextNoteId===noteId', () => {
+  test('pending-switch-indicator shown when editingStatus=switching AND pendingNextFocus.noteId===noteId', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({
       editingStatus: 'switching',
-      pendingNextNoteId: 'note-001',
+      pendingNextFocus: { noteId: 'note-001', blockId: '' },
     });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
@@ -445,7 +450,7 @@ function makeViewStateWithTagInput(overrides: Partial<FeedViewState> = {}): Feed
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: ['note-001'],
     allNoteIds: ['note-001'],
     loadingStatus: 'ready',
@@ -454,6 +459,8 @@ function makeViewStateWithTagInput(overrides: Partial<FeedViewState> = {}): Feed
     noteMetadata: {},
     tagAutocompleteVisibleFor: 'note-001',
     activeFilterTags: [],
+    searchQuery: '',
+    sortDirection: 'desc',
     ...overrides,
   };
 }
@@ -726,35 +733,30 @@ describe('REQ-TAG-005 / EC-021: Arrow key navigation in autocomplete', () => {
 //
 // We use @ts-expect-error to suppress type errors and reach the assertion.
 
-describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFocus?.noteId (Sprint 4 RED)', () => {
-  function makeViewStateS4(overrides: object = {}): FeedViewState {
-    // @ts-expect-error — pendingNextFocus does not exist in FeedViewState yet.
-    // FeedViewState currently has pendingNextNoteId. Phase 2b will rename.
+describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFocus?.noteId (Sprint 4 GREEN)', () => {
+  function makeViewStateS4(overrides: Partial<FeedViewState> = {}): FeedViewState {
     return {
-      editingStatus: 'idle' as const,
+      editingStatus: 'idle',
       editingNoteId: null,
-      // @ts-expect-error
       pendingNextFocus: null,
       visibleNoteIds: ['note-001'],
       allNoteIds: ['note-001'],
-      loadingStatus: 'ready' as const,
+      loadingStatus: 'ready',
       activeDeleteModalNoteId: null,
       lastDeletionError: null,
       noteMetadata: {},
       tagAutocompleteVisibleFor: null,
       activeFilterTags: [],
       searchQuery: '',
-      sortDirection: 'desc' as const,
+      sortDirection: 'desc',
       ...overrides,
     };
   }
 
   test('PROP-FEED-S4-015a: pending-switch-indicator present when pendingNextFocus.noteId===noteId + switching', () => {
     const adapter = makeMockAdapter();
-    // @ts-expect-error — pendingNextFocus field does not exist in FeedViewState yet
     const viewState = makeViewStateS4({
       editingStatus: 'switching',
-      // @ts-expect-error
       pendingNextFocus: { noteId: 'note-001', blockId: 'block-x' },
     });
 
@@ -762,7 +764,6 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
     flushSync();
 
     const indicator = target.querySelector('[data-testid="pending-switch-indicator"]');
-    // This assertion will FAIL because FeedRow still reads pendingNextNoteId (old field).
     expect(indicator).not.toBeNull();
 
     unmount(app);
@@ -770,10 +771,8 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
 
   test('PROP-FEED-S4-015b: pending-switch-indicator present when pendingNextFocus.noteId===noteId + save-failed', () => {
     const adapter = makeMockAdapter();
-    // @ts-expect-error — pendingNextFocus field does not exist in FeedViewState yet
     const viewState = makeViewStateS4({
       editingStatus: 'save-failed',
-      // @ts-expect-error
       pendingNextFocus: { noteId: 'note-001', blockId: 'block-y' },
     });
 
@@ -781,7 +780,6 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
     flushSync();
 
     const indicator = target.querySelector('[data-testid="pending-switch-indicator"]');
-    // RED: FeedRow uses pendingNextNoteId, not pendingNextFocus → indicator will be null
     expect(indicator).not.toBeNull();
 
     unmount(app);
@@ -789,10 +787,8 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
 
   test('PROP-FEED-S4-015c: NO pending-switch-indicator when pendingNextFocus.noteId !== noteId', () => {
     const adapter = makeMockAdapter();
-    // @ts-expect-error — pendingNextFocus field does not exist in FeedViewState yet
     const viewState = makeViewStateS4({
       editingStatus: 'switching',
-      // @ts-expect-error
       pendingNextFocus: { noteId: 'note-OTHER', blockId: 'block-z' },
     });
 
@@ -807,10 +803,8 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
 
   test('PROP-FEED-S4-015d: NO pending-switch-indicator when pendingNextFocus is null', () => {
     const adapter = makeMockAdapter();
-    // @ts-expect-error — pendingNextFocus field does not exist in FeedViewState yet
     const viewState = makeViewStateS4({
       editingStatus: 'switching',
-      // @ts-expect-error
       pendingNextFocus: null,
     });
 
@@ -827,10 +821,8 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
     // Regression guard: blockId must be in state but NOT affect the FeedRow indicator predicate.
     // Only noteId should be compared against the row's noteId prop.
     const adapter = makeMockAdapter();
-    // @ts-expect-error — pendingNextFocus field does not exist in FeedViewState yet
     const viewState = makeViewStateS4({
       editingStatus: 'switching',
-      // @ts-expect-error
       pendingNextFocus: { noteId: 'note-001', blockId: 'any-block-id-doesnt-matter' },
     });
 
@@ -839,7 +831,6 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
 
     // The indicator should appear based on noteId match alone, regardless of blockId value.
     const indicator = target.querySelector('[data-testid="pending-switch-indicator"]');
-    // RED: FeedRow uses pendingNextNoteId — will be null
     expect(indicator).not.toBeNull();
 
     unmount(app);

@@ -47,7 +47,7 @@ pub enum TrashErrorDto {
 pub struct EditingSubDto {
     pub status: String,
     pub current_note_id: Option<String>,
-    pub pending_next_note_id: Option<String>,
+    pub pending_next_focus: Option<crate::editor::PendingNextFocusDto>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -126,7 +126,7 @@ pub fn idle_editing() -> EditingSubDto {
     EditingSubDto {
         status: "idle".to_string(),
         current_note_id: None,
-        pending_next_note_id: None,
+        pending_next_focus: None,
     }
 }
 
@@ -147,7 +147,7 @@ fn make_editing_state_changed_snapshot(note_id: &str, vault_path: &str) -> FeedD
         editing: EditingSubDto {
             status: "editing".to_string(),
             current_note_id: Some(note_id.to_string()),
-            pending_next_note_id: None,
+            pending_next_focus: None,
         },
         feed: FeedSubDto {
             visible_note_ids,
@@ -249,15 +249,19 @@ pub fn select_past_note(
     let _ = issued_at; // timestamp recorded for audit; not used in Rust state
     let snapshot = make_editing_state_changed_snapshot(&note_id, &vault_path);
 
-    // REQ-FEED-024: Extract body from scanned metadata for the editor
-    let body = snapshot
-        .note_metadata
-        .get(&note_id)
-        .map(|m| m.body.as_str())
-        .unwrap_or("");
+    // REQ-FEED-024 amendment / REQ-FEED-025: Parse body into blocks via parse_markdown_to_blocks.
+    let blocks: Option<Vec<crate::editor::DtoBlock>> = if snapshot.note_metadata.contains_key(&note_id) {
+        let body = snapshot.note_metadata.get(&note_id).map(|m| m.body.as_str()).unwrap_or("");
+        match crate::editor::parse_markdown_to_blocks(body) {
+            Ok(b) => Some(b),
+            Err(_) => None, // EC-FEED-016: BlockParseError → fallback to None
+        }
+    } else {
+        None // note not found in vault
+    };
 
-    // REQ-FEED-024 / REQ-IPC-014: Emit editing_session_state_changed with the editing variant.
-    let editor_state = crate::editor::compose_state_for_select_past_note(&note_id, body);
+    // REQ-FEED-024 / REQ-IPC-014: Emit editing_session_state_changed with block-aware payload.
+    let editor_state = crate::editor::compose_state_for_select_past_note(&note_id, blocks);
     let editor_payload = crate::editor::make_editing_state_changed_payload(&editor_state);
     app.emit("editing_session_state_changed", editor_payload)
         .map_err(|e| e.to_string())?;
@@ -534,7 +538,7 @@ mod tests {
             editing: EditingSubDto {
                 status: "idle".to_string(),
                 current_note_id: None,
-                pending_next_note_id: None,
+                pending_next_focus: None,
             },
             feed: FeedSubDto {
                 visible_note_ids: vec!["note1".to_string()],
@@ -551,7 +555,7 @@ mod tests {
         // Verify camelCase field names
         assert!(json.contains("\"editing\""), "Expected 'editing': {}", json);
         assert!(json.contains("\"currentNoteId\""), "Expected 'currentNoteId': {}", json);
-        assert!(json.contains("\"pendingNextNoteId\""), "Expected 'pendingNextNoteId': {}", json);
+        assert!(json.contains("\"pendingNextFocus\""), "Expected 'pendingNextFocus': {}", json);
         assert!(json.contains("\"visibleNoteIds\""), "Expected 'visibleNoteIds': {}", json);
         assert!(json.contains("\"filterApplied\""), "Expected 'filterApplied': {}", json);
         assert!(json.contains("\"activeDeleteModalNoteId\""), "Expected 'activeDeleteModalNoteId': {}", json);

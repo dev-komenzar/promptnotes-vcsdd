@@ -306,16 +306,238 @@ pub fn compose_state_for_request_new_note(note_id: &str) -> EditingSessionStateD
 }
 
 /// PROP-IPC-017 — Returns Editing for select_past_note.
-/// REQ-IPC-014: isDirty: false, focusedBlockId: null, isNoteEmpty: body.is_empty().
-pub fn compose_state_for_select_past_note(note_id: &str, body: &str) -> EditingSessionStateDto {
+/// REQ-IPC-014 / REQ-FEED-025: Takes optional parsed blocks (not raw body).
+///   - None            → ケース 1 (note not found): focusedBlockId: null, isNoteEmpty: true
+///   - Some(vec![])    → ケース 3 (defensive): focusedBlockId: null, isNoteEmpty: true
+///   - Some(non-empty) → ケース 2: focusedBlockId: blocks[0].id, isNoteEmpty: false
+pub fn compose_state_for_select_past_note(
+    note_id: &str,
+    blocks: Option<Vec<DtoBlock>>,
+) -> EditingSessionStateDto {
+    let (focused_block_id, is_note_empty) = match &blocks {
+        None => (None, true),
+        Some(b) if b.is_empty() => (None, true),
+        Some(b) => (Some(b[0].id.clone()), false),
+    };
     EditingSessionStateDto::Editing {
         current_note_id: note_id.to_string(),
-        focused_block_id: None,
+        focused_block_id,
         is_dirty: false,
-        is_note_empty: body.is_empty(),
+        is_note_empty,
         last_save_result: None,
-        blocks: None,
+        blocks,
     }
+}
+
+// ── BlockParseError ───────────────────────────────────────────────────────────
+
+#[derive(Debug)]
+pub struct BlockParseError(pub String);
+
+// ── parse_markdown_to_blocks ──────────────────────────────────────────────────
+
+/// REQ-FEED-025: Parse a markdown body string into a Vec<DtoBlock>.
+///
+/// Non-empty invariant: empty input returns vec![DtoBlock(paragraph, "")].
+/// Matches TS parseMarkdownToBlocks output structure (type + content equivalence).
+///
+/// Block type detection (in priority order per line/section):
+///   `# `  → heading-1
+///   `## ` → heading-2
+///   `### `→ heading-3
+///   `- `  → bullet
+///   `1. ` (digit + `. `) → numbered
+///   `> `  → quote
+///   `---` alone → divider
+///   ` ``` ` fence (opening) → code (multi-line, content joined)
+///   otherwise → paragraph
+///
+/// Multi-paragraph: blank lines separate logical blocks for non-code types.
+pub fn parse_markdown_to_blocks(body: &str) -> Result<Vec<DtoBlock>, BlockParseError> {
+    if body.is_empty() {
+        return Ok(vec![DtoBlock {
+            id: "block-0".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: String::new(),
+        }]);
+    }
+
+    let mut blocks: Vec<DtoBlock> = Vec::new();
+    let mut block_index: usize = 0;
+    let lines: Vec<&str> = body.lines().collect();
+    let mut i = 0;
+
+    while i < lines.len() {
+        let line = lines[i];
+
+        // Code fence detection
+        if line.trim_start().starts_with("```") {
+            let mut code_lines: Vec<&str> = Vec::new();
+            i += 1;
+            while i < lines.len() && !lines[i].trim_start().starts_with("```") {
+                code_lines.push(lines[i]);
+                i += 1;
+            }
+            // Skip closing fence if present
+            if i < lines.len() {
+                i += 1;
+            }
+            let content = code_lines.join("\n");
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Code,
+                content,
+            });
+            block_index += 1;
+            continue;
+        }
+
+        // Divider
+        if line.trim() == "---" {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Divider,
+                content: String::new(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Blank line: skip (paragraph separator)
+        if line.trim().is_empty() {
+            i += 1;
+            continue;
+        }
+
+        // Heading-3 (must check before heading-2 and heading-1)
+        if let Some(content) = line.strip_prefix("### ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Heading3,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Heading-2
+        if let Some(content) = line.strip_prefix("## ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Heading2,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Heading-1
+        if let Some(content) = line.strip_prefix("# ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Heading1,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Bullet
+        if let Some(content) = line.strip_prefix("- ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Bullet,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Quote
+        if let Some(content) = line.strip_prefix("> ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Quote,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Numbered list: digit(s) + ". "
+        if line.len() >= 3 {
+            let dot_pos = line.find(". ");
+            if let Some(pos) = dot_pos {
+                if pos > 0 && line[..pos].chars().all(|c| c.is_ascii_digit()) {
+                    let content = line[pos + 2..].to_string();
+                    blocks.push(DtoBlock {
+                        id: format!("block-{}", block_index),
+                        block_type: BlockTypeDto::Numbered,
+                        content,
+                    });
+                    block_index += 1;
+                    i += 1;
+                    continue;
+                }
+            }
+        }
+
+        // Paragraph: accumulate consecutive non-blank, non-special lines
+        let mut para_lines: Vec<&str> = Vec::new();
+        while i < lines.len() {
+            let current = lines[i];
+            // Stop at blank line or special-prefix line
+            if current.trim().is_empty() {
+                break;
+            }
+            if current.trim_start().starts_with("```")
+                || current.trim() == "---"
+                || current.starts_with("### ")
+                || current.starts_with("## ")
+                || current.starts_with("# ")
+                || current.starts_with("- ")
+                || current.starts_with("> ")
+            {
+                break;
+            }
+            // Check numbered list prefix
+            if current.len() >= 3 {
+                if let Some(pos) = current.find(". ") {
+                    if pos > 0 && current[..pos].chars().all(|c| c.is_ascii_digit()) {
+                        break;
+                    }
+                }
+            }
+            para_lines.push(current);
+            i += 1;
+        }
+        if !para_lines.is_empty() {
+            let content = para_lines.join("\n");
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Paragraph,
+                content,
+            });
+            block_index += 1;
+        }
+    }
+
+    // Non-empty invariant: if no blocks were produced, return one empty paragraph.
+    if blocks.is_empty() {
+        blocks.push(DtoBlock {
+            id: "block-0".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: String::new(),
+        });
+    }
+
+    Ok(blocks)
 }
 
 // ── Payload helper (singular form) ────────────────────────────────────────────
@@ -722,7 +944,7 @@ mod tests {
 
     #[test]
     fn make_payload_editing_state() {
-        let state = compose_state_for_select_past_note("/v/n.md", "hello");
+        let state = compose_state_for_select_past_note("/v/n.md", None);
         let payload = make_editing_state_changed_payload(&state);
         let json = serde_json::to_string(&payload).expect("serialize");
         assert!(json.contains("\"editing\""));
@@ -775,5 +997,121 @@ mod tests {
             EditingSessionStateDto::Editing { is_note_empty, .. } => assert!(is_note_empty),
             _ => panic!("Expected Editing"),
         }
+    }
+
+    // ── compose_state_for_select_past_note (new signature) ───────────────
+
+    #[test]
+    fn compose_select_past_note_none_gives_empty_state() {
+        let state = compose_state_for_select_past_note("n1", None);
+        match state {
+            EditingSessionStateDto::Editing { blocks, focused_block_id, is_note_empty, .. } => {
+                assert_eq!(blocks, None);
+                assert_eq!(focused_block_id, None);
+                assert!(is_note_empty);
+            }
+            _ => panic!("Expected Editing"),
+        }
+    }
+
+    #[test]
+    fn compose_select_past_note_some_blocks_populates_focused() {
+        let b = vec![DtoBlock { id: "b1".to_string(), block_type: BlockTypeDto::Paragraph, content: "hi".to_string() }];
+        let state = compose_state_for_select_past_note("n1", Some(b.clone()));
+        match state {
+            EditingSessionStateDto::Editing { blocks, focused_block_id, is_note_empty, .. } => {
+                assert_eq!(blocks, Some(b));
+                assert_eq!(focused_block_id, Some("b1".to_string()));
+                assert!(!is_note_empty);
+            }
+            _ => panic!("Expected Editing"),
+        }
+    }
+
+    // ── parse_markdown_to_blocks ──────────────────────────────────────────
+
+    #[test]
+    fn parse_markdown_to_blocks_empty_returns_single_paragraph() {
+        let blocks = parse_markdown_to_blocks("").expect("Ok");
+        assert_eq!(blocks.len(), 1);
+        assert_eq!(blocks[0].content, "");
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Paragraph);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_single_paragraph() {
+        let blocks = parse_markdown_to_blocks("hello world").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].content, "hello world");
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Paragraph);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_heading1() {
+        let blocks = parse_markdown_to_blocks("# Title").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Heading1);
+        assert_eq!(blocks[0].content, "Title");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_heading2() {
+        let blocks = parse_markdown_to_blocks("## Sub").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Heading2);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_heading3() {
+        let blocks = parse_markdown_to_blocks("### Third").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Heading3);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_bullet() {
+        let blocks = parse_markdown_to_blocks("- item one").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Bullet);
+        assert_eq!(blocks[0].content, "item one");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_numbered() {
+        let blocks = parse_markdown_to_blocks("1. first").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Numbered);
+        assert_eq!(blocks[0].content, "first");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_quote() {
+        let blocks = parse_markdown_to_blocks("> quote text").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Quote);
+        assert_eq!(blocks[0].content, "quote text");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_divider() {
+        let blocks = parse_markdown_to_blocks("---").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Divider);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_code() {
+        let blocks = parse_markdown_to_blocks("```\ncode here\n```").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Code);
+        assert_eq!(blocks[0].content, "code here");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_multiple_paragraphs() {
+        let blocks = parse_markdown_to_blocks("first\n\nsecond").expect("Ok");
+        assert!(blocks.len() >= 2, "expected >=2 blocks, got {}", blocks.len());
+        assert_eq!(blocks[0].content, "first");
+        assert_eq!(blocks[1].content, "second");
     }
 }

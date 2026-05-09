@@ -35,7 +35,7 @@
   let feedViewState = $state<FeedViewState>({
     editingStatus: "idle",
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: [],
     loadingStatus: "loading",
     activeDeleteModalNoteId: null,
@@ -63,7 +63,7 @@
         if (vaultPath) {
           currentVaultPath = vaultPath;
           const snapshot = await invoke<{
-            editing: { status: string; currentNoteId: string | null; pendingNextNoteId: string | null };
+            editing: { status: string; currentNoteId: string | null; pendingNextFocus: { noteId: string; blockId: string } | null };
             feed: { visibleNoteIds: string[]; filterApplied: boolean };
             delete: { activeDeleteModalNoteId: string | null; lastDeletionError: null };
             noteMetadata: Record<string, { body: string; createdAt: number; updatedAt: number; tags: string[] }>;
@@ -73,7 +73,7 @@
           feedViewState = {
             editingStatus: (snapshot.editing.status as FeedViewState["editingStatus"]) ?? "idle",
             editingNoteId: snapshot.editing.currentNoteId,
-            pendingNextNoteId: snapshot.editing.pendingNextNoteId,
+            pendingNextFocus: snapshot.editing.pendingNextFocus,
             visibleNoteIds: snapshot.feed.visibleNoteIds,
             allNoteIds: snapshot.feed.visibleNoteIds,
             loadingStatus: "ready",

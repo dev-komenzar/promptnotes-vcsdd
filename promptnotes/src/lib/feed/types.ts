@@ -36,10 +36,13 @@ export type NoteDeletionFailureReason = 'permission' | 'lock' | 'unknown';
  * FIND-SPEC-3-01: lastDeletionError uses object form to carry optional detail,
  * matching FeedDomainSnapshot.delete.lastDeletionError for clean mirroring.
  */
+/** REQ-FEED-026: { noteId, blockId } pair identifying both the pending note and its focus target. */
+export type PendingNextFocus = { readonly noteId: string; readonly blockId: string };
+
 export type FeedViewState = {
   readonly editingStatus: 'idle' | 'editing' | 'saving' | 'switching' | 'save-failed';
   readonly editingNoteId: string | null;
-  readonly pendingNextNoteId: string | null;
+  readonly pendingNextFocus: PendingNextFocus | null;
   readonly visibleNoteIds: readonly string[];
   readonly loadingStatus: 'loading' | 'ready';
   readonly activeDeleteModalNoteId: string | null;
@@ -91,7 +94,7 @@ export type FeedDomainSnapshot = {
   readonly editing: {
     readonly status: 'idle' | 'editing' | 'saving' | 'switching' | 'save-failed';
     readonly currentNoteId: string | null;
-    readonly pendingNextNoteId: string | null;
+    readonly pendingNextFocus: PendingNextFocus | null;
   };
   readonly feed: {
     readonly visibleNoteIds: readonly string[];

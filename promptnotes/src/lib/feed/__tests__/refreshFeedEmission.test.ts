@@ -59,7 +59,7 @@ const arbNoteMetadata: fc.Arbitrary<Readonly<Record<string, import('$lib/feed/ty
 const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   editingStatus: arbEditingStatus,
   editingNoteId: arbNoteIdOrNull,
-  pendingNextNoteId: arbNoteIdOrNull,
+  pendingNextFocus: fc.constant(null),
   visibleNoteIds: arbVisibleNoteIds,
   loadingStatus: arbLoadingStatus,
   activeDeleteModalNoteId: arbNoteIdOrNull,
@@ -68,6 +68,8 @@ const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   tagAutocompleteVisibleFor: fc.constant(null),
   activeFilterTags: fc.constant([] as readonly string[]),
   allNoteIds: arbVisibleNoteIds,
+  searchQuery: fc.constant(''),
+  sortDirection: fc.constantFrom('asc' as const, 'desc' as const),
 });
 
 // All 5 cause kinds
@@ -91,7 +93,7 @@ const arbFeedDomainSnapshot: fc.Arbitrary<FeedDomainSnapshot> = fc.record({
   editing: fc.record({
     status: arbEditingStatus,
     currentNoteId: arbNoteIdOrNull,
-    pendingNextNoteId: arbNoteIdOrNull,
+    pendingNextFocus: fc.constant(null),
   }),
   feed: fc.record({
     visibleNoteIds: arbVisibleNoteIds,

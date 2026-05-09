@@ -29,7 +29,7 @@ describe('PROP-TAG-023: FeedViewState has tag-related fields', () => {
   const minimalState: FeedViewState = {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: [],
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
@@ -38,6 +38,8 @@ describe('PROP-TAG-023: FeedViewState has tag-related fields', () => {
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
     allNoteIds: [],
+    searchQuery: '',
+    sortDirection: 'desc',
   };
 
   test('FeedViewState accepts tagAutocompleteVisibleFor: string | null', () => {

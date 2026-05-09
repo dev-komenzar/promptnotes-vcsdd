@@ -46,7 +46,7 @@ function makeViewState(overrides: Partial<SearchFeedViewState> = {}): SearchFeed
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: [],
     allNoteIds: [],
     loadingStatus: 'ready',

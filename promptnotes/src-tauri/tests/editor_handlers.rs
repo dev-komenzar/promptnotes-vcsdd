@@ -332,8 +332,12 @@ fn cancel_switch_payload_is_editing_with_dirty() {
 fn make_editing_state_changed_payload_idempotent() {
     // PROP-106: Sprint 8 — make_editing_state_changed_payload is a pure constructor —
     // calling it twice with same state produces identical output.
-    let state1 = compose_state_for_select_past_note("/v/n.md", "b");
-    let state2 = compose_state_for_select_past_note("/v/n.md", "b");
+    let blocks1 = promptnotes_lib::editor::parse_markdown_to_blocks("b")
+        .expect("parse must succeed");
+    let blocks2 = promptnotes_lib::editor::parse_markdown_to_blocks("b")
+        .expect("parse must succeed");
+    let state1 = compose_state_for_select_past_note("/v/n.md", Some(blocks1));
+    let state2 = compose_state_for_select_past_note("/v/n.md", Some(blocks2));
     let p1 = make_editing_state_changed_payload(&state1);
     let p2 = make_editing_state_changed_payload(&state2);
     let j1 = serde_json::to_string(&p1).expect("serialize");
