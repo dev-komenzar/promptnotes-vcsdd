@@ -1018,9 +1018,17 @@
         "iteration": 2,
         "sprint": 3,
         "iter1Verdict": "FAIL",
-        "iter1Findings": ["FIND-S3-001", "FIND-S3-002", "FIND-S3-003", "FIND-S3-004", "FIND-S3-005"],
+        "iter1Findings": [
+          "FIND-S3-001",
+          "FIND-S3-002",
+          "FIND-S3-003",
+          "FIND-S3-004",
+          "FIND-S3-005"
+        ],
         "iter2Verdict": "PASS",
-        "iter2Findings": ["FIND-S3-006 (low, resolved)"],
+        "iter2Findings": [
+          "FIND-S3-006 (low, resolved)"
+        ],
         "scope": "spec patch only — REQ-FEED-024 appended, no scope reduction"
       }
     },
@@ -1214,7 +1222,9 @@
           "criteriaCoverage": {
             "verdict": "PASS",
             "allCriteriaEvaluated": true,
-            "evaluatedCriteria": ["REQ-FEED-024 acceptance criteria × 3"]
+            "evaluatedCriteria": [
+              "REQ-FEED-024 acceptance criteria × 3"
+            ]
           },
           "duplicateDetection": {
             "verdict": "PASS",
@@ -1246,97 +1256,6 @@
             "FIND-S3-101..103 (implementation review)"
           ]
         }
-      }
-    },
-          "findingSpecificity": {
-            "verdict": "PASS",
-            "allFilePathsValid": true,
-            "checkedCount": 26
-          },
-          "criteriaCoverage": {
-            "verdict": "PASS",
-            "allCriteriaEvaluated": true,
-            "sprint1EvaluatedCriteria": [
-              "CRIT-001",
-              "CRIT-002",
-              "CRIT-003",
-              "CRIT-004",
-              "CRIT-005",
-              "CRIT-006",
-              "CRIT-007",
-              "CRIT-008",
-              "CRIT-009",
-              "CRIT-010"
-            ],
-            "sprint2EvaluatedCriteria": [
-              "CRIT-100",
-              "CRIT-101",
-              "CRIT-102",
-              "CRIT-103",
-              "CRIT-104",
-              "CRIT-105",
-              "CRIT-106"
-            ]
-          },
-          "duplicateDetection": {
-            "verdict": "PASS",
-            "sprint1Regressions": 0,
-            "sprint2Duplicates": 0,
-            "sprint1RegressionDetected": false
-          }
-        },
-        "verticalSlice": {
-          "verdict": "PASS",
-          "rustHandlers": [
-            "fs_trash_file",
-            "select_past_note",
-            "request_note_deletion",
-            "confirm_note_deletion",
-            "cancel_note_deletion",
-            "feed_initial_state"
-          ],
-          "appShellMount": {
-            "feedSidebar": "aside.feed-sidebar at +page.svelte:96",
-            "editorMain": "div.editor-main at +page.svelte:104",
-            "gridTemplateColumns": "line 137: 320px 1fr",
-            "height100vh": "line 138: 100vh",
-            "whisperBorder": "line 144: #e9e9e7",
-            "warmNeutral": "line 145: #f7f7f5"
-          },
-          "tauriDevMount": "PASS — Rust PID 686487 + Vite HTTP 200 + 4 DOM tests",
-          "combinedTests": "cargo:27, bun:1475, vitest:195"
-        },
-        "formalHardeningArtifacts": {
-          "verificationReport": true,
-          "verificationReportSprint2": true,
-          "securityReport": true,
-          "purityAudit": true,
-          "executionEvidence": [
-            "security-results/security-audit-raw.txt",
-            "security-results/security-audit-sprint2-raw.txt"
-          ]
-        },
-        "traceabilityCoverage": {
-          "verdict": "PASS",
-          "totalFindingArtifacts": 26,
-          "beadsCreated": 26,
-          "resolvedBeads": 22,
-          "openBeads": 4,
-          "openFindingIds": [
-            "FIND-S2-08",
-            "FIND-S2-09",
-            "FIND-S2-10",
-            "FIND-S2-11"
-          ],
-          "openFindingsJustification": "Deferred: FIND-S2-08/09 spec text drift (medium, not functional), FIND-S2-10/11 low tradeoffs (no NFR bounds in spec). Approved at Phase 6 convergence."
-        },
-        "approvedDeferrals": [
-          "FIND-S2-08",
-          "FIND-S2-09",
-          "FIND-S2-10",
-          "FIND-S2-11",
-          "screenshot-gap"
-        ]
       }
     }
   },
