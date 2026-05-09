@@ -2,7 +2,7 @@
   "featureName": "ui-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1b",
+  "currentPhase": "1c",
   "phaseHistory": [
     {
       "from": "init",
@@ -408,6 +408,27 @@
       "timestamp": "2026-05-09T00:30:00Z",
       "reason": "Sprint 8 Phase 1a complete; advancing to verification architecture",
       "sprint": 8
+    },
+    {
+      "from": "1c",
+      "to": "1a",
+      "timestamp": "2026-05-09T01:00:00Z",
+      "reason": "Phase 1c iter-1 FAIL: 14 findings (2C+8M+4m); routing to 1a/1b",
+      "sprint": 8
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-09T01:30:00Z",
+      "reason": "Sprint 8 spec patches complete (FIND-073..086 addressed); advancing",
+      "sprint": 8
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-09T01:35:00Z",
+      "reason": "Sprint 8 verification arch updated (PROP-IPC-013..023 added)",
+      "sprint": 8
     }
   ],
   "iterations": {
@@ -417,7 +438,7 @@
     "6": 2,
     "1a": 3,
     "1b": 2,
-    "1c": 4,
+    "1c": 5,
     "2a": 6,
     "2b": 6,
     "2c": 5,
@@ -3050,6 +3071,396 @@
         "createdInPhase": "1b",
         "externalId": "PROP-IPC-012",
         "sprint": 8
+      },
+      {
+        "beadId": "BEAD-219",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-073.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-190"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-073",
+        "sprint": 8,
+        "severity": "critical",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-220",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-074.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-191",
+          "BEAD-247"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-074",
+        "sprint": 8,
+        "severity": "critical",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-221",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-075.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-181",
+          "BEAD-212"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-075",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-222",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-076.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-183",
+          "BEAD-182",
+          "BEAD-211",
+          "BEAD-212"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-076",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-223",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-077.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-244"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-077",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-224",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-078.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-217",
+          "BEAD-246"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-078",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-225",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-079.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-233",
+          "BEAD-234",
+          "BEAD-235",
+          "BEAD-236"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-079",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-226",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-080.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-193"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-080",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-227",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-081.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-242",
+          "BEAD-243"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-081",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-228",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-082.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-237",
+          "BEAD-238",
+          "BEAD-239",
+          "BEAD-240",
+          "BEAD-241"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-082",
+        "sprint": 8,
+        "severity": "major",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-229",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-083.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-190"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-083",
+        "sprint": 8,
+        "severity": "minor",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-230",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-084.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-216"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-084",
+        "sprint": 8,
+        "severity": "minor",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-231",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-085.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-215",
+          "BEAD-218"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-085",
+        "sprint": 8,
+        "severity": "minor",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-232",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-editor/reviews/spec/iteration-6/output/findings/FIND-086.json",
+        "status": "resolved-iter-2",
+        "linkedBeads": [
+          "BEAD-246"
+        ],
+        "createdAt": "2026-05-09T01:00:00Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-086",
+        "sprint": 8,
+        "severity": "minor",
+        "resolvedAt": "2026-05-09T01:30:00Z"
+      },
+      {
+        "beadId": "BEAD-233",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1a",
+        "externalId": "EC-IPC-011",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-234",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1a",
+        "externalId": "EC-IPC-012",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-235",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1a",
+        "externalId": "EC-IPC-013",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-236",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1a",
+        "externalId": "EC-IPC-014",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-237",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-013",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-238",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-014",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-239",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-015",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-240",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-016",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-241",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-017",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-242",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-018",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-243",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-019",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-244",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-020",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-245",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-021",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-246",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-022",
+        "sprint": 8
+      },
+      {
+        "beadId": "BEAD-247",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T01:30:00Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-IPC-023",
+        "sprint": 8
       }
     ]
   },
@@ -3304,5 +3715,5 @@
   },
   "sprintCount": 8,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-09T00:30:00Z"
+  "updatedAt": "2026-05-09T01:30:00Z"
 }

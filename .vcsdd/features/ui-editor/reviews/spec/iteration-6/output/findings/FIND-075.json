@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-075",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-IPC-005 (saving variant) is purely exclusionary — it lists ONLY fields that shall NOT appear, never enumerating the positive field set. In contrast REQ-IPC-004 / 006 / 007 use the positive 'shall contain' phrasing for the editing / switching / save-failed arms. The intended positive set for the `saving` arm (`status`, `currentNoteId`, `isNoteEmpty`, optional `blocks`) is recoverable from §10 (behavioral-spec.md:978-991) and TS types.ts:138-144, but is never normatively asserted as a Sprint 8 REQ-IPC. PROP-IPC-004 covers `editing` keys but NO PROP-IPC explicitly enumerates the saving-variant key set; PROP-IPC-005 covers SaveFailed only. As a result, an implementation that omits `isNoteEmpty` from `saving` would not violate REQ-IPC-005 (which only forbids fields), would not violate REQ-IPC-003 (which requires `isNoteEmpty` on every non-`idle` variant — but that REQ already does the job, exposing the redundant negative phrasing of REQ-IPC-005).",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1209",
+      "snippet": "REQ-IPC-005 — When an emitted state is the saving variant, the JSON object shall NOT contain isDirty, focusedBlockId, pendingNextFocus, priorFocusedBlockId, lastSaveResult, or lastSaveError."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1208",
+      "snippet": "REQ-IPC-004 — When an emitted state is the editing variant, the JSON object shall additionally contain focusedBlockId: string | null, isDirty: boolean, and lastSaveResult: \"success\" | null."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "570",
+      "snippet": "PROP-IPC-004 | 1 (unit) | The `Editing` variant serializes the keys status, currentNoteId, focusedBlockId, isDirty, isNoteEmpty, lastSaveResult (and optionally blocks)."
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-005", "PROP-IPC-004"],
+  "recommendation": "Rewrite REQ-IPC-005 in the positive form: 'When an emitted state is the saving variant, the JSON object shall contain exactly the keys `status`, `currentNoteId`, `isNoteEmpty`, and (when `Some`) `blocks`.' Add a corresponding PROP-IPC for saving-variant key set (mirror PROP-IPC-004 / 005). Apply the same review to REQ-IPC-006 / 007 to ensure every variant has positive enumeration plus a 'no other keys' clause."
+}

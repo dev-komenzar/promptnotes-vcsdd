@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-082",
+  "dimension": "verification_architecture",
+  "category": "test_coverage",
+  "severity": "major",
+  "description": "REQ-IPC-013 mandates that 'all emit sites in editor.rs (`save_note_and_emit`, `discard_current_session`, `cancel_switch`, `request_new_note`) shall construct payloads through the new variant-aware helper API'. PROP-IPC-012 (verification-architecture.md:578) is the corresponding obligation. However, REQ-IPC-013 lists FOUR emit sites, omitting `select_past_note` (in `feed.rs`). REQ-IPC-014 separately covers `select_past_note`. PROP-IPC-012 only loosely references 'every emit site listed in REQ-IPC-013 / REQ-IPC-014'. There is NO direct PROP-IPC mapping for REQ-IPC-018 (`request_new_note` editing-variant emit), REQ-IPC-016 (`discard_current_session` idle-only emit), or REQ-IPC-014's specific field-set requirements (focusedBlockId/isDirty/lastSaveResult/isNoteEmpty). PROP-IPC cross-reference table line 595 maps PROP-IPC-002 to REQ-IPC-016 — but PROP-IPC-002 only checks the literal idle JSON, not that `discard_current_session`'s ACTUAL emit produces it. Per-handler emit-site coverage is not a property; it is asserted only by structural review.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1226",
+      "snippet": "REQ-IPC-013 — All emit sites in promptnotes/src-tauri/src/editor.rs (save_note_and_emit, discard_current_session, cancel_switch, request_new_note) shall construct payloads through the new variant-aware helper API."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "578",
+      "snippet": "PROP-IPC-012 | 1 (caller emit-site) | Every emit site listed in REQ-IPC-013 / REQ-IPC-014 calls only the new helper API; no test or production code path constructs a flat {\"status\": ..., \"isDirty\": ...} object directly. | grep/CI guard: tests/editor_handlers.rs, tests/feed_handlers.rs, src-tauri/src/**/*.rs shall NOT match the legacy 6-flat-key set; verified by a grep-driven test or by structural review during Phase 5."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "590-606",
+      "snippet": "(PROP cross-reference table: REQ-IPC-014 / REQ-IPC-016 / REQ-IPC-018 do not get dedicated handler-emit PROPs; only the data-shape PROPs)"
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-013", "REQ-IPC-014", "REQ-IPC-016", "REQ-IPC-017", "REQ-IPC-018", "PROP-IPC-012"],
+  "recommendation": "Add per-handler integration PROPs that drive the actual handlers and assert on the emitted JSON: e.g., 'PROP-IPC-013 — Calling `discard_current_session(app, ...)` emits exactly one `editing_session_state_changed` event whose payload deserializes to `EditingSessionStateDto::Idle`.' One PROP per handler in editor.rs (`trigger_idle_save` Ok / Err, `trigger_blur_save` Ok / Err, `retry_save` Ok / Err, `discard_current_session`, `cancel_switch`, `request_new_note`) plus `select_past_note` in feed.rs. These are achievable with a mock AppHandle / Emitter (Tauri's `mocks` feature). Without per-handler PROPs the wire contract is unenforced at the call-site level."
+}

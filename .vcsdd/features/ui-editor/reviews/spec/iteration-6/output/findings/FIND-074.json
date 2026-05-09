@@ -1,0 +1,31 @@
+{
+  "findingId": "FIND-074",
+  "dimension": "wire_contract_consistency",
+  "category": "spec_gap",
+  "severity": "critical",
+  "description": "REQ-IPC-015 mandates that `cancel_switch` emit the `editing` variant with `focusedBlockId: null`, deferring the prior-block restoration to 'the TS reducer ... resolve from its retained priorFocusedBlockId'. However the existing spec (RD-018, behavioral-spec.md:920; REQ-EDIT-029, line 1134) places `priorFocusedBlockId` ONLY on the `save-failed` arm of the DTO union (TS types.ts:154-163). There is no documented mechanism by which the TS reducer would 'retain' priorFocusedBlockId across the `save-failed → switching → editing` (cancel_switch) transition: when the next snapshot arrives as `editing`, PROP-EDIT-040 (verification-architecture.md:209) prescribes the reducer to set `priorFocusedBlockId → null` (idle default fallback for fields absent from the editing arm). In other words, the TS reducer would NOT retain priorFocusedBlockId on the editing arm, so the cancel-switch focus restoration would be lost. Sprint 8 imports a behavior dependency (TS reducer retention) without amending the reducer obligations or extending the editing-arm DTO field set.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1228",
+      "snippet": "REQ-IPC-015 — cancel_switch shall emit the editing variant for the cancelled currentNoteId, with isDirty: true, focusedBlockId: null, lastSaveResult: null, and isNoteEmpty: false. (RD-018: the prior block id restoration on Cancel is owned by the TS reducer; the Rust handler does not have access to the prior focus and shall emit null so the TS side can resolve from its retained priorFocusedBlockId.)"
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "920",
+      "snippet": "RD-018 | SaveFailedState focus restoration | The Cancel button restores focus to the block identified by EditingSessionStateDto.save-failed.priorFocusedBlockId (a DTO-only projection field populated at the IPC emission layer from the preceding EditingState.focusedBlockId)."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "209",
+      "snippet": "PROP-EDIT-040 ... For fields absent from the source variant, the reducer sets them to their idle default: currentNoteId → null, focusedBlockId → null, priorFocusedBlockId → null, isDirty → false, isNoteEmpty → true, pendingNextFocus → null, lastSaveError → null, lastSaveResult → null."
+    },
+    {
+      "path": "promptnotes/src/lib/editor/types.ts",
+      "lineRange": "126-163",
+      "snippet": "export type EditingSessionStateDto = | { status: 'idle' } | { status: 'editing'; ... } | ... | { status: 'save-failed'; ... priorFocusedBlockId: string | null; ... }"
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-015", "REQ-EDIT-029", "EC-EDIT-014"],
+  "recommendation": "Specify the cancel-switch focus restoration mechanism explicitly. Options: (a) Add `focusedBlockId` to the `editing` arm of the cancel_switch payload (Rust caches the prior focus per session — but Rust has no state today); (b) extend the TS reducer with an obligation 'when applying DomainSnapshotReceived for an `editing` arm whose preceding state was `save-failed`, copy `priorFocusedBlockId` of the prior state into `focusedBlockId` of the new state' and ADD a new PROP-IPC for it; or (c) restructure REQ-IPC-015 so cancel_switch emits a `save-failed → editing` transition with priorFocusedBlockId carried explicitly as a transient field. Whichever path, amend PROP-EDIT-040's idle-default fallback table accordingly and add a coverage row in §6 for the cancel-switch focus restoration property."
+}

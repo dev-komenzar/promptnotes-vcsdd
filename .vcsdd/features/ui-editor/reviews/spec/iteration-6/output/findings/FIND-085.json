@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-085",
+  "dimension": "out_of_scope_discipline",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "§15.5 says variant-aware helpers OR a single helper taking `&EditingSessionStateDto` are both acceptable. But PROP-IPC-009 (verification-architecture.md:575) says `make_editing_state_changed_payload`-family helpers wrap the variant in `{\"state\": <variant>}` (plural 'helpers'), and PROP-IPC-012 says 'every emit site ... calls only the new helper API'. The §15.5 alternative of 'a single helper' would not match the plural 'family' phrasing. Also, the Sprint 8 instruction document (`docs/tasks/ipc-payload-rust-block-migration.md`) is referenced as authoritative but Sprint 8 spec doesn't pin which helper-API shape conforms to which PROP-IPC obligation. Implementers may unintentionally diverge from the helper API and only catch it during Phase 3 review.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1263",
+      "snippet": "make_editing_state_changed_payload(...) (8 positional args, all required) → variant-aware helpers (e.g. make_idle_payload(), make_editing_payload(...), make_saving_payload(...), make_switching_payload(...), make_save_failed_payload(...)) OR a single helper that takes &EditingSessionStateDto enum value. Either shape is acceptable as long as REQ-IPC-013 (no flat construction at emit sites) holds."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "575",
+      "snippet": "PROP-IPC-009 | 1 (unit) | make_editing_state_changed_payload-family helpers wrap the variant in {\"state\": <variant>} exactly once."
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-013", "PROP-IPC-009", "PROP-IPC-012"],
+  "recommendation": "Pin one helper-API shape in §15.5 (recommend the single-helper form: `pub fn make_editing_state_changed_payload(state: &EditingSessionStateDto) -> serde_json::Value` — it composes naturally with the enum and minimizes duplicate emit-site code) and rephrase PROP-IPC-009 / PROP-IPC-012 to reference the singular helper. If the alternative is preserved, add a discriminator ('whichever helper shape is chosen, every emit site shall use it consistently — mixed use is a Phase 5 audit failure')."
+}

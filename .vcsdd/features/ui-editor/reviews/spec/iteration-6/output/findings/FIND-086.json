@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-086",
+  "dimension": "wire_contract_consistency",
+  "category": "verification_tool_mismatch",
+  "severity": "minor",
+  "description": "REQ-IPC-020 mandates that 'the JSON output of the Rust serializer, when fed into a JSON.parse-then-EditingSessionStateDto narrowing in TypeScript, shall successfully match exactly one of the 5 union arms with NO extra fields the TS EditingSessionStateDto does not declare.' TypeScript discriminated-union narrowing does NOT enforce the 'no extra fields' constraint at runtime: object literals with extra properties pass narrowing because TS narrowing only checks discriminant + structural shape. Excess-property checks (the TS feature that would catch extra fields) only fire on object-literal assignments and inline arguments, not on values arriving from `JSON.parse`. So REQ-IPC-020's 'no extra fields' guarantee is unverifiable by the proposed PROP-IPC-011 (which uses runtime narrowing). The constraint is real and important (extra fields would suggest Rust drift), but the verification mechanism described doesn't cover it.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1236",
+      "snippet": "REQ-IPC-020 — ... the JSON output of the Rust serializer, when fed into a JSON.parse-then-EditingSessionStateDto narrowing in TypeScript, shall successfully match exactly one of the 5 union arms with no extra fields the TS EditingSessionStateDto does not declare."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "577",
+      "snippet": "PROP-IPC-011 ... a TypeScript test that performs a runtime narrowing on the EditingSessionStateDto discriminated union (switch (state.status) { ... }) with an exhaustive check (assertNever); no fixture causes an exhaustiveness failure or an unexpected key."
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-020", "PROP-IPC-011"],
+  "recommendation": "Replace the 'no extra fields' guarantee with a runtime check: in PROP-IPC-011 the TS test should explicitly enumerate ALLOWED keys per variant and assert that `Object.keys(state)` is a subset (or equals, including optional `blocks`). E.g., for editing: `expect(new Set(Object.keys(state))).toBeSubsetOf(new Set(['status','currentNoteId','focusedBlockId','isDirty','isNoteEmpty','lastSaveResult','blocks']))`. Without explicit key-set comparison, the 'extra fields' bug class slips through."
+}

@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-077",
+  "dimension": "wire_contract_consistency",
+  "category": "spec_gap",
+  "severity": "major",
+  "description": "EC-IPC-006 / EC-IPC-007 / EC-IPC-008 all require that `priorFocusedBlockId`, `focusedBlockId`, and `pendingNextFocus` (the latter on save-failed) serialize as the literal `null` when None — i.e., the JSON key MUST be present with value `null`, NOT skipped. The Rust enum field for these in §15.5 is implied to be `Option<String>` / `Option<PendingNextFocusDto>`. By default `serde` serializes `Option::None` as JSON `null` (which is correct), BUT the spec is silent on the prohibition of `#[serde(skip_serializing_if = \"Option::is_none\")]` on these specific fields. §10.1 lists the Rust enum as 'Pure data definition with #[derive(Serialize, Deserialize)]', without forbidding the skip annotation. An implementer following the EXISTING `SaveErrorDto::reason` precedent (Rust editor.rs:46, which DOES use `skip_serializing_if`) would plausibly apply the same pattern to nullable focus fields, breaking EC-IPC-006/007/008.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1247-1249",
+      "snippet": "EC-IPC-006 | priorFocusedBlockId is null in save-failed: the JSON shall serialize the literal \"priorFocusedBlockId\":null (NOT skip), to match the TS narrowing of priorFocusedBlockId: string | null (always present).\nEC-IPC-007 | focusedBlockId is null in editing: the JSON shall serialize \"focusedBlockId\":null (always present, NOT skipped) ...\nEC-IPC-008 | pendingNextFocus is null in save-failed: the JSON shall serialize \"pendingNextFocus\":null (always present in this variant; NOT skipped)."
+    },
+    {
+      "path": "promptnotes/src-tauri/src/editor.rs",
+      "lineRange": "42-48",
+      "snippet": "#[derive(Serialize, Deserialize, Debug, Clone)]\n#[serde(rename_all = \"camelCase\")]\npub struct SaveErrorDto {\n    pub kind: String,\n    #[serde(skip_serializing_if = \"Option::is_none\")]\n    pub reason: Option<FsErrorDto>,\n}"
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "554",
+      "snippet": "promptnotes/src-tauri/src/editor.rs::EditingSessionStateDto (Rust enum) | pure (Tier 0 / data) | Pure data definition with #[derive(Serialize, Deserialize)]. No I/O, no clock, no random."
+    }
+  ],
+  "affectedRequirements": ["EC-IPC-006", "EC-IPC-007", "EC-IPC-008", "REQ-IPC-004", "REQ-IPC-007"],
+  "recommendation": "Add an explicit Sprint 8 prohibition in §15.5 or §10.1: 'The Rust fields `Editing::focused_block_id: Option<String>`, `SaveFailed::prior_focused_block_id: Option<String>`, and `SaveFailed::pending_next_focus: Option<PendingNextFocusDto>` MUST NOT carry `#[serde(skip_serializing_if = \"Option::is_none\")]`. Only `SaveErrorDto::reason` and the optional `blocks` field on each non-idle variant carry the skip annotation (per REQ-IPC-010 / REQ-IPC-011).' Add a Tier 0 grep audit to PROP-IPC-007 or as a new PROP-IPC: `grep` for `skip_serializing_if` next to `focused_block_id` / `prior_focused_block_id` / `pending_next_focus` should match zero hits."
+}

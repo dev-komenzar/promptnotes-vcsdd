@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-081",
+  "dimension": "wire_contract_consistency",
+  "category": "spec_gap",
+  "severity": "major",
+  "description": "REQ-IPC-009 says `DtoBlock` serializes as `{ id, type, content }` with `type` values mirroring TS BlockType (9 literals: `paragraph | heading-1..3 | bullet | numbered | code | quote | divider`). The Rust shape is `block_type: String` serialized under JSON key `type`. Nothing in Sprint 8 mandates ENUM validation on the Rust side: an upstream caller (or future deserializer) could place an arbitrary string in `block_type` (e.g., `\"hedaing-1\"` typo), which would silently cross the wire as `\"type\": \"hedaing-1\"`, reach the TS reducer, and land on `EditorViewState.blocks[].type: BlockType` — but `BlockType` is a literal union, so the JS object would be structurally typed correctly even though the value is invalid. There is NO compile-time or runtime validation closing this loophole. PROP-IPC-009 does not cover string validity; PROP-IPC-011's TS narrowing is on `status`, not `blocks[].type`.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1216",
+      "snippet": "REQ-IPC-009 — DtoBlock shall serialize as { \"id\": string, \"type\": string, \"content\": string }. The Rust block_type: String field shall serialize under the JSON key type. Permitted type values mirror the TS BlockType literal union (paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider)."
+    },
+    {
+      "path": "promptnotes/src/lib/editor/types.ts",
+      "lineRange": "29-38",
+      "snippet": "export type BlockType = | 'paragraph' | 'heading-1' | 'heading-2' | 'heading-3' | 'bullet' | 'numbered' | 'code' | 'quote' | 'divider';"
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-009", "PROP-IPC-009"],
+  "recommendation": "Replace `block_type: String` with a Rust enum `BlockTypeDto` carrying the 9 variants `Paragraph | Heading1 | Heading2 | Heading3 | Bullet | Numbered | Code | Quote | Divider` with `#[serde(rename_all = \"kebab-case\")]` (and `#[serde(rename = \"heading-1\")]` etc. for the heading numerics). This shifts validation to compile-time on the Rust side. Add a PROP-IPC for round-trip: `serde_json::from_str::<DtoBlock>(\"\\\"hedaing-1\\\"\")` shall return `Err`. Without an enum the contract is unenforceable from Rust."
+}

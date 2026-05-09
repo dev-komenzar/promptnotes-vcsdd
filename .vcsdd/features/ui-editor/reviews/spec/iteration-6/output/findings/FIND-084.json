@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-084",
+  "dimension": "verification_architecture",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "PROP-IPC-010 (verification-architecture.md:576) defines a Tier 2 round-trip property over a 'variant-cover set (one fixture per variant × {blocks=None, blocks=Some([])} × {priorFocusedBlockId=None, Some} × {pendingNextFocus=None, Some})'. The product space is 5 variants × 2 × 2 × 2 = 40 fixtures, but most variant arms don't carry the latter two dimensions (e.g., editing has neither priorFocusedBlockId nor pendingNextFocus; idle has none). The 'where applicable' qualifier is hand-wavy. Additionally, the `blocks=Some([nonEmpty])` case is omitted from the cover set — only `Some([])` and `None` are required. The TS BlockType enum has 9 variants; round-trip coverage on a non-empty `blocks` array is required to assert that DtoBlock's `type` round-trips correctly (see FIND-081). Tooling alternative ('explicit fixture-table iteration if proptest is not a dev-dependency') is unconstrained — a proptest fallback is non-trivial to scope to the same coverage.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "576",
+      "snippet": "PROP-IPC-010 | 2 (property / round-trip) | For every EditingSessionStateDto value v in the variant-cover set (one fixture per variant × {blocks=None, blocks=Some([])} × {priorFocusedBlockId=None, Some} × {pendingNextFocus=None, Some} where applicable), serde_json::from_str::<EditingSessionStateDto>(&serde_json::to_string(&v).unwrap()).unwrap() == v."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "611",
+      "snippet": "Tier 2: proptest round-trip in tests/editor_handlers.rs (PROP-IPC-010). If proptest is not yet a dev-dependency on this repo, the obligation is fulfilled with an explicit fixture-table iteration that enumerates the cover set; the choice is documented in the Phase 5 verifier report."
+    }
+  ],
+  "affectedRequirements": ["PROP-IPC-010", "REQ-IPC-009"],
+  "recommendation": "Specify the variant-cover set explicitly as a numbered table per variant (e.g., 'Editing fixtures: F1 [focusedBlockId=None, blocks=None], F2 [focusedBlockId=Some, blocks=None], F3 [focusedBlockId=Some, blocks=Some([])], F4 [focusedBlockId=Some, blocks=Some([Paragraph, Heading1, Code, Divider])], ...'). Include at least one fixture per variant with `blocks=Some([nonEmpty])` to cover BlockTypeDto round-trip. Drop the 'where applicable' qualifier — name the 14-or-so concrete fixtures."
+}
