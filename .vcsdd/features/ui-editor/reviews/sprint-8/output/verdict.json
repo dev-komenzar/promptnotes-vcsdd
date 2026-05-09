@@ -1,0 +1,140 @@
+{
+  "feature": "ui-editor",
+  "phase": 3,
+  "mode": "strict",
+  "sprint": 8,
+  "iteration": 1,
+  "reviewedAt": "2026-05-09T05:30:00Z",
+  "reviewContext": {
+    "reviewType": "implementation",
+    "contractPath": "contracts/sprint-8.md"
+  },
+  "overallVerdict": "PASS",
+  "summary": "Sprint 8 (Rust IPC payload migration to 5-arm tagged enum) — adversarial review of editor.rs, feed.rs::select_past_note, and the Sprint-8 test artefacts. Direct file inspection confirms the wire contract is faithfully realized: the EditingSessionStateDto enum has exactly the 5 spec-required arms with the correct per-variant key sets (REQ-IPC-001..007); PendingNextFocusDto / DtoBlock / SaveErrorDto / FsErrorDto / BlockTypeDto carry the prescribed serde attributes (REQ-IPC-008..010 + §15.5 BlockTypeDto enum); the focus-related Option fields on Editing/SaveFailed do NOT carry skip_serializing_if (§15.5 'Forbidden serde annotations'), while blocks and SaveErrorDto::reason are correctly skipped when None (REQ-IPC-011); the singular make_editing_state_changed_payload(state) helper is the only emit-side constructor and every emit site in editor.rs and feed.rs is preceded by a make_editing_state_changed_payload(...) call (REQ-IPC-012..018, PROP-IPC-012); the six compose_state_* helpers exist and are pure (no AppHandle, no I/O); the wire-fixtures.json file has exactly 14 entries covering all 5 statuses + the 4 BlockTypeDto variants required by the §10.2.1 cover set; the wire_audit.sh script implements all three required grep audits with both single-line and multi-line awk-based scans for PROP-IPC-021 (multi-line evasion is closed); the TS-side EditorViewState/types/reducer is unchanged in scope (only an it.todo placeholder for PROP-IPC-023 was added). Two minor observations are recorded (FIND-095 documenting a pre-Sprint-8 wire mismatch where dispatchTriggerIdleSave/BlurSave/RetrySave omit the body field that the Rust handler requires — explicitly out-of-scope per Sprint 8 §15.4 but documented as known reachability limitation; FIND-096 noting that SaveErrorDto.kind is a raw String rather than a typed enum, leaving a wire-shape soft spot vs the typed BlockTypeDto). Neither is severe enough to block Phase 3 PASS in strict mode (both minor). Phase 5 may proceed.",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:100-150", "description": "REQ-IPC-001..007: EditingSessionStateDto is a 5-arm enum with #[serde(tag = \"status\", rename_all = \"kebab-case\")] and per-variant fields exactly matching REQ-IPC-004..007. Idle has no fields; Editing has status+currentNoteId+focusedBlockId+isDirty+isNoteEmpty+lastSaveResult+blocks?; Saving has status+currentNoteId+isNoteEmpty+blocks?; Switching adds pendingNextFocus (always present); SaveFailed adds priorFocusedBlockId+pendingNextFocus+lastSaveError."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:54-57", "description": "REQ-IPC-008: PendingNextFocusDto with #[serde(rename_all = \"camelCase\")] producing {noteId, blockId}."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:61-85", "description": "REQ-IPC-009: BlockTypeDto is a typed enum (9 variants) with kebab-case rename + explicit heading-1/2/3 renames; DtoBlock declares block_type: BlockTypeDto and serializes under JSON key 'type'. Compile-time exhaustiveness is enforced by prop_ipc_018."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:43-49", "description": "REQ-IPC-010: SaveErrorDto::reason carries skip_serializing_if = \"Option::is_none\". Verified by prop_ipc_007."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:115,123,133,147", "description": "REQ-IPC-011: blocks field on every non-idle variant carries skip_serializing_if = \"Option::is_none\". The forbidden serde annotation is NOT present on focused_block_id (line 108), prior_focused_block_id (line 140), or pending_next_focus (line 142) per §15.5. Verified by prop_ipc_005_save_failed_null_literals_present and the wire_audit.sh PROP-IPC-020 audit."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:328-330", "description": "REQ-IPC-012: make_editing_state_changed_payload(&state) wraps in {\"state\": <state>}. Singular form with one argument."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:413-423,427-438,459-508,373-396,399-408", "description": "REQ-IPC-013: every Tauri handler in editor.rs (discard_current_session, cancel_switch, request_new_note, trigger_idle_save, trigger_blur_save, retry_save) constructs the payload via compose_state_*() then make_editing_state_changed_payload(&state). No hand-rolled flat-object literal."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/feed.rs:259-263", "description": "REQ-IPC-014: select_past_note emits the editing variant via compose_state_for_select_past_note(&note_id, body) — body is extracted from snapshot.note_metadata or defaults to \"\"; isNoteEmpty=body.is_empty() per spec."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:282-293", "description": "REQ-IPC-015: compose_state_for_cancel_switch returns Editing{focused_block_id:None, is_dirty:true, is_note_empty:false, last_save_result:None, blocks:None}. is_note_empty:false is the spec-mandated conservative literal."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:248-251,419", "description": "REQ-IPC-016: compose_state_idle returns the Idle variant; discard_current_session emits exactly {\"state\":{\"status\":\"idle\"}}. Verified by prop_ipc_002 and discard_session_payload_is_idle_state."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:255-280,336-348", "description": "REQ-IPC-017: save_note_and_emit dispatches compose_state_for_save_ok on Ok(()) (Editing variant with last_save_result:Some(\"success\"), is_dirty:false) and compose_state_for_save_err on Err (SaveFailed variant with prior_focused_block_id:None, pending_next_focus:None, last_save_error:{kind:\"fs\", reason:Some(...)}). Both branches use body.is_empty() for is_note_empty."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:296-306,486-490", "description": "REQ-IPC-018: compose_state_for_request_new_note returns Editing{is_dirty:false, focused_block_id:None, last_save_result:None, is_note_empty:true, blocks:None}; request_new_note handler invokes it with the freshly-generated note_path."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:30-65", "description": "CRIT-800/801 coverage map: every REQ-IPC-001..020 and every EC-IPC-001..014 (except EC-IPC-014 which is doc-only) is mapped to at least one prop_ipc_* test name in the comment block."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:248-319", "description": "CRIT-808: six compose_state_* functions (compose_state_idle, compose_state_for_save_ok, compose_state_for_save_err, compose_state_for_cancel_switch, compose_state_for_request_new_note, compose_state_for_select_past_note) exist; each is a pure synchronous Rust function with no AppHandle parameter and no I/O."},
+        {"type": "test-output", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:947-1128", "description": "CRIT-809: prop_ipc_013_compose_idle / prop_ipc_014_compose_cancel_switch / prop_ipc_015_compose_request_new_note / prop_ipc_016_compose_save_ok_and_err / prop_ipc_017_compose_select_past_note are present and assert per-handler variant + field values."}
+      ]
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:96-148", "description": "PROP-IPC-001 (Tier 0): exhaustive 5-variant match on EditingSessionStateDto via the `discriminant` closure; missing arm is a compile error."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:158-168", "description": "PROP-IPC-002 (Tier 1): Idle serializes to exactly {\"status\":\"idle\"} with object length == 1."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:177-238", "description": "PROP-IPC-003 (Tier 1): kebab-case discriminant assertion across all 5 variants."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:247-304,315-361,369-433,471-536", "description": "PROP-IPC-004/005/006: BTreeSet equality assertions for Editing / Saving / Switching / SaveFailed key sets in both blocks=None and blocks=Some([]) cases."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:438-462", "description": "PROP-IPC-005 null-literal: priorFocusedBlockId and pendingNextFocus serialize as literal null when None — direct substring assertion on the JSON string."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:545-574", "description": "PROP-IPC-007 (REQ-IPC-010): SaveErrorDto.reason absent when None, present with FsErrorDto when Some."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:583-649", "description": "PROP-IPC-008 (REQ-IPC-011): three-case fixture (None / Some([]) / Some([3 blocks]))."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:658-679", "description": "PROP-IPC-009 (REQ-IPC-012): make_editing_state_changed_payload returns Object with single key 'state' and inner status='idle'."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:830-842", "description": "PROP-IPC-010 (Tier 2): explicit fixture-table iteration over the 14-fixture cover set with serde_json round-trip identity assertion."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/editorStateChannelWireFixtures.dom.vitest.ts:130-246", "description": "PROP-IPC-011/022: TS narrowing test reads wire-fixtures.json and asserts new Set(Object.keys(state)) == EXPECTED_KEYS[variant] (Set equality, NOT subset). Uses assertNever in the default branch for compile-time exhaustive narrowing."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/wire_audit.sh:38-84", "description": "PROP-IPC-012 grep audit: every emit(\"editing_session_state_changed\", ...) call site in editor.rs and feed.rs is preceded within 5 lines by make_editing_state_changed_payload(...). Implementation uses sed-based context window."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/wire_audit.sh:86-144", "description": "PROP-IPC-020 grep audit: skip_serializing_if allow-list (only on reason / blocks / detail-grandfathered fields)."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/wire_audit.sh:146-222", "description": "PROP-IPC-021 audit: single-line regex AND multi-line awk-based scan tracking depth + top-level commas in every make_editing_state_changed_payload(...) call expression. Multi-line evasion is closed."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:850-940", "description": "PROP-IPC-018 (Tier 0): exhaustive 9-variant match on BlockTypeDto. PROP-IPC-019: round-trip across all 9 valid kebab-case strings + invalid-string rejection (\"hedaing-1\", \"Paragraph\", \"\")."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1172-1191", "description": "print_wire_fixtures generates wire-fixtures.json deterministically; the file is committed and regenerated on every CI run, closing the local-vs-CI drift gap mentioned in §10.5."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:354-377", "description": "PROP-IPC-023: test.todo placeholder present with documented mechanically-replaceable assertion text. Sprint 8 contract CRIT-810 explicitly defers the assertion to a follow-up sprint."}
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:52-65", "description": "EC-IPC-001..013 each map to a concrete prop_ipc_* / ec_ipc_* test in editor_wire_sprint8.rs or feed_handlers.rs. EC-IPC-014 is documentation-only (mount-order obligation)."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1136-1161", "description": "EC-IPC-013: ec_ipc_013_whitespace_only_body_is_not_empty tests four whitespace-only bodies (\"\\n\", \"  \", \"\\n\\n   \\n\", \" \\t \\n\") through both compose_state_for_select_past_note and compose_state_for_save_ok and asserts is_note_empty=false (byte-level check, divergence from NoteOps.isEmpty)."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:435-462", "description": "EC-IPC-006/008: priorFocusedBlockId:null and pendingNextFocus:null are present as JSON literals (asserted via substring match on the serialized JSON)."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:268-279", "description": "EC-IPC-007: focusedBlockId:null appears in the Editing variant key set when focused_block_id=None; the field is always present, never skipped."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1098-1128", "description": "EC-IPC-010: prop_ipc_017 covers select_past_note with empty body — produces is_note_empty:true."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/feed_handlers.rs:246-271", "description": "EC-IPC-011: test_select_past_note_nonexistent_body_is_empty constructs a missing-metadata scenario via empty HashMap, simulates the unwrap_or(\"\") fallback at feed.rs:257, and asserts the resulting Editing variant carries currentNoteId, isNoteEmpty:true, and no body field."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:967-992", "description": "EC-IPC-012: prop_ipc_014 documents that focused_block_id is None on every cancel_switch path — there is no save-failed branch in the implementation, matching spec §15.2 EC-IPC-012 (focus restoration delegated to TS-side EditorPanel)."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/fixtures/wire-fixtures.json:1-182", "description": "CRIT-803: jq 'length' = 14. Every spec-table row F01..F14 is present. F04 carries 4 BlockTypeDto variants (Paragraph, Heading1, Code, Divider); F14 adds Heading2 and Bullet — so the BlockType variant cover is ≥ 4 and PROP-IPC-019 is exercised in passing."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/editorStateChannelWireFixtures.dom.vitest.ts:248-265", "description": "CRIT-811 coverage signal: PROP-IPC-011 cover-set test asserts all 5 statuses are represented in the 14-fixture cover set."}
+      ]
+    },
+    {
+      "name": "wire_contract_consistency",
+      "verdict": "PASS",
+      "findings": ["FIND-096"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:100-150", "description": "CRIT-804: the legacy 6-flat-field struct shape is gone. The body field is removed. is_dirty: bool appears only inside the Editing variant block (line 110) — verifiable by enum context."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:328-330", "description": "CRIT-804: the legacy 6-positional helper form is absent. make_editing_state_changed_payload takes a single &EditingSessionStateDto reference."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:108,140,142", "description": "CRIT-805: Editing::focused_block_id (line 108), SaveFailed::prior_focused_block_id (line 140), and SaveFailed::pending_next_focus (line 142) carry only #[serde(rename = ...)] — no skip_serializing_if. The wire_audit.sh PROP-IPC-020 audit is the production-grade enforcer."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:61-85", "description": "CRIT-806: BlockTypeDto is a 9-variant typed enum with kebab-case + heading-1/2/3 explicit renames. Round-trip from invalid strings returns Err per prop_ipc_019_block_type_dto_invalid_strings."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/types.ts:106-163", "description": "CRIT-804: the TS EditingSessionStateDto is the same 5-arm union as the Sprint 7 baseline; the variant key sets in EXPECTED_KEYS (editorStateChannelWireFixtures.dom.vitest.ts:35-81) are identical to the Rust serialization key sets — direct Set equality with no extra fields."},
+        {"type": "file", "location": "promptnotes/src-tauri/tests/fixtures/wire-fixtures.json:97-100,108-111,135-138", "description": "CRIT-805: the literal substrings \"priorFocusedBlockId\":null and \"pendingNextFocus\":null appear in multiple SaveFailed fixtures; the validation-error fixture (F12) contains \"lastSaveError\":{\"kind\":\"validation\"} with reason absent (line 132-138)."}
+      ]
+    },
+    {
+      "name": "out_of_scope_discipline",
+      "verdict": "PASS",
+      "findings": ["FIND-095"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/types.ts:106-163", "description": "CRIT-807: the TS-side EditingSessionStateDto is unchanged shape (already 5-arm in Sprint 7); no functional drift."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/editorReducer.ts:38-120", "description": "CRIT-807: editorReducer.ts mirrorSnapshot logic is unchanged from Sprint 7 (RD-021 block mirroring path). No new logic added; only the existing per-variant DTO consumption."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:354-377", "description": "CRIT-810: PROP-IPC-023 is implemented as test.todo with the full assertion text in a comment for mechanical replacement. No functional assertion is added in this sprint."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:308-319", "description": "CRIT-810: compose_state_for_select_past_note hardcodes blocks: None — block parsing on the Rust side is deferred to ui-feed-list-actions Sprint 4 per spec §15.4."},
+        {"type": "file", "location": "promptnotes/src-tauri/src/editor.rs:266-280", "description": "CRIT-810: compose_state_for_save_err always returns pending_next_focus: None — pendingNextFocus propagation through save handlers is deferred per REQ-IPC-017 'Known Sprint-8 regression' note."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/editorStateChannelWireFixtures.dom.vitest.ts:1-277", "description": "CRIT-811: the new fixture narrowing test is purely additive (4 tests). It reads a generated JSON file synchronously; no impact on the existing 220-test DOM suite."}
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 2,
+    "criticalCount": 0,
+    "majorCount": 0,
+    "minorCount": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-800",
+      "CRIT-801",
+      "CRIT-802",
+      "CRIT-803",
+      "CRIT-804",
+      "CRIT-805",
+      "CRIT-806",
+      "CRIT-807",
+      "CRIT-808",
+      "CRIT-809",
+      "CRIT-810",
+      "CRIT-811"
+    ],
+    "criteriaResults": {
+      "CRIT-800": "PASS",
+      "CRIT-801": "PASS",
+      "CRIT-802": "PASS",
+      "CRIT-803": "PASS",
+      "CRIT-804": "PASS",
+      "CRIT-805": "PASS",
+      "CRIT-806": "PASS",
+      "CRIT-807": "PASS",
+      "CRIT-808": "PASS",
+      "CRIT-809": "PASS",
+      "CRIT-810": "PASS",
+      "CRIT-811": "PASS"
+    },
+    "newFindings": ["FIND-095", "FIND-096"],
+    "duplicateFindings": []
+  }
+}
