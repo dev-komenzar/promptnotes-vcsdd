@@ -108,7 +108,7 @@ function setDiff(actual: Set<string>, expected: Set<string>): string {
 const FIXTURE_PATH = join(
   // vitest runs from the promptnotes/ directory (where package.json lives)
   process.cwd(),
-  '../src-tauri/tests/fixtures/wire-fixtures.json',
+  'src-tauri/tests/fixtures/wire-fixtures.json',
 );
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
