@@ -2,10 +2,424 @@
   "featureName": "ui-block-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "init",
-  "phaseHistory": [],
+  "currentPhase": "1c",
+  "phaseHistory": [
+    {
+      "phase": "1a",
+      "completedAt": "2026-05-09T10:54:35.751Z",
+      "artifacts": [
+        "specs/behavioral-spec.md"
+      ]
+    },
+    {
+      "phase": "1b",
+      "completedAt": "2026-05-09T10:57:35.432Z",
+      "artifacts": [
+        "specs/verification-architecture.md"
+      ]
+    }
+  ],
   "iterations": {},
-  "proofObligations": [],
+  "proofObligations": [
+    {
+      "id": "PROP-BE-001",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "bannerMessageFor totality",
+      "reqs": [
+        "REQ-BE-017"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-002",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "bannerMessageFor purity",
+      "reqs": [
+        "REQ-BE-017"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-003",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "splitOrInsert simple decision",
+      "reqs": [
+        "REQ-BE-018"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-004",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "splitOrInsert purity",
+      "reqs": [
+        "REQ-BE-018"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-005",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "classifyMarkdownPrefix priority",
+      "reqs": [
+        "REQ-BE-019"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-006",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "classifyMarkdownPrefix divider exact match",
+      "reqs": [
+        "REQ-BE-019"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-007",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "classifyMarkdownPrefix non-prefix safe",
+      "reqs": [
+        "REQ-BE-019"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-008",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "classifyMarkdownPrefix purity",
+      "reqs": [
+        "REQ-BE-019"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-009",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "classifyBackspaceAtZero totality",
+      "reqs": [
+        "REQ-BE-020"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-010",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "classifyBackspaceAtZero branches",
+      "reqs": [
+        "REQ-BE-020"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-011",
+      "tier": 2,
+      "target": "blockPredicates.ts",
+      "predicate": "classifySource bijective",
+      "reqs": [
+        "REQ-BE-021"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-012",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "IDLE_SAVE_DEBOUNCE_MS constant",
+      "reqs": [
+        "REQ-BE-022"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-013",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "nextFireAt addition",
+      "reqs": [
+        "REQ-BE-023"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-014",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "computeNextFireAt saved suppression",
+      "reqs": [
+        "REQ-BE-024"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-015",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "computeNextFireAt debounce boundary",
+      "reqs": [
+        "REQ-BE-024"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-016",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "computeNextFireAt purity",
+      "reqs": [
+        "REQ-BE-024"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-017",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "shouldFireIdleSave empty short-circuit",
+      "reqs": [
+        "REQ-BE-025"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-018",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "shouldFireIdleSave saved suppression",
+      "reqs": [
+        "REQ-BE-025"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-019",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "shouldFireIdleSave debounce boundary",
+      "reqs": [
+        "REQ-BE-025"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-020",
+      "tier": 2,
+      "target": "debounceSchedule.ts",
+      "predicate": "shouldFireIdleSave order independence",
+      "reqs": [
+        "REQ-BE-025"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-021",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "rendering by type",
+      "reqs": [
+        "REQ-BE-001"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-022",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "focus delegation",
+      "reqs": [
+        "REQ-BE-002"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-023",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "input dispatch",
+      "reqs": [
+        "REQ-BE-003"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-024",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "onBlockEdit notify",
+      "reqs": [
+        "REQ-BE-004"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-025",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "markdown prefix change-type",
+      "reqs": [
+        "REQ-BE-005"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-026",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "Enter insert/split",
+      "reqs": [
+        "REQ-BE-006"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-027",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "empty Backspace/Delete remove",
+      "reqs": [
+        "REQ-BE-007"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-028",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "first-pos Backspace merge",
+      "reqs": [
+        "REQ-BE-008"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-029",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "slash open menu",
+      "reqs": [
+        "REQ-BE-009"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-030",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "slash select change-type",
+      "reqs": [
+        "REQ-BE-010"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-031",
+      "tier": 4,
+      "target": "SlashMenu.svelte",
+      "predicate": "9 types listing + filter",
+      "reqs": [
+        "REQ-BE-011"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-032",
+      "tier": 4,
+      "target": "SlashMenu.svelte",
+      "predicate": "keyboard navigation",
+      "reqs": [
+        "REQ-BE-012"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-033",
+      "tier": 4,
+      "target": "BlockDragHandle.svelte",
+      "predicate": "dragstart",
+      "reqs": [
+        "REQ-BE-013"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-034",
+      "tier": 4,
+      "target": "BlockDragHandle.svelte",
+      "predicate": "dragend reset state",
+      "reqs": [
+        "REQ-BE-014"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-035",
+      "tier": 4,
+      "target": "SaveFailureBanner.svelte",
+      "predicate": "visibility condition",
+      "reqs": [
+        "REQ-BE-015"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-036",
+      "tier": 4,
+      "target": "SaveFailureBanner.svelte",
+      "predicate": "3 action buttons",
+      "reqs": [
+        "REQ-BE-016"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-037",
+      "tier": 0,
+      "target": "types.ts",
+      "predicate": "BlockEditorAdapter shape assertion",
+      "reqs": [
+        "REQ-BE-026"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-040",
+      "tier": 5,
+      "target": "src/lib/block-editor/",
+      "predicate": "no legacy EditorPane types residual",
+      "reqs": [
+        "REQ-BE-027"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-041",
+      "tier": 5,
+      "target": "pure modules",
+      "predicate": "forbidden API zero hits",
+      "reqs": [
+        "NFR-BE-001"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-042",
+      "tier": 5,
+      "target": "src/lib/editor/",
+      "predicate": "directory absence",
+      "reqs": [],
+      "status": "pending"
+    }
+  ],
   "traceability": {
     "epicId": "VCSDD-ui-block-editor-1778322745472",
     "beads": []
@@ -13,5 +427,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T10:32:25.472Z"
+  "updatedAt": "2026-05-09T10:57:35.432Z"
 }
