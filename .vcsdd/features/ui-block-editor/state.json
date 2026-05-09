@@ -2,7 +2,7 @@
   "featureName": "ui-block-editor",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "6",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "phase": "1a",
@@ -53,6 +53,12 @@
       "proved": 47,
       "failed": 0,
       "skipped": 0
+    },
+    {
+      "phase": "6",
+      "completedAt": "2026-05-09T13:27:30.078Z",
+      "verdict": "PASS",
+      "carryOverMinors": 3
     }
   ],
   "iterations": {
@@ -559,7 +565,15 @@
   ],
   "traceability": {
     "epicId": "VCSDD-ui-block-editor-1778322745472",
-    "beads": []
+    "beads": [
+      "promptnotes-e95"
+    ],
+    "carryOverBeads": [
+      "promptnotes-fli",
+      "promptnotes-neb",
+      "promptnotes-2pj",
+      "promptnotes-19r"
+    ]
   },
   "gates": {
     "3": {
@@ -584,6 +598,26 @@
       "proofObligationsProved": "47/47",
       "carryOver": "tooling: @vitest/coverage-v8 include filter excludes bun:test files; proposed Phase 6 follow-up to add vitest.unit.config.ts"
     },
+    "6": {
+      "status": "PASS",
+      "convergenceCheckedAt": "2026-05-09T13:27:30.077Z",
+      "dimensions": {
+        "findingDiminishment": "PASS (Phase 1c: 20→0; Phase 3: 12→3 carry-over MINOR justified)",
+        "findingSpecificity": "PASS (all findings cite real file:line)",
+        "criteriaCoverage": "PASS (47/47 proof obligations green-tested)",
+        "duplicateFindings": "PASS (none)",
+        "formalHardening": "PASS (verification + security + purity reports written)",
+        "traceability": "PASS (REQ-BE → PROP-BE → tests verified)"
+      },
+      "carryOverBeads": [
+        "promptnotes-fli",
+        "promptnotes-neb",
+        "promptnotes-2pj",
+        "promptnotes-19r"
+      ],
+      "totalTests": 152,
+      "totalProofObligations": 47
+    },
     "1c": {
       "status": "PASS",
       "adversaryVerdict": "PASS",
@@ -598,5 +632,6 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T13:24:57.942Z"
+  "updatedAt": "2026-05-09T13:27:30.078Z",
+  "completedAt": "2026-05-09T13:27:30.078Z"
 }
