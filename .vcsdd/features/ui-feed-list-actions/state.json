@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "6",
+  "currentPhase": "complete",
   "phaseHistory": [
     {
       "from": "init",
@@ -384,6 +384,13 @@
       "to": "6",
       "timestamp": "2026-05-09T18:30:00.000Z",
       "reason": "Phase 5 Sprint 4 PASS: all 16 PROP-FEED-S4-001..016 proved (15 required + 1 non-required), 19 cargo tests PASS, 290 bun tests PASS, 225 vitest tests PASS, purity audit PASS, security audit PASS, regression baseline intact.",
+      "sprint": 4
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-09T18:45:00.000Z",
+      "reason": "Phase 6 Sprint 4 PASS: four-dimensional convergence achieved — Phase 1c finding diminishment 11→3→0, Phase 3 finding diminishment 3→2→0 (both monotonically decreasing, critical+high=0 at final iter), all 16 Sprint 4 findings have valid path/line specificity, all 6 recommended block-migration actions addressed (action 5 approved deferred, action 6 substantially covered via compose_select_past_note extraction), 0 duplicate findings, 45/45 beads resolved. Tests: cargo 19 PASS, bun 1964 PASS, vitest 225 PASS.",
       "sprint": 4
     }
   ],
@@ -1715,6 +1722,89 @@
         "iterationLimitReached": true
       }
     },
+    "6-sprint-4": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T18:45:00.000Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "sprint": 4,
+        "iteration": 1,
+        "fourDimensional": {
+          "findingDiminishment": {
+            "verdict": "PASS",
+            "phase1cIter1": 11,
+            "phase1cIter2": 3,
+            "phase1cIter3": 0,
+            "phase3Iter1": 3,
+            "phase3Iter2": 2,
+            "phase3Iter3": 0,
+            "criticalHighAtIterFinal": 0,
+            "monotonicallyDecreasing": true
+          },
+          "findingSpecificity": {
+            "verdict": "PASS",
+            "allFilePathsValid": true,
+            "checkedCount": 16,
+            "beadRange": "BEAD-027..045"
+          },
+          "criteriaCoverage": {
+            "verdict": "PASS",
+            "allCriteriaEvaluated": true,
+            "sprint4Requirements": [
+              "REQ-FEED-002 amendment (bodyPreviewLines input source)",
+              "REQ-FEED-009 amendment (pendingNextFocus)",
+              "REQ-FEED-024 amendment (block-aware payload)",
+              "REQ-FEED-025 (compose_state_for_select_past_note new signature)",
+              "REQ-FEED-026 (TS FeedViewState pendingNextFocus migration)",
+              "REQ-FEED-027 (Rust EditingSubDto pending_next_focus)",
+              "EC-FEED-013 amendment",
+              "EC-FEED-016 amendment",
+              "EC-FEED-017 unchanged",
+              "PROP-FEED-S4-016 (parser parity, Required: true)"
+            ],
+            "blockMigrationActions": {
+              "action1": "COVERED",
+              "action2": "COVERED",
+              "action3": "COVERED",
+              "action4": "COVERED",
+              "action5": "DEFERRED (approved per block-migration-spec-impact.md)",
+              "action6": "SUBSTANTIALLY_COVERED"
+            }
+          },
+          "duplicateDetection": {
+            "verdict": "PASS",
+            "sprint1Regressions": 0,
+            "sprint2Regressions": 0,
+            "sprint3Regressions": 0,
+            "sprint4Phase1cDuplicates": 0,
+            "sprint4Phase3Duplicates": 0
+          }
+        },
+        "combinedTests": "cargo:19, bun:1964, vitest:225",
+        "traceabilityCoverage": {
+          "verdict": "PASS",
+          "totalBeads": 45,
+          "resolved": 45,
+          "open": 0
+        },
+        "tauriDevMount": "SKIPPED (headless env — fallback: Sprint 2 baseline cargo build clean + Vite HTTP 200 on record)",
+        "formalHardeningArtifacts": {
+          "verificationReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/verification-report.md",
+          "securityReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/security-report.md",
+          "purityAudit": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/purity-audit.md",
+          "executionEvidence": [
+            "security-results/cargo-test-raw.txt",
+            "security-results/vitest-raw.txt",
+            "security-results/purity-security-audit-raw.txt"
+          ]
+        },
+        "openDeferrals": [
+          "PROP-FEED-S4-016 fast-check full parity (Sprint 5)",
+          "EC-FEED-017 emit-order autotest Mock Emitter (Sprint 5)",
+          "parserParity TS canonical import clarification (Sprint 5, non-blocking)"
+        ]
+      }
+    },
     "6-sprint-2": {
       "verdict": "PASS",
       "timestamp": "2026-05-05T01:19:44.096Z",
@@ -1886,5 +1976,5 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T18:30:00.000Z"
+  "updatedAt": "2026-05-09T18:45:00.000Z"
 }
