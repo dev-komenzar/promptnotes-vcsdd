@@ -14,6 +14,8 @@ coherence:
       relation: derives_from
     - id: "governance:design-system"
       relation: depends_on
+    - id: "design:type-contracts"
+      relation: derives_from
   modules:
     - "ui-feed-list-actions"
     - "edit-past-note-start"
@@ -30,13 +32,18 @@ coherence:
     - "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
     - "promptnotes/src/lib/feed/types.ts"
     - "promptnotes/src/lib/feed/clockHelpers.ts"
+    - "promptnotes/src-tauri/src/feed.rs"
+    - "promptnotes/src-tauri/src/editor.rs"
+    - "docs/domain/code/ts/src/capture/states.ts"
+    - "docs/domain/code/ts/src/shared/note.ts"
+    - "docs/domain/code/ts/src/shared/blocks.ts"
 ---
 
 # Behavioral Specification: ui-feed-list-actions
 
 **Feature**: `ui-feed-list-actions`
 **Phase**: 1a
-**Revision**: 3
+**Revision**: 4
 **Mode**: strict
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 **Source of truth**:
@@ -46,6 +53,10 @@ coherence:
 - `DESIGN.md` Cards / Modal & Overlay / Buttons / Accessibility セクション
 - `.vcsdd/features/edit-past-note-start/specs/behavioral-spec.md`
 - `.vcsdd/features/delete-note/specs/behavioral-spec.md`
+- `docs/domain/code/ts/src/shared/note.ts` — `Block` / `Note` / `NoteOps` (block 操作、`body` 派生プロパティ) **(Sprint 4 追加)**
+- `docs/domain/code/ts/src/shared/blocks.ts` — `serializeBlocksToMarkdown` / `parseMarkdownToBlocks` / `BlockParseError` **(Sprint 4 追加)**
+- `docs/domain/code/ts/src/capture/states.ts` — `EditingState.focusedBlockId` / `PendingNextFocus` (`{ noteId, blockId }`) / `SwitchingState.pendingNextFocus` **(Sprint 4 追加)**
+- `.vcsdd/features/ui-editor/specs/behavioral-spec.md` §3 (REQ-IPC-001..020 で確立した 5-arm `EditingSessionStateDto` 正規形) **(Sprint 4 追加)**
 
 **Scope**:
 フィード一覧 (画面 1B) における行レンダリング、行クリックによる過去ノート選択 (`SelectPastNote` → `flushCurrentSession → startNewSession` 連鎖)、および削除フロー (削除ボタン無効化 → 確認モーダル → `fs.trashFile` → 失敗バナー) の UI 実装を対象とする。タグチップ操作 (`AddTagViaChip` / `RemoveTagViaChip`) は `apply-filter-or-search` / `tag-chip-update` フィーチャの管轄であり、本スコープ外とする。フィード一覧のフィルタ・検索・ソート UI も `apply-filter-or-search` フィーチャの管轄であり本スコープ外とする。
@@ -97,11 +108,25 @@ coherence:
 
 **EARS**: WHEN フィード行がレンダリングされる THEN `Note.body` の先頭 2 行 (改行区切り) を折りたたみテキストとして表示しなければならない。
 
+> **Sprint 4 amendment — body 入力源の明示**:
+> `bodyPreviewLines` に渡す body 文字列の入力源は以下のいずれか:
+> - `NoteRowMetadata.body` フィールドに格納された Markdown 文字列。
+>   この文字列はファイル境界 (`NoteFileSnapshot.body`) から取得されるか、
+>   Rust 側で `serializeBlocksToMarkdown(note.blocks)` を経由して生成される。
+>   TS 側は `NoteRowMetadata.body: string` 型のまま変更しない（意味付けのみ更新）。
+> - **実装方針 (Option A)**: `body = serializeBlocksToMarkdown(blocks)` を改行 split する
+>   既存挙動を継承する。code block を含む note では複数行を保持したまま先頭 2 行を取得する。
+>   code block の内部改行は Markdown 表現で保持されるため、code block が先頭にある場合は
+>   code block 本文の 1 行目・2 行目が preview に表示される（code fence は含まない）。
+>   この挙動は spec 上許容（block-aware preview は将来の Option B に委譲）。
+> - 型シグネチャ・Acceptance Criteria は Sprint 1 から変更しない。
+
 **Edge Cases**:
 - 空 body (`""`): プレビューは空文字列表示 (行は存在する)。
 - 1 行のみ: 2 行目なし、プレビューは 1 行。
 - 3 行以上: 3 行目以降はカット。末尾に「…」を付与しない (仕様上 truncate せず行数制限のみ)。
 - 非常に長い 1 行: CSS `overflow: hidden; text-overflow: ellipsis` で視覚的切り捨て (DESIGN.md 準拠の CSS 処理)。
+- code block のみで構成される note (Sprint 4): `serializeBlocksToMarkdown` が生成する Markdown の先頭 2 行をプレビューとして表示する。
 
 **Acceptance Criteria**:
 - `bodyPreviewLines(body, 2)` が改行で分割した先頭 2 要素を返す (pure 関数)。
@@ -210,18 +235,41 @@ coherence:
 
 > **Rationale**: `pendingNextNoteId` は `EditingSessionState` 遷移において `switching` 状態の開始時点から `NoteFileSaved` 到着まで、および `save-failed` 状態でも保持される (`docs/domain/aggregates.md:277-279`, `docs/domain/ui-fields.md:250`)。よって `save-failed` のみならず `switching` 中も切替予告を表示する。
 
-**Edge Cases**:
-- `editingStatus === 'switching'` かつ `pendingNextNoteId !== null`: 切替予告ビジュアル表示。
-- `editingStatus === 'save-failed'` かつ `pendingNextNoteId !== null`: 切替予告ビジュアル表示。
-- ユーザーが「再試行」を選択: 保存成功後に `pendingNextNoteId` の行に自動遷移 (domain が処理)。
-- ユーザーが「破棄」を選択: `pendingNextNoteId` の行に遷移 (`DiscardCurrentSession` 後に domain が `startNewSession`)。
-- ユーザーが「キャンセル」を選択: `pendingNextNoteId` は保持されるが現セッションに留まる。
-- `pendingNextNoteId` が null の場合: ビジュアルキューなし。
+> **Sprint 4 amendment — mirror フィールド拡張**:
+> `capture/states.ts` の型契約変更により、`SwitchingState.pendingNextFocus` および
+> `SaveFailedState.pendingNextFocus` が `{ noteId: NoteId; blockId: BlockId } | null`
+> 型の `PendingNextFocus` に変わった (旧: `pendingNextNoteId: string | null`)。
+> これに伴い以下を改訂する:
+>
+> - `FeedViewState.pendingNextNoteId: string | null` は
+>   `FeedViewState.pendingNextFocus: { noteId: string; blockId: string } | null` に拡張する。
+>   (詳細は REQ-FEED-026 参照。`FeedViewState` 型の改訂は Sprint 4 実装で行う)
+> - `FeedRow.svelte` の `showPendingSwitch` 表示判定式は
+>   `viewState.pendingNextNoteId === noteId` から
+>   `viewState.pendingNextFocus?.noteId === noteId` に変更する。
+> - `FeedDomainSnapshot.editing.pendingNextNoteId: string | null` は
+>   `FeedDomainSnapshot.editing.pendingNextFocus: { noteId: string; blockId: string } | null`
+>   に変更する (詳細は REQ-FEED-027 参照)。
+> - `data-testid="pending-switch-indicator"` の表示条件（`editingStatus ∈ {'switching', 'save-failed'}` かつ pending noteId が行の noteId に一致）は不変。
+>
+> ~~旧 Acceptance Criteria (Sprint 1〜3):~~
+> <!-- OLD: FeedViewState.pendingNextNoteId !== null のとき対象行に pending-switch-indicator が存在 -->
+> <!-- OLD: feedReducer は EditingSessionState.pendingNextNoteId を FeedViewState.pendingNextNoteId に正確に mirror -->
+> <!-- OLD: editingStatus === 'switching' かつ pendingNextNoteId !== null のとき pending-switch-indicator が表示 -->
 
-**Acceptance Criteria**:
-- `FeedViewState.pendingNextNoteId !== null` のとき、対象行に `data-testid="pending-switch-indicator"` が存在する。
-- `feedReducer` は `EditingSessionState.pendingNextNoteId` を `FeedViewState.pendingNextNoteId` に正確に mirror する (pure test)。
-- `editingStatus === 'switching'` かつ `pendingNextNoteId !== null` のとき `pending-switch-indicator` が表示される (integration test)。
+**Edge Cases**:
+- `editingStatus === 'switching'` かつ `pendingNextFocus !== null`: 切替予告ビジュアル表示。
+- `editingStatus === 'save-failed'` かつ `pendingNextFocus !== null`: 切替予告ビジュアル表示。
+- ユーザーが「再試行」を選択: 保存成功後に `pendingNextFocus.noteId` の行に自動遷移 (domain が `pendingNextFocus.blockId` にフォーカス)。
+- ユーザーが「破棄」を選択: `pendingNextFocus.noteId` の行に遷移 (`DiscardCurrentSession` 後に domain が `pendingNextFocus.blockId` に `startNewSession`)。
+- ユーザーが「キャンセル」を選択: `pendingNextFocus` は保持されるが現セッションに留まる。
+- `pendingNextFocus` が null の場合: ビジュアルキューなし。
+
+**Acceptance Criteria** (Sprint 4 amendment):
+- `FeedViewState.pendingNextFocus !== null` のとき、`pendingNextFocus.noteId` に対応する行に `data-testid="pending-switch-indicator"` が存在する。
+- `feedReducer` は `FeedDomainSnapshot.editing.pendingNextFocus` を `FeedViewState.pendingNextFocus` に正確に mirror する (pure test)。`noteId` / `blockId` 両フィールドが mirror されること。
+- `editingStatus === 'switching'` かつ `pendingNextFocus?.noteId === noteId` のとき `pending-switch-indicator` が表示される (integration test)。
+- `editingStatus ∉ {'switching', 'save-failed'}` のとき、`pendingNextFocus` が非 null であっても `pending-switch-indicator` は表示されない (defense-in-depth)。
 
 ---
 
@@ -412,8 +460,8 @@ coherence:
 | EC-FEED-013 | `pendingNextNoteId` 非 null + `editingStatus ∈ {'switching', 'save-failed'}` | pending 行に視覚的キュー表示 |
 | EC-FEED-014 | 削除後に残り 0 件になる | 空状態表示 |
 | EC-FEED-015 | ローディング中の行クリック | クリック抑止 (REQ-FEED-008) |
-| EC-FEED-016 | `select_past_note` で `note_id` が `note_metadata` に存在しない | `body: ""` で emit (REQ-FEED-024) |
-| EC-FEED-017 | `editing_session_state_changed` emit 順序 | `feed_state_changed` より先に emit (REQ-FEED-024) |
+| EC-FEED-016 | `select_past_note` で `note_id` が `note_metadata` に存在しない | **Sprint 4 amendment**: `compose_state_for_select_past_note` は `blocks: None`・`focused_block_id: None` で emit。EditorPane 側がデフォルトの空 paragraph を生成する責任を持つ。~~旧: `body: ""` で emit~~ (REQ-FEED-024) |
+| EC-FEED-017 | `editing_session_state_changed` emit 順序 | `feed_state_changed` より先に emit (変更なし、Sprint 8 実装で維持) (REQ-FEED-024) |
 
 > **Note on EC-FEED-010 removal**: `fs.trashFile` が `not-found` を返す場合、`delete-note` フィーチャ (REQ-DLN-005) により `NoteDeletionFailed` は発行されず `NoteFileDeleted` が発行される。UI 側では `'not-found'` reason は到達不能 (dead code) であるため、EC-FEED-010 を削除した。
 
@@ -582,18 +630,195 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 
 ### REQ-FEED-024: `select_past_note` — `editing_session_state_changed` emit
 
-**EARS**: WHEN `select_past_note` is invoked THEN the system SHALL ALSO emit `editing_session_state_changed` with payload `{ state: { status: "editing", isDirty: false, currentNoteId: note_id, pendingNextNoteId: null, lastError: null, body: <note body from file> } }`.
+**EARS**: WHEN `select_past_note` is invoked THEN the system SHALL ALSO emit `editing_session_state_changed` with payload `{ state: <Editing arm of EditingSessionStateDto> }`.
 
-> **Payload shape**: The `{ state: ... }` wrapper matches the wire format produced by `editor::make_editing_state_changed_payload` (`editor.rs:161-178`) and consumed by `editorStateChannel.ts:29` (`event.payload.state`). This is the existing contract established by REQ-EDIT-036 and shared across all `editing_session_state_changed` emitters.
+> **Sprint 3 original payload shape (now superseded by Sprint 4)**:
+> ~~旧 6-field flat payload: `{ status: "editing", isDirty: false, currentNoteId: note_id, pendingNextNoteId: null, lastError: null, body: <note body from file> }`~~
+>
+> **Sprint 4 amendment — 5-arm DTO への移行と block-aware 拡張**:
+>
+> `editing_session_state_changed` の `event.payload.state` は
+> `EditingSessionStateDto` の `Editing` arm 正規形（REQ-IPC-004 確立済み）に従う:
+>
+> ```ts
+> {
+>   status: 'editing',
+>   currentNoteId: string,          // note_id (行クリックされたノート)
+>   focusedBlockId: string | null,  // 行クリック時は note の先頭 block id (note が空なら null)
+>   isDirty: false,
+>   isNoteEmpty: boolean,           // blocks が空 paragraph 1 件のみ ⇔ true
+>   lastSaveResult: null,
+>   blocks?: ReadonlyArray<DtoBlock>  // Sprint 4: Some(Vec<DtoBlock>) に拡張
+> }
+> ```
+>
+> 主要変更点:
+> - `body` フィールドは**廃止**。block 化により `blocks` フィールドで代替。
+> - `pendingNextNoteId` フィールドは**廃止**（5-arm DTO の `Editing` arm には存在しない）。
+> - `lastError` フィールドは `lastSaveResult: null` に変更（`Editing` arm の正規フィールド名に準拠）。
+> - `focusedBlockId` を追加: 行クリック時は note の先頭 block id を渡す。
+>   note が空（blocks が空 paragraph 1 件）の場合は先頭 block id を渡す（空 paragraph の id）。
+>   `note_metadata` に note が存在しない場合は `null`。
+> - `blocks` フィールドを追加 (Sprint 4): `compose_state_for_select_past_note` を block-aware に拡張し、
+>   `blocks: Some(Vec<DtoBlock>)` を渡す。Sprint 3 以前は `blocks: None`（省略）。
+>
+> **Payload shape cross-reference**:
+> `{ state: ... }` ラッパーは `editor::make_editing_state_changed_payload(state: &EditingSessionStateDto)`
+> (`editor.rs:328-330`) が生成し、`editorStateChannel.ts` が `event.payload.state` として受信する。
+> EditorPane はこのペイロードで既存 5-arm rehydration ロジックを使って正しく状態復元できる。
+>
+> **Rust implementation scope (Sprint 4)**:
+> `compose_state_for_select_past_note` のシグネチャを block-aware に変更する:
+> `compose_state_for_select_past_note(note_id: &str, body: &str)` →
+> `compose_state_for_select_past_note(note_id: &str, blocks: Vec<DtoBlock>, focused_block_id: Option<String>)`
+> (詳細は REQ-FEED-025 参照)。
 
-**Body extraction**: extract `body` from `note_metadata.get(note_id).body` (already populated by `scan_vault_feed`). If note_id is not found in note_metadata, emit with `body: ""`.
-
-**Acceptance Criteria**:
-- `select_past_note` emits exactly 2 events: `feed_state_changed` + `editing_session_state_changed`.
-- `editing_session_state_changed` payload (`event.payload.state`) contains all 6 fields: `status: "editing"`, `isDirty: false`, `currentNoteId: note_id`, `pendingNextNoteId: null`, `lastError: null`, `body: <note body>`.
-- `editing_session_state_changed` payload contains the note body from the file system.
-- Note not found in vault → emit with `body: ""`.
+**Acceptance Criteria** (Sprint 4 amendment):
+- `select_past_note` emits exactly 2 events: `editing_session_state_changed` (first) + `feed_state_changed` (second).
+- `editing_session_state_changed` payload (`event.payload.state`) conforms to the `Editing` arm of `EditingSessionStateDto`: fields `status: "editing"`, `isDirty: false`, `currentNoteId: note_id`, `focusedBlockId: <first_block_id or null>`, `isNoteEmpty: <bool>`, `lastSaveResult: null`, `blocks: [...]`.
+- `body` field is absent from the payload (Sprint 4: removed).
+- `pendingNextNoteId` field is absent from the payload (not a field of the `Editing` arm).
+- `focusedBlockId` is the id of the first block in the note when `note_metadata` contains the note; `null` when not found.
+- `blocks` field carries the full `DtoBlock[]` array from `compose_state_for_select_past_note`.
+- Note not found in vault → emit with `focusedBlockId: null`, `blocks: []` (or omitted), `isNoteEmpty: true`.
+- EditorPane can rehydrate correctly from the emitted payload using the existing 5-arm dispatch (cross-reference: `ui-editor` REQ-EDIT-019..023).
 
 **Edge Cases**:
-- EC-FEED-016: `note_id` not found in `note_metadata` (e.g., file was deleted between scan and emit): emit with `body: ""`, other fields unchanged.
-- EC-FEED-017: `editing_session_state_changed` emit order: always emitted before `feed_state_changed` to ensure EditorPane receives state before feed list re-renders.
+- EC-FEED-016 (Sprint 4 amendment): `note_id` not found in `note_metadata` (e.g., file deleted between scan and emit): `compose_state_for_select_past_note` emits with `blocks: None` (field omitted), `focused_block_id: None` (serialized as `null`), `is_note_empty: true`. EditorPane receives `focusedBlockId: null` and generates a default empty paragraph block on its own initiative.
+- EC-FEED-017 (unchanged): `editing_session_state_changed` is always emitted before `feed_state_changed` to ensure EditorPane receives state before the feed list re-renders. This ordering is maintained in Sprint 8 Rust implementation.
+
+---
+
+## Sprint 4 Extensions
+
+> **Sprint**: 4
+> **Rationale**: Block-based 型契約移行 (`feature/inplace-edit-migration`) により、Rust 側 `EditingSessionStateDto` が 5-arm tagged union に migrate され (`editor.rs:102-150`)、`PendingNextFocus` が `{ noteId, blockId }` 構造に変わった。Sprint 4 はこの移行を `ui-feed-list-actions` の IPC 契約・mirror state・Rust helper に波及させる。Sprint 1〜3 の全成果物を block-aware に拡張する。
+
+---
+
+### REQ-FEED-025: `compose_state_for_select_past_note` — block-aware シグネチャ拡張
+
+**EARS**: WHEN `select_past_note` Rust handler が呼び出される THEN `compose_state_for_select_past_note` は `blocks: Vec<DtoBlock>` と `focused_block_id: Option<String>` を受け取り、`EditingSessionStateDto::Editing` の `blocks: Some(Vec<DtoBlock>)` フィールドを設定して返さなければならない。
+
+> **現行シグネチャ (Sprint 3 まで)**:
+> `pub fn compose_state_for_select_past_note(note_id: &str, body: &str) -> EditingSessionStateDto`
+> `body` から `is_note_empty` を導出し、`focused_block_id: None`、`blocks: None` を固定で返す。
+>
+> **Sprint 4 新シグネチャ**:
+> `pub fn compose_state_for_select_past_note(note_id: &str, blocks: Vec<DtoBlock>, focused_block_id: Option<String>) -> EditingSessionStateDto`
+>
+> - `is_note_empty`: `blocks.len() == 1 && blocks[0].content.is_empty() && blocks[0].block_type == BlockTypeDto::Paragraph`
+> - `focused_block_id`: 呼び出し元 (`select_past_note` handler) が note の先頭 block id を渡す。
+>   `blocks` が空の場合は `None`。
+> - `blocks`: `Some(blocks)` として `Editing` arm に格納。
+>
+> **呼び出し元の責務** (`feed.rs::select_past_note`):
+> `scan_vault_feed` が返す `NoteRowMetadata` から blocks を復元し、`DtoBlock` に変換してから
+> `compose_state_for_select_past_note` に渡す。`NoteRowMetadata.body` から
+> `parseMarkdownToBlocks(body)` 経由で block リストを得る（Rust 側で実装）。
+
+**Edge Cases**:
+- `blocks` が空: `is_note_empty: true`、`focused_block_id: None`。Markdown parse が空文字列を返した場合。
+- `blocks` が単一空 paragraph: `is_note_empty: true`、`focused_block_id: Some(blocks[0].id)`。
+- `blocks` が複数: `is_note_empty: false`、`focused_block_id: Some(blocks[0].id)` (先頭 block)。
+- `note_id` が `note_metadata` に未存在: 呼び出し元が `blocks: vec![]`、`focused_block_id: None` を渡す。
+
+**Acceptance Criteria**:
+- `compose_state_for_select_past_note(note_id, blocks, focused_block_id)` が `EditingSessionStateDto::Editing` を返し、`blocks: Some(blocks)` フィールドが設定されている (Rust unit test)。
+- 返り値の `focused_block_id` フィールドが引数 `focused_block_id` に等しい (Rust unit test)。
+- 空 blocks 入力で `is_note_empty: true` となる (Rust unit test)。
+- 非空 blocks 入力で `is_note_empty: false` となる（単一空 paragraph 除く）(Rust unit test)。
+- `make_editing_state_changed_payload` に渡したとき、JSON に `blocks` 配列が含まれる (Rust serde test)。
+- 旧シグネチャ `(note_id, body: &str)` を参照するコードが存在しない (grep audit: `grep "body:" src-tauri/src/editor.rs` に `compose_state_for_select_past_note` 行がゼロヒット)。
+
+---
+
+### REQ-FEED-026: TS Feed mirror types — block-aware migration
+
+**EARS**: WHEN `DomainSnapshotReceived` action が `feedReducer` に到達する THEN `feedReducer` は `FeedDomainSnapshot.editing.pendingNextFocus: { noteId: string; blockId: string } | null` を `FeedViewState.pendingNextFocus: { noteId: string; blockId: string } | null` に正確に mirror しなければならない。
+
+> **変更対象型** (`promptnotes/src/lib/feed/types.ts`):
+>
+> `FeedViewState` の `pendingNextNoteId: string | null` を以下に置換:
+> ```ts
+> readonly pendingNextFocus: { noteId: string; blockId: string } | null;
+> ```
+>
+> `FeedDomainSnapshot.editing` の `pendingNextNoteId: string | null` を以下に置換:
+> ```ts
+> readonly pendingNextFocus: { noteId: string; blockId: string } | null;
+> ```
+>
+> これにより `capture/states.ts` の `PendingNextFocus` 型契約と整合する。
+>
+> **影響範囲**:
+> - `feedReducer.ts`: `DomainSnapshotReceived` case の mirror 行
+>   `pendingNextNoteId: snapshot.editing.pendingNextNoteId` →
+>   `pendingNextFocus: snapshot.editing.pendingNextFocus`
+> - `FeedRow.svelte`: `showPendingSwitch` の判定式
+>   `viewState.pendingNextNoteId === noteId` →
+>   `viewState.pendingNextFocus?.noteId === noteId`
+> - `tauriFeedAdapter.ts` / Rust `FeedDomainSnapshotDto`: Rust 側の `editing.pending_next_note_id` →
+>   `editing.pending_next_focus: Option<PendingNextFocusDto>` (REQ-FEED-027 参照)
+> - 既存の property test `PROP-FEED-007a` の arbitrary と assertion を `pendingNextFocus` に更新。
+
+**Edge Cases**:
+- `pendingNextFocus === null`: `FeedRow` の `showPendingSwitch` が `false`。
+- `pendingNextFocus?.noteId !== noteId`: 当該行は `showPendingSwitch === false`。
+- `pendingNextFocus?.noteId === noteId`: 当該行は `showPendingSwitch === true`（`editingStatus` guard も充足する場合）。
+- `feedReducer` は `pendingNextFocus.blockId` を `FeedViewState` に保持するが、`FeedRow` は `noteId` のみを行表示判定に使う（`blockId` は EditorPane が消費する）。
+
+**Acceptance Criteria**:
+- `FeedViewState.pendingNextNoteId` フィールドが存在しない (tsc --strict でコンパイルエラーが出ないこと、grep で `pendingNextNoteId` がゼロヒット)。
+- `FeedViewState.pendingNextFocus: { noteId: string; blockId: string } | null` フィールドが存在する (tsc 検証)。
+- `feedReducer(s, { kind: 'DomainSnapshotReceived', snapshot: S }).state.pendingNextFocus` が `S.editing.pendingNextFocus` と deep-equal である (pure unit test)。
+- `FeedRow.svelte` の `showPendingSwitch` が `viewState.pendingNextFocus?.noteId === noteId` の判定式を使用する (grep)。
+- `FeedDomainSnapshot.editing.pendingNextNoteId` フィールドが存在しない (tsc 検証)。
+- PROP-FEED-007a の property test が `pendingNextFocus` で正しく検証される (fast-check)。
+
+---
+
+### REQ-FEED-027: feed.rs::EditingSubDto — `pending_next_focus` への変更
+
+**EARS**: WHEN `feed_state_changed` Tauri event が emit される THEN ペイロードの `editing` フィールドは `pending_next_focus: Option<PendingNextFocusDto>` を持たなければならない。`pending_next_note_id: Option<String>` フィールドは廃止する。
+
+> **変更対象** (`promptnotes/src-tauri/src/feed.rs`の`EditingSubDto` または相当する Rust struct):
+>
+> ```rust
+> // 旧 (Sprint 3 まで)
+> pub struct EditingSubDto {
+>     pub status: String,
+>     pub current_note_id: Option<String>,
+>     pub pending_next_note_id: Option<String>,  // ← 廃止
+> }
+>
+> // 新 (Sprint 4)
+> pub struct EditingSubDto {
+>     pub status: String,
+>     pub current_note_id: Option<String>,
+>     pub pending_next_focus: Option<PendingNextFocusDto>,  // ← 追加
+> }
+> ```
+>
+> `PendingNextFocusDto` は `editor.rs` の既存定義 (`pub struct PendingNextFocusDto { pub note_id: String, pub block_id: String }`) を再利用する。
+>
+> **Rust → TS serde マッピング**:
+> `#[serde(rename_all = "camelCase")]` により TS 側で `pendingNextFocus: { noteId: string; blockId: string } | null` として到達する。
+>
+> **現行 Rust 実装の `pending_next_note_id` 取得元**:
+> `select_past_note` の context では `pendingNextFocus` は常に `null`（新規選択のため pending はない）。
+> `SwitchingState` や `SaveFailedState` から emit される `feed_state_changed` では
+> `pending_next_focus` に `PendingNextFocusDto` を設定する（Rust domain state から取得）。
+
+**Edge Cases**:
+- `pending_next_focus: None`: JSON に `pendingNextFocus: null` として出力（`skip_serializing_if = "Option::is_none"` は使わない — TS 側が `null` チェックに依存するため）。
+- `pending_next_focus: Some(...)`: JSON に `pendingNextFocus: { noteId: "...", blockId: "..." }` として出力。
+- `feedReducer` が `pendingNextFocus.blockId` を受け取るが `FeedRow` は `noteId` のみ判定に使う。
+
+**Acceptance Criteria**:
+- `EditingSubDto` に `pending_next_note_id` フィールドが存在しない (grep: `grep "pending_next_note_id" src-tauri/src/feed.rs` がゼロヒット)。
+- `EditingSubDto` に `pending_next_focus: Option<PendingNextFocusDto>` フィールドが存在する (grep)。
+- `FeedDomainSnapshotDto` の JSON シリアライズで `editing.pendingNextFocus` が `null` または `{ noteId, blockId }` として出力される (Rust serde round-trip test)。
+- TS 側 `FeedDomainSnapshot.editing.pendingNextFocus` が JSON parse で `{ noteId: string; blockId: string } | null` として型付けられる (tsc 検証)。
+- `pending_next_focus: null` のとき `feedReducer` が `pendingNextFocus: null` を `FeedViewState` に設定する (pure unit test)。
+- `pending_next_focus: { noteId: "n1", blockId: "b1" }` のとき `feedReducer` が `pendingNextFocus: { noteId: "n1", blockId: "b1" }` を設定する (pure unit test)。

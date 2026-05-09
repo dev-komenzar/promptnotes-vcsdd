@@ -20,16 +20,19 @@ coherence:
 
 **Feature**: `ui-feed-list-actions`
 **Phase**: 1b
-**Revision**: 3
+**Revision**: 4
 **Mode**: strict
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 **Source of truth**:
-- `specs/behavioral-spec.md` (REQ-FEED-001..018, EC-FEED-001..015)
-- `docs/domain/aggregates.md` — `EditingSessionState`, `Feed.computeVisible`, `pendingNextNoteId`
+- `specs/behavioral-spec.md` (REQ-FEED-001..027, EC-FEED-001..017)
+- `docs/domain/aggregates.md` — `EditingSessionState`, `Feed.computeVisible`, `pendingNextFocus`
 - `docs/domain/workflows.md` — Workflow 3 (EditPastNoteStart), Workflow 5 (DeleteNote)
 - `docs/domain/ui-fields.md` — §1B, §画面 3, §画面 4
 - `DESIGN.md` §4 Cards / Modals / Buttons / §8 Accessibility
 - `.vcsdd/features/ui-editor/specs/verification-architecture.md` — pure core pattern 踏襲
+- `docs/domain/code/ts/src/capture/states.ts` — `PendingNextFocus` 型契約 **(Sprint 4 追加)**
+- `docs/domain/code/ts/src/shared/note.ts` — `Block` / `NoteOps.body` 派生 **(Sprint 4 追加)**
+- `promptnotes/src-tauri/src/editor.rs` — `EditingSessionStateDto` 5-arm / `DtoBlock` / `PendingNextFocusDto` **(Sprint 4 追加)**
 
 ---
 
@@ -558,3 +561,66 @@ File: `promptnotes/src-tauri/src/feed.rs`
 `select_past_note` function: after constructing snapshot, extract `body` from `note_metadata`, construct `editing_session_state_changed` payload via `editor::make_editing_state_changed_payload`, and emit it before the existing `feed_state_changed` emit.
 
 > **Known limitation** (FIND-S3-005): If `editing_session_state_changed` emit succeeds but `feed_state_changed` emit fails, the function returns `Err` but the first event has already been published. This is an existing pattern in the codebase (all multi-emit handlers share this limitation) and is not addressed in Sprint 3. A future generalized solution (e.g., transactional emit or compensation logic) would apply to all handlers.
+
+---
+
+## 13. Sprint 4 Verification Extensions
+
+> **Sprint**: 4
+> **Scope**: Block-aware 拡張 — `compose_state_for_select_past_note` の block-aware シグネチャ変更、TS Feed mirror の `pendingNextFocus` 拡張、Rust `EditingSubDto` の `pending_next_focus` フィールド追加。既存 §1〜§12 は不変。
+
+### Sprint 4 Purity Boundary Notes
+
+§1 の canonical purity-audit grep pattern は変更なし。既存パターンが新 mirror state (`pendingNextFocus`) でも有効:
+- `feedReducer.ts` は `pendingNextFocus` を純粋 mirror で設定するだけなので purity-audit ゼロヒットを維持。
+- `FeedViewState` の型変更は型レベルのみであり、実行時副作用を導入しない。
+- §2 Purity Boundary Map のモジュール分類は変更なし。
+
+### Sprint 4 Proof Obligations
+
+| PROP-ID | REQ-ID | Description | Tier | Tool | Required |
+|---------|--------|-------------|------|------|----------|
+| PROP-FEED-S4-001 | REQ-FEED-025 | `compose_state_for_select_past_note(note_id, blocks, focused_block_id)` が `EditingSessionStateDto::Editing { blocks: Some(blocks), focused_block_id, ... }` を返す。Rust unit test。 | 1 | cargo test | true |
+| PROP-FEED-S4-002 | REQ-FEED-025 | `compose_state_for_select_past_note` に空 `Vec<DtoBlock>` を渡すと `is_note_empty: true` となる。単一空 paragraph では `is_note_empty: true`。複数 block では `is_note_empty: false`。 | 1 | cargo test | true |
+| PROP-FEED-S4-003 | REQ-FEED-025 | `make_editing_state_changed_payload` に `compose_state_for_select_past_note` 出力を渡したとき、生成 JSON に `blocks` 配列フィールドが存在し、`body` フィールドが存在しない。Rust serde round-trip test。 | 1 | cargo test | true |
+| PROP-FEED-S4-004 | REQ-FEED-025 | `grep "compose_state_for_select_past_note" src-tauri/src` に `body:` 引数参照がゼロヒット（旧シグネチャ廃止確認）。 | 0 | grep audit | true |
+| PROP-FEED-S4-005 | REQ-FEED-026 | `FeedViewState.pendingNextFocus` フィールドが存在し `pendingNextNoteId` フィールドが存在しない (tsc --strict exit 0)。 | 0 | tsc --strict | true |
+| PROP-FEED-S4-006 | REQ-FEED-026 | `feedReducer(s, { kind: 'DomainSnapshotReceived', snapshot: S }).state.pendingNextFocus` が `S.editing.pendingNextFocus` と deep-equal。fast-check arbitrary で `pendingNextFocus: null | { noteId, blockId }` の両ケースを検証。 | 2 | fast-check | true |
+| PROP-FEED-S4-007 | REQ-FEED-026 | `grep "pendingNextNoteId" src/lib/feed/` がゼロヒット（旧フィールド名完全削除）。 | 0 | grep audit | true |
+| PROP-FEED-S4-008 | REQ-FEED-026 | `FeedRow.svelte` の `showPendingSwitch` 式に `pendingNextFocus?.noteId === noteId` が使われている (grep)。 | 0 | grep audit | true |
+| PROP-FEED-S4-009 | REQ-FEED-027 | `EditingSubDto` に `pending_next_focus: Option<PendingNextFocusDto>` が存在し、`pending_next_note_id` が存在しない (grep: `grep "pending_next_note_id" src-tauri/src/feed.rs` ゼロヒット)。 | 0 | grep audit | true |
+| PROP-FEED-S4-010 | REQ-FEED-027 | `FeedDomainSnapshotDto` を JSON serialize したとき `editing.pendingNextFocus` が `null` または `{ noteId, blockId }` として出力される。Rust serde round-trip test。 | 1 | cargo test | true |
+| PROP-FEED-S4-011 | REQ-FEED-027 | TS 側 `FeedDomainSnapshot.editing.pendingNextNoteId` が存在しない（tsc --strict exit 0、grep ゼロヒット）。 | 0 | tsc --strict + grep | true |
+| PROP-FEED-S4-012 | REQ-FEED-024 | 改訂 `select_past_note` が emit する `editing_session_state_changed` ペイロードに `body` フィールドが存在しない (Rust integration test: JSON parse で `body` キーが absent)。 | 1 | cargo test | true |
+| PROP-FEED-S4-013 | REQ-FEED-024 | 改訂 `select_past_note` が emit する `editing_session_state_changed` ペイロードに `focusedBlockId` フィールドが存在し、note の先頭 block id に等しい (Rust integration test)。 | 1 | cargo test | true |
+| PROP-FEED-S4-014 | REQ-FEED-024, EC-FEED-016 | `note_id` が `note_metadata` に未存在のとき、emit ペイロードの `focusedBlockId: null`、`blocks` フィールド absent、`isNoteEmpty: true` (Rust integration test)。 | 1 | cargo test | true |
+| PROP-FEED-S4-015 | REQ-FEED-026 | DOM integration: `pendingNextFocus?.noteId === noteId` かつ `editingStatus ∈ {'switching', 'save-failed'}` のとき `data-testid="pending-switch-indicator"` が存在する。`pendingNextFocus?.noteId !== noteId` のとき不在。 | Integration | vitest + jsdom + Svelte 5 mount | false |
+
+### Sprint 4 Rust Test Strategy
+
+**File**: `promptnotes/src-tauri/tests/feed_handlers.rs`
+
+New tests to add (Sprint 4):
+1. `test_compose_state_for_select_past_note_with_blocks` — verifies `blocks: Some(vec![...])` in output, `focused_block_id` set to first block id, `is_note_empty` correct for non-empty blocks.
+2. `test_compose_state_for_select_past_note_empty_blocks` — verifies `is_note_empty: true`, `focused_block_id: None` for empty block list.
+3. `test_select_past_note_payload_has_blocks_no_body` — verifies JSON payload has `blocks` array, no `body` field.
+4. `test_editing_sub_dto_pending_next_focus_serialization` — verifies `EditingSubDto` serializes `pendingNextFocus: null` and `pendingNextFocus: { noteId, blockId }` correctly.
+
+Sprint 3 tests `test_select_past_note_editing_payload_contains_body` must be **replaced** (body field removed). New test verifies `blocks` array presence and `focusedBlockId` presence instead.
+
+### Sprint 4 TS Test Strategy
+
+**Files affected**:
+- `feedReducer.property.test.ts` — update PROP-FEED-007a arbitrary to use `pendingNextFocus: { noteId, blockId } | null`.
+- `feedReducer.test.ts` — update example-based tests for `DomainSnapshotReceived` that use `pendingNextNoteId` → `pendingNextFocus`.
+- `feed-row.dom.vitest.ts` — update PROP-FEED-023 integration test to use `pendingNextFocus: { noteId, blockId }` in mock state.
+- All `FeedViewState` and `FeedDomainSnapshot` constructors in test files to remove `pendingNextNoteId` and add `pendingNextFocus`.
+
+### Sprint 4 Coverage Matrix Additions
+
+| ID | PROP-FEED-S4-XXX | Tier | Test path |
+|----|-----------------|------|-----------|
+| REQ-FEED-025 | PROP-FEED-S4-001, PROP-FEED-S4-002, PROP-FEED-S4-003, PROP-FEED-S4-004 | 0 + 1 | cargo test, grep |
+| REQ-FEED-026 | PROP-FEED-S4-005, PROP-FEED-S4-006, PROP-FEED-S4-007, PROP-FEED-S4-008, PROP-FEED-S4-015 | 0 + 2 + Integration | tsc, grep, fast-check, vitest+jsdom |
+| REQ-FEED-027 | PROP-FEED-S4-009, PROP-FEED-S4-010, PROP-FEED-S4-011 | 0 + 1 | grep, cargo test, tsc |
+| REQ-FEED-024 (S4) | PROP-FEED-S4-012, PROP-FEED-S4-013, PROP-FEED-S4-014 | 1 | cargo test |
