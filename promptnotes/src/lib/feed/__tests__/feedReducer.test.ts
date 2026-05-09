@@ -634,3 +634,120 @@ describe('REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allo
     expect(cmd).toBeUndefined();
   });
 });
+
+// ── Sprint 4 PROP-FEED-S4-006 / REQ-FEED-026 ─────────────────────────────────
+//
+// PROP-FEED-S4-006: feedReducer mirrors pendingNextFocus biconditional.
+//
+// feedReducer(s, { kind: 'DomainSnapshotReceived', snapshot: S }).state.pendingNextFocus
+// must deep-equal S.editing.pendingNextFocus for all inputs.
+//
+// RED: FeedViewState currently has pendingNextNoteId (string | null), not
+// pendingNextFocus ({ noteId, blockId } | null). FeedDomainSnapshot.editing also
+// has pendingNextNoteId. This test references the NEW field names that do not
+// exist yet in types.ts → type errors at compile time.
+//
+// We use @ts-expect-error to suppress type errors and allow the assertion
+// logic to execute, producing a genuine runtime failure when the field is absent.
+
+describe('PROP-FEED-S4-006 / REQ-FEED-026: pendingNextFocus mirror biconditional (Sprint 4 RED)', () => {
+  // Arbitrary for PendingNextFocus: null | { noteId, blockId }
+  const arbPendingNextFocus = fc.option(
+    fc.record({
+      noteId: fc.string({ minLength: 1, maxLength: 40 }),
+      blockId: fc.string({ minLength: 1, maxLength: 40 }),
+    }),
+    { nil: null }
+  );
+
+  function makeSnapshotWithPendingNextFocus(
+    pendingNextFocus: { noteId: string; blockId: string } | null
+  ): FeedDomainSnapshot {
+    // @ts-expect-error — FeedDomainSnapshot.editing.pendingNextFocus does not exist yet
+    // (currently has pendingNextNoteId). Sprint 4 Phase 2b will add pendingNextFocus.
+    return {
+      // @ts-expect-error — FeedDomainSnapshot.editing.pendingNextNoteId exists but
+      // pendingNextFocus does not. We cast to bypass the type check for the red test.
+      editing: {
+        status: 'switching' as const,
+        currentNoteId: 'note-1',
+        pendingNextFocus,
+      },
+      feed: { visibleNoteIds: ['note-1', 'note-2'], filterApplied: false },
+      delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
+      noteMetadata: {},
+      cause: { kind: 'EditingStateChanged' as const },
+    };
+  }
+
+  function makeStateWithPendingNextFocus(
+    pendingNextFocus: { noteId: string; blockId: string } | null
+  ): FeedViewState {
+    // @ts-expect-error — FeedViewState.pendingNextFocus does not exist yet
+    // (currently has pendingNextNoteId). Sprint 4 Phase 2b will rename the field.
+    return {
+      editingStatus: 'switching' as const,
+      editingNoteId: 'note-1',
+      // @ts-expect-error
+      pendingNextFocus,
+      visibleNoteIds: ['note-1'],
+      allNoteIds: ['note-1'],
+      loadingStatus: 'ready' as const,
+      activeDeleteModalNoteId: null,
+      lastDeletionError: null,
+      noteMetadata: {},
+      tagAutocompleteVisibleFor: null,
+      activeFilterTags: [],
+      searchQuery: '',
+      sortDirection: 'desc' as const,
+    };
+  }
+
+  test('PROP-FEED-S4-006a: example — pendingNextFocus null mirrors to state.pendingNextFocus null', () => {
+    const snapshot = makeSnapshotWithPendingNextFocus(null);
+    const state = makeInitialState();
+    const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = feedReducer(state, action);
+
+    // @ts-expect-error — state.pendingNextFocus does not exist yet; will fail at runtime
+    expect(result.state.pendingNextFocus).toBeNull();
+  });
+
+  test('PROP-FEED-S4-006b: example — pendingNextFocus { noteId, blockId } mirrors exactly', () => {
+    const pnf = { noteId: 'note-2', blockId: 'block-b' };
+    const snapshot = makeSnapshotWithPendingNextFocus(pnf);
+    const state = makeInitialState();
+    const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = feedReducer(state, action);
+
+    // @ts-expect-error — state.pendingNextFocus does not exist yet; will fail at runtime
+    expect(result.state.pendingNextFocus).toEqual(pnf);
+  });
+
+  test('PROP-FEED-S4-006c: fast-check biconditional — pendingNextFocus mirrors for all inputs (≥200 runs)', () => {
+    fc.assert(
+      fc.property(arbPendingNextFocus, (pendingNextFocus) => {
+        const snapshot = makeSnapshotWithPendingNextFocus(pendingNextFocus);
+        const state = makeInitialState();
+        const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+        const result = feedReducer(state, action);
+
+        // @ts-expect-error — result.state.pendingNextFocus does not exist yet
+        const mirrored = result.state.pendingNextFocus;
+        return JSON.stringify(mirrored) === JSON.stringify(pendingNextFocus);
+      }),
+      { numRuns: 200 }
+    );
+  });
+
+  test('PROP-FEED-S4-006d: pendingNextNoteId field must NOT exist in result.state (Sprint 4 rename)', () => {
+    const snapshot = makeSnapshotWithPendingNextFocus(null);
+    const state = makeInitialState();
+    const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = feedReducer(state, action);
+
+    // After Sprint 4 migration, pendingNextNoteId must not be in the state.
+    // Currently this will PASS (the field IS present), making the rename check RED.
+    expect(Object.prototype.hasOwnProperty.call(result.state, 'pendingNextNoteId')).toBe(false);
+  });
+});

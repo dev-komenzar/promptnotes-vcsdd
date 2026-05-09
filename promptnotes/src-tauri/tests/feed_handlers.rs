@@ -269,3 +269,399 @@ fn test_select_past_note_nonexistent_body_is_empty() {
     // body field MUST NOT be present on the editor channel in Sprint 8.
     assert!(state.get("body").is_none(), "body must NOT be present in Sprint 8 editor channel");
 }
+
+// ── Sprint 4 PROP-FEED-S4-001..003, 005, 010, 012..014, 016 ──────────────────
+//
+// REQ-FEED-024 (amendment), REQ-FEED-025, REQ-FEED-026, REQ-FEED-027
+//
+// These tests call compose_state_for_select_past_note with the NEW block-aware
+// signature:  (note_id: &str, blocks: Option<Vec<DtoBlock>>) -> EditingSessionStateDto
+//
+// The CURRENT implementation has the OLD signature:
+//   (note_id: &str, body: &str) -> EditingSessionStateDto
+//
+// Therefore ALL tests in this section produce compile errors (genuine red).
+// Phase 2b will update the implementation to match the new signature.
+
+/// PROP-FEED-S4-001 / REQ-FEED-025 (ケース 2, non-empty blocks):
+/// compose_state_for_select_past_note(note_id, Some(blocks)) must return
+/// EditingSessionStateDto::Editing with:
+///   - blocks: Some(blocks)
+///   - focused_block_id: Some(blocks[0].id)
+///   - is_note_empty: false (multiple non-empty blocks)
+#[test]
+fn prop_s4_001_compose_with_blocks_populates_focused_block_id() {
+    use promptnotes_lib::editor::{BlockTypeDto, DtoBlock, EditingSessionStateDto};
+
+    let blocks = vec![
+        DtoBlock {
+            id: "b1".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: "hello".to_string(),
+        },
+        DtoBlock {
+            id: "b2".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: "world".to_string(),
+        },
+    ];
+
+    // NEW signature: (note_id: &str, blocks: Option<Vec<DtoBlock>>) — RED: compile error
+    let state = promptnotes_lib::editor::compose_state_for_select_past_note("note-1", Some(blocks.clone()));
+
+    match state {
+        EditingSessionStateDto::Editing {
+            blocks: Some(ref b),
+            focused_block_id,
+            is_note_empty,
+            ..
+        } => {
+            assert_eq!(b.len(), 2, "blocks array must contain both DtoBlocks");
+            assert_eq!(
+                focused_block_id,
+                Some("b1".to_string()),
+                "focused_block_id must be first block's id"
+            );
+            assert!(!is_note_empty, "is_note_empty must be false for non-empty blocks");
+        }
+        _ => panic!("expected EditingSessionStateDto::Editing arm"),
+    }
+}
+
+/// PROP-FEED-S4-002 / REQ-FEED-025 (ケース 3, defensive — contract-unreachable):
+/// compose_state_for_select_past_note(note_id, Some(vec![])) must return
+/// EditingSessionStateDto::Editing with:
+///   - focused_block_id: None (no first block)
+///   - is_note_empty: true
+///
+/// Note: ケース (3) is contract-unreachable via parse_markdown_to_blocks non-empty
+/// invariant. This test exists as a defensive spec only.
+#[test]
+fn prop_s4_002_compose_with_empty_blocks_vec_is_note_empty_true() {
+    use promptnotes_lib::editor::{EditingSessionStateDto};
+
+    // NEW signature: (note_id: &str, blocks: Option<Vec<DtoBlock>>) — RED: compile error
+    let state = promptnotes_lib::editor::compose_state_for_select_past_note("note-empty", Some(vec![]));
+
+    match state {
+        EditingSessionStateDto::Editing {
+            focused_block_id,
+            is_note_empty,
+            ..
+        } => {
+            assert_eq!(
+                focused_block_id,
+                None,
+                "focused_block_id must be None for empty blocks vec"
+            );
+            assert!(is_note_empty, "is_note_empty must be true for empty blocks vec");
+        }
+        _ => panic!("expected EditingSessionStateDto::Editing arm"),
+    }
+}
+
+/// PROP-FEED-S4-003 / REQ-FEED-025 (ケース 1, None):
+/// compose_state_for_select_past_note(note_id, None) must return
+/// EditingSessionStateDto::Editing with:
+///   - blocks: None (field absent in JSON via skip_serializing_if)
+///   - focused_block_id: None
+///   - is_note_empty: true
+#[test]
+fn prop_s4_003_compose_with_none_blocks_gives_empty_state() {
+    use promptnotes_lib::editor::{EditingSessionStateDto};
+
+    // NEW signature: (note_id: &str, blocks: Option<Vec<DtoBlock>>) — RED: compile error
+    let state = promptnotes_lib::editor::compose_state_for_select_past_note("note-none", None);
+
+    match state {
+        EditingSessionStateDto::Editing {
+            blocks,
+            focused_block_id,
+            is_note_empty,
+            ..
+        } => {
+            assert_eq!(blocks, None, "blocks must be None for None input");
+            assert_eq!(focused_block_id, None, "focused_block_id must be None for None input");
+            assert!(is_note_empty, "is_note_empty must be true for None input");
+        }
+        _ => panic!("expected EditingSessionStateDto::Editing arm"),
+    }
+}
+
+/// PROP-FEED-S4-005 / REQ-FEED-026:
+/// EditingSubDto in feed.rs must contain pending_next_focus: Option<PendingNextFocusDto>
+/// (not pending_next_note_id: Option<String>).
+///
+/// This serde test verifies the field is present and round-trips correctly.
+/// RED: EditingSubDto currently has pending_next_note_id instead of pending_next_focus.
+#[test]
+fn prop_s4_005_editing_sub_dto_has_pending_next_focus_field() {
+    use promptnotes_lib::editor::PendingNextFocusDto;
+    use promptnotes_lib::feed::EditingSubDto;
+
+    // Construct an EditingSubDto with the NEW field pending_next_focus.
+    // RED: EditingSubDto currently has pending_next_note_id, not pending_next_focus.
+    let dto = EditingSubDto {
+        status: "switching".to_string(),
+        current_note_id: Some("note-1".to_string()),
+        // NEW field — compile error with current EditingSubDto definition:
+        pending_next_focus: Some(PendingNextFocusDto {
+            note_id: "note-2".to_string(),
+            block_id: "block-1".to_string(),
+        }),
+    };
+
+    let json = serde_json::to_string(&dto).expect("EditingSubDto must serialize");
+    assert!(
+        json.contains("pendingNextFocus"),
+        "JSON must contain 'pendingNextFocus' (camelCase), got: {}",
+        json
+    );
+    assert!(
+        !json.contains("pendingNextNoteId"),
+        "JSON must NOT contain deprecated 'pendingNextNoteId', got: {}",
+        json
+    );
+    assert!(
+        json.contains("\"noteId\""),
+        "JSON must contain nested 'noteId', got: {}",
+        json
+    );
+    assert!(
+        json.contains("\"blockId\""),
+        "JSON must contain nested 'blockId', got: {}",
+        json
+    );
+}
+
+/// PROP-FEED-S4-010 / REQ-FEED-027:
+/// FeedDomainSnapshotDto serde round-trip:
+/// editing.pendingNextFocus must serialize as { noteId, blockId } when Some,
+/// and null when None.
+///
+/// RED: EditingSubDto currently has pending_next_note_id, not pending_next_focus.
+#[test]
+fn prop_s4_010_feed_domain_snapshot_pending_next_focus_round_trip() {
+    use promptnotes_lib::editor::PendingNextFocusDto;
+    use promptnotes_lib::feed::{EditingSubDto, FeedDomainSnapshotDto, FeedSubDto, DeleteSubDto, CauseDto};
+
+    // Case A: pending_next_focus is Some
+    let dto_some = FeedDomainSnapshotDto {
+        editing: EditingSubDto {
+            status: "switching".to_string(),
+            current_note_id: Some("note-1".to_string()),
+            // NEW field — RED: compile error
+            pending_next_focus: Some(PendingNextFocusDto {
+                note_id: "note-2".to_string(),
+                block_id: "block-42".to_string(),
+            }),
+        },
+        feed: FeedSubDto {
+            visible_note_ids: vec!["note-1".to_string(), "note-2".to_string()],
+            filter_applied: false,
+        },
+        delete: promptnotes_lib::feed::no_delete(),
+        note_metadata: std::collections::HashMap::new(),
+        cause: CauseDto::EditingStateChanged,
+    };
+
+    let json_some = serde_json::to_string(&dto_some).expect("must serialize");
+    let parsed_some: serde_json::Value = serde_json::from_str(&json_some).expect("must deserialize");
+
+    assert_eq!(
+        parsed_some["editing"]["pendingNextFocus"]["noteId"],
+        "note-2",
+        "pendingNextFocus.noteId must round-trip"
+    );
+    assert_eq!(
+        parsed_some["editing"]["pendingNextFocus"]["blockId"],
+        "block-42",
+        "pendingNextFocus.blockId must round-trip"
+    );
+
+    // Case B: pending_next_focus is None → must serialize as null
+    let dto_none = FeedDomainSnapshotDto {
+        editing: EditingSubDto {
+            status: "editing".to_string(),
+            current_note_id: Some("note-1".to_string()),
+            pending_next_focus: None,
+        },
+        feed: FeedSubDto {
+            visible_note_ids: vec!["note-1".to_string()],
+            filter_applied: false,
+        },
+        delete: promptnotes_lib::feed::no_delete(),
+        note_metadata: std::collections::HashMap::new(),
+        cause: CauseDto::EditingStateChanged,
+    };
+
+    let json_none = serde_json::to_string(&dto_none).expect("must serialize");
+    let parsed_none: serde_json::Value = serde_json::from_str(&json_none).expect("must deserialize");
+
+    // pendingNextFocus must be null (not skip_serializing_if — per REQ-FEED-027)
+    assert!(
+        parsed_none["editing"]["pendingNextFocus"].is_null(),
+        "pendingNextFocus must be null when None, got: {}",
+        parsed_none["editing"]["pendingNextFocus"]
+    );
+    assert!(
+        !json_none.contains("pendingNextNoteId"),
+        "JSON must NOT contain deprecated pendingNextNoteId"
+    );
+}
+
+/// PROP-FEED-S4-012 / REQ-FEED-024 (amendment):
+/// compose_state_for_select_past_note(note_id, Some(blocks)) →
+/// make_editing_state_changed_payload → serde_json::to_string:
+/// the resulting JSON must NOT contain 'body' key.
+///
+/// RED: compose_state_for_select_past_note currently takes (note_id, body: &str).
+#[test]
+fn prop_s4_012_payload_chain_no_body_field() {
+    use promptnotes_lib::editor::{BlockTypeDto, DtoBlock};
+
+    let blocks = vec![DtoBlock {
+        id: "block-a".to_string(),
+        block_type: BlockTypeDto::Paragraph,
+        content: "test content".to_string(),
+    }];
+
+    // NEW signature — RED: compile error
+    let state = promptnotes_lib::editor::compose_state_for_select_past_note("note-x", Some(blocks));
+    let payload = promptnotes_lib::editor::make_editing_state_changed_payload(&state);
+    let json = serde_json::to_string(&payload).expect("must serialize");
+
+    assert!(
+        !json.contains("\"body\""),
+        "JSON payload must NOT contain 'body' field, got: {}",
+        json
+    );
+}
+
+/// PROP-FEED-S4-013 / REQ-FEED-024 (amendment):
+/// compose_state_for_select_past_note(note_id, Some(blocks)) →
+/// make_editing_state_changed_payload chain → JSON must contain
+/// focusedBlockId equal to blocks[0].id.
+///
+/// RED: compose_state_for_select_past_note currently takes (note_id, body: &str).
+#[test]
+fn prop_s4_013_payload_chain_focused_block_id_matches_first_block() {
+    use promptnotes_lib::editor::{BlockTypeDto, DtoBlock};
+
+    let blocks = vec![
+        DtoBlock {
+            id: "first-block".to_string(),
+            block_type: BlockTypeDto::Heading1,
+            content: "Title".to_string(),
+        },
+        DtoBlock {
+            id: "second-block".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: "Content".to_string(),
+        },
+    ];
+
+    // NEW signature — RED: compile error
+    let state = promptnotes_lib::editor::compose_state_for_select_past_note("note-y", Some(blocks));
+    let payload = promptnotes_lib::editor::make_editing_state_changed_payload(&state);
+    let json = serde_json::to_string(&payload).expect("must serialize");
+    let parsed: serde_json::Value = serde_json::from_str(&json).expect("must deserialize");
+
+    assert_eq!(
+        parsed["state"]["focusedBlockId"],
+        "first-block",
+        "focusedBlockId must equal blocks[0].id ('first-block'), got: {}",
+        parsed["state"]["focusedBlockId"]
+    );
+}
+
+/// PROP-FEED-S4-014 / REQ-FEED-024 (amendment) / EC-FEED-016:
+/// compose_state_for_select_past_note(note_id, None) →
+/// make_editing_state_changed_payload chain → JSON must have:
+///   - focusedBlockId: null
+///   - blocks key absent
+///   - isNoteEmpty: true
+///
+/// RED: compose_state_for_select_past_note currently takes (note_id, body: &str).
+#[test]
+fn prop_s4_014_payload_chain_none_blocks_gives_null_focused_and_empty() {
+    // NEW signature — RED: compile error
+    let state = promptnotes_lib::editor::compose_state_for_select_past_note("note-missing", None);
+    let payload = promptnotes_lib::editor::make_editing_state_changed_payload(&state);
+    let json = serde_json::to_string(&payload).expect("must serialize");
+    let parsed: serde_json::Value = serde_json::from_str(&json).expect("must deserialize");
+
+    assert!(
+        parsed["state"]["focusedBlockId"].is_null(),
+        "focusedBlockId must be null for None blocks, got: {}",
+        parsed["state"]["focusedBlockId"]
+    );
+    assert_eq!(
+        parsed["state"]["isNoteEmpty"],
+        true,
+        "isNoteEmpty must be true for None blocks"
+    );
+    // blocks field must be absent (None → skip_serializing_if = "Option::is_none")
+    assert!(
+        parsed["state"].get("blocks").is_none()
+            || parsed["state"]["blocks"] == serde_json::Value::Null,
+        "blocks key must be absent from JSON for None input, got: {}",
+        parsed["state"]
+    );
+    assert!(
+        !json.contains("\"body\""),
+        "JSON payload must NOT contain 'body' field"
+    );
+}
+
+/// PROP-FEED-S4-016 / REQ-FEED-025:
+/// parse_markdown_to_blocks Rust implementation snapshot comparison.
+///
+/// This test verifies that parse_markdown_to_blocks exists and returns
+/// expected output for basic cases. The function does NOT exist yet →
+/// genuine compile error (red).
+///
+/// Cases: empty string, single paragraph, multi-paragraph, heading, bullet, code.
+#[test]
+fn prop_s4_016_parse_markdown_to_blocks_basic_cases() {
+    // parse_markdown_to_blocks does NOT exist yet in editor.rs or feed.rs.
+    // This call will cause a compile error (genuine red).
+
+    // Case 1: empty string → non-empty Vec (1 empty paragraph, non-empty invariant)
+    let result_empty = promptnotes_lib::editor::parse_markdown_to_blocks("");
+    let blocks_empty = result_empty.expect("empty string must return Ok");
+    assert!(
+        !blocks_empty.is_empty(),
+        "parse_markdown_to_blocks non-empty invariant: must return at least 1 block for empty input"
+    );
+    assert_eq!(
+        blocks_empty[0].content, "",
+        "single empty paragraph block for empty input"
+    );
+
+    // Case 2: single paragraph
+    let result_para = promptnotes_lib::editor::parse_markdown_to_blocks("hello world");
+    let blocks_para = result_para.expect("single paragraph must return Ok");
+    assert!(!blocks_para.is_empty(), "must have at least 1 block");
+    assert_eq!(blocks_para[0].content, "hello world");
+
+    // Case 3: two paragraphs (separated by blank line)
+    let result_multi = promptnotes_lib::editor::parse_markdown_to_blocks("first\n\nsecond");
+    let blocks_multi = result_multi.expect("two paragraphs must return Ok");
+    assert!(blocks_multi.len() >= 2, "two paragraphs must produce at least 2 blocks");
+
+    // Case 4: heading
+    let result_h1 = promptnotes_lib::editor::parse_markdown_to_blocks("# Title");
+    let blocks_h1 = result_h1.expect("heading must return Ok");
+    assert!(!blocks_h1.is_empty(), "heading must produce at least 1 block");
+
+    // Case 5: bullet list
+    let result_bullet = promptnotes_lib::editor::parse_markdown_to_blocks("- item one");
+    let blocks_bullet = result_bullet.expect("bullet must return Ok");
+    assert!(!blocks_bullet.is_empty(), "bullet must produce at least 1 block");
+
+    // Case 6: code block
+    let result_code = promptnotes_lib::editor::parse_markdown_to_blocks("```\ncode here\n```");
+    let blocks_code = result_code.expect("code block must return Ok");
+    assert!(!blocks_code.is_empty(), "code block must produce at least 1 block");
+}
