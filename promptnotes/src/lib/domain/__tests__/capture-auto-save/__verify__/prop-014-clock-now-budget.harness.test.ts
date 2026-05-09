@@ -26,7 +26,8 @@ import type {
   Tag,
   Timestamp,
 } from "promptnotes-domain-types/shared/value-objects";
-import type { Note } from "promptnotes-domain-types/shared/note";
+import type { Block, Note } from "promptnotes-domain-types/shared/note";
+import type { BlockId, BlockType, BlockContent } from "promptnotes-domain-types/shared/value-objects";
 import type { DirtyEditingSession } from "promptnotes-domain-types/capture/stages";
 
 // ── Arbitraries ────────────────────────────────────────────────────────────
@@ -63,10 +64,26 @@ function arbNoteId(): fc.Arbitrary<NoteId> {
     .map((s) => s as unknown as NoteId);
 }
 
+function arbParagraphBlock(): fc.Arbitrary<Block> {
+  return fc
+    .record({
+      id: fc.stringMatching(/^block-[0-9]{1,4}$/).map((s) => s as unknown as BlockId),
+      content: fc.string({ maxLength: 80 })
+        .filter((s) => !/[\x00-\x1F\n\r]/.test(s))
+        .map((s) => s as unknown as BlockContent),
+    })
+    .map(({ id, content }) => ({
+      id,
+      type: "paragraph" as BlockType,
+      content,
+    }) as unknown as Block);
+}
+
 function arbNote(fm: fc.Arbitrary<Frontmatter>): fc.Arbitrary<Note> {
   return fc
     .record({
       id: arbNoteId(),
+      blocks: fc.array(arbParagraphBlock(), { minLength: 1, maxLength: 4 }),
       body: arbBody(),
       frontmatter: fm,
     })

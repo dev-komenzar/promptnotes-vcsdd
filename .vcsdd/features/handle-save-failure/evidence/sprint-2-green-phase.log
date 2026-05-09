@@ -1,0 +1,17 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+
+bun test v1.3.11 (af24e281)
+
+ 89 pass
+ 0 fail
+ 13908 expect() calls
+Ran 89 tests across 9 files. [311.00ms]
+
+tsc --noEmit (handle-save-failure scope): 0 lines (clean)
+
+Phase 2c Refactor decision: no structural change warranted.
+- pendingNextFocus !== null guard appears once in pipeline.ts and once in discard.ts.
+  Both are clear at call site; extracting a helper adds indirection with no readability gain.
+- field selectors (pendingNextFocus.noteId, pendingNextFocus.blockId) each used once in discard.ts.
+  No duplication to eliminate.

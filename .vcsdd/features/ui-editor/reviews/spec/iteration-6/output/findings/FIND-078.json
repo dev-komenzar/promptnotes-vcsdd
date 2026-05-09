@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-078",
+  "dimension": "verification_architecture",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "PROP-IPC-011 (verification-architecture.md:577) describes a TS↔Rust shape verification as 'a TypeScript test that performs a runtime narrowing on the EditingSessionStateDto discriminated union ... no fixture causes an exhaustiveness failure or an unexpected key' executed on 'a JSON fixture dropped into ... that mirrors the Rust output. (No actual cross-process call; the JSON is a frozen fixture string.)'. The wording 'mirrors the Rust output' is a maintenance-burden assumption: the fixture is human-authored to match what the Rust serializer is expected to emit. Nothing in PROP-IPC-011 closes the loop by deriving the fixture from actual Rust output. If the Rust serializer drifts (adds a key, renames `priorFocusedBlockId` to `prevFocusedBlockId`, etc.) the TS fixture test would still pass — because the fixture was authored against the OLD Rust output. The 'frozen fixture' is not actually a cross-language verification, only a TS-side narrowing test. PROP-IPC-010 (round-trip in Rust) verifies Rust↔Rust JSON round-trip but never checks against TS.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "577",
+      "snippet": "PROP-IPC-011 | 1 (TS↔Rust shape) | The Rust JSON output for each variant fixture is consumed by a TypeScript test that performs a runtime narrowing on the EditingSessionStateDto discriminated union (switch (state.status) { ... }) with an exhaustive check (assertNever); no fixture causes an exhaustiveness failure or an unexpected key. | vitest + a JSON fixture dropped into promptnotes/src/lib/editor/__tests__/dom/ that mirrors the Rust output. (No actual cross-process call; the JSON is a frozen fixture string.)"
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "576",
+      "snippet": "PROP-IPC-010 | 2 (property / round-trip) | For every EditingSessionStateDto value v in the variant-cover set ... serde_json::from_str::<EditingSessionStateDto>(&serde_json::to_string(&v).unwrap()).unwrap() == v."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1235-1236",
+      "snippet": "REQ-IPC-019 — ... Sprint 8 shall NOT introduce a runtime type-guard or coercion at the channel boundary; correctness is established by the wire contract above plus the Phase 5 round-trip property."
+    }
+  ],
+  "affectedRequirements": ["PROP-IPC-011", "REQ-IPC-019", "REQ-IPC-020"],
+  "recommendation": "Strengthen PROP-IPC-011 to derive the fixture from real Rust output, e.g.: a `cargo test` that writes serialized fixture JSON to `promptnotes/src/lib/editor/__tests__/dom/__generated__/wire-fixtures.json` (gitignored or generated at CI time), and the TS test then reads that file. Alternatively add a CI step that runs `cargo test print_wire_fixtures` and `bun run test:wire-narrow` in sequence, asserting the TS narrowing against the JUST-emitted Rust output. Without this, drift goes undetected and REQ-IPC-020 (round-trip preservation across languages) is unverifiable."
+}

@@ -1,48 +1,37 @@
 /**
- * save-failure-banner.dom.vitest.ts — PROP-EDIT-015, PROP-EDIT-038
+ * save-failure-banner.dom.vitest.ts — Integration tests (vitest + jsdom + Svelte 5 mount API)
  *
- * REQ-EDIT-017, REQ-EDIT-018, REQ-EDIT-019, REQ-EDIT-020, NFR-EDIT-005..007
+ * Sprint 7 Red phase. Tests FAIL because SaveFailureBanner.svelte does not exist yet.
  *
- * Verifies:
- * - PROP-EDIT-015: Banner source CSS contains exact 5-layer Deep Shadow string,
- *   #dd5b00 accent color, 8px border-radius, 15px font-size + 600 font-weight on buttons.
- * - FIND-005: Button labels are exactly "再試行", "変更を破棄", "閉じる（このまま編集を続ける）"
- *   as defined by ui-fields.md §画面 4.
- * - FIND-006: Button clicks go through dispatch(action) — reducer-driven path —
- *   not direct adapter calls.
- * - PROP-EDIT-038: EC-EDIT-004 — Discard while save in flight propagates to adapter.
- *
- * RED phase: button labels are "破棄" / "キャンセル" (wrong), banner lacks 5-layer shadow
- * and #dd5b00 accent, and button handlers call adapter directly bypassing reducer.
+ * Coverage:
+ *   PROP-EDIT-016 (REQ-EDIT-027): Retry button dispatches RetrySave
+ *   PROP-EDIT-017 (REQ-EDIT-028): Discard button dispatches DiscardCurrentSession
+ *   PROP-EDIT-018 (REQ-EDIT-029): Cancel button dispatches CancelSwitch
+ *   PROP-EDIT-019 (REQ-EDIT-030, NFR-EDIT-007): Banner visual style (5-layer shadow, #dd5b00 accent)
+ *   PROP-EDIT-041 (REQ-EDIT-025): Banner present iff status=save-failed; role=alert
+ *   PROP-EDIT-049 (EC-EDIT-004): DiscardCurrentSession regardless of in-flight save
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { join, dirname } from 'path';
-import type { EditingSessionState } from '../../types.js';
+import type { EditorIpcAdapter, EditingSessionStateDto, SaveError } from '$lib/editor/types';
+import EditorPanel from '$lib/editor/EditorPanel.svelte';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 
-import EditorPane from '../../EditorPane.svelte';
-import type { TauriEditorAdapter } from '../../tauriEditorAdapter.js';
-import type { EditorStateChannel } from '../../editorStateChannel.js';
-import type { DebounceTimer } from '../../debounceTimer.js';
-import type { ClipboardAdapter } from '../../clipboardAdapter.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-// Path to EditorPane.svelte source for grep-based style assertions
-const EDITOR_PANE_SOURCE = readFileSync(
-  join(__dirname, '../../EditorPane.svelte'),
-  'utf-8'
-);
-
-function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeof vi.fn>> {
+function createMockAdapter() {
+  let _stateHandler: ((s: EditingSessionStateDto) => void) | null = null;
   return {
-    dispatchEditNoteBody: vi.fn().mockResolvedValue(undefined),
+    dispatchFocusBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchEditBlockContent: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAfter: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAtBeginning: vi.fn().mockResolvedValue(undefined),
+    dispatchRemoveBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchMergeBlocks: vi.fn().mockResolvedValue(undefined),
+    dispatchSplitBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchChangeBlockType: vi.fn().mockResolvedValue(undefined),
+    dispatchMoveBlock: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerIdleSave: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerBlurSave: vi.fn().mockResolvedValue(undefined),
     dispatchRetrySave: vi.fn().mockResolvedValue(undefined),
@@ -50,307 +39,204 @@ function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeo
     dispatchCancelSwitch: vi.fn().mockResolvedValue(undefined),
     dispatchCopyNoteBody: vi.fn().mockResolvedValue(undefined),
     dispatchRequestNewNote: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
-type MockStateChannel = EditorStateChannel & { emit: (state: EditingSessionState) => void };
-
-function makeMockStateChannel(): MockStateChannel {
-  let _handler: ((s: EditingSessionState) => void) | null = null;
-  return {
-    subscribe(handler) {
-      _handler = handler;
-      return () => { _handler = null; };
-    },
-    emit(state) {
-      _handler?.(state);
+    subscribeToState: vi.fn((handler: (s: EditingSessionStateDto) => void) => {
+      _stateHandler = handler;
+      return () => { _stateHandler = null; };
+    }),
+    _emitState(state: EditingSessionStateDto) {
+      if (_stateHandler) _stateHandler(state);
     },
   };
 }
 
-function makeMockTimer(): DebounceTimer {
-  return { scheduleIdleSave: vi.fn(), cancel: vi.fn() };
-}
+let target: HTMLDivElement;
+let adapter: ReturnType<typeof createMockAdapter>;
+let component: ReturnType<typeof mount> | null = null;
 
-function makeMockClipboard(): ClipboardAdapter {
-  return { write: vi.fn().mockResolvedValue(undefined) };
-}
+const FS_PERMISSION_ERROR: SaveError = { kind: 'fs', reason: { kind: 'permission' } };
 
-const saveFailedSnapshot: EditingSessionState = {
+const SAVE_FAILED_STATE: EditingSessionStateDto = {
   status: 'save-failed',
-  isDirty: true,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: null,
-  lastError: { kind: 'fs', reason: { kind: 'unknown' } },
-  body: 'unsaved content',
+  currentNoteId: 'note-1',
+  priorFocusedBlockId: 'block-1',
+  pendingNextFocus: null,
+  lastSaveError: FS_PERMISSION_ERROR,
+  isNoteEmpty: false,
 };
 
-describe('save-failure-banner — PROP-EDIT-015 / PROP-EDIT-038', () => {
-  let target: HTMLDivElement;
-  let adapter: ReturnType<typeof makeMockAdapter>;
-  let stateChannel: MockStateChannel;
+beforeEach(() => {
+  target = document.createElement('div');
+  document.body.appendChild(target);
+  adapter = createMockAdapter();
+  component = mount(EditorPanel, { target, props: { adapter } });
+  flushSync();
+});
 
-  beforeEach(() => {
-    target = document.createElement('div');
-    document.body.appendChild(target);
-    adapter = makeMockAdapter();
-    stateChannel = makeMockStateChannel();
+afterEach(() => {
+  if (component) { unmount(component); component = null; }
+  target.remove();
+  vi.clearAllMocks();
+});
+
+// ── PROP-EDIT-041 (REQ-EDIT-025): Banner presence and role ───────────────────
+
+describe('Banner presence (PROP-EDIT-041, REQ-EDIT-025)', () => {
+  test('REQ-EDIT-025: banner is present iff status=save-failed', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
+    flushSync();
+    const banner = target.querySelector('[data-testid="save-failure-banner"]');
+    expect(banner).not.toBeNull(); // FAILS: no component rendered
   });
 
-  afterEach(() => {
-    document.body.innerHTML = '';
-  });
-
-  // ── PROP-EDIT-015: Source CSS grep assertions ──
-
-  test('PROP-EDIT-015: EditorPane.svelte source contains the 5-layer Deep Shadow string', () => {
-    // REQ-EDIT-020 / NFR-EDIT-007: The exact 5-layer shadow string from DESIGN.md
-    // "rgba(0,0,0,0.01) 0px 1px 3px, rgba(0,0,0,0.02) 0px 3px 7px, ..."
-    expect(EDITOR_PANE_SOURCE).toContain('rgba(0,0,0,0.05) 0px 23px 52px');
-  });
-
-  test('PROP-EDIT-015: EditorPane.svelte source contains #dd5b00 accent color', () => {
-    // REQ-EDIT-020: Left accent border in Orange per DESIGN.md §2
-    expect(EDITOR_PANE_SOURCE).toContain('#dd5b00');
-  });
-
-  test('PROP-EDIT-015: EditorPane.svelte source contains banner border-radius: 8px', () => {
-    // REQ-EDIT-020: Banner border-radius is 8px (Standard per DESIGN.md §5)
-    expect(EDITOR_PANE_SOURCE).toContain('border-radius: 8px');
-  });
-
-  test('PROP-EDIT-015: EditorPane.svelte source contains banner button font-size: 15px', () => {
-    // NFR-EDIT-006: Button text is font-size: 15px; font-weight: 600
-    expect(EDITOR_PANE_SOURCE).toContain('font-size: 15px');
-  });
-
-  test('PROP-EDIT-015: EditorPane.svelte source contains banner button font-weight: 600', () => {
-    // NFR-EDIT-006: Button text is font-size: 15px; font-weight: 600
-    expect(EDITOR_PANE_SOURCE).toContain('font-weight: 600');
-  });
-
-  test('PROP-EDIT-015: EditorPane.svelte source contains Primary Blue retry button color #0075de', () => {
-    // REQ-EDIT-020: Retry button uses Primary Blue style
-    expect(EDITOR_PANE_SOURCE).toContain('#0075de');
-  });
-
-  // ── FIND-005: Exact button label assertions ──
-
-  test('FIND-005: Retry button label is exactly "再試行" (REQ-EDIT-017)', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('REQ-EDIT-025: banner is absent when status=editing', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const retryBtn = target.querySelector<HTMLButtonElement>('[data-testid="retry-save-button"]');
-    expect(retryBtn).not.toBeNull();
-    expect(retryBtn!.textContent?.trim()).toBe('再試行');
-
-    unmount(app);
-  });
-
-  test('FIND-005: Discard button label is exactly "変更を破棄" (REQ-EDIT-018)', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const discardBtn = target.querySelector<HTMLButtonElement>('[data-testid="discard-session-button"]');
-    expect(discardBtn).not.toBeNull();
-    expect(discardBtn!.textContent?.trim()).toBe('変更を破棄');
-
-    unmount(app);
-  });
-
-  test('FIND-005: Cancel button label is exactly "閉じる（このまま編集を続ける）" (REQ-EDIT-019)', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const cancelBtn = target.querySelector<HTMLButtonElement>('[data-testid="cancel-switch-button"]');
-    expect(cancelBtn).not.toBeNull();
-    expect(cancelBtn!.textContent?.trim()).toBe('閉じる（このまま編集を続ける）');
-
-    unmount(app);
-  });
-
-  // ── FIND-006: Button clicks go through reducer (dispatch → executeCommand) ──
-  // The test verifies that adapter methods are called ONLY because the reducer emits
-  // the corresponding command — not from direct adapter calls bypassing the reducer.
-  // To verify: spy on the reducer-produced command path by checking state transitions
-  // alongside adapter calls.
-
-  test('FIND-006: Retry click goes through reducer — status transitions to saving before adapter call', () => {
-    let capturedPayload: { noteId: string; body: string; issuedAt: string } | null = null;
-    const a = adapter as unknown as Record<string, ReturnType<typeof vi.fn>>;
-    a['dispatchRetrySave'].mockImplementation((payload: { noteId: string; body: string; issuedAt: string }) => {
-      capturedPayload = payload;
-      return Promise.resolve();
-    });
-
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const retryBtn = target.querySelector<HTMLButtonElement>('[data-testid="retry-save-button"]');
-    expect(retryBtn).not.toBeNull();
-
-    retryBtn!.click();
-    flushSync();
-
-    // The adapter must have been called exactly once (through reducer)
-    expect(adapter.dispatchRetrySave).toHaveBeenCalledOnce();
-    // The banner should be gone (reducer set status to 'saving')
     const banner = target.querySelector('[data-testid="save-failure-banner"]');
     expect(banner).toBeNull();
-
-    // FIND-015: retry-save payload.issuedAt must be a non-empty ISO-8601 string
-    // (not '' — the impure shell supplies it via RetryClicked.payload.issuedAt)
-    expect(capturedPayload).not.toBeNull();
-    expect(capturedPayload!.issuedAt).toBeTruthy();
-    expect(capturedPayload!.issuedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
-
-    unmount(app);
   });
 
-  test('FIND-006: Discard click goes through reducer — adapter dispatchDiscardCurrentSession called', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
+  test('REQ-EDIT-025: banner has role=alert', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
     flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const discardBtn = target.querySelector<HTMLButtonElement>('[data-testid="discard-session-button"]');
-    expect(discardBtn).not.toBeNull();
-
-    discardBtn!.click();
-    flushSync();
-
-    expect(adapter.dispatchDiscardCurrentSession).toHaveBeenCalledOnce();
-    // Direct adapter bypass would also call it once — so we assert only once was called
-    // and no other adapter methods were called unexpectedly.
-    expect(adapter.dispatchRetrySave).not.toHaveBeenCalled();
-    expect(adapter.dispatchCancelSwitch).not.toHaveBeenCalled();
-
-    unmount(app);
+    const banner = target.querySelector('[data-testid="save-failure-banner"]');
+    expect(banner).not.toBeNull(); // FAILS
+    expect(banner?.getAttribute('role')).toBe('alert');
   });
 
-  test('FIND-006: Cancel click goes through reducer — adapter dispatchCancelSwitch called', () => {
-    // For CancelClicked the reducer only fires if status=switching.
-    // But the spec says CancelSwitch is from save-failed too (ui-fields §画面 4).
-    // Looking at the reducer: CancelClicked requires status='switching'. This is a
-    // spec/reducer ambiguity. We test that the cancel button fires dispatchCancelSwitch.
-    const cancelledSnapshot: EditingSessionState = {
-      status: 'switching',
-      isDirty: true,
-      currentNoteId: 'note-001',
-      pendingNextNoteId: 'note-002',
-      lastError: null,
-      body: 'content',
-    };
-
-    // For the save-failed state's cancel button: the spec says CancelSwitch →
-    // "元の editing(currentNoteId)". The cancel button is in the save-failed banner.
-    // The reducer's CancelClicked only fires for switching state. We use save-failed snapshot.
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
+  test('REQ-EDIT-025: banner has data-testid=save-failure-banner', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
     flushSync();
+    expect(target.querySelector('[data-testid="save-failure-banner"]')).not.toBeNull(); // FAILS
+  });
+});
 
-    stateChannel.emit(saveFailedSnapshot);
+// ── PROP-EDIT-016 (REQ-EDIT-027): Retry button ────────────────────────────────
+
+describe('Retry button (PROP-EDIT-016, REQ-EDIT-027)', () => {
+  test('REQ-EDIT-027: retry-save-button is labeled 再試行', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
     flushSync();
-
-    const cancelBtn = target.querySelector<HTMLButtonElement>('[data-testid="cancel-switch-button"]');
-    expect(cancelBtn).not.toBeNull();
-
-    cancelBtn!.click();
-    flushSync();
-
-    expect(adapter.dispatchCancelSwitch).toHaveBeenCalledOnce();
-    expect(adapter.dispatchRetrySave).not.toHaveBeenCalled();
-    expect(adapter.dispatchDiscardCurrentSession).not.toHaveBeenCalled();
-
-    unmount(app);
+    const btn = target.querySelector('[data-testid="retry-save-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.textContent).toContain('再試行');
   });
 
-  // ── PROP-EDIT-038: EC-EDIT-004 — Discard while save in flight ──
-
-  test('PROP-EDIT-038: Discard button click dispatches DiscardCurrentSession even in save-failed state', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
+  test('REQ-EDIT-027: clicking retry-save-button dispatches RetrySave exactly once', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
     flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
+    const btn = target.querySelector('[data-testid="retry-save-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     flushSync();
+    expect(adapter.dispatchRetrySave).toHaveBeenCalledTimes(1);
+  });
 
-    const discardBtn = target.querySelector<HTMLButtonElement>('[data-testid="discard-session-button"]');
-    expect(discardBtn).not.toBeNull();
-
-    discardBtn!.click();
+  test('REQ-EDIT-027: after retry dispatch, banner hides when saving snapshot arrives', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
     flushSync();
+    const btn = target.querySelector('[data-testid="retry-save-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    adapter._emitState({ status: 'saving', currentNoteId: 'note-1', isNoteEmpty: false });
+    flushSync();
+    expect(target.querySelector('[data-testid="save-failure-banner"]')).toBeNull(); // FAILS
+  });
+});
 
-    // Domain is responsible for resolving the race; UI dispatches and reflects
-    expect(adapter.dispatchDiscardCurrentSession).toHaveBeenCalledOnce();
+// ── PROP-EDIT-017 (REQ-EDIT-028): Discard button ─────────────────────────────
 
-    unmount(app);
+describe('Discard button (PROP-EDIT-017, REQ-EDIT-028)', () => {
+  test('REQ-EDIT-028: discard-session-button is labeled 変更を破棄', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
+    flushSync();
+    const btn = target.querySelector('[data-testid="discard-session-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.textContent).toContain('変更を破棄');
+  });
+
+  test('REQ-EDIT-028: clicking discard-session-button dispatches DiscardCurrentSession exactly once', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
+    flushSync();
+    const btn = target.querySelector('[data-testid="discard-session-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    flushSync();
+    expect(adapter.dispatchDiscardCurrentSession).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── PROP-EDIT-018 (REQ-EDIT-029): Cancel button ──────────────────────────────
+
+describe('Cancel button (PROP-EDIT-018, REQ-EDIT-029)', () => {
+  test('REQ-EDIT-029: cancel-switch-button is labeled 閉じる（このまま編集を続ける）', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
+    flushSync();
+    const btn = target.querySelector('[data-testid="cancel-switch-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    expect(btn?.textContent).toContain('閉じる（このまま編集を続ける）');
+  });
+
+  test('REQ-EDIT-029: clicking cancel-switch-button dispatches CancelSwitch exactly once', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
+    flushSync();
+    const btn = target.querySelector('[data-testid="cancel-switch-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    flushSync();
+    expect(adapter.dispatchCancelSwitch).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── PROP-EDIT-019 (REQ-EDIT-030, NFR-EDIT-007): Banner visual style ──────────
+
+describe('Banner visual style (PROP-EDIT-019, REQ-EDIT-030, NFR-EDIT-007)', () => {
+  test('REQ-EDIT-030: banner root carries save-failure-banner CSS class (5-layer shadow and #dd5b00 border are applied via that class)', () => {
+    // jsdom does not evaluate Svelte-scoped CSS, so we cannot use getComputedStyle.
+    // The contract: the banner element must have the class that carries the 5-layer shadow
+    // and #dd5b00 left-border rules. The literal CSS values are grep-verified in Phase 5.
+    adapter._emitState(SAVE_FAILED_STATE);
+    flushSync();
+    const banner = target.querySelector('[data-testid="save-failure-banner"]') as HTMLElement | null;
+    expect(banner).not.toBeNull();
+    // Verify the CSS class is applied (not a synthetic data attribute)
+    expect(banner?.className).toMatch(/save-failure-banner/);
+  });
+
+  test('REQ-EDIT-030: SaveFailureBanner.svelte source contains 5-layer shadow literal (0px 23px 52px)', async () => {
+    // Source-grep audit: the 5-layer Deep Shadow token must be present in the component source.
+    // This verifies the CSS is actually authored, not just claimed via a data attribute.
+    const { readFileSync } = await import('fs');
+    const { resolve } = await import('path');
+    const sourceFile = resolve(
+      __dirname,
+      '../../SaveFailureBanner.svelte',
+    );
+    const source = readFileSync(sourceFile, 'utf-8');
+    expect(source).toContain('0px 23px 52px');
+    expect(source).toContain('#dd5b00');
+  });
+});
+
+// ── PROP-EDIT-049 (EC-EDIT-004): Discard regardless of in-flight save ─────────
+
+describe('Discard in-flight (PROP-EDIT-049, EC-EDIT-004)', () => {
+  test('EC-EDIT-004: DiscardCurrentSession propagates to adapter without UI cancellation', () => {
+    adapter._emitState(SAVE_FAILED_STATE);
+    flushSync();
+    const btn = target.querySelector('[data-testid="discard-session-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    flushSync();
+    // UI does not cancel the IPC — adapter receives it regardless
+    expect(adapter.dispatchDiscardCurrentSession).toHaveBeenCalledTimes(1);
+    // No cancellation call made
+    expect(adapter.dispatchCancelSwitch).toHaveBeenCalledTimes(0);
   });
 });

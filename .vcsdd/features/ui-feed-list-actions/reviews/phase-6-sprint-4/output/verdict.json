@@ -1,0 +1,225 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "6",
+  "sprint": 4,
+  "iteration": 1,
+  "timestamp": "2026-05-09T18:45:00.000Z",
+  "fourDimensional": {
+    "findingDiminishment": {
+      "verdict": "PASS",
+      "phase1cSprint4": {
+        "iter1": 11,
+        "iter2": 3,
+        "iter3": 0,
+        "monotonicallyDecreasing": true,
+        "criticalHighAtIterFinal": 0
+      },
+      "phase3Sprint4": {
+        "iter1": { "critical": 0, "high": 0, "medium": 2, "low": 1, "total": 3 },
+        "iter2": { "critical": 0, "high": 0, "medium": 2, "low": 0, "total": 2 },
+        "iter3": { "critical": 0, "high": 0, "medium": 0, "low": 0, "total": 0 },
+        "monotonicallyDecreasing": true,
+        "criticalHighAtIterFinal": 0
+      },
+      "summary": "Phase 1c: 11→3→0. Phase 3: 3→2→0. All sequences monotonically decreasing. Critical+high=0 at iter-final in both review phases."
+    },
+    "findingSpecificity": {
+      "verdict": "PASS",
+      "totalSprint4Findings": 16,
+      "beadRange": "BEAD-027..045",
+      "checkedLocations": [
+        {
+          "id": "FIND-S4-SPEC-001",
+          "location": "behavioral-spec.md:687, behavioral-spec.md:724-727, verification-architecture.md:583,596",
+          "valid": true
+        },
+        {
+          "id": "FIND-S4-SPEC-002..011",
+          "location": "behavioral-spec.md and verification-architecture.md with line numbers",
+          "valid": true
+        },
+        {
+          "id": "FIND-S4-IMPL-001",
+          "location": "promptnotes/src/lib/feed/__tests__/parserParity.test.ts (does not exist — pointing to missing artifact)",
+          "valid": true,
+          "note": "Finding correctly cites a non-existent file as the subject of the finding; this is the correct form for a gap finding"
+        },
+        {
+          "id": "FIND-S4-IMPL-002",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs:108-273",
+          "valid": true
+        },
+        {
+          "id": "FIND-S4-IMPL-003",
+          "location": "verified via state.json BEAD-043",
+          "valid": true
+        },
+        {
+          "id": "FIND-S4-IMPL-iter2-001",
+          "location": "promptnotes/src/lib/feed/__tests__/parserParity.test.ts:25-70 + behavioral-spec.md:716-723",
+          "valid": true
+        },
+        {
+          "id": "FIND-S4-IMPL-iter2-002",
+          "location": "feedReducer.ts and feed_handlers.rs with line numbers",
+          "valid": true
+        }
+      ],
+      "allFilePathsValid": true,
+      "note": "All 16 Sprint 4 finding files confirmed present under reviews/spec-sprint-4/ and reviews/phase-3-sprint-4/ directories. All location fields reference specific file paths with line ranges."
+    },
+    "criteriaCoverage": {
+      "verdict": "PASS",
+      "sprint4Requirements": [
+        {
+          "id": "REQ-FEED-002",
+          "status": "amended",
+          "coveredBy": "PROP-FEED-S4-004 (bodyPreviewLines input source), behavioral-spec.md §REQ-FEED-002 amendment",
+          "action": "bodyPreviewLines input source clarified as derived from serializeBlocksToMarkdown(blocks)"
+        },
+        {
+          "id": "REQ-FEED-009",
+          "status": "amended",
+          "coveredBy": "PROP-FEED-S4-005/007/008, REQ-FEED-026",
+          "action": "pendingNextNoteId → pendingNextFocus migration. EC-FEED-013 amendment confirms block-aware pending-switch indicator"
+        },
+        {
+          "id": "REQ-FEED-024",
+          "status": "amended",
+          "coveredBy": "PROP-FEED-S4-001,002,003,012,013,014 (Rust); PROP-FEED-S4-006 (TS reducer); EC-FEED-016 amendment",
+          "action": "Block-based select_past_note payload: blocks/focusedBlockId replace body. EC-FEED-016 fallback (None blocks) specified"
+        },
+        {
+          "id": "REQ-FEED-025",
+          "status": "new",
+          "coveredBy": "PROP-FEED-S4-001..004 (compose signature migration)",
+          "action": "compose_state_for_select_past_note signature changed to Option<Vec<DtoBlock>>"
+        },
+        {
+          "id": "REQ-FEED-026",
+          "status": "new",
+          "coveredBy": "PROP-FEED-S4-005,006,007,008 (TS mirror types)",
+          "action": "FeedViewState.pendingNextFocus migration from pendingNextNoteId"
+        },
+        {
+          "id": "REQ-FEED-027",
+          "status": "new",
+          "coveredBy": "PROP-FEED-S4-009,010 (Rust EditingSubDto)",
+          "action": "feed.rs::EditingSubDto.pending_next_focus replaces pending_next_note_id"
+        },
+        {
+          "id": "EC-FEED-013",
+          "status": "amended",
+          "coveredBy": "PROP-FEED-S4-015 (DOM vitest pending-switch-indicator)"
+        },
+        {
+          "id": "EC-FEED-016",
+          "status": "amended",
+          "coveredBy": "PROP-FEED-S4-003,014 (None blocks → omitted field)"
+        },
+        {
+          "id": "EC-FEED-017",
+          "status": "unchanged",
+          "coveredBy": "Phase 3 iter-3 PASS: emit ordering confirmed by compose_select_past_note pure refactor + prop_s4_017"
+        },
+        {
+          "id": "PROP-FEED-S4-016",
+          "status": "proved (required: true)",
+          "coveredBy": "Rust: prop_s4_016 + prop_s4_016b; TS: parserParity.test.ts (6 tests) — empty-input divergence scoped out and documented"
+        }
+      ],
+      "allCriteriaEvaluated": true,
+      "uncoveredCriteria": []
+    },
+    "duplicateDetection": {
+      "verdict": "PASS",
+      "sprint4Phase1cDuplicates": 0,
+      "sprint4Phase3Duplicates": 0,
+      "sprint1Regressions": 0,
+      "sprint2Regressions": 0,
+      "sprint3Regressions": 0,
+      "analysis": "FIND-S4-SPEC-001..011 are block-shape contract conflicts unique to Sprint 4 scope; no overlap with Sprint 3 FIND-S3-001..006 (which addressed EARS wrapper, EC-FEED-016/017 structure, PROP tier labels). FIND-S4-IMPL-iter2-001/002 refine iter-1 findings rather than duplicate them. No Sprint 1/2/3 resolved findings reappear in Sprint 4 review iterations."
+    }
+  },
+  "implementationArtifacts": {
+    "rustChanges": [
+      "promptnotes/src-tauri/src/editor.rs: compose_state_for_select_past_note signature migrated to Option<Vec<DtoBlock>>, parse_markdown_to_blocks added",
+      "promptnotes/src-tauri/src/feed.rs: compose_select_past_note pure orchestration function extracted, EditingSubDto.pending_next_focus added",
+      "promptnotes/src-tauri/tests/feed_handlers.rs: prop_s4_001..017 added (17 new tests)"
+    ],
+    "tsChanges": [
+      "promptnotes/src/lib/feed/types.ts: FeedViewState.pendingNextFocus replaces pendingNextNoteId",
+      "promptnotes/src/lib/feed/feedReducer.ts: pendingNextFocus mirror logic updated",
+      "promptnotes/src/lib/feed/FeedRow.svelte: showPendingSwitch uses pendingNextFocus?.noteId",
+      "promptnotes/src/lib/feed/__tests__/feedReducer.test.ts: PROP-FEED-S4-006a..d added",
+      "promptnotes/src/lib/feed/__tests__/parserParity.test.ts: 6 TS-side parser parity tests added",
+      "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts: pending-switch-indicator DOM tests added"
+    ]
+  },
+  "formalHardeningArtifacts": {
+    "verificationReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/verification-report.md",
+    "securityReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/security-report.md",
+    "purityAudit": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/purity-audit.md",
+    "executionEvidence": [
+      ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/security-results/cargo-test-raw.txt",
+      ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/security-results/vitest-raw.txt",
+      ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/security-results/purity-security-audit-raw.txt"
+    ],
+    "propsProved": 16,
+    "propsRequired": 15,
+    "propsFailed": 0,
+    "propsSkipped": 0
+  },
+  "combinedTests": "cargo:19 (feed_handlers), bun:1964, vitest:225",
+  "testDetails": {
+    "cargo": {
+      "command": "cargo test --all (from src-tauri)",
+      "result": "19 passed, 0 failed",
+      "note": "19 feed_handlers tests pass. Full Rust suite: 113 total (including editor + editor_wire tests)."
+    },
+    "bun": {
+      "command": "bun test (from promptnotes/)",
+      "result": "1964 pass, 4 skip, 5 todo, 0 fail",
+      "note": "1964 tests across 159 files. Up from 1958 (Sprint 4 added parserParity.test.ts + feedReducer PROP-FEED-S4-006 tests)"
+    },
+    "vitest": {
+      "command": "bun run vitest run (from promptnotes/)",
+      "result": "225 passed (19 test files)",
+      "note": "3 svelte node_invalid_placement_ssr warnings (pre-existing, not Sprint 4 regressions)"
+    }
+  },
+  "traceabilityCoverage": {
+    "totalBeads": 45,
+    "resolved": 45,
+    "open": 0,
+    "sprint4Beads": "BEAD-027..045 (19 beads)",
+    "sprint4Resolved": 19,
+    "sprint4Open": 0,
+    "allPriorBeadsResolved": true
+  },
+  "tauriDevMount": {
+    "verdict": "SKIPPED",
+    "reason": "Headless environment — no display server available for bun run tauri dev UI rendering. Sprint 1 and Sprint 2 baselines confirmed cargo build clean + Vite HTTP 200 + Rust process started (Sprint 2 Phase 6: tauriDevMount PASS recorded in gates.6-sprint-2.details.verticalSlice.tauriDevMount). Sprint 4 only adds pure Rust functions and TS pure reducer changes; no new Svelte component or layout was introduced. Regression risk for dev mount is minimal.",
+    "fallbackEvidence": "cargo test 19/19 PASS + vitest 225/225 PASS + Sprint 2 dev-mount baseline (commit record in gates[6-sprint-2])"
+  },
+  "openDeferrals": [
+    {
+      "id": "PROP-FEED-S4-016-scope",
+      "description": "fast-check property test over arbitrary markdown inputs (full parity). TS↔Rust empty-input divergence documented in parserParity.test.ts with spec carve-out.",
+      "deferredTo": "Sprint 5"
+    },
+    {
+      "id": "EC-FEED-017-autotest",
+      "description": "Automated emit-order test for editing_session_state_changed before feed_state_changed. Deferred pending Mock Emitter trait or Tauri test runtime.",
+      "deferredTo": "Sprint 5"
+    },
+    {
+      "id": "parserParity-ts-canonical-import",
+      "description": "parserParity.test.ts imports $lib/domain/capture-auto-save/parse-markdown-to-blocks rather than docs/domain/code/ts/src/shared/blocks.ts. TS empty-input divergence acknowledged in spec carve-out (parserParity scope narrowed to non-empty inputs at iter-3).",
+      "deferredTo": "Sprint 5 — spec note only, not a blocking gate issue"
+    }
+  ],
+  "overallVerdict": "PASS",
+  "reviewer": "verifier",
+  "sprintCompleteTransitionAllowed": true
+}

@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-038",
+  "dimension": "contract_alignment",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "DOM vitest test files referenced by CRIT-709, CRIT-710, CRIT-711, CRIT-712 use the wrong path. The contract addresses them at `promptnotes/src/lib/editor/__tests__/<name>.dom.vitest.ts` (e.g., `block-element.dom.vitest.ts`, `slash-menu.dom.vitest.ts`, `editor-panel.dom.vitest.ts`). The actual files live under `promptnotes/src/lib/editor/__tests__/dom/<name>.dom.vitest.ts`. The `vitest.config.ts` include pattern is `src/lib/**/__tests__/dom/**/*.vitest.ts`, which matches the actual `dom/` subdirectory location. Reviewers running grep against the contract-cited paths will find no matches and incorrectly conclude the criteria fail; or worse, conclude they pass if grep is recursive but the assertion-name claims still cannot be verified.",
+  "evidence": {
+    "filePath": "promptnotes/vitest.config.ts",
+    "lineRange": "22-25",
+    "snippet": "include: [ \"src/lib/**/__tests__/dom/**/*.vitest.ts\", \"src/routes/__tests__/**/*.vitest.ts\" ]"
+  },
+  "routeToPhase": "contract-revision"
+}

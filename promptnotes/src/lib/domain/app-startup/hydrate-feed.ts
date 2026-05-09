@@ -7,12 +7,21 @@
 // PROP-001: pure — same ScannedVault input → identical HydratedFeed.
 // PROP-002: hydrateFeed excludes all corrupted-file entries from Feed.noteRefs.
 // PROP-015: Feed sort order is updatedAt descending.
+// PROP-027: HydrateNote purity enables hydrateFeed purity.
+// PROP-030: parseMarkdownToBlocks called exactly twice per non-corrupt file:
+//   once in Step 2 (via ScanVaultPorts, result discarded) and once here via hydrateNote.
+//   scannedVault.parseMarkdownToBlocks carries the injected reference so both
+//   invocations use the same function.
+// PROP-032: If hydrateNote returns Err for any snapshot during Step 3, hydrateFeed MUST throw.
+//   This indicates a Step 2/Step 3 divergence (invariant violation), not a recoverable file error.
+//   Step-2 corruptedFiles pass through unchanged — they are NOT augmented by Step-3 failures.
 
 import type { NoteId, Tag, Timestamp } from "promptnotes-domain-types/shared/value-objects";
-import type { NoteFileSnapshot } from "promptnotes-domain-types/shared/snapshots";
+import type { NoteFileSnapshot, CorruptedFile } from "promptnotes-domain-types/shared/snapshots";
 import type { Feed } from "promptnotes-domain-types/curate/aggregates";
 import type { TagEntry, TagInventory } from "promptnotes-domain-types/curate/read-models";
 import type { HydratedFeed, ScannedVault } from "./stages.js";
+import { hydrateNote } from "./hydrate-note.js";
 
 /**
  * Step 3 of the AppStartup pipeline — pure transformation.
@@ -22,12 +31,42 @@ import type { HydratedFeed, ScannedVault } from "./stages.js";
  *
  * PROP-001: referentially transparent — deterministic for any fixed input.
  * lastBuiltAt is set to epochMillis: 0 to avoid Date.now() impurity.
+ *
+ * PROP-030: calls hydrateNote per snapshot using scannedVault.parseMarkdownToBlocks
+ * (the same function reference used in Step 2), satisfying the two-call budget.
+ *
+ * PROP-032: If hydrateNote returns Err for any snapshot during Step 3, hydrateFeed throws.
+ * This is an invariant violation (Step 2 passed the file, Step 3 cannot re-parse it) —
+ * it is NOT a recoverable per-file error. Step-2 corruptedFiles pass through unchanged.
  */
 export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
-  const { snapshots, corruptedFiles } = scannedVault;
+  const { snapshots, corruptedFiles: step2CorruptedFiles } = scannedVault;
+
+  // PROP-030: use the same parseMarkdownToBlocks that was injected in Step 2
+  // (carried on scannedVault) so call-count tracking works correctly.
+  const blockParser = scannedVault.parseMarkdownToBlocks;
+
+  const hydratedSnapshots: NoteFileSnapshot[] = [];
+
+  for (const snapshot of snapshots) {
+    // PROP-027: hydrateNote is pure — same snapshot always produces same Result.
+    const noteResult = blockParser !== undefined
+      ? hydrateNote(snapshot, blockParser)
+      : hydrateNote(snapshot);
+
+    if (!noteResult.ok) {
+      // PROP-032: Step-3 hydrateNote failure is an invariant violation, not a file error.
+      // The file passed Step 2 validation but cannot be re-parsed in Step 3 — divergence.
+      throw new Error(
+        `hydrateNote-invariant-violation: ${snapshot.filePath}: ${noteResult.error}`
+      );
+    }
+
+    hydratedSnapshots.push(snapshot);
+  }
 
   // PROP-015: sort noteRefs by updatedAt descending (stable copy, no mutation).
-  const sorted = [...snapshots].sort(
+  const sorted = [...hydratedSnapshots].sort(
     (a, b) =>
       (b.frontmatter.updatedAt.epochMillis as unknown as number) -
       (a.frontmatter.updatedAt.epochMillis as unknown as number)
@@ -47,13 +86,14 @@ export function hydrateFeed(scannedVault: ScannedVault): HydratedFeed {
 
   // Build TagInventory from successfully hydrated snapshots only.
   // PROP-001: lastBuiltAt fixed to epochMillis: 0 (deterministic, no Date.now()).
-  const tagInventory = buildTagInventory(snapshots);
+  const tagInventory = buildTagInventory(hydratedSnapshots);
 
+  // PROP-032: Step-2 corruptedFiles pass through unchanged (no Step-3 augmentation).
   return {
     kind: "HydratedFeed",
     feed,
     tagInventory,
-    corruptedFiles,
+    corruptedFiles: step2CorruptedFiles,
   };
 }
 

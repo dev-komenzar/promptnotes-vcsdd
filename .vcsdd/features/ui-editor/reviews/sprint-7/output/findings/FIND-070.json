@@ -1,0 +1,15 @@
+{
+  "id": "FIND-070",
+  "severity": "minor",
+  "dimension": "structural_integrity",
+  "category": "test_quality",
+  "location": "promptnotes/src/lib/editor/__tests__/dom/block-drag-handle.dom.vitest.ts:112-130",
+  "description": "Alt+Shift+Up/Down tests assert `dispatchMoveBlock.toHaveBeenCalledTimes(1)` but do not validate the toIndex direction. EditorPanel.svelte:212-221 computes `direction = event.key === 'ArrowUp' ? -1 : 1` and clamps `toIndex = max(0, min(blocks.length - 1, blockIndex + direction))`. There's no test that Alt+Shift+Up on the FIRST block (blockIndex=0) clamps to toIndex=0 (a no-op move) or that Alt+Shift+Down on the LAST block clamps to last. REQ-EDIT-011 acceptance criterion says `0 <= toIndex < blocks.length` but does not cover the degenerate first/last boundary. The current implementation dispatches MoveBlock even when toIndex === blockIndex (line 215 comment 'Dispatch MoveBlock even if toIndex === blockIndex'), which crosses the IPC boundary unnecessarily. Spec REQ-EDIT-011 is silent on whether boundary moves should suppress dispatch.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "212-221",
+    "snippet": "const direction = event.key === 'ArrowUp' ? -1 : 1; const toIndex = Math.max(0, Math.min(blocks.length - 1, blockIndex + direction)); adapter.dispatchMoveBlock({ noteId, blockId, toIndex, ... });"
+  },
+  "suggestedRemediation": "Either resolve in spec — REQ-EDIT-011 should specify whether Alt+Shift+Up at index 0 dispatches a no-op MoveBlock or suppresses — and update the test to lock the chosen behaviour. Add explicit boundary tests for both directions on first/last blocks.",
+  "routeToPhase": "1a"
+}

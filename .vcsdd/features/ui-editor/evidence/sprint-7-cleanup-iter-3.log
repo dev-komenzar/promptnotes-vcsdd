@@ -1,0 +1,72 @@
+## Sprint 7 Cleanup Iteration 3 — FIND-066, 068, 069, 070, REQ-EDIT-038
+
+### Baseline (pre-change)
+target-feature-tests: FAIL (2 failing: REQ-EDIT-038 tests)
+regression-baseline: PASS (214/216)
+
+### Phase 1a spec amendments
+- behavioral-spec.md REQ-EDIT-038 (lines ~619-645): replaced "via the inbound snapshot's
+  lastSaveError field or via a rejected command response" with the authoritative dispatch-
+  rejection surface. Added RD-021 (block list in DTO, option a) and RD-022 (REQ-EDIT-038
+  error surface via Promise rejection, not DTO).
+- behavioral-spec.md §10 EditingSessionStateDto: added optional `blocks?:
+  ReadonlyArray<{ id: string; type: BlockType; content: string }>` to editing, saving,
+  switching, save-failed arms. Idle arm carries no blocks field.
+- verification-architecture.md §2 EditorPanel.svelte effectful shell entry: updated to
+  note `currentBlockError` local $state and `$derived(viewState.blocks)` per RD-021/022.
+
+### FIND-066 (major, structural_integrity → 1a): RESOLVED
+- types.ts: added DtoBlock type; added optional `blocks?: ReadonlyArray<DtoBlock>` to
+  all non-idle EditingSessionStateDto arms; added required `blocks: ReadonlyArray<DtoBlock>`
+  to EditorViewState.
+- editorReducer.ts: mirrorSnapshot() accepts currentBlocks parameter; mirrors
+  snapshot.blocks when present, preserves currentBlocks when absent; idle arm returns [].
+  DomainSnapshotReceived passes state.blocks as currentBlocks.
+- EditorPanel.svelte: replaced local `blocks: Block[]` with `const blocks = $derived(viewState.blocks)`.
+  Initial viewState seeded with initialBlocks. Legacy fallback in handleSnapshot creates
+  a synthetic block when focusedBlockId is not in viewState.blocks (test-mode compatibility).
+
+### FIND-068 (minor, spec_fidelity → 2c): RESOLVED
+- types.ts: removed IDLE_SAVE_DEBOUNCE_MS export (comment retained as migration note).
+- editor-panel.dom.vitest.ts: updated import from '$lib/editor/types' to
+  '$lib/editor/debounceSchedule' for IDLE_SAVE_DEBOUNCE_MS.
+
+### FIND-069 (minor, implementation_correctness → 2c): RESOLVED
+- debounceSchedule.test.ts: replaced `expect(result).toBeDefined()` with
+  `expect(result.shouldFire).toBe(false)` and `expect(result.fireAt).toBeNull()`.
+  Decision: lastSaveAt === lastEditAt (non-zero) is treated as "save covers the edit"
+  per the `lastSaveAt !== 0 && lastSaveAt >= lastEditAt` guard → shouldFire=false, fireAt=null.
+
+### FIND-070 (minor, structural_integrity → 1a): RESOLVED
+- block-drag-handle.dom.vitest.ts: Alt+Shift+Up test refactored to re-emit state with
+  focusedBlockId='block-2' (index 1), then asserts toIndex=0 (direction up = 1-1).
+  Alt+Shift+Down test asserts toIndex=1 (block-1 at index 0, direction down = 0+1).
+  Both tests assert `expect(adapter.dispatchMoveBlock).toHaveBeenCalledWith(
+    expect.objectContaining({ blockId: '...', toIndex: N }))`.
+
+### REQ-EDIT-038 (spec gap → 2b): RESOLVED
+- EditorPanel.svelte: added `currentBlockError` local $state (not in EditorViewState).
+  Added makeErrorSurfacingAdapter() that wraps dispatchEditBlockContent,
+  dispatchChangeBlockType, dispatchInsertBlockAfter, dispatchInsertBlockAtBeginning with
+  try/catch; on rejection sets currentBlockError = { blockId, error }.
+  blockElementAdapter derived from makeErrorSurfacingAdapter(adapter) and passed to BlockElement.
+  Template renders conditional `[data-testid="block-validation-hint"]` per error kind near the
+  affected block. Added handleBlockEdit(noteId, blockId) to clear currentBlockError on edit.
+- editor-validation.dom.vitest.ts: both failing tests rewritten to use
+  mockRejectedValueOnce and trigger actual DOM input events. Two async tests await
+  Promise.resolve() before flushSync() to allow microtask rejection handlers to fire.
+
+### Type fix: EditorViewState.blocks field in test fixtures
+- editorReducer.test.ts: added `blocks: []` to all 5 view state factory helpers.
+- editorPredicates.test.ts: added `blocks: []` to makeView helper.
+- prop/editorReducer.prop.test.ts: added `blocks: fc.constant([])` to arbViewState.
+- prop/editorPredicates.prop.test.ts: added `blocks: fc.constant([])` to arbViewState.
+
+### Final results
+target-feature-tests: PASS
+regression-baseline: PASS
+
+Tests: 216 passed (216)
+Editor scope check errors: 0
+
+Evidence captured: 2026-05-06T06:49:00Z

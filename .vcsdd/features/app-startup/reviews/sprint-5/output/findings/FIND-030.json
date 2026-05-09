@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-030",
+  "dimension": "spec_fidelity",
+  "severity": "major",
+  "title": "Step 3 hydrateNote failures silently routed to corruptedFiles instead of treated as programming-error invariant violation (REQ-008 AC)",
+  "affects": [
+    "REQ-008",
+    "PROP-027",
+    "PROP-030",
+    "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+    "promptnotes/src/lib/domain/app-startup/hydrate-note.ts"
+  ],
+  "spec_quote": "REQ-008 AC: 'If a snapshot's HydrateNote call returns Err(HydrationFailureReason) during Step 3 (e.g., due to a downstream code change that diverged from Step 2), the workflow MUST treat this as a programming-error invariant violation. (Step 2's pre-validation makes this branch unreachable in normal operation.)'",
+  "code_quote": "hydrate-feed.ts:46-61 — `for (const snapshot of snapshots) { ... const noteResult = blockParser !== undefined ? hydrateNote(snapshot, blockParser) : hydrateNote(snapshot); if (!noteResult.ok) { step3CorruptedFiles.push({ filePath: snapshot.filePath, failure: { kind: \"hydrate\", reason: noteResult.error } }); } else { hydratedSnapshots.push(snapshot); } }`",
+  "issue": "Spec REQ-008 AC mandates that Step 3 hydrateNote failures be treated as a programming-error invariant violation (not as user-facing corruption). The current implementation in hydrate-feed.ts:52-57 silently absorbs the Err result by appending it to step3CorruptedFiles and proceeding. This contradicts the spec in two ways: (1) it makes the failure branch *reachable in normal operation* (see FIND-031 — empty-paragraph filtering causes legitimate Step-2-passing snapshots to fail Step 3), and (2) when reached, it does NOT signal an invariant violation (no throw, no log, no event, no test); the failure becomes indistinguishable from a Step-2 read/parse failure. There is no test exercising this code path (step3-hydrate-feed.test.ts has no test for the snapshots-input-but-hydrateNote-Err scenario), so the absorption is effectively dead/unreviewed code that masks divergence between Step 2 and Step 3 validation logic.",
+  "recommended_remediation": "Either (a) align Step 2 and Step 3 validation so the Err branch is provably unreachable for any snapshot Step 2 admits (e.g., apply the same empty-paragraph filtering during Step 2 validation, or stop filtering in hydrate-note), then make the Err branch throw an Error with diagnostic info (per REQ-008 'programming-error invariant violation'); or (b) update the spec to allow Step-3 hydration failures to be routed to corruptedFiles and add an explicit acceptance criterion + test. Do not leave a silent route that violates the spec contract.",
+  "createdAt": "2026-05-08T00:00:00Z"
+}

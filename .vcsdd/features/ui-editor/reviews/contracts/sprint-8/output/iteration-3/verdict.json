@@ -1,0 +1,120 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "mode": "strict",
+  "sprint": 8,
+  "iteration": 3,
+  "reviewedAt": "2026-05-09T04:45:00Z",
+  "reviewType": "contract",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "criteria": ["CRIT-800", "CRIT-801", "CRIT-808", "CRIT-809"],
+      "findings": ["FIND-094"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:314-361",
+          "description": "FIND-091 fix VERIFIED. `prop_ipc_006_saving_key_set_equality` constructs `EditingSessionStateDto::Saving { current_note_id, is_note_empty, blocks: None }` (lines 316-320) and a second case with `blocks: Some(vec![])` (lines 339-343). Both branches assert BTreeSet equality on the JSON keys: `{status, currentNoteId, isNoteEmpty}` for blocks=None (line 328) and `{status, currentNoteId, isNoteEmpty, blocks}` for blocks=Some (lines 351-354). REQ-IPC-005 is now anchored to a real Saving-variant assertion."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1135-1161",
+          "description": "FIND-092 fix VERIFIED. `ec_ipc_013_whitespace_only_body_is_not_empty` iterates over `[\"\\n\", \"  \", \"\\n\\n   \\n\", \" \\t \\n\"]` (line 1137) and asserts `!is_note_empty` for both `compose_state_for_select_past_note` (lines 1138-1148) and `compose_state_for_save_ok` (lines 1150-1159). Spec EC-IPC-013 (behavioral-spec.md:1256) requires `body.is_empty()` byte-level semantics yielding isNoteEmpty:false for whitespace-only — the test matches the spec divergence note exactly."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:35,64",
+          "description": "Coverage map references after iter-3 are accurate. Line 35: `REQ-IPC-005 (Saving exact key set)       — prop_ipc_006_saving_key_set_equality` matches the new test name. Line 64: `EC-IPC-013 (whitespace-only body)        — ec_ipc_013_whitespace_only_body_is_not_empty` matches the new test name. The other 19 REQ-IPC and 13 EC-IPC entries (lines 31-34, 36-50, 52-63, 65) are unchanged from iter-2 and remain valid."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-8.md:40-42",
+          "description": "FIND-094: CRIT-800 passThreshold's literal arithmetic is now stale — it states `89 (43 + 18 + 20 + 8)` and `no additions or removals expected during contract review`, but iter-3 added two tests, making the actual count 91 (43 + 18 + 22 + 8). The contract was not amended. FIND-091's own remediation explicitly required this update."
+        }
+      ]
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "PASS",
+      "criteria": ["CRIT-802"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh:18",
+          "description": "FIND-093 fix VERIFIED. Line 18 contains `shopt -s globstar nullglob` immediately after `set -euo pipefail` at line 17. This enables true recursive `**` expansion in bash, so the awk multi-line scan at line 209 (`\"$SRC_TAURI\"/src/**/*.rs`) now reaches files at any depth (including `src/domain/vault/*.rs` at depth 2). Builder also removed the redundant `\"$SRC_TAURI\"/src/*.rs` glob, which is correct because `src/**/*.rs` with globstar matches zero or more intermediate directories per the bash manual, covering depth-1 files like `src/lib.rs`, `src/editor.rs`, `src/feed.rs` as well."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1172-1191",
+          "description": "print_wire_fixtures emits the 14-fixture cover set with assertion arr.len() == 14 (line 1190). PROP-IPC-011 / PROP-IPC-022 obligation execution is unchanged from iter-2."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh:42-222",
+          "description": "Three grep audits (PROP-IPC-012 at L44-84, PROP-IPC-020 at L96-144, PROP-IPC-021 at L154-222) remain intact. The PASS line at L218 still text-matches CRIT-804 verbatim."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "criteria": ["CRIT-803", "CRIT-811"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+          "description": "Iter-3 patch did not touch wire_fixtures() / prop_ipc_010 / the 14-fixture cover set. CRIT-803 (round-trip cover set) and CRIT-811 (TS suite non-regression) are unchanged from iter-2 PASS state."
+        }
+      ]
+    },
+    {
+      "name": "wire_contract_consistency",
+      "verdict": "PASS",
+      "criteria": ["CRIT-804", "CRIT-805", "CRIT-806"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh:18,209",
+          "description": "FIND-093 fix VERIFIED (see verification_architecture dimension above). The multi-line awk scan at L209 now globs `\"$SRC_TAURI\"/src/**/*.rs` with globstar enabled, achieving true recursive coverage. The CRIT-804 contract claim `cannot evade detection` is now technically supported: any legacy `make_editing_state_changed_payload(arg, arg, arg, arg, arg, arg)` call across any depth under src/ is reachable by either the recursive single-line `grep -rn` (L160) or the now-recursive multi-line awk scan. CRIT-805 / CRIT-806 are unchanged from iter-2."
+        }
+      ]
+    },
+    {
+      "name": "out_of_scope_discipline",
+      "verdict": "PASS",
+      "criteria": ["CRIT-807", "CRIT-810"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/editor.rs:308-319,266-280",
+          "description": "compose_state_for_select_past_note still unconditionally returns blocks: None; compose_state_for_save_err still always sets prior_focused_block_id: None / pending_next_focus: None. CRIT-810 deferred-item prohibitions remain intact. Iter-3 patch only added test code and a shopt line; no source changes that could violate scope."
+        }
+      ]
+    }
+  ],
+  "summary": "FAIL: Iter-3 successfully fixes the three iter-2 findings (FIND-091 / FIND-092 / FIND-093) at the implementation level — the new prop_ipc_006_saving_key_set_equality genuinely constructs and asserts on the Saving variant's JSON key set; the new ec_ipc_013_whitespace_only_body_is_not_empty genuinely iterates over four whitespace-only inputs and asserts !is_note_empty on both compose_state_for_select_past_note and compose_state_for_save_ok; wire_audit.sh now opens with `shopt -s globstar nullglob` so the multi-line awk scan recursively reaches every depth under src/. Coverage map references at lines 35 and 64 are updated to the new test names and remain non-broken. However, a NEW issue surfaces: CRIT-800's passThreshold literally states `89 tests passing (43 + 18 + 20 + 8)` and `no additions or removals expected during contract review`, but iter-3 added two tests during contract review, making the actual count 91 (43 + 18 + 22 + 8). FIND-091's own iter-2 remediation explicitly anticipated this and required the contract count be bumped, but the builder applied only the test-side fix, not the contract amendment [FIND-094, major]. The contract is now self-incoherent: its itemized arithmetic does not sum to its stated total, and its meta-claim about review-time stability is self-falsifying. CRIT-801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811 are all sound after iter-3. The single remaining gap is the CRIT-800 numerical drift; once sprint-8.md:40-41 is amended to `91 tests (43 + 18 + 22 + 8)`, the contract should reach iter-4 PASS.",
+  "convergenceSignals": {
+    "findingCount": 1,
+    "criticalCount": 0,
+    "majorCount": 1,
+    "minorCount": 0,
+    "evaluatedCriteria": [
+      "CRIT-800", "CRIT-801", "CRIT-802", "CRIT-803", "CRIT-804",
+      "CRIT-805", "CRIT-806", "CRIT-807", "CRIT-808", "CRIT-809",
+      "CRIT-810", "CRIT-811"
+    ],
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "contractDigest": null
+  }
+}

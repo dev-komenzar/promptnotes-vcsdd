@@ -1,0 +1,34 @@
+=== Security Static Scan: edit-past-note-start ===
+Date: 2026-05-07
+
+--- Unsafe casts (as any) ---
+NONE
+
+--- Double casts (as unknown as) ---
+start-new-session.ts:95:  const parseResult = ports.parseMarkdownToBlocks(snapshot.body as unknown as string);
+start-new-session.ts:108:  } as unknown as Note;
+is-empty-note.ts:29:  const content = block.content as unknown as string;
+
+--- Injection patterns (eval/exec/innerHTML) ---
+NONE
+
+--- String concatenation (potential HTML injection) ---
+NONE
+
+--- Direct I/O access (process/fs/require) ---
+NONE
+
+--- Direct Date.now() calls (bypasses Clock port) ---
+NONE
+
+--- Error message content (sensitive info leak check) ---
+start-new-session.ts:99:    throw new Error(
+classify-current-session.ts:37:        throw new Error(
+classify-current-session.ts:54:        throw new Error(
+classify-current-session.ts:71:      throw new Error(
+pipeline.ts:102:    throw new Error(
+pipeline.ts:112:    throw new Error(
+pipeline.ts:126:    throw new Error(
+
+--- Precondition throw ordering (must be before port calls) ---
+pipeline.ts line ordering verified by source inspection: PC-004 idle (line 101-105) -> PC-004 editing/save-failed (line 107-115) -> classifyCurrentSession (line 119) -> PC-001 cross-note (line 125-129) -> flushCurrentSession (line 132) -> startNewSession (line 149)

@@ -1,6 +1,8 @@
 /**
  * PROP-001: bodyForClipboard is pure (referentially transparent).
  *
+ * Sprint 3: arbitrary produces block-shaped Note `{ id, blocks, frontmatter }`.
+ *
  * Tier 1 — fast-check property test.
  * Required: true
  *

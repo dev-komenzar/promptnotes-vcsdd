@@ -46,7 +46,7 @@ function makeInitialState(overrides: Partial<ExtendedFeedViewState> = {}): Exten
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: ['note-001', 'note-002', 'note-003'],
     allNoteIds: ['note-001', 'note-002', 'note-003'],
     loadingStatus: 'ready',
@@ -55,6 +55,8 @@ function makeInitialState(overrides: Partial<ExtendedFeedViewState> = {}): Exten
     noteMetadata: {},
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
+    searchQuery: '',
+    sortDirection: 'desc',
     ...overrides,
   };
 }
@@ -64,7 +66,7 @@ function makeSnapshot(overrides: Partial<FeedDomainSnapshot> = {}): FeedDomainSn
     editing: {
       status: 'idle',
       currentNoteId: null,
-      pendingNextNoteId: null,
+      pendingNextFocus: null,
     },
     feed: {
       visibleNoteIds: ['note-001', 'note-002'],
@@ -481,7 +483,7 @@ describe('PROP-TAG-024: DomainSnapshotReceived preserves activeFilterTags and ta
     const state = makeInitialState({ activeFilterTags: ['typescript', 'draft'] });
     const snapshot = makeSnapshot({
       cause: { kind: 'EditingStateChanged' },
-      editing: { status: 'editing', currentNoteId: 'note-x', pendingNextNoteId: null },
+      editing: { status: 'editing', currentNoteId: 'note-x', pendingNextFocus: null },
     });
     // Call the REAL feedReducer (no cast needed for DomainSnapshotReceived — it already handles it)
     const result = feedReducer(state as unknown as FeedViewState, {
@@ -517,7 +519,7 @@ describe('PROP-TAG-024: DomainSnapshotReceived preserves activeFilterTags and ta
     });
     const snapshot = makeSnapshot({
       cause: { kind: 'InitialLoad' },
-      editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: 'idle', currentNoteId: null, pendingNextFocus: null },
       noteMetadata: {
         'note-001': { body: 'test', createdAt: 1, updatedAt: 1, tags: ['draft'] },
       },

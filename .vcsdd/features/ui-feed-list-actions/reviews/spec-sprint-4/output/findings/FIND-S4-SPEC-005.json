@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-005",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "title": "block-migration-spec-impact.md 推奨アクション #5 (`apply-filter-or-search` / `tag-chip-update` の payload 整合) が Sprint 4 spec で扱われていない",
+  "location": "behavioral-spec.md:62, types.ts:167-171",
+  "description": "block-migration-spec-impact.md の `ui-feed-list-actions` 推奨アクション #5 は `apply-filter-or-search` / `tag-chip-update` の payload 整合 (body vs blocks) を Sprint 4 で決定するよう求めている。`types.ts:167-168` の `add-tag-via-chip` / `remove-tag-via-chip` payload は `body: string` を含み、これは block 化後の単一情報源と矛盾する。Sprint 4 spec line 62 はスコープ宣言で「タグチップ操作 ... は本スコープ外」とするが、payload 整合の判断 (本 feature が `body: string` を carry し続けるか、`blocks: DtoBlock[]` を carry するか) は本 feature が下流に影響を波及させるため決定を持ち越せない。Sprint 4 spec はこの決定を明示するか、明示的に Sprint 5+ へ deferred と宣言する必要がある。",
+  "evidence": "docs/tasks/block-migration-spec-impact.md:134 `5. apply-filter-or-search / tag-chip-update の payload 整合（body vs blocks）を併せて決定。`\ntypes.ts:167 `| { kind: 'add-tag-via-chip'; payload: { noteId: string; tag: string; body: string; existingTags: readonly string[]; createdAt: number; updatedAt: number; issuedAt: string } }`\nbehavioral-spec.md:62 `タグチップ操作 ... は apply-filter-or-search / tag-chip-update フィーチャの管轄であり、本スコープ外とする。`",
+  "remediation": "Sprint 4 Extensions セクション (behavioral-spec.md §Sprint 4 Extensions, line 692-) に「Out-of-scope deferrals (Sprint 4)」サブセクションを追加し、(a) `add-tag-via-chip` / `remove-tag-via-chip` payload は当面 `body: string` を維持する (`body` は Rust 側で `serializeBlocksToMarkdown(blocks)` から導出される派生)、(b) Sprint 5 で `tag-chip-update` feature が block 化対応する際に同期改訂する、を明示する。あるいは Sprint 4 で payload を `blocks: ReadonlyArray<DtoBlock>` に変更する場合は新 REQ を追加する。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "FIND-029",
+  "severity": "minor",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md §10 line 428-429; docs/domain/code/ts/src/capture/commands.ts lines 72-89",
+  "description": "EditorCommand kind decomposition diverges from CaptureCommand without an explicit translation rule. capture/commands.ts InsertBlock (lines 72-89) is a single discriminated union with `kind: 'insert-block'` and an `atBeginning: false | true` discriminator inside the payload. The verification-architecture.md §10 EditorCommand union (lines 428-429) splits this into two distinct kinds: `'insert-block-after'` and `'insert-block-at-beginning'`. The §10 'Source of names' note (line 445) acknowledges this: 'kind strings derive from capture/commands.ts (with insert-block decomposed into the two atBeginning variants for an unambiguous payload shape)'. However, the spec never documents how the impure shell adapter translates the EditorCommand kind back to the CaptureCommand kind at the Tauri IPC wire boundary (the Rust handler presumably accepts kind: 'insert-block' with atBeginning, not the split kinds). Phase 5 audit greps and Phase 2 adapter tests will need to know whether the adapter sends 'insert-block-after' or 'insert-block' over the wire. The behavioral-spec.md §10 outbound list uses 'dispatchInsertBlockAfter' / 'dispatchInsertBlockAtBeginning' method names but does not pin the wire-format kind string.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+    "lineRange": "428-429",
+    "snippet": "| { kind: 'insert-block-after';      payload: { noteId: string; prevBlockId: string; type: BlockType; content: string; issuedAt: string } }\n| { kind: 'insert-block-at-beginning'; payload: { noteId: string; type: BlockType; content: string; issuedAt: string } }"
+  },
+  "suggestedRemediation": "Add a 'wire-format mapping' subsection in §10 (or §11 of behavioral-spec) that pins the bidirectional mapping: EditorCommand kind 'insert-block-after' → IPC payload `{ kind: 'insert-block', atBeginning: false, ... }`, and 'insert-block-at-beginning' → `{ kind: 'insert-block', atBeginning: true, ... }`. This closes the kind-string translation gap.",
+  "routeToPhase": "1b"
+}

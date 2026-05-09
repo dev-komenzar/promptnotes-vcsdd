@@ -1,0 +1,19 @@
+PROP-026 — block-parse failure mapping (Tier 2 example-based)
+Date: 2026-05-08T00:00:00Z
+Sprint: 5 iteration 2
+Command: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts
+
+bun test v1.3.11 (af24e281)
+ 12 pass
+ 0 fail
+ 58 expect() calls
+Ran 12 tests across 1 file. [38.00ms]
+
+PROP-026 relevant tests (5/12):
+  PROP-026 — unterminated-code-fence error → failure:{kind:'hydrate',reason:'block-parse'}           PASS
+  PROP-026 — malformed-structure error → failure:{kind:'hydrate',reason:'block-parse'}               PASS
+  PROP-026 — frontmatter-ok but block-parse-fail → reason='block-parse' (not 'yaml-parse')          PASS
+  PROP-026 — block-parse failure on one file; remaining files still processed                         PASS
+  PROP-026 — total invariant preserved when block-parse fails on N files                              PASS
+
+RESULT: PROVED — 5 PROP-026 tests pass (all 12 in file pass)

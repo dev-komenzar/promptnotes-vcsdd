@@ -1,0 +1,128 @@
+## Phase 2a Red Phase Evidence — edit-past-note-start Sprint 2
+## Date: 2026-05-07T01:55:00.000Z
+## Feature: edit-past-note-start
+## Sprint: 2 (block-based BlockFocusRequest migration)
+## Mode: lean
+
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+---
+
+## Summary
+
+- Total tests: 113
+- Passing: 44
+- Failing: 69
+- Files: 12
+
+## Failing tests are EXPECTED: Sprint 1 implementation vs Sprint 2 block-based tests
+
+All 69 failures are caused by the Sprint 1 implementation not yet being migrated
+to the Sprint 2 block-based API. The failures are the correct red phase signal.
+
+## Root causes of expected failures
+
+### 1. `classify-current-session.ts` — Sprint 1 body-based isEmpty (note.body.trim)
+   - `note.body` does not exist on Sprint 2 block-based `Note`
+   - Sprint 2 tests pass block-based `Note { id, blocks: Block[], frontmatter }`
+   - All tests calling `classifyCurrentSession(state, request, note)` crash with:
+     `TypeError: undefined is not an object (evaluating 'note.body.trim')`
+
+### 2. `classify-current-session.ts` — Missing 3rd parameter (currentNote)
+   - Sprint 1 signature: `classifyCurrentSession(state, request)` (2 params)
+   - Sprint 2 signature: `classifyCurrentSession(state, request, currentNote)` (3 params)
+   - Missing same-note detection: no `{ kind: 'same-note', noteId, note }` variant
+
+### 3. `pipeline.ts` — Uses `input.selection` (Sprint 1 field) instead of `input.request`
+   - Sprint 1: `input.selection: PastNoteSelection`
+   - Sprint 2: `input.request: BlockFocusRequest`
+   - All pipeline tests crash with:
+     `TypeError: undefined is not an object (evaluating 'selection.noteId')`
+
+### 4. `flush-current-session.ts` — Uses `selectedNoteId: NoteId | null` (Sprint 1)
+   - Sprint 2: second param is `request: BlockFocusRequest`
+   - `SwitchError.pendingNextNoteId` not migrated to `pendingNextFocus: { noteId, blockId }`
+
+### 5. `start-new-session.ts` — Uses `PastNoteSelection` and emits `editor-focused-on-past-note`
+   - Sprint 2: takes `BlockFocusRequest`, emits `block-focused`
+   - `NewSession` missing `focusedBlockId: BlockId` field
+
+## Test files written (Sprint 2 replacements + new harnesses)
+
+### Rewritten (9 files):
+- step1-classify-current-session.test.ts (Sprint 2: 3-param classify, same-note, block-based isEmpty)
+- step2-flush-current-session.test.ts (Sprint 2: BlockFocusRequest, same-note-skipped, pendingNextFocus)
+- step3-start-new-session.test.ts (Sprint 2: BlockFocusRequest, BlockFocused, focusedBlockId)
+- pipeline.test.ts (Sprint 2: EditPastNoteStartInput with request, parseMarkdownToBlocks, no SameNoteNoOp)
+- __verify__/prop-001-classify-purity.harness.test.ts (arity=3, DateNow never called)
+- __verify__/prop-002-classify-idle.harness.test.ts (BlockFocusRequest, always 'no-current')
+- __verify__/prop-003-classify-editing.harness.test.ts (block-based NoteOps.isEmpty, 1000 runs)
+- __verify__/prop-004-classify-save-failed.harness.test.ts (same-note for EditingState + SaveFailedState)
+- __verify__/prop-005-switch-error-exhaustive.harness.test.ts (pendingNextFocus.blockId Sprint 2 shape)
+
+### New (3 files):
+- __verify__/prop-026-save-error-mapping.harness.test.ts (6 SaveError → NoteSaveFailureReason, fc.oneof)
+- __verify__/prop-027-precondition-throws.harness.test.ts (PC-001/PC-002/PC-004 → synchronous throws)
+- __verify__/prop-028-idempotent-refocus.harness.test.ts (same-note idempotent re-focus invariant)
+
+## Type Contract Delta applied
+
+`docs/domain/code/ts/src/capture/workflows.ts` — ClassifyCurrentSession widened to 3 params:
+```typescript
+export type ClassifyCurrentSession = (
+  current: EditingSessionState,
+  request: BlockFocusRequest,
+  currentNote: Note | null,
+) => CurrentSessionDecision;
+```
+
+## Raw test output (truncated to key failures)
+
+bun test v1.3.11 (af24e281)
+
+FAILURES (representative sample):
+
+pipeline.test.ts:
+  TypeError: undefined is not an object (evaluating 'selection.noteId')
+  at runEditPastNoteStartPipeline (pipeline.ts:80:51)
+  [ALL pipeline tests fail — Sprint 1 input destructures input.selection, Sprint 2 sends input.request]
+
+step1-classify-current-session.test.ts:
+  TypeError: undefined is not an object (evaluating 'note.body.trim')
+  at isEmpty (classify-current-session.ts:71:20)
+  [Block-based notes have no .body — classify uses Sprint 1 body string]
+
+step1-classify-current-session.test.ts (same-note):
+  Expected: { kind: 'same-note', noteId, note }
+  Received: { kind: 'dirty', ... }
+  [Sprint 1 classifyCurrentSession has no same-note detection — 4th variant missing]
+
+prop-003-classify-editing.harness.test.ts:
+  TypeError: undefined is not an object (evaluating 'note.body.trim')
+  fast-check shrunk to: single empty-paragraph block-based note
+  [NoteOps.isEmpty must use blocks[0].content === '' check, not note.body.trim]
+
+prop-026-save-error-mapping.harness.test.ts:
+  flushCurrentSession(decision, request, ports, null) — request is BlockFocusRequest
+  [Sprint 1 flush takes noteId: NoteId | null as second param — type mismatch]
+
+prop-027-precondition-throws.harness.test.ts:
+  PC-001 cross-note + snapshot=null should throw Error
+  [Sprint 1 pipeline has no PC-001 validation — no throw on null snapshot]
+
+prop-028-idempotent-refocus.harness.test.ts:
+  TypeError: undefined is not an object (evaluating 'selection.noteId')
+  [Same root cause as pipeline.test.ts — input.selection undefined]
+
+PASSING TESTS (44):
+  - PROP-EPNS-002: idle state always → no-current (2 runs, no note body needed)
+  - PROP-EPNS-005: SwitchError type exhaustiveness (TypeScript compile-time, example-based)
+  - Some step2-flush tests where request path matches Sprint 1 behavior
+  - Some step3-start-new-session tests for no-current path
+  - Example-based tests not touching note.body or selection.noteId
+
+STATISTICS:
+  44 pass / 69 fail / 113 total across 12 files in ~193ms
+
+Gate: RED PHASE CONFIRMED — 69 failures for correct reasons (Sprint 1 impl vs Sprint 2 tests)

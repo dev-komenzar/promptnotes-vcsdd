@@ -1,0 +1,15 @@
+{
+  "id": "FIND-068",
+  "severity": "minor",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "location": "promptnotes/src/lib/editor/types.ts:270",
+  "description": "IDLE_SAVE_DEBOUNCE_MS is exported from BOTH types.ts:270 and debounceSchedule.ts:18. Both equal 2000 so functional behaviour is consistent, but there are two named exports of the same constant. CRIT-705 grep checks debounceSchedule.ts only. Risk: a future drift would let one constant become out-of-sync with the other and both grep gates would still pass. Currently no spec authority resolves which is canonical.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/types.ts",
+    "lineRange": "264-270",
+    "snippet": "// ── Spec constants ────────────────────────────────────────────────────────────\n\n/**\n * REQ-EDIT-012: Idle-save debounce window in milliseconds.\n * Named export so tests can reference it via vi.useFakeTimers().\n */\nexport const IDLE_SAVE_DEBOUNCE_MS = 2000;"
+  },
+  "suggestedRemediation": "Pick one location (verification-architecture §2 already names debounceSchedule.ts as canonical) and re-export from the other: `export { IDLE_SAVE_DEBOUNCE_MS } from './debounceSchedule.js';` in types.ts. This way drift is impossible.",
+  "routeToPhase": "2c"
+}

@@ -1,0 +1,9 @@
+XSS / DOM injection audit — Sprint 7 — 2026-05-06
+
+Command:
+grep -r "{@html\|innerHTML\|outerHTML\|insertAdjacentHTML" promptnotes/src/lib/editor/ | wc -l
+
+Output: 0
+
+Scope: all files under promptnotes/src/lib/editor/ including *.ts and *.svelte
+Result: CLEAN — zero hits

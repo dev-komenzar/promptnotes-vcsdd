@@ -1,0 +1,24 @@
+{
+  "findingId": "FIND-093",
+  "criterion": "CRIT-804",
+  "dimension": "wire_contract_consistency",
+  "category": "verification_tool_mismatch",
+  "severity": "minor",
+  "description": "CRIT-804 (sprint-8.md:120-123) claims `the audit performs both a single-line regex and a multi-line awk-based scan that flattens the call expression across newlines, so a multi-line legacy regression cannot evade detection`. The 'cannot evade detection' claim is overstated. The awk multi-line scan at wire_audit.sh:208 reads from `\"$SRC_TAURI\"/src/*.rs \"$SRC_TAURI\"/src/**/*.rs`. In bash, `**` is NOT recursive unless `shopt -s globstar` is set; the script at line 17 uses `set -euo pipefail` but never enables `globstar`. Without globstar, `src/**/*.rs` is interpreted as `src/*/*.rs`, which matches files at depth-1 subdirectories only (e.g., `src/domain/mod.rs`, `src/feed.rs`). Files at depth ≥2 — for example `src/domain/vault/mod.rs` and `src/domain/vault/note_id.rs`, which already exist in the codebase per `src/lib.rs:28-30` (pub mod domain) and `src/domain/mod.rs:5` (pub mod vault) — are NOT scanned by the awk multi-line code path. The single-line check at wire_audit.sh:159 `grep -rn -E ... \"$SRC_TAURI/src/\"` IS recursive and catches single-line legacy forms anywhere under src/. So the practical attack surface is narrow: only a hypothetical multi-line legacy `make_editing_state_changed_payload(arg1, arg2, ...)` regression introduced into a depth-≥2 module would slip through. Severity is minor because (a) such modules are domain-pure and unlikely to ever construct the IPC helper, and (b) the single-line scan is still globally recursive. Nevertheless, the contract's strong negative claim ('cannot evade detection') is technically false.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "lineRange": "120-123",
+    "snippet": "The PROP-IPC-021 audit performs both a single-line regex\n  and a multi-line awk-based scan that flattens the call expression across newlines,\n  so a multi-line legacy regression cannot evade detection."
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/tests/wire_audit.sh",
+    "lineRange": "208",
+    "snippet": "' \"$SRC_TAURI\"/src/*.rs \"$SRC_TAURI\"/src/**/*.rs 2>/dev/null || true)"
+  },
+  "remediationOptions": [
+    "Add `shopt -s globstar` near the top of wire_audit.sh (after `set -euo pipefail`) so `src/**/*.rs` becomes truly recursive across all depths.",
+    "Alternatively, replace the explicit glob pair with `find \"$SRC_TAURI/src\" -name '*.rs' -print0 | xargs -0 awk '...'` to guarantee recursive coverage independent of bash glob settings.",
+    "Alternatively, soften the contract's claim from 'cannot evade detection' to 'is detected for any single-line form anywhere under src/, and for multi-line forms in src/*.rs and src/*/*.rs (the practical IPC-helper call surface)'."
+  ],
+  "routeToPhase": "1c"
+}

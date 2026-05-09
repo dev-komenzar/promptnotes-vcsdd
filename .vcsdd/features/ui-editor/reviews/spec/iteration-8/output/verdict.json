@@ -1,0 +1,104 @@
+{
+  "feature": "ui-editor",
+  "phase": "1c",
+  "mode": "strict",
+  "iteration": 8,
+  "reviewedAt": "2026-05-09T02:30:00Z",
+  "reviewType": "spec",
+  "scope": "Sprint 8 narrow regression review (iter-3 fix for FIND-087) — behavioral-spec.md REQ-IPC-009 vs §15.5 BlockTypeDto delta vs verification-architecture.md PROP-IPC-018/019. Iter-7's PASS evidence on the other 13 prior findings is trusted unchanged.",
+  "overallVerdict": "PASS",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md:1218",
+          "description": "REQ-IPC-009 fix verified: 'The Rust block_type field shall be of type BlockTypeDto (per §15.5) and shall serialize under the JSON key type, with serde rename rules producing the 9 kebab-case literals.' The stale 'block_type: String' phrasing flagged in FIND-087 is gone. The wire-shape claim ({ id, type, content }) is preserved; the Rust source-type description is now consistent with §15.5. Permitted type values are explicitly enumerated and match the 9 kebab-case literals."
+        }
+      ]
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md:584",
+          "description": "PROP-IPC-018 (compile-time exhaustiveness over BlockTypeDto's 9 variants Paragraph|Heading1|Heading2|Heading3|Bullet|Numbered|Code|Quote|Divider) remains aligned with the iter-3 REQ-IPC-009 wording — same 9 variants, same kebab-case mapping. No verification artefact required modification for the FIND-087 patch."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md:585",
+          "description": "PROP-IPC-019 (round-trip on 9 valid kebab-case literals + 3 failure cases) enumerates exactly the same 9 literals now referenced by REQ-IPC-009: paragraph, heading-1, heading-2, heading-3, bullet, numbered, code, quote, divider. Invalid-case coverage (typo 'hedaing-1', capitalized 'Paragraph', empty string) is unchanged."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/reviews/spec/iteration-7/output/verdict.json:62-70",
+          "description": "Iter-7 evidence trusted: EC-IPC-001..014 cover all enumerated edge cases and the iter-3 single-sentence patch to REQ-IPC-009 introduces no new edge-case surfaces (no new variant, no new field, no new optionality rule). The patch only re-types an existing field at the Rust level."
+        }
+      ]
+    },
+    {
+      "name": "wire_contract_consistency",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md:1218,1272",
+          "description": "Cross-reference verified consistent: REQ-IPC-009 (line 1218) now mandates BlockTypeDto with serde rename to 9 kebab-case literals; §15.5 BlockTypeDto delta (line 1272) mandates the 9-variant enum Paragraph|Heading1|Heading2|Heading3|Bullet|Numbered|Code|Quote|Divider with #[serde(rename_all = \"kebab-case\")] plus explicit #[serde(rename = \"heading-1\")]/\"heading-2\"/\"heading-3\"]. The wire-side JSON keys (id, type, content) and TS BlockType literal union (paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider) match exactly. No internal contradiction remains."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md:645-646",
+          "description": "PROP cross-reference table (§10.4) maps PROP-IPC-018 and PROP-IPC-019 to REQ-IPC-009 — the patched REQ-IPC-009 wording remains the verification target for both PROPs without rewiring."
+        }
+      ]
+    },
+    {
+      "name": "out_of_scope_discipline",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md:1218,1259-1264",
+          "description": "The FIND-087 patch is a re-typing of an existing Rust field; it adds no new behaviour, no new IPC channel, no new helper, and does not encroach on §15.4 out-of-scope items (block parsing on Rust side remains deferred to ui-feed-list-actions Sprint 4; Sprint 8 still emits blocks: None from all Rust handlers). The whitespace-only divergence from NoteOps.isEmpty() and body-delivery routing pin are unchanged."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "narrative": "Iter-3 single-sentence patch to REQ-IPC-009 cleanly resolves FIND-087. The Rust field-type description ('block_type: String') has been replaced with 'BlockTypeDto (per §15.5)' and the 9 kebab-case literals are explicitly enumerated. Cross-reference check passes: REQ-IPC-009 (behavioral-spec.md:1218), §15.5 BlockTypeDto delta (behavioral-spec.md:1272), PROP-IPC-018 (verification-architecture.md:584, compile-time exhaustiveness), and PROP-IPC-019 (verification-architecture.md:585, round-trip on 9 valid + 3 invalid) all agree on the 9-variant kebab-case mapping (Paragraph|Heading1|Heading2|Heading3|Bullet|Numbered|Code|Quote|Divider → paragraph|heading-1|heading-2|heading-3|bullet|numbered|code|quote|divider). The wire-shape claim ({ id, type, content }) is preserved. No new findings were introduced by the patch — risk surface was minimal (single sentence, no new behaviour, no new field, no new optionality rule, no impact on §15.4 out-of-scope discipline). The 13 iter-2 resolutions remain valid (trusted from iter-7 evidence). All 5 dimensions PASS. Sprint 8 spec is converged for Phase 1c.",
+    "iter7FindingsResolved": ["FIND-087"],
+    "newFindingsIntroducedInIter8": [],
+    "severityBreakdown": {
+      "critical": 0,
+      "major": 0,
+      "minor": 0
+    }
+  },
+  "convergenceSignals": {
+    "findingCount": 0,
+    "regressionStatus": "iter7-find-087-resolved-no-new-issues",
+    "newIssueCount": 0,
+    "newIssueSeverity": {
+      "critical": 0,
+      "major": 0,
+      "minor": 0
+    },
+    "priorIterationFindingsResolved": 1,
+    "priorIterationFindingsUnresolved": 0
+  }
+}

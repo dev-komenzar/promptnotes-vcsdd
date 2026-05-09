@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-042",
+  "dimension": "contract_validity",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "CRIT-713 passThreshold queries `branchCoverage.pct` from `coverage/coverage-summary.json`. The standard @vitest/coverage-v8 (and Istanbul-format) summary uses the key `branches.pct`, not `branchCoverage.pct`. Per-file entries follow the shape `{ statements: {...}, branches: {...}, functions: {...}, lines: {...} }`. Querying `branchCoverage.pct` will return undefined for every file and the >=95 comparison will be vacuously false. The criterion is unsatisfiable until the JSON path is corrected to `branches.pct`.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "lineRange": "270-275",
+    "snippet": "the JSON coverage report (coverage/coverage-summary.json) shows branchCoverage.pct >= 95 for each of promptnotes/src/lib/editor/editorPredicates.ts, promptnotes/src/lib/editor/editorReducer.ts, promptnotes/src/lib/editor/debounceSchedule.ts individually."
+  },
+  "routeToPhase": "contract-revision"
+}

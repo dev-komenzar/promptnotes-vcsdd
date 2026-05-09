@@ -1,0 +1,8 @@
+{
+  "featureName": "apply-filter-or-search",
+  "blockMigrationAcknowledged": true,
+  "blockMigrationAcknowledgedAt": "2026-05-09T00:00:00.000Z",
+  "blockMigrationImpact": "medium",
+  "blockMigrationWorkflow": "doc-patch-only",
+  "notes": "snapshot.body in search context is the derived body from serializeBlocksToMarkdown(note.blocks). Type signatures and acceptance criteria are unchanged. See block-migration-spec-impact.md §apply-filter-or-search and behavioral-spec.md DD-2 / REQ-011 block migration notes."
+}

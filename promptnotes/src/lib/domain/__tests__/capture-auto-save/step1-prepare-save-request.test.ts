@@ -1,7 +1,7 @@
 /**
  * step1-prepare-save-request.test.ts — Step 1: prepareSaveRequest tests
  *
- * REQ-002: Validates and produces ValidatedSaveRequest
+ * REQ-002: Validates and produces ValidatedSaveRequest (including blocks + derived body)
  * REQ-003: Empty body on idle → EmptyNoteDiscarded (success channel)
  * REQ-004: Empty body on blur → proceeds to save
  * REQ-005: InvariantViolated error
@@ -11,14 +11,18 @@
  * PROP-021: updatedAt === requestedAt (timestamp propagation)
  * PROP-022: InvariantViolated runtime path
  * PROP-023: EmptyNoteDiscarded path does NOT transition state to saving
+ *
+ * Sprint 2 additions (block-based migration):
+ * - REQ-002: request.blocks === input.note.blocks (same reference)
+ * - REQ-002: request.body === serializeBlocksToMarkdown(request.blocks)
  */
 
 import { describe, test, expect } from "bun:test";
 import type { Result } from "promptnotes-domain-types/util/result";
-import type { NoteId, Timestamp, Body, Frontmatter, Tag } from "promptnotes-domain-types/shared/value-objects";
+import type { NoteId, Timestamp, Body, Frontmatter, Tag, BlockId, BlockType, BlockContent } from "promptnotes-domain-types/shared/value-objects";
 import type { SaveError } from "promptnotes-domain-types/shared/errors";
 import type { EmptyNoteDiscarded } from "promptnotes-domain-types/shared/events";
-import type { Note } from "promptnotes-domain-types/shared/note";
+import type { Block, Note } from "promptnotes-domain-types/shared/note";
 import type { DirtyEditingSession, ValidatedSaveRequest } from "promptnotes-domain-types/capture/stages";
 
 // The implementation does NOT exist yet. This import will fail (Red phase).
@@ -26,6 +30,10 @@ import {
   prepareSaveRequest,
   type PrepareSaveRequestDeps,
 } from "$lib/domain/capture-auto-save/prepare-save-request";
+
+// serializeBlocksToMarkdown — for asserting derived body invariant (REQ-002/REQ-018)
+// RED: fails if this module does not exist yet
+import { serializeBlocksToMarkdown } from "$lib/domain/capture-auto-save/serialize-blocks-to-markdown";
 
 // ── Test helpers ──────────────────────────────────────────────────────────
 
@@ -45,6 +53,22 @@ function makeTag(raw: string): Tag {
   return raw as unknown as Tag;
 }
 
+function makeBlockId(raw: string): BlockId {
+  return raw as unknown as BlockId;
+}
+
+function makeBlockContent(raw: string): BlockContent {
+  return raw as unknown as BlockContent;
+}
+
+function makeParagraphBlock(content: string, id = "block-001"): Block {
+  return {
+    id: makeBlockId(id),
+    type: "paragraph" as BlockType,
+    content: makeBlockContent(content),
+  } as unknown as Block;
+}
+
 function makeFrontmatter(overrides: Partial<{
   tags: Tag[];
   createdAt: Timestamp;
@@ -57,12 +81,20 @@ function makeFrontmatter(overrides: Partial<{
   } as unknown as Frontmatter;
 }
 
-function makeNote(overrides: Partial<{ id: NoteId; body: Body; frontmatter: Frontmatter }> = {}): Note {
+/** Sprint 2: makeNote now accepts blocks (required by REQ-002 block-based migration). */
+function makeNote(overrides: Partial<{
+  id: NoteId;
+  blocks: ReadonlyArray<Block>;
+  body: Body;
+  frontmatter: Frontmatter;
+}> = {}): Note {
+  const blocks = overrides.blocks ?? [makeParagraphBlock("some content")];
   return {
     id: overrides.id ?? makeNoteId("2026-04-30-120000-000"),
+    blocks,
     body: overrides.body ?? makeBody("some content"),
     frontmatter: overrides.frontmatter ?? makeFrontmatter(),
-  };
+  } as unknown as Note;
 }
 
 function makeDirtyEditingSession(overrides: Partial<DirtyEditingSession> = {}): DirtyEditingSession {
@@ -291,5 +323,100 @@ describe("PROP-023: EmptyNoteDiscarded state non-transition", () => {
     expect(result.value.kind).toBe("empty-discarded");
     // No saving state should be produced
     expect(result.value.kind).not.toBe("validated");
+  });
+});
+
+// ── Sprint 2 (REQ-002 block-based migration): blocks + body coherence ─────
+//
+// These tests are NEW in sprint 2 and will FAIL (RED) because the current
+// implementation does not set request.blocks (it uses `as unknown` laundering).
+
+describe("REQ-002 Sprint 2: ValidatedSaveRequest carries blocks and derived body (block-based migration)", () => {
+  test("request.blocks === input.note.blocks (same reference, REQ-002 acceptance)", () => {
+    const blocks: ReadonlyArray<Block> = [makeParagraphBlock("hello", "block-001")];
+    const note = makeNote({ blocks });
+    const now = makeTimestamp(5000);
+    const deps = makeDeps({ clockNow: () => now });
+    const session = makeDirtyEditingSession({ note, trigger: "idle" } as any);
+
+    const result = prepareSaveRequest(deps)(session);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    if (result.value.kind !== "validated") return;
+
+    // REQ-002: ValidatedSaveRequest.blocks must be the same reference as note.blocks
+    expect(result.value.request.blocks).toBe(blocks);
+  });
+
+  test("request.body === serializeBlocksToMarkdown(request.blocks) — derived-body invariant (REQ-002/REQ-018)", () => {
+    const blocks: ReadonlyArray<Block> = [
+      makeParagraphBlock("first block", "block-001"),
+      makeParagraphBlock("second block", "block-002"),
+    ];
+    const note = makeNote({ blocks });
+    const now = makeTimestamp(5000);
+    const deps = makeDeps({ clockNow: () => now });
+    const session = makeDirtyEditingSession({ note, trigger: "idle" } as any);
+
+    const result = prepareSaveRequest(deps)(session);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    if (result.value.kind !== "validated") return;
+
+    const request = result.value.request;
+    const expectedBody = serializeBlocksToMarkdown(request.blocks);
+    // REQ-018: body === serializeBlocksToMarkdown(blocks) at every carrier site
+    expect(request.body as unknown as string).toBe(expectedBody);
+  });
+
+  test("request.blocks matches note.blocks for blur trigger", () => {
+    const blocks: ReadonlyArray<Block> = [makeParagraphBlock("blur content", "block-001")];
+    const note = makeNote({ blocks });
+    const deps = makeDeps();
+    const session = makeDirtyEditingSession({ note, trigger: "blur" } as any);
+
+    const result = prepareSaveRequest(deps)(session);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    if (result.value.kind !== "validated") return;
+
+    expect(result.value.request.blocks).toBe(blocks);
+  });
+
+  test("request.body === serializeBlocksToMarkdown(blocks) for blur trigger (derived-body invariant)", () => {
+    const blocks: ReadonlyArray<Block> = [makeParagraphBlock("blur body content")];
+    const note = makeNote({ blocks });
+    const deps = makeDeps();
+    const session = makeDirtyEditingSession({ note, trigger: "blur" } as any);
+
+    const result = prepareSaveRequest(deps)(session);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    if (result.value.kind !== "validated") return;
+
+    const request = result.value.request;
+    expect(request.body as unknown as string).toBe(serializeBlocksToMarkdown(request.blocks));
+  });
+
+  test("empty blocks (blur save) — request.blocks still same reference, body is empty/whitespace", () => {
+    // Empty paragraph, blur trigger — must proceed (REQ-004)
+    const blocks: ReadonlyArray<Block> = [makeParagraphBlock("")];
+    const note = makeNote({ blocks });
+    const deps = makeDeps({ noteIsEmpty: () => true });
+    const session = makeDirtyEditingSession({ note, trigger: "blur" } as any);
+
+    const result = prepareSaveRequest(deps)(session);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    if (result.value.kind !== "validated") return;
+
+    const request = result.value.request;
+    expect(request.blocks).toBe(blocks);
+    expect(request.body as unknown as string).toBe(serializeBlocksToMarkdown(request.blocks));
   });
 });

@@ -1,0 +1,140 @@
+{
+  "phase": "3",
+  "feature": "app-startup",
+  "sprint": 5,
+  "iteration": 1,
+  "timestamp": "2026-05-08T00:00:00Z",
+  "overallVerdict": "FAIL",
+  "dimensionVerdicts": {
+    "spec_fidelity": "FAIL",
+    "edge_case_coverage": "FAIL",
+    "implementation_correctness": "PASS",
+    "structural_integrity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "findingsCount": 6,
+  "blockerCount": 0,
+  "majorCount": 3,
+  "minorCount": 3,
+  "advisoryCount": 0,
+  "findingIds": [
+    "FIND-030",
+    "FIND-031",
+    "FIND-032",
+    "FIND-033",
+    "FIND-034",
+    "FIND-035"
+  ],
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-030", "FIND-031"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts:46-61",
+          "description": "Step 3 hydrateNote-Err absorption path violates REQ-008 AC 'programming-error invariant violation' clause"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-note.ts:65-84",
+          "description": "Empty-paragraph filter + BlockId reassignment is undocumented in spec rev7; breaks Step-2/Step-3 validation symmetry and PROP-027/PROP-030 'bit-identical' framing"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-032"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
+          "description": "No test exercises a ScannedVault with non-empty snapshots where one snapshot's hydrateNote returns Err — leaves the Step-3-only corruptedFile-merge code path unobserved"
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": ["FIND-035"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/scan-vault.ts:84-216",
+          "description": "Per-file loop logic is correct: list-failed terminates; readFile failure → kind:'read'; parseNote try/catch → reason:'unknown'; parseMarkdownToBlocks try/catch + Err/Ok([]) → reason:'block-parse'; NoteId VO and tag VO validation ordered correctly"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/pipeline.ts:75-113",
+          "description": "Pipeline orchestration: Step 1 → Step 2 → Clock.now → emit VaultScanned → Step 3 → emit FeedRestored → emit TagInventoryBuilt → Step 4. Event ordering matches PROP-021. Clock.now budget ≤ 2 verified by parse-call-budget tests"
+        },
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/app-startup/evidence/sprint-5-green-phase.log",
+          "description": "All 1915 tests pass (4 skip, 4 todo, 0 fail) per Phase 2b/2c evidence"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": ["FIND-033"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts:36",
+          "description": "hydrateFeed signature is unary: `function hydrateFeed(scannedVault: ScannedVault): HydratedFeed` — preserves PROP-023b arity-1 / no-Timestamp constraint"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/hydrate-note.ts:54-57",
+          "description": "hydrateNote uses default-parameter syntax `blockParser: BlockParser = moduleParseMarkdownToBlocks` to keep `fn.length === 1`, satisfying PROP-027 unary contract"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/app-startup/scan-vault.ts:38-46",
+          "description": "KNOWN_HYDRATION_REASONS Set covers all 5 HydrationFailureReason variants; isKnownHydrationReason guard correctly folds unrecognised variants to 'unknown'"
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": ["FIND-034"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-purity.test.ts",
+          "description": "PROP-025 covered by 7 deterministic-BlockId tests including a fast-check property and an explicit UUID-format-must-not-match assertion"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts",
+          "description": "PROP-027 covered by 12 tests asserting referential transparency, arity 1, no Date.now call, no FrontmatterParser.parse call, and block-parse failure-mode determinism"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/parse-call-budget.test.ts",
+          "description": "PROP-030 covered by 5 explicit call-counter tests: 1 file → 2 calls; 3 files → 6 calls; corrupt file → 1 call; mixed 2 ok + 1 corrupt → 5 calls; deterministic Block[] across both invocations"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts",
+          "description": "PROP-026 + PROP-029 covered: BlockParseError variants → reason='block-parse'; Ok([]) → reason='block-parse' (stubbed); workflow continues; total invariant preserved"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/domain/__tests__/app-startup/step2-hydration-unknown-fallback.test.ts",
+          "description": "PROP-028 + REQ-018 covered: parseNote throw → reason='unknown' with detail; unrecognised future variant → reason='unknown'; remaining files process; readFile unknown stays kind:'read'"
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 6,
+    "allCriteriaEvaluated": true,
+    "duplicateFindings": []
+  }
+}

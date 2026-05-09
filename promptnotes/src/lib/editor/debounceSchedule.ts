@@ -1,38 +1,40 @@
 /**
- * debounceSchedule.ts — pure idle-save debounce scheduling logic
+ * debounceSchedule.ts — pure idle-save debounce scheduling logic (Sprint 7)
  *
- * Pure core module: deterministic, no side effects, no forbidden APIs.
- * See verification-architecture.md §2 for the canonical purity-audit pattern.
+ * Phase 2b implementation: all stubs replaced with real logic.
  *
- * All timestamps are supplied by the caller as numbers (milliseconds since
- * some epoch). This module NEVER calls Date.now() — the caller provides nowMs.
+ * Pure core module: must never import @tauri-apps/api or any forbidden API.
+ * Signatures match verification-architecture.md §2 and behavioral-spec.md §12 exactly.
+ *
+ * Shell pattern: on each block-edit dispatch, the shell calls
+ *   cancelIdleSave(handle) then scheduleIdleSave(fireAt - clock.now(), callback)
+ * based on computeNextFireAt. The shell stores only lastEditTimestamp.
  */
 
 /**
- * REQ-EDIT-004: Named exported constant so tests can control via vi.useFakeTimers().
- * Value locked to 2000 per behavioral-spec.md §3.2 and sprint-1 contract CRIT-003.
+ * REQ-EDIT-012: Named exported constant for the idle-save debounce window.
+ * Value locked to 2000ms per behavioral-spec.md §3.3 IDLE_SAVE_DEBOUNCE_MS.
  */
 export const IDLE_SAVE_DEBOUNCE_MS = 2000;
 
 /**
- * Pure helper: the timestamp at which the idle save should fire given the
- * last edit. Used to schedule the setTimeout delay in the impure shell.
+ * PROP-EDIT-003, CRIT-705
+ * Pure helper: the timestamp at which the idle save should fire.
  */
 export function nextFireAt(lastEditTimestamp: number, debounceMs: number): number {
   return lastEditTimestamp + debounceMs;
 }
 
 /**
- * RD-019, CRIT-009: Locked signature from behavioral-spec.md §12 and
- * verification-architecture.md §2.
- *
- * Given the latest edit timestamp, last save timestamp, debounce window, and
- * current clock time, returns whether and when the idle save should fire.
+ * PROP-EDIT-003, CRIT-705
+ * Given the latest edit timestamp, last save timestamp, debounce window, and current
+ * clock time, returns whether and when the idle save should fire.
  *
  * shouldFire === true iff:
- *   lastEditAt + debounceMs <= nowMs AND lastSaveAt <= lastEditAt
- * fireAt === lastEditAt + debounceMs when shouldFire is relevant.
- * fireAt === null when the last save is already more recent than the fire point.
+ *   lastEditAt + debounceMs <= nowMs AND lastSaveAt < lastEditAt
+ *
+ * fireAt is lastEditAt + debounceMs when there is a pending unsaved edit;
+ * fireAt is null when lastSaveAt >= lastEditAt (save covers all edits).
  */
 export function computeNextFireAt(params: {
   lastEditAt: number;
@@ -41,33 +43,31 @@ export function computeNextFireAt(params: {
   nowMs: number;
 }): { shouldFire: boolean; fireAt: number | null } {
   const { lastEditAt, lastSaveAt, debounceMs, nowMs } = params;
-  const firePoint = lastEditAt + debounceMs;
+  const fireTime = lastEditAt + debounceMs;
 
-  // If a save has occurred after the last edit, no idle save is needed
-  if (lastSaveAt > lastEditAt) {
+  // If a real save (lastSaveAt > 0) happened at or after the last edit, no fire needed.
+  // lastSaveAt === 0 is the "never saved" sentinel; treat as no save.
+  if (lastSaveAt !== 0 && lastSaveAt >= lastEditAt) {
     return { shouldFire: false, fireAt: null };
   }
 
-  // Debounce window has not yet elapsed
-  if (nowMs < firePoint) {
-    return { shouldFire: false, fireAt: firePoint };
-  }
-
-  // Debounce elapsed and not yet saved since last edit
-  return { shouldFire: true, fireAt: firePoint };
+  // There is an unsaved edit; schedule or fire at fireTime.
+  const shouldFire = nowMs >= fireTime;
+  return { shouldFire, fireAt: fireTime };
 }
 
 /**
- * PROP-EDIT-003, PROP-EDIT-004: Property-test predicate accepting a sequence
- * of edit timestamps for arbitrary-input enumeration.
- *
+ * PROP-EDIT-003, PROP-EDIT-004
+ * Property-test predicate accepting a sequence of edit timestamps.
  * Returns true iff an idle save should fire given:
- * - editTimestamps: all edit events (at least one required)
+ * - editTimestamps: all edit events
  * - lastSaveTimestamp: time of the most recent save (0 if never saved)
  * - debounceMs: quiescence window
- * - nowMs: current clock time (supplied by caller, never Date.now())
+ * - nowMs: current clock time
  *
- * Production usage passes a 1-element array; property tests may pass many.
+ * Per spec: true iff editTimestamps.length > 0
+ *   AND last element + debounceMs <= nowMs
+ *   AND lastSaveTimestamp <= last element (save does not cover the last edit)
  */
 export function shouldFireIdleSave(
   editTimestamps: readonly number[],
@@ -79,13 +79,18 @@ export function shouldFireIdleSave(
     return false;
   }
 
+  // The most recent edit governs the debounce window.
+  // Use Math.max to find the latest timestamp regardless of insertion order.
   const lastEditAt = Math.max(...editTimestamps);
 
-  // If a save has occurred after the last edit, no idle save is needed
-  if (lastSaveTimestamp > lastEditAt) {
+  // If a real save (lastSaveTimestamp > 0) happened at or after the last edit,
+  // the edit is covered — no idle save needed.
+  // lastSaveTimestamp === 0 is the "never saved" sentinel; an edit at time 0
+  // is still unsaved in that case.
+  if (lastSaveTimestamp !== 0 && lastSaveTimestamp >= lastEditAt) {
     return false;
   }
 
-  const firePoint = lastEditAt + debounceMs;
-  return nowMs >= firePoint;
+  // Fire iff debounce window has elapsed.
+  return lastEditAt + debounceMs <= nowMs;
 }

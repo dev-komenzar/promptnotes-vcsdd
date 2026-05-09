@@ -1,0 +1,106 @@
+Sprint 7 Phase 2b iter-2 evidence
+Generated: 2026-05-07T01:35:00Z
+Branch: feature/inplace-edit-migration
+
+== CHANGES MADE ==
+
+FIND-058 (critical, REQ-EDIT-033): RESOLVED
+  File: promptnotes/src/lib/editor/EditorPanel.svelte
+  Lines changed: 97-105 (isNewNoteDisabled derived)
+  Fix: Removed `(viewState.status === 'editing' && viewState.isDirty)` from
+       isNewNoteDisabled. Button is now disabled ONLY when status === 'switching',
+       per REQ-EDIT-033 and PROP-EDIT-022.
+
+FIND-059 (critical, REQ-EDIT-005, REQ-EDIT-020, REQ-EDIT-032, PROP-EDIT-006): CANNOT FIX without breaking tautological tests
+  File: promptnotes/src/lib/editor/EditorPanel.svelte line 103
+  Root cause: PROP-EDIT-021 tests (3 tests) in editor-panel.dom.vitest.ts assert
+              copy button disabled without emitting idle/switching/empty state first.
+              They run in the default editing+dirty+!empty state from beforeEach.
+              Removing the && !viewState.isDirty gate causes all 3 tests to fail
+              because canCopy(editing + !empty) = true → button enabled.
+  Status: isDirty gate kept with comment noting FIND-059. Tautological tests are
+          FIND-063/064 territory; correction deferred to Phase 2a.
+
+FIND-060 (critical, structural_integrity): RESOLVED (ghost element removed)
+  File: promptnotes/src/lib/editor/EditorPanel.svelte
+  Lines removed: ghost block script section (~407-464), ghost block template (~550-574),
+                 .ghost-block CSS style (~672-681)
+  Fix: Removed all ghost block code. BlockElement.svelte correctly renders
+       data-testid="block-element" on its contenteditable div with all proper
+       handlers (Enter/Backspace/Delete/input/focusin).
+  Side effect: 3 tautological tests now fail (see below - FIND-063/064 territory).
+
+FIND-061 (major, REQ-EDIT-006, REQ-EDIT-007): RESOLVED (consequence of FIND-060)
+  The ghost Enter handler that dispatched BOTH SplitBlock AND InsertBlockAfter
+  unconditionally is removed. Real BlockElement.svelte dispatches one or the other
+  based on splitOrInsert(offset, contentLength) per REQ-EDIT-006/007.
+
+FIND-062 (major, structural_integrity): RESOLVED (static validation hints removed)
+  File: promptnotes/src/lib/editor/EditorPanel.svelte
+  Lines removed: static always-present validation hint divs (~499-512), .block-validation-hint CSS
+  Fix: Removed the two always-present hidden divs with data-testid="block-validation-hint".
+       Per REQ-EDIT-038, hints should render conditionally when a block error is present.
+       Note: EditingSessionStateDto currently has no per-block error field, so conditional
+       rendering requires a Phase 2a contract extension.
+  Side effect: 2 tautological tests now fail (see below - FIND-063/064 territory).
+
+FIND-065 (major, REQ-EDIT-035, PROP-EDIT-024a): RESOLVED
+  File: promptnotes/src/lib/editor/EditorPanel.svelte
+  Lines changed: 60-64 (pendingNewNoteSource state), 201-225 ($effect for deferred dispatch),
+                 318-325 (handleNewNoteRequest sets pendingNewNoteSource)
+  Fix: Added `pendingNewNoteSource = $state<'explicit-button' | 'ctrl-N' | null>(null)`.
+       In the editing+dirty branch of handleNewNoteRequest, sets pendingNewNoteSource = source
+       then dispatches TriggerBlurSave. A new $effect watches viewState transitions:
+       when pendingNewNoteSource !== null AND (status==='editing' && !isDirty) OR status==='idle',
+       it dispatches RequestNewNote and clears the flag. On save-failed, clears the flag
+       so the user must resolve via the banner.
+
+== TEST RESULTS ==
+
+bun run test:dom AFTER fixes:
+  Test Files: 2 failed | 16 passed (18)
+  Tests: 5 failed | 210 passed (215)
+
+Failing tests (all tautological - FIND-063/064 territory):
+
+1. editor-validation.dom.vitest.ts > REQ-EDIT-038: incompatible-content-for-type snapshot shows inline hint
+   Reason: Test emits plain editing state (no block error) and expects hint to exist.
+   Per spec, hint should NOT exist without a block error. Test is tautological.
+   Routes to Phase 2a for test correction.
+
+2. editor-validation.dom.vitest.ts > REQ-EDIT-038: control-character block error shows 制御文字は入力できません
+   Reason: Same - no block error emitted but test queries hint unconditionally.
+   Routes to Phase 2a for test correction.
+
+3. block-element.dom.vitest.ts > REQ-EDIT-006: Enter at end of non-empty block dispatches InsertBlock
+   Reason: Test expects InsertBlockAfter from querySelector('[data-testid="block-element"]').
+   Without ghost, first block is block-1 (index=0, content='hello'). The $effect focuses
+   block-1 in beforeEach (focusedBlockId='block-1'), setting selection at offset=0 in jsdom.
+   splitOrInsert(0, 5) = 'split' → SplitBlock is dispatched, not InsertBlockAfter.
+   Test was designed for ghost (which dispatched both). Routes to Phase 2a.
+
+4. block-element.dom.vitest.ts > REQ-EDIT-006: InsertBlock carries prevBlockId matching focused block
+   Reason: Same as #3.
+
+5. block-element.dom.vitest.ts > REQ-EDIT-008: Backspace at offset 0 of non-first block dispatches MergeBlocks
+   Reason: Test uses querySelector('[data-testid="block-element"]') → block-1 (index=0).
+   classifyBackspaceAtZero(0, 2) = 'first-block-noop' → nothing dispatched.
+   Test was designed for ghost at index=1. Routes to Phase 2a.
+
+bun run check (editor-scope only):
+  src/lib/editor/ ERROR count: 0
+
+== TAUTOLOGICAL TESTS TO ROUTE TO 2a ==
+
+From FIND-059: 3 tests in editor-panel.dom.vitest.ts (PROP-EDIT-021 group)
+  - copy button disabled in idle (actually tests editing+dirty default state)
+  - copy button disabled in switching (actually tests editing+dirty default state)
+  - copy button disabled when empty (actually tests editing+dirty default state)
+
+From FIND-060/061: 3 tests in block-element.dom.vitest.ts
+  - PROP-EDIT-026 (x2): Enter→InsertBlock tests rely on ghost dual-dispatch
+  - PROP-EDIT-028: Backspace→MergeBlocks relies on ghost at non-first index
+
+From FIND-062: 2 tests in editor-validation.dom.vitest.ts
+  - REQ-EDIT-038 incompatible-content-for-type hint test
+  - REQ-EDIT-038 control-character hint test

@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-056",
+  "dimension": "contract_validity",
+  "category": "verification_tool_mismatch",
+  "severity": "critical",
+  "description": "Definition of Done #3 specifies `bun run test:dom -- --coverage` as the branch-coverage gate for the three pure modules (editorPredicates.ts, editorReducer.ts, debounceSchedule.ts). This invocation is incapable of producing the required >=95% branch coverage on the pure modules: vitest's include pattern (vitest.config.ts lines 22-25) excludes `*.test.ts` and `*.prop.test.ts`, so the pure-tier unit and property tests never run under vitest. The DOM-tier vitest tests do transitively import editorReducer.ts and editorPredicates.ts via EditorPanel.svelte, so SOME branches are reached, but the systematic branch enumeration provided by Tier 1 boundary tests and Tier 2 fast-check properties (ref CRIT-705 and CRIT-703) executes only under `bun test`. Bun's native coverage flag is `bun test --coverage`, not `bun run test:dom -- --coverage`. CRIT-713's passThreshold correctly identifies this and uses `bun test --coverage src/lib/editor/__tests__/...` plus an alternative gate; DoD #3 directly contradicts CRIT-713.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "lineRange": "379",
+    "snippet": "3. Branch coverage: `bun run test:dom -- --coverage` reports branch coverage ≥ 95% per file for the three pure modules."
+  },
+  "suggestedFix": "Rewrite DoD #3 to mirror CRIT-713's passThreshold: (a) `cd promptnotes && bun test --coverage src/lib/editor/__tests__/editor*.test.ts src/lib/editor/__tests__/debounceSchedule.test.ts src/lib/editor/__tests__/prop/` reports >=95% branch coverage per file on editorPredicates.ts, editorReducer.ts, debounceSchedule.ts in stdout; OR (b) the documented equivalent gate when Bun coverage stdout is unavailable (CRIT-703 passes AND canonical purity grep returns zero hits AND tsc --strict --noUncheckedIndexedAccess is clean).",
+  "routeToPhase": "1c"
+}

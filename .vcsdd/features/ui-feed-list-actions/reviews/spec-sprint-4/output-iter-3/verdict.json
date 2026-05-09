@@ -1,0 +1,75 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "1c",
+  "sprint": 4,
+  "iteration": 3,
+  "timestamp": "2026-05-09T00:00:00Z",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "findings": [],
+      "iter2FindingsResolved": "3/3",
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "716-754",
+          "description": "FIND-S4-SPEC-iter2-001 解消: parse_markdown_to_blocks 契約に non-empty 不変条件を明記 (line 719-723)。空文字列 body でも空 paragraph 1 件を返すことが TS aggregates.md §1 invariant と整合。3 ケース固定表 (line 741-745) でケース (3) を「契約上到達不能 (forbidden by parse_markdown_to_blocks contract)」と明示。Wire shape は absent または non-empty array の 2 通りに収束 (line 750-754)、TS 側 AC で空配列処理が不要であることが確定。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "676-688",
+          "description": "REQ-FEED-024 Acceptance Criteria が `body` field 不在 / `pendingNextNoteId` 不在 / `focusedBlockId` 値 / `blocks` array 値 を grep-able assertion で固定。EC-FEED-016 (line 687) で note 未存在ケースの payload shape (blocks absent, focusedBlockId: null, isNoteEmpty: true) を明示。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "699-781",
+          "description": "REQ-FEED-025 で compose_state_for_select_past_note の新シグネチャ (note_id, Option<Vec<DtoBlock>>) と内部導出ロジック (focused_block_id, is_note_empty) が完全に grep-able。AC line 776-780 で旧シグネチャ削除を rg コマンドで assert する PROP-FEED-S4-004 が実行可能。"
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "640",
+          "description": "FIND-S4-SPEC-iter2-002 解消: PROP-FEED-S4-016 (Rust↔TS parser parity) の Required 列が `true` に変更されており、§7 Phase 2 / Phase 3 ゲートで判定対象となる。Sprint 4 スコープは基本ケース 1 ペアスナップショットに限定 (fast-check は Sprint 5 へ deferral) であり、明示的に「Sprint 4 ゲートでは基本ケーススナップショット 1 ペアの PASS をもって Phase 5 gate を満たすとする」と確定している。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "213-215, 227-228, 257-279, 319-325",
+          "description": "FIND-S4-SPEC-iter2-003 解消: §5 Tooling Map の `feedReducer.property.test.ts` 行に Sprint 4 amendment 注として PROP-FEED-S4-006 / PROP-FEED-007a 更新責務が追加 (line 215)。`FeedRow.dom.vitest.ts` 行に PROP-FEED-S4-015 が追加 (line 228)。§5 末尾に Sprint 4 PROP 16 件の正規テストファイル一覧 table が追加 (line 257-279)。§6 Coverage Matrix にも REQ-FEED-024(S4)/025/026/027 行が追加 (line 319-325)。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "624-640, 642-647",
+          "description": "PROP-FEED-S4-001..016 が個別に runnable / specific path / clear assertion を持つ。S4-004/007/009/011 は具体的な rg / grep コマンド文字列を assertion として持つ。S4-006 は fast-check arbitrary の両ケース (null / { noteId, blockId }) 検証を要求。Sprint 4 deprecation note (line 642-647) が PROP-FEED-007a → PROP-FEED-S4-006 置換を明示し、二重定義状態を維持解消。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "82-194",
+          "description": "§3 Verification Tier 配分は Tier 0 (tsc + grep) / Tier 1 (cargo test) / Tier 2 (fast-check) / Integration (vitest+jsdom) / grep audit を網羅し、各 PROP の Tier 列と Tool 列が一致。purity-audit canonical pattern (line 47-49) は不変。"
+        }
+      ]
+    }
+  },
+  "overallVerdict": "PASS",
+  "reviewer": "adversary",
+  "freshContext": true,
+  "iteration_limit_reached": true,
+  "convergenceSignals": {
+    "findingCount": 0,
+    "iter1FindingsResolved": "11/11 (carried forward from prior review)",
+    "iter2FindingsResolved": "3/3",
+    "newFindings": 0,
+    "duplicateFindings": []
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "reviewType": "implementation",
+  "featureName": "app-startup",
+  "sprintNumber": 5,
+  "iteration": 1,
+  "mode": "lean",
+  "language": "typescript",
+  "priorReview": {
+    "sprintNumber": 4,
+    "verdict": "PASS",
+    "note": "sprint 4 was the prior cycle's final sprint completing the original AppStartup feature; sprint 5 is the block-based migration cycle"
+  },
+  "specRefinementContext": {
+    "behavioralSpecRevision": 7,
+    "verificationArchitectureRevision": 7,
+    "specGateIteration": 6,
+    "specGateVerdict": "PASS",
+    "specGateNote": "Phase 1c iteration-6 PASS resolved FIND-019..026 from iteration-5 FAIL"
+  },
+  "scope": "spec rev7 block-based migration: REQ-017 (block-parse failure), REQ-018 ('unknown' defensive fallback), revised REQ-002/REQ-008 for HydrateNote-in-Step-3 model. PROP-025 (parseMarkdownToBlocks pure with deterministic positional BlockId), PROP-026 (block-parse mapping), PROP-027 (HydrateNote pure, required:true), PROP-028 (unknown fallback isolation), PROP-029 (Ok([]) → block-parse), PROP-030 (two-call invariant).",
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/app-startup/specs/behavioral-spec.md",
+      ".vcsdd/features/app-startup/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step2-hydration-unknown-fallback.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-purity.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/parse-call-budget.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
+      "promptnotes/src/lib/domain/__tests__/app-startup/pipeline.test.ts"
+    ],
+    "source": [
+      "promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
+      "promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "promptnotes/src/lib/domain/app-startup/stages.ts",
+      "promptnotes/src/lib/domain/app-startup/errors.ts"
+    ],
+    "supportingSource": [
+      "docs/domain/code/ts/src/shared/snapshots.ts",
+      "docs/domain/code/ts/src/shared/blocks.ts",
+      "docs/domain/code/ts/src/shared/value-objects.ts",
+      "docs/domain/code/ts/src/shared/note.ts",
+      "docs/domain/code/ts/src/curate/ports.ts"
+    ]
+  },
+  "evidence": {
+    "redPhase": ".vcsdd/features/app-startup/evidence/sprint-5-red-phase.log",
+    "greenPhase": ".vcsdd/features/app-startup/evidence/sprint-5-green-phase.log",
+    "refactorPhase": ".vcsdd/features/app-startup/evidence/sprint-5-refactor-phase.log"
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "outputDirectory": ".vcsdd/features/app-startup/reviews/sprint-5/output",
+  "createdAt": "2026-05-08T00:00:00Z"
+}

@@ -41,6 +41,8 @@ import type {
 import type { CaptureDeps } from "../capture/ports.js";
 import { assertType, assertKind } from "./_assert.js";
 import {
+  mockBlock,
+  mockBlockId,
   mockBody,
   mockFrontmatter,
   mockNoteId,
@@ -61,15 +63,19 @@ const idleHandle: IdleTimerHandle = {
 const fm1 = mockFrontmatter([], t1, t1);
 const fm2 = mockFrontmatter([], t1, t2);
 
+const blockId0 = mockBlockId("block-0");
 const note: Note = {
   id: noteId,
-  body: mockBody("Refactor the auth middleware to..."),
+  blocks: [
+    mockBlock("block-0", "Refactor the auth middleware to...", "paragraph"),
+  ],
   frontmatter: fm2,
 };
 
 const editingState: EditingState = {
   status: "editing",
   currentNoteId: noteId,
+  focusedBlockId: blockId0,
   isDirty: true,
   lastInputAt: t1,
   idleTimerHandle: idleHandle,
@@ -98,10 +104,13 @@ const captureDeps: CaptureDeps = {
 // ──────────────────────────────────────────────────────────────────────
 
 const prepareValid: PrepareSaveRequest = (deps) => (input) => {
+  // 実装側では body = serializeBlocksToMarkdown(input.note.blocks) を保証する。
+  // simulation では mockBody でスタブ化（型契約レベルの確認のみ）。
   const request: ValidatedSaveRequest = {
     kind: "ValidatedSaveRequest",
     noteId: input.noteId,
-    body: input.note.body,
+    blocks: input.note.blocks,
+    body: mockBody("Refactor the auth middleware to..."),
     frontmatter: input.note.frontmatter,
     previousFrontmatter: input.previousFrontmatter,
     trigger: input.trigger,
@@ -152,6 +161,7 @@ void prepareInvariantFail;
 const buildSaveNoteRequested: BuildSaveNoteRequested = (request) => ({
   kind: "save-note-requested",
   noteId: request.noteId,
+  blocks: request.blocks,
   body: request.body,
   frontmatter: request.frontmatter,
   previousFrontmatter: request.previousFrontmatter,
@@ -185,6 +195,7 @@ const dispatchOk: DispatchSaveRequest = (_deps) => async (request) =>
   ok({
     kind: "note-file-saved",
     noteId: request.noteId,
+    blocks: request.blocks,
     body: request.body,
     frontmatter: request.frontmatter,
     previousFrontmatter: request.previousFrontmatter,
@@ -211,6 +222,7 @@ const captureAutoSaveStub: CaptureAutoSave = (deps) =>
     ok({
       kind: "note-file-saved",
       noteId: state.currentNoteId,
+      blocks: [mockBlock("block-0", "", "paragraph")],
       body: mockBody(""),
       frontmatter: mockFrontmatter([], deps.clockNow(), deps.clockNow()),
       previousFrontmatter: null,
@@ -248,7 +260,12 @@ const copyResult: Result<ClipboardText, SaveError> =
   copyBodyStub(captureDeps)(editingState);
 assertType<Result<ClipboardText, SaveError>>(copyResult);
 
-// IdleState 起点の遷移も検証
+// IdleState 起点の遷移も検証（ブロックベース UI 化により focusOnBlock を使う）
 const idleState: IdleState = { status: "idle" };
-const next: EditingState = transitions.focusOnNote(idleState, noteId, t2);
+const next: EditingState = transitions.focusOnBlock(
+  idleState,
+  noteId,
+  blockId0,
+  t2,
+);
 assertType<EditingState>(next);

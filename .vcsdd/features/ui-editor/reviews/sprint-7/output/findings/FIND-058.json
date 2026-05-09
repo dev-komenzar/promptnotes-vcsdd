@@ -1,0 +1,15 @@
+{
+  "id": "FIND-058",
+  "severity": "critical",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:96-99",
+  "description": "REQ-EDIT-033 / PROP-EDIT-022 is violated. The spec mandates that the +新規 (new-note) button is disabled ONLY in 'switching' state (behavioral-spec §3.6 REQ-EDIT-033 Acceptance Criteria; verification-architecture §4 PROP-EDIT-022: 'Disabled only in switching'). The implementation also disables the button when `status==='editing' && isDirty`. This directly contradicts REQ-EDIT-035: a user in editing+dirty must be able to click the button so that the editor dispatches TriggerBlurSave-then-RequestNewNote. With the button disabled, the prescribed user flow is unreachable in real browsers (disabled buttons do not fire onclick on real-user clicks). The PROP-EDIT-024a vitest passes only because `dispatchEvent(new MouseEvent('click'))` in jsdom bypasses the disabled gate — a tautological workaround that hides the bug. Code: `const isNewNoteDisabled = $derived(viewState.status === 'switching' || (viewState.status === 'editing' && viewState.isDirty));`",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "96-99",
+    "snippet": "const isNewNoteDisabled = $derived(\n  viewState.status === 'switching' ||\n  (viewState.status === 'editing' && viewState.isDirty)\n);"
+  },
+  "suggestedRemediation": "Change to `const isNewNoteDisabled = $derived(viewState.status === 'switching');` so the button is enabled in idle / editing (regardless of dirty) / saving / save-failed per REQ-EDIT-033, REQ-EDIT-035, PROP-EDIT-022, EC-EDIT-008, EC-EDIT-010. Add an integration test that asserts editing+dirty click → TriggerBlurSave fires from a real-DOM click on a non-disabled button (assert `btn.hasAttribute('disabled') === false` first, then click).",
+  "routeToPhase": "2b"
+}

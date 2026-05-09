@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-050",
+  "dimension": "contract_validity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "CRIT-702 passThreshold `grep -c \"kind: 'focus-block'\\|kind: 'edit-block-content'\\|...|kind: 'request-new-note'\" promptnotes/src/lib/editor/types.ts outputs exactly 17` is unsatisfiable. The 17 alternation patterns indeed appear once each in the EditorCommand union (lines 217-234). However, three additional matches occur in the Tier 0 structural-conformance assertions at the bottom of types.ts: line 275 `(EditorCommand & { kind: 'edit-block-content' })['payload']`, line 279 `(EditorCommand & { kind: 'split-block' })['payload']`, and line 283 `(EditorCommand & { kind: 'copy-note-body' })['payload']`. These three lines match the alternation and so `grep -c` outputs 20, not 17. The criterion either needs scoped filtering to the EditorCommand declaration only (e.g., sed-extracted lines 217-234) or removal of the structural-assertion patterns from the count.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/types.ts",
+    "lineRange": "274-285",
+    "snippet": "export type _AssertEditBlockContentShape = (EditorCommand & { kind: 'edit-block-content' })['payload'] extends ...; export type _AssertSplitBlockShape = (EditorCommand & { kind: 'split-block' })['payload'] extends ...; export type _AssertCopyNoteBodyShape = (EditorCommand & { kind: 'copy-note-body' })['payload'] extends ..."
+  },
+  "routeToPhase": "contract-revision"
+}

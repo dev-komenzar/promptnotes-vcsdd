@@ -1,0 +1,120 @@
+{
+  "verdict": "FAIL",
+  "timestamp": "2026-05-07T12:00:00Z",
+  "feature": "capture-auto-save",
+  "iteration": 4,
+  "phase": "1c",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "FAIL",
+      "findings": ["FIND-020"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L96-124",
+          "description": "REQ-003 broader isEmpty rule consistent with aggregates.md L120/L142; structural-distinctiveness rule for non-paragraph/non-divider blocks correctly cites L88; Empty-Note variants table covers all known shapes."
+        },
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L7, L281-318",
+          "description": "Scope explicitly excludes Step 4; REQ-011/REQ-012 relocated under 'Cross-context post-conditions (Curate-side handler of NoteFileSaved)' with explicit acknowledgment that CaptureAutoSave has no Feed/TagInventory ports."
+        },
+        {
+          "type": "file",
+          "location": "behavioral-spec.md REQ-008 L217-235",
+          "description": "SaveNoteRequested timing now uniformly described as 'orchestration boundary (post-Step 1, pre-Step 3)' across REQ-008 main text, REQ-008 acceptance, REQ-016 acceptance L379, and Event Catalog L482. Internal contradiction from prior iteration removed."
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "verification-architecture.md L90-118",
+          "description": "isEmptyOrWhitespaceContent helper precisely defined as /^\\s*$/.test(s) (Unicode whitespace); positive/negative cases enumerated; ties back to BlockContent semantics in aggregates.md L82."
+        },
+        {
+          "type": "file",
+          "location": "verification-architecture.md PROP-024 L177, REQ-018 L409-415",
+          "description": "Body/blocks coherence enforced via factory function buildValidatedSaveRequest (capture module) plus BuildSaveNoteRequested propagation; Rust-side enforced via echo of received SaveNoteRequested.body/.blocks; cross-language coherence asserted via PROP-017/PROP-018 integration test (declared limitation acknowledged)."
+        },
+        {
+          "type": "file",
+          "location": "verification-architecture.md PROP-028 L181",
+          "description": "Tier-0 TypeScript type-level signature assertion for CaptureAutoSave; required: true; Required-true list (L192-200) updated to include PROP-028; total required-true count consistent at 8."
+        }
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "behavioral-spec.md REQ-003 L113-122",
+          "description": "Empty-Note variants table enumerates 8 variants (single-empty-para, multi-empty-para, whitespace-para, divider-only, divider-and-empty, empty-heading, empty-bullet, nonempty) with idle/blur behavior columns. Empty-heading and empty-bullet decision documented with structural-distinctiveness rationale."
+        },
+        {
+          "type": "file",
+          "location": "verification-architecture.md PROP-025 L178",
+          "description": "Generator MUST exercise all 8 variants from the table; explicit enumeration of expected isEmpty boolean per variant binds the property test to the variants table."
+        }
+      ]
+    },
+    "purity_boundary_clarity": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "verification-architecture.md L11-29",
+          "description": "Purity Boundary Map: serializeNote, serializeBlocksToMarkdown, Note.isEmpty, validation logic all classified as pure core; Clock.now/FileSystem.writeFileAtomic/publish() all classified as effectful shell; updateProjections explicitly Out of scope per FIND-015 resolution."
+        },
+        {
+          "type": "file",
+          "location": "behavioral-spec.md REQ-006 L181-198",
+          "description": "serializeNote purity invariant explicit: zero CaptureDeps port calls; FrontmatterSerializerToYaml and SerializeBlocksToMarkdown classified as internal/Shared Kernel pure functions, not injected ports."
+        }
+      ]
+    },
+    "traceability_completeness": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "verification-architecture.md L207-227",
+          "description": "Coverage Matrix updated: REQ-011 row → PROP-027 (cross-context placeholder); REQ-017 row → PROP-017, PROP-028; REQ-018 row → PROP-024, PROP-026; every REQ-001..REQ-018 has at least one PROP; total 28 PROPs."
+        },
+        {
+          "type": "file",
+          "location": "verification-architecture.md L192-200",
+          "description": "Required-true list correctly enumerates eight items: PROP-001, PROP-002, PROP-003, PROP-004, PROP-005, PROP-014, PROP-024, PROP-028; matches the count stated in L227."
+        }
+      ]
+    }
+  },
+  "priorFindingResolutions": {
+    "FIND-012": "resolved",
+    "FIND-013": "resolved",
+    "FIND-014": "resolved",
+    "FIND-015": "resolved",
+    "FIND-016": "resolved",
+    "FIND-017": "resolved",
+    "FIND-018": "resolved",
+    "FIND-019": "resolved"
+  },
+  "summary": "All eight prior findings (FIND-012 through FIND-019) are substantively resolved. The spec adopts the broader Note.isEmpty rule per aggregates.md L120/L142, introduces an explicit factory-pattern convention for ValidatedSaveRequest construction, defines isEmptyOrWhitespaceContent precisely (/^\\s*$/), enumerates all empty-Note variants, relocates REQ-011/REQ-012 to a clearly out-of-scope cross-context section, unifies SaveNoteRequested timing language as 'orchestration boundary', adds PROP-027 as a cross-context traceability placeholder, and adds PROP-028 as a Tier-0 type-signature assertion (required: true). The Coverage Matrix and required-true list are updated consistently. However, one new spec_fidelity defect was found in REQ-004 acceptance criterion (FIND-020): the wording 'typically the empty string or whitespace-only string' is factually wrong for the divider-only and divider-and-empty variants, since serializeBlocksToMarkdown([divider]) produces '---' (per aggregates.md L78), which is neither empty nor whitespace-only. This contradicts the variants table that lists divider-only as a valid blur-save case and creates a verification ambiguity for PROP-002/PROP-004 generators that exercise these variants. Verdict: FAIL on spec_fidelity dimension; remaining four dimensions PASS.",
+  "regressionChecks": {
+    "coverageMatrixUpdated": true,
+    "requiredTrueListUpdated": true,
+    "prop027DefinedConcrete": true,
+    "prop028DefinedConcrete": true,
+    "revisionLogCaptured": "partial — behavioral-spec.md Revision Log omits a row for FIND-014 even though REQ-003 was modified to reference isEmptyOrWhitespaceContent; verification-architecture.md Revision Log captures it correctly. Not a blocker but worth a follow-up entry.",
+    "isEmptyDefinitionInternallyConsistent": true,
+    "structuralDistinctivenessRuleConsistent": true,
+    "newDefects": ["FIND-020"]
+  }
+}

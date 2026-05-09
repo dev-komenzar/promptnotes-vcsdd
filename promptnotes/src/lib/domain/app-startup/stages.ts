@@ -12,6 +12,9 @@ import type {
   CorruptedFile,
   NoteFileSnapshot,
 } from "promptnotes-domain-types/shared/snapshots";
+import type { Block } from "promptnotes-domain-types/shared/note";
+import type { BlockParseError } from "../capture-auto-save/parse-markdown-to-blocks.js";
+import type { Result } from "promptnotes-domain-types/util/result";
 import type { Feed } from "promptnotes-domain-types/curate/aggregates";
 import type { TagInventory } from "promptnotes-domain-types/curate/read-models";
 import type { EditingState } from "promptnotes-domain-types/capture/states";
@@ -55,11 +58,24 @@ export type ConfiguredVault = {
 /**
  * Produced by Step 2 (scanVault).
  * Invariant: snapshots.length + corruptedFiles.length === total files enumerated.
+ *
+ * parseMarkdownToBlocks: optional block parser injected by scanVault from its ports.
+ * When present, hydrateFeed uses this same function reference in Step 3 (PROP-030 counting).
+ * When absent, hydrateFeed falls back to the module-level parseMarkdownToBlocks import.
+ * This field is a pure function — it does not break the determinism invariant.
+ *
+ * FIND-033 (deferred to a future sprint): ScannedVault carries the
+ * parseMarkdownToBlocks port reference for PROP-030 call-counting in
+ * the test harness. A cleaner design pulls this out into a separate
+ * dependency, but the refactor requires test-harness restructure.
  */
 export type ScannedVault = {
   readonly kind: "ScannedVault";
   readonly snapshots: readonly NoteFileSnapshot[];
   readonly corruptedFiles: readonly CorruptedFile[];
+  readonly parseMarkdownToBlocks?: (
+    markdown: string
+  ) => Result<ReadonlyArray<Block>, BlockParseError>;
 };
 
 // ── Step 3 output ──────────────────────────────────────────────────────────

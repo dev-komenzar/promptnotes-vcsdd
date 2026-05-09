@@ -3,9 +3,10 @@
 ## 前提：UX 構造
 
 - **ページ遷移なし**：フィード画面が常時表示され、その上で「作成・編集・閲覧・整理」が完結する。
-- **起動時の状態**：vault の既存ノートが時系列でフィード表示され、最上部に新規ノートが自動生成・フォーカスされている。
-- **空ノートは破棄**：本文が一度も入力されない新規ノートはファイル化しない。
-- **Obsidian 連携（MVP）**：外部による変更は「次回起動時の vault 再走査」でのみ反映される（fs watch しない）。
+- **ブロックベース WYSIWYG エディタ**（discovery.md 参照）：本文は `Block[]` で構成され、各ブロックは `contenteditable` を持つ。フィード上のあらゆるノートのあらゆるブロックが、その場でクリック → 編集できる（入力フォーム遷移なし）。
+- **起動時の状態**：vault の既存ノートが時系列でフィード表示され、最上部に新規ノートが自動生成・**先頭ブロックにフォーカス**されている。
+- **空ノートは破棄**：全ブロックが空（または divider のみ）の新規ノートはファイル化しない。
+- **Obsidian 連携（MVP）**：外部による変更は「次回起動時の vault 再走査」でのみ反映される（fs watch しない）。ファイルは平坦な Markdown として保存され、Block 構造はメモリ上の派生表現。
 
 ## Domain Events（時系列）
 
@@ -15,31 +16,39 @@
 |---|-------|------|
 | 1 | `AppLaunched` | アプリが起動した |
 | 2 | `VaultScanned` | vault フォルダの既存 Markdown ファイルが走査された |
+| 2a | `NotesHydrated` | 各 NoteFileSnapshot の Markdown が Block[] にパースされ、Note Aggregate に変換された |
 | 3 | `FeedRestored` | 既存ノートが時系列で並んだフィードが復元された |
 | 3a | `TagInventoryBuilt` | 全ノートの frontmatter からタグが収集され、フィルタ用一覧が構築された |
-| 4 | `NewNoteAutoCreated` | フィード最上部に新規ノート（タイムスタンプ命名）が生成された |
-| 5 | `EditorFocusedOnNewNote` | 新規ノートの本文位置にカーソルが置かれた |
+| 4 | `NewNoteAutoCreated` | フィード最上部に新規ノート（タイムスタンプ命名）が生成された。`blocks = [empty paragraph]` |
+| 5 | `BlockFocused` | 新規ノートの先頭ブロックにキャレットが置かれた（旧 `EditorFocusedOnNewNote`） |
 
 ### Capture（書く・流す）
 
 | # | Event | 説明 |
 |---|-------|------|
-| 6 | `NoteBodyTextEntered` | 本文が入力された |
-| 7 | `NoteAutoSavedAfterIdle` | 入力停止が一定時間続き、自動保存された |
-| 8 | `EditorBlurred` | フォーカスが外れた |
+| 6a | `BlockContentEdited` | あるブロックの content が変更された（キー入力単位、一過性） |
+| 6b | `BlockInserted` | 新規ブロックが挿入された（Enter キー or `/` メニュー or Markdown 入力） |
+| 6c | `BlockRemoved` | ブロックが削除された |
+| 6d | `BlocksMerged` | 行頭 Backspace で前ブロックと結合された |
+| 6e | `BlockSplit` | テキスト中央 Enter でブロックが分割された |
+| 6f | `BlockTypeChanged` | ブロック種別が変換された（`# ` → heading-1 等） |
+| 6g | `BlockMoved` | ブロックが並べ替えられた |
+| 7 | `NoteAutoSavedAfterIdle` | 入力停止が一定時間続き、自動保存された（Note 単位） |
+| 8a | `BlockBlurred` | 個別ブロックからフォーカスが外れた |
+| 8 | `EditorBlurredAllBlocks` | そのノートの全ブロックからフォーカスが外れた（旧 `EditorBlurred`） |
 | 9 | `NoteAutoSavedOnBlur` | フォーカスアウト契機で自動保存された |
-| 10 | `NoteBodyCopiedToClipboard` | ワンクリックコピーが実行された（frontmatter は除外） |
+| 10 | `NoteBodyCopiedToClipboard` | ワンクリックコピーが実行された（frontmatter は除外、blocks → Markdown 直列化） |
 | 11 | `NewNoteRequested` | Ctrl+N または「新規」ボタンで次のノート作成を要求した |
-| 12 | `EmptyNoteDiscarded` | 本文未入力のままフォーカスを失った／離脱した新規ノートが破棄された |
+| 12 | `EmptyNoteDiscarded` | 全ブロックが空のままフォーカスを失った／離脱した新規ノートが破棄された |
 
 ### 編集セッション継続イベント（Capture：過去ノート選択時の再開）
 
-> Phase 3 の境界改訂により、**過去ノートに対する本文・frontmatter 編集は Capture Context のイベント**として扱う。下記 14, 15, 16 はもとは Curate に置いていたが、編集セッションのライフサイクル責務に合わせて Capture 配下と再分類する。
+> Phase 3 の境界改訂により、**過去ノートに対する本文・frontmatter 編集は Capture Context のイベント**として扱う。ブロックベース UI 化（discovery.md）以降は、過去ノートのブロックを直接クリックするだけで編集セッションが始まるため、専用の「選択モード」は不要となる。
 
 | # | Event | 説明 | Context |
 |---|-------|------|---------|
-| 13 | `PastNoteFocused` | フィード内の既存ノートにフォーカスし、編集セッションが開始された | **Curate（選択） → Capture（セッション開始）** |
-| 14 | `NoteBodyEdited` | 編集中ノート（新規/過去問わず）の本文が変更された | Capture |
+| 13 | `BlockFocused(noteId, blockId)` | フィード内の既存ノートのブロックにフォーカスが入り、編集セッションが開始された | **Curate（クリック） → Capture（セッション開始）** |
+| 14 | `BlockContentEdited` | 編集中ノート（新規/過去問わず）のブロック content が変更された | Capture |
 | 15 | `NoteFrontmatterEditedInline` | 編集中ノートの frontmatter（YAML 領域）がエディタ内で直接編集された | Capture |
 | 16 | `NoteAutoSavedInSession` | 編集セッション中の自動保存（idle/blur）が完了した（過去ノートも対象） | Capture |
 
@@ -81,20 +90,27 @@ Actor は **User**（人間）か **System**（タイマー・トリガ等の自
 |-------|---------|-----------|---------|------|
 | User | `LaunchApp` | Application | `AppLaunched` | エントリ |
 | System | `ScanVault` | Vault | `VaultScanned` | 起動時のみ |
+| System | `HydrateNotes` | Note (ACL) | `NotesHydrated` | Markdown → Block[] 変換、Frontmatter VO 化 |
 | System | `RestoreFeed` | Feed | `FeedRestored` | スキャン結果からフィード組み立て |
 | System | `BuildTagInventory` | TagInventory | `TagInventoryBuilt` | 起動時に全ノートからタグ集約 |
 | System | `UpdateTagInventory` | TagInventory | `TagInventoryUpdated` | frontmatter 変更／ノート削除時に増減反映 |
-| System | `AutoCreateNewNote` | Note | `NewNoteAutoCreated` | 起動時 + ユーザー要求時 |
-| System | `FocusEditor` | Note | `EditorFocusedOnNewNote` | 自動 |
-| User | `EnterBodyText` | Note | `NoteBodyTextEntered` | キー入力 |
+| System | `AutoCreateNewNote` | Note | `NewNoteAutoCreated` | 起動時 + ユーザー要求時。`blocks = [empty paragraph]` |
+| System | `FocusBlock(noteId, blockId)` | Note | `BlockFocused` | 自動（新規ノート先頭ブロック） |
+| User | `EditBlockContent(noteId, blockId, content)` | Note | `BlockContentEdited` | キー入力 |
+| User | `InsertBlockAfter(noteId, prevId, type)` | Note | `BlockInserted` | Enter キー / `/` メニュー / Markdown シンタックス |
+| User | `RemoveBlock(noteId, blockId)` | Note | `BlockRemoved` | 削除キー |
+| User | `MergeBlockWithPrevious(noteId, blockId)` | Note | `BlocksMerged` | 行頭 Backspace |
+| User | `SplitBlock(noteId, blockId, offset)` | Note | `BlockSplit` | テキスト中央 Enter |
+| User | `ChangeBlockType(noteId, blockId, newType)` | Note | `BlockTypeChanged` | `# ` 入力 / `/` メニュー |
+| User | `MoveBlock(noteId, blockId, toIndex)` | Note | `BlockMoved` | drag & drop |
 | System | `AutoSaveOnIdle` | Note | `NoteAutoSavedAfterIdle` | デバウンス |
-| User | `BlurEditor` | Note | `EditorBlurred` | フォーカスアウト |
+| User | `BlurBlock(blockId)` | Note | `BlockBlurred` | 個別ブロックフォーカスアウト |
+| System | `DetectAllBlocksBlurred` | Note | `EditorBlurredAllBlocks` | Note の全ブロックがフォーカス外 |
 | System | `AutoSaveOnBlur` | Note | `NoteAutoSavedOnBlur` | blur 契機 |
-| User | `CopyNoteBody` | Note | `NoteBodyCopiedToClipboard` | ワンクリック |
+| User | `CopyNoteBody` | Note | `NoteBodyCopiedToClipboard` | ワンクリック（blocks → Markdown 直列化） |
 | User | `RequestNewNote` | Note | `NewNoteRequested` | Ctrl+N or ボタン |
-| System | `DiscardIfEmpty` | Note | `EmptyNoteDiscarded` | 空ノートクリーンアップ |
-| User | `SelectPastNote` | Note (Curate→Capture) | `PastNoteFocused` | フィード上で選択 → 編集セッション開始 |
-| User | `EnterBodyText` | Note | `NoteBodyEdited` | 編集セッション中の本文変更（新規/過去問わず） |
+| System | `DiscardIfEmpty` | Note | `EmptyNoteDiscarded` | 空ノートクリーンアップ（全ブロック空判定） |
+| User | `FocusBlock(pastNoteId, blockId)` | Note (Curate→Capture) | `BlockFocused` | フィード上で過去ノートのブロックをクリック → 編集セッション開始 |
 | User | `EditFrontmatterInline` | Note | `NoteFrontmatterEditedInline` | エディタ内で frontmatter（YAML）を直接編集 |
 | System | `AutoSaveInSession` | Note | `NoteAutoSavedInSession` | 過去ノート編集時の idle/blur 自動保存（13 以降） |
 | User | `AddTagViaChip` | Note | `TagChipAddedOnFeed` | フィード上のタグチップ操作で付与（エディタ非経由） |
@@ -120,7 +136,8 @@ Actor は **User**（人間）か **System**（タイマー・トリガ等の自
 
 | Aggregate | 役割 | 主属性（仮） |
 |-----------|------|------------|
-| **Note** | 単一のプロンプト下書き。本文 + frontmatter | id（タイムスタンプ）、body、frontmatter、createdAt、updatedAt、isDraft |
+| **Note** | 単一のプロンプト下書き。`blocks: Block[]` + frontmatter | id（タイムスタンプ）、blocks（順序つき）、frontmatter、createdAt、updatedAt、isDraft |
+| **Block**（Note 内 Sub-entity） | 編集単位。段落・見出し・箇条書き・コードブロック等 | id（BlockId）、type（BlockType）、content（BlockContent） |
 | **Feed** | Note のコレクションと表示状態 | notes[], filterCriteria, searchQuery, sortOrder |
 | **TagInventory** | vault 全体に存在するタグの一覧（フィルタ UI 用の索引） | tags[]: { name, usageCount }, lastUpdatedAt |
 | **Vault** | 保存先ディレクトリ設定と走査状態 | path, isConfigured, lastScannedAt |
@@ -130,9 +147,9 @@ Actor は **User**（人間）か **System**（タイマー・トリガ等の自
 イベント群を「同一の関心事」でグループ化した結果。
 
 ### 1. Capture Context
-- **関心事**: 編集セッションのライフサイクル全般（新規ノート生成・編集・自動保存・コピー・空ノート破棄、および過去ノートに対する編集セッション）
-- **イベント**: 4, 5, 6, 7, 8, 9, 10, 11, 12, 13（編集セッション開始側面）, 14, 15, 16
-- **中心 Aggregate**: Note（編集中のもの）
+- **関心事**: 編集セッションのライフサイクル全般（新規ノート生成・ブロック編集・ブロック構造管理・自動保存・コピー・空ノート破棄、および過去ノートに対する編集セッション）
+- **イベント**: 4, 5, 6a-6g, 7, 8a, 8, 9, 10, 11, 12, 13（編集セッション開始側面）, 14, 15, 16
+- **中心 Aggregate**: Note（編集中のもの。Block[] を内包）
 
 ### 2. Curate Context
 - **関心事**: 編集セッション**外**の集合操作・メタデータ操作（フィード表示・フィルタ・検索・選択・タグチップ操作・削除）

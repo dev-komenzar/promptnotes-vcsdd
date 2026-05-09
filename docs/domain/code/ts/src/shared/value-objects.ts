@@ -61,6 +61,58 @@ export interface BodyApi {
 }
 
 // ──────────────────────────────────────────────────────────────────────
+// Block 系 VO（aggregates.md §1 Note Aggregate / Block Sub-entity, glossary.md §0）
+// ──────────────────────────────────────────────────────────────────────
+
+/** Note 内ローカルな安定 ID。並べ替え・差分計算用。永続化時は Markdown に直列化されるため
+ * ファイル上には現れず、再読み込み時に再採番される。形式は実装詳細（UUID v4 or `block-<n>`）。 */
+export type BlockId = Brand<string, "BlockId">;
+export type BlockIdError = { kind: "invalid-format" } | { kind: "empty" };
+
+export interface BlockIdSmartCtor {
+  tryNew(raw: string): Result<BlockId, BlockIdError>;
+  /** Note Aggregate 内で衝突しない新 ID を採番。実装側は uuid v4 か単調増加の `block-<n>`。 */
+  generate(): BlockId;
+}
+
+/** Block 種別の MVP セット。aggregates.md §1 BlockType。
+ * 拡張（チェックリスト・テーブル・埋め込み・ネスト）は MVP 範囲外。 */
+export type BlockType =
+  | "paragraph"
+  | "heading-1"
+  | "heading-2"
+  | "heading-3"
+  | "bullet"
+  | "numbered"
+  | "code"
+  | "quote"
+  | "divider";
+
+export type BlockTypeError = { kind: "unknown-type"; raw: string };
+
+export interface BlockTypeSmartCtor {
+  tryNew(raw: string): Result<BlockType, BlockTypeError>;
+}
+
+/** Block 内のインラインテキスト。インライン Markdown（**bold**, `code`, [link](url)）を保持可能。
+ * 制御文字は拒否。改行は除去（複数行はブロック分割で表現）。
+ * `code` ブロック専用バリアントは内部で複数行を許容する（aggregates.md §1）。 */
+export type BlockContent = Brand<string, "BlockContent">;
+export type BlockContentError =
+  | { kind: "control-character" }
+  | { kind: "newline-in-inline" }
+  | { kind: "too-long"; max: number };
+
+export interface BlockContentSmartCtor {
+  /** 通常の Block 用：制御文字拒否・改行除去（複数行は `splitBlock` で表現）。 */
+  tryNew(raw: string): Result<BlockContent, BlockContentError>;
+  /** `code` ブロック専用：制御文字（タブ・改行）は許容。 */
+  tryNewMultiline(raw: string): Result<BlockContent, BlockContentError>;
+  /** 中身が空かどうか。`note.isEmpty()` の判定に利用。 */
+  isEmpty(content: BlockContent): boolean;
+}
+
+// ──────────────────────────────────────────────────────────────────────
 // Frontmatter
 // ──────────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,15 @@
+{
+  "id": "FIND-066",
+  "severity": "major",
+  "dimension": "structural_integrity",
+  "category": "purity_boundary",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:66-82",
+  "description": "EditorPanel.handleSnapshot mutates the local `blocks` array based on the inbound snapshot in ways that are not specified. Specifically: when an editing snapshot arrives whose `focusedBlockId` is NOT in the current `blocks` array, the handler synthesises a new block `{ id: focusedId, type: 'paragraph', content: '' }` from the focusedBlockId — fabricating block data that the domain never delivered. The block list and block content are owned by the Rust domain (per behavioral-spec §2 'Out of scope: Markdown ↔ Block parsing/serialisation'); the EditingSessionStateDto (verification-architecture §10) carries only status / currentNoteId / focusedBlockId / pendingNextFocus / isNoteEmpty / lastSaveError / lastSaveResult — it does NOT carry the block tree. The shell is silently inventing UI state. Real production behavior depends on the snapshot delivering blocks via a separate channel that this implementation never wires; tests pass because they pre-seed `initialBlocks` and `_emitState` snapshots whose focusedBlockId matches a seeded block.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "66-82",
+    "snippet": "function handleSnapshot(snapshot: EditingSessionStateDto): void {\n  dispatch({ kind: 'DomainSnapshotReceived', snapshot });\n  if (snapshot.status === 'idle') {\n    blocks = [];\n  } else {\n    const focusedId = snapshot.status === 'editing' ? snapshot.focusedBlockId : null;\n    const blockExists = focusedId ? blocks.some(b => b.id === focusedId) : true;\n    if (blocks.length === 0 || !blockExists) {\n      blocks = [{ id: focusedId ?? 'block-default-1', type: 'paragraph', content: '' }];\n    }\n  }\n}"
+  },
+  "suggestedRemediation": "Either (a) extend EditingSessionStateDto / verification-architecture §10 to carry a `blocks: ReadonlyArray<{id, type, content}>` field on every non-idle arm and remove the synthesis path, or (b) consume a separate `subscribeToBlockTree` inbound channel for block content and treat block-tree updates as a distinct concern from session-state. Either way, the shell must not fabricate blocks from focusedBlockId.",
+  "routeToPhase": "1a"
+}

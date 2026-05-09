@@ -1,36 +1,63 @@
 /**
  * pipeline.test.ts — HandleSaveFailure full pipeline integration tests
  *
- * REQ-HSF-001: Precondition — input must be SaveFailedState
- * REQ-HSF-002: Branch — RetrySave
- * REQ-HSF-003: Branch — DiscardCurrentSession without pendingNextNoteId
- * REQ-HSF-004: Branch — DiscardCurrentSession with pendingNextNoteId
- * REQ-HSF-005: Branch — CancelSwitch (valid: pendingNextNoteId present)
- * REQ-HSF-006: Branch — CancelSwitch invalid when no pendingNextNoteId
- * REQ-HSF-007: UserDecision exhaustiveness
- * REQ-HSF-008: At most one event per invocation
- * REQ-HSF-009: Clock.now() budget
- * REQ-HSF-010: ResolvedState shape
- * REQ-HSF-011: Workflow type signature — widened input contract
- * REQ-HSF-012: SaveFailedStage.error is for logging only
+ * Sprint-2 (block migration) — coverage retrofit + genuine red
  *
- * PROP-HSF-006: pendingNextNoteId routing — discard with pending
- * PROP-HSF-007: pendingNextNoteId routing — cancel-switch
- * PROP-HSF-008: pendingNextNoteId never leaks into emitted event
+ * REQ-HSF-001: Precondition — input must be SaveFailedState
+ *   [coverage retrofit]
+ * REQ-HSF-002: Branch — RetrySave
+ *   [coverage retrofit]
+ * REQ-HSF-003: Branch — DiscardCurrentSession without pendingNextFocus
+ *   [coverage retrofit]
+ * REQ-HSF-004: Branch — DiscardCurrentSession with pendingNextFocus
+ *   [genuine red] — focusedBlockId === pendingNextFocus.blockId assertion cannot pass
+ * REQ-HSF-005: Branch — CancelSwitch (valid: pendingNextFocus present)
+ *   [genuine red] — 7-field assertion (focusedBlockId: null) cannot pass
+ * REQ-HSF-006: Branch — CancelSwitch invalid when no pendingNextFocus
+ *   [genuine red] — error detail string changed to "cancel-switch requires pendingNextFocus"
+ * REQ-HSF-007: UserDecision exhaustiveness
+ *   [coverage retrofit]
+ * REQ-HSF-008: At most one event per invocation
+ *   [coverage retrofit]
+ * REQ-HSF-009: Clock.now() budget
+ *   [coverage retrofit]
+ * REQ-HSF-010: ResolvedState shape
+ *   [coverage retrofit]
+ * REQ-HSF-011: Workflow type signature — widened input contract
+ *   [coverage retrofit]
+ * REQ-HSF-012: SaveFailedStage.error is for logging only
+ *   [coverage retrofit]
+ *
+ * PROP-HSF-006: pendingNextFocus routing — discard with pending
+ *   [genuine red] — focusedBlockId field
+ * PROP-HSF-007: pendingNextFocus routing — cancel-switch
+ *   [genuine red] — focusedBlockId: null
+ * PROP-HSF-008: pendingNextFocus never leaks into emitted event; no blockId in event
+ *   [genuine red] — extended assertion
  * PROP-HSF-009: Exactly-one event constraint — retry branch
+ *   [coverage retrofit]
  * PROP-HSF-010: Exactly-one event constraint — discard branch
+ *   [coverage retrofit]
  * PROP-HSF-011: Zero events — cancel-switch valid branch
+ *   [coverage retrofit]
  * PROP-HSF-012: Cancel-switch invalid guard
+ *   [genuine red] — error detail string
  * PROP-HSF-013: Clock.now() call count — valid branches
+ *   [coverage retrofit]
  * PROP-HSF-014: Timestamp reuse — retry branch
+ *   [coverage retrofit]
  * PROP-HSF-015: Timestamp reuse — discard branch
+ *   [coverage retrofit]
  * PROP-HSF-017: ResolvedState shape per branch
+ *   [coverage retrofit]
  * PROP-HSF-018: Full integration — all four valid branches
+ *   [genuine red] — cancel-switch and discard now check focusedBlockId
  */
 
 import { describe, test, expect } from "bun:test";
 import type {
   NoteId,
+  BlockId,
   Timestamp,
 } from "promptnotes-domain-types/shared/value-objects";
 import type { SaveError } from "promptnotes-domain-types/shared/errors";
@@ -39,6 +66,7 @@ import type {
   EditingState,
   IdleState,
   SavingState,
+  PendingNextFocus,
 } from "promptnotes-domain-types/capture/states";
 import type {
   SaveFailedStage,
@@ -62,8 +90,16 @@ function makeNoteId(raw: string): NoteId {
   return raw as unknown as NoteId;
 }
 
+function makeBlockId(raw: string): BlockId {
+  return raw as unknown as BlockId;
+}
+
 function makeTimestamp(epochMillis: number): Timestamp {
   return { epochMillis } as unknown as Timestamp;
+}
+
+function makePendingNextFocus(noteId: NoteId, blockId: BlockId): PendingNextFocus {
+  return { noteId, blockId };
 }
 
 function makeSaveError(): SaveError {
@@ -75,13 +111,13 @@ function makeSaveError(): SaveError {
 
 function makeSaveFailedState(opts?: {
   currentNoteId?: NoteId;
-  pendingNextNoteId?: NoteId | null;
+  pendingNextFocus?: PendingNextFocus | null;
   lastSaveError?: SaveError;
 }): SaveFailedState {
   return {
     status: "save-failed" as const,
     currentNoteId: opts?.currentNoteId ?? makeNoteId("note-A"),
-    pendingNextNoteId: opts?.pendingNextNoteId ?? null,
+    pendingNextFocus: opts?.pendingNextFocus ?? null,
     lastSaveError: opts?.lastSaveError ?? makeSaveError(),
   };
 }
@@ -132,6 +168,7 @@ describe("HandleSaveFailure pipeline", () => {
 
   // ── REQ-HSF-002: retry-save branch ──────────────────────────────────────
 
+  // [coverage retrofit]
   test("retry-save → SavingState, RetrySaveRequested emitted, resolution='retried'", async () => {
     const currentNoteId = makeNoteId("note-A");
     const state = makeSaveFailedState({ currentNoteId });
@@ -164,6 +201,7 @@ describe("HandleSaveFailure pipeline", () => {
   });
 
   // REQ-HSF-002: no error field in event (REQ-HSF-012)
+  // [coverage retrofit]
   test("retry-save → RetrySaveRequested has no error field", async () => {
     const state = makeSaveFailedState();
     const stage = makeSaveFailedStage();
@@ -179,6 +217,7 @@ describe("HandleSaveFailure pipeline", () => {
   });
 
   // REQ-HSF-009: PROP-HSF-014 — timestamp reuse on retry
+  // [coverage retrofit]
   test("retry-save → SavingState.savingStartedAt equals RetrySaveRequested.occurredOn", async () => {
     const state = makeSaveFailedState();
     const stage = makeSaveFailedStage();
@@ -195,11 +234,12 @@ describe("HandleSaveFailure pipeline", () => {
     expect(nextState.savingStartedAt).toBe(clock.fixedNow);
   });
 
-  // REQ-HSF-002: pendingNextNoteId non-null case — retry proceeds normally
-  test("retry-save with pendingNextNoteId → SavingState, normal retry", async () => {
+  // REQ-HSF-002: pendingNextFocus non-null case — retry proceeds normally
+  // [coverage retrofit]
+  test("retry-save with pendingNextFocus → SavingState, normal retry", async () => {
     const currentNoteId = makeNoteId("note-A");
-    const pendingId = makeNoteId("note-B");
-    const state = makeSaveFailedState({ currentNoteId, pendingNextNoteId: pendingId });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-retry"));
+    const state = makeSaveFailedState({ currentNoteId, pendingNextFocus });
     const stage = makeSaveFailedStage({ noteId: currentNoteId });
     const decision: UserDecision = { kind: "retry-save" };
     const spy = makeEventSpy();
@@ -214,11 +254,12 @@ describe("HandleSaveFailure pipeline", () => {
     expect(clock.getCallCount()).toBe(1);
   });
 
-  // ── REQ-HSF-003: discard without pendingNextNoteId ───────────────────────
+  // ── REQ-HSF-003: discard without pendingNextFocus ────────────────────────
 
+  // [coverage retrofit]
   test("discard (no pending) → IdleState, EditingSessionDiscarded emitted, resolution='discarded'", async () => {
     const currentNoteId = makeNoteId("note-A");
-    const state = makeSaveFailedState({ currentNoteId, pendingNextNoteId: null });
+    const state = makeSaveFailedState({ currentNoteId, pendingNextFocus: null });
     const stage = makeSaveFailedStage({ noteId: currentNoteId });
     const decision: UserDecision = { kind: "discard-current-session" };
     const spy = makeEventSpy();
@@ -247,8 +288,9 @@ describe("HandleSaveFailure pipeline", () => {
   });
 
   // REQ-HSF-003: no error field in event (REQ-HSF-012)
+  // [coverage retrofit]
   test("discard (no pending) → EditingSessionDiscarded has no error field", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "discard-current-session" };
     const spy = makeEventSpy();
@@ -262,8 +304,9 @@ describe("HandleSaveFailure pipeline", () => {
   });
 
   // PROP-HSF-015: timestamp reuse on discard (no pending)
+  // [coverage retrofit]
   test("discard (no pending) → EditingSessionDiscarded.occurredOn equals Clock.now() value", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "discard-current-session" };
     const spy = makeEventSpy();
@@ -275,12 +318,15 @@ describe("HandleSaveFailure pipeline", () => {
     expect(spy.events[0].occurredOn).toBe(clock.fixedNow);
   });
 
-  // ── REQ-HSF-004: discard with pendingNextNoteId ──────────────────────────
+  // ── REQ-HSF-004: discard with pendingNextFocus ───────────────────────────
 
-  test("discard (with pending) → EditingState for pending note, all 6 fields, resolution='discarded'", async () => {
+  // [genuine red] — focusedBlockId === pendingNextFocus.blockId; 7 fields asserted
+  test("discard (with pending) → EditingState for pending note, all 7 fields, resolution='discarded' [genuine red]", async () => {
     const currentNoteId = makeNoteId("note-A");
-    const pendingNextNoteId = makeNoteId("note-B");
-    const state = makeSaveFailedState({ currentNoteId, pendingNextNoteId });
+    const pendingNoteId = makeNoteId("note-B");
+    const pendingBlockId = makeBlockId("block-p2");
+    const pendingNextFocus = makePendingNextFocus(pendingNoteId, pendingBlockId);
+    const state = makeSaveFailedState({ currentNoteId, pendingNextFocus });
     const stage = makeSaveFailedStage({ noteId: currentNoteId });
     const decision: UserDecision = { kind: "discard-current-session" };
     const spy = makeEventSpy();
@@ -293,31 +339,35 @@ describe("HandleSaveFailure pipeline", () => {
     expect(result.resolvedState.kind).toBe("ResolvedState");
     expect(result.resolvedState.resolution).toBe("discarded");
 
-    // nextSessionState must be EditingState for the pending note — all 6 fields
+    // nextSessionState must be EditingState for the pending note — all 7 fields
     const nextState = result.nextSessionState as EditingState;
     expect(nextState.status).toBe("editing");
-    expect(nextState.currentNoteId).toBe(pendingNextNoteId);  // transitioned to pending
-    expect(nextState.isDirty).toBe(false);                    // fresh session
-    expect(nextState.lastInputAt).toBeNull();                 // fresh session
-    expect(nextState.idleTimerHandle).toBeNull();             // no timer running
-    expect(nextState.lastSaveResult).toBeNull();              // fresh session
+    expect(nextState.currentNoteId).toBe(pendingNoteId);           // transitioned to pending
+    expect(nextState.focusedBlockId).toBe(pendingBlockId);         // [genuine red] threaded through
+    expect(nextState.isDirty).toBe(false);                         // fresh session
+    expect(nextState.lastInputAt).toBeNull();                      // fresh session
+    expect(nextState.idleTimerHandle).toBeNull();                  // no timer running
+    expect(nextState.lastSaveResult).toBeNull();                   // fresh session
 
-    // Exactly one event: EditingSessionDiscarded with currentNoteId (not pendingNextNoteId)
+    // Exactly one event: EditingSessionDiscarded with currentNoteId (not pendingNextFocus)
     expect(spy.events).toHaveLength(1);
     const event = spy.events[0] as EditingSessionDiscarded;
     expect(event.kind).toBe("editing-session-discarded");
-    expect(event.noteId).toBe(currentNoteId);                 // discarded note
+    expect(event.noteId).toBe(currentNoteId);                      // discarded note
     expect(event.occurredOn).toBe(clock.fixedNow);
 
     // Clock.now() called exactly once
     expect(clock.getCallCount()).toBe(1);
   });
 
-  // PROP-HSF-006: pendingNextNoteId does not appear in event payload
-  test("discard (with pending) → event.noteId is currentNoteId, not pendingNextNoteId", async () => {
+  // PROP-HSF-008: pendingNextFocus does not appear in event payload, blockId absent
+  // [genuine red] — extended to check blockId absence
+  test("PROP-HSF-008: discard (with pending) → event.noteId is currentNoteId; no pendingNextFocus or blockId in event [genuine red]", async () => {
     const currentNoteId = makeNoteId("note-A");
-    const pendingNextNoteId = makeNoteId("note-B");
-    const state = makeSaveFailedState({ currentNoteId, pendingNextNoteId });
+    const pendingNoteId = makeNoteId("note-B");
+    const pendingBlockId = makeBlockId("block-leak");
+    const pendingNextFocus = makePendingNextFocus(pendingNoteId, pendingBlockId);
+    const state = makeSaveFailedState({ currentNoteId, pendingNextFocus });
     const stage = makeSaveFailedStage({ noteId: currentNoteId });
     const decision: UserDecision = { kind: "discard-current-session" };
     const spy = makeEventSpy();
@@ -327,16 +377,21 @@ describe("HandleSaveFailure pipeline", () => {
     await runHandleSaveFailurePipeline(stage, state, decision, ports);
 
     expect((spy.events[0] as EditingSessionDiscarded).noteId).toBe(currentNoteId);
-    expect((spy.events[0] as EditingSessionDiscarded).noteId).not.toBe(pendingNextNoteId);
-    // pendingNextNoteId must not appear in event payload
+    expect((spy.events[0] as EditingSessionDiscarded).noteId).not.toBe(pendingNoteId);
+    // pendingNextFocus must not appear in event payload
+    expect("pendingNextFocus" in spy.events[0]).toBe(false);
     expect("pendingNextNoteId" in spy.events[0]).toBe(false);
+    // blockId must not appear in event payload
+    expect("blockId" in spy.events[0]).toBe(false);
   });
 
   // PROP-HSF-015: timestamp reuse on discard (with pending)
+  // [coverage retrofit]
   test("discard (with pending) → EditingSessionDiscarded.occurredOn equals Clock.now() value", async () => {
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-ts"));
     const state = makeSaveFailedState({
       currentNoteId: makeNoteId("note-A"),
-      pendingNextNoteId: makeNoteId("note-B"),
+      pendingNextFocus,
     });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "discard-current-session" };
@@ -351,10 +406,11 @@ describe("HandleSaveFailure pipeline", () => {
 
   // ── REQ-HSF-005: cancel-switch (valid) ──────────────────────────────────
 
-  test("cancel-switch (valid) → EditingState for current note, all 6 fields, no event, resolution='cancelled'", async () => {
+  // [genuine red] — focusedBlockId: null is a new field; old impl returns 6-field object
+  test("cancel-switch (valid) → EditingState for current note, all 7 fields, no event, resolution='cancelled' [genuine red]", async () => {
     const currentNoteId = makeNoteId("note-A");
-    const pendingNextNoteId = makeNoteId("note-B");
-    const state = makeSaveFailedState({ currentNoteId, pendingNextNoteId });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-cs"));
+    const state = makeSaveFailedState({ currentNoteId, pendingNextFocus });
     const stage = makeSaveFailedStage({ noteId: currentNoteId });
     const decision: UserDecision = { kind: "cancel-switch" };
     const spy = makeEventSpy();
@@ -367,14 +423,16 @@ describe("HandleSaveFailure pipeline", () => {
     expect(result.resolvedState.kind).toBe("ResolvedState");
     expect(result.resolvedState.resolution).toBe("cancelled");
 
-    // nextSessionState must be EditingState for current note — all 6 fields
+    // nextSessionState must be EditingState for current note — all 7 fields
     const nextState = result.nextSessionState as EditingState;
     expect(nextState.status).toBe("editing");
-    expect(nextState.currentNoteId).toBe(currentNoteId);   // same note
-    expect(nextState.isDirty).toBe(true);                   // unsaved content retained
-    expect(nextState.lastInputAt).toBeNull();               // restoration moment
-    expect(nextState.idleTimerHandle).toBeNull();           // no timer at restoration
-    expect(nextState.lastSaveResult).toBe("failed");        // last save did not succeed
+    expect(nextState.currentNoteId).toBe(currentNoteId);    // same note
+    // [genuine red] focusedBlockId: null — UI re-focuses from its own state
+    expect(nextState.focusedBlockId).toBeNull();
+    expect(nextState.isDirty).toBe(true);                    // unsaved content retained
+    expect(nextState.lastInputAt).toBeNull();                // restoration moment
+    expect(nextState.idleTimerHandle).toBeNull();            // no timer at restoration
+    expect(nextState.lastSaveResult).toBe("failed");         // last save did not succeed
 
     // No event emitted
     expect(spy.events).toHaveLength(0);
@@ -383,11 +441,13 @@ describe("HandleSaveFailure pipeline", () => {
     expect(clock.getCallCount()).toBe(1);
   });
 
-  // PROP-HSF-007: pendingNextNoteId absent from EditingState
-  test("cancel-switch (valid) → EditingState has no pendingNextNoteId field", async () => {
+  // PROP-HSF-007: pendingNextFocus absent from EditingState (cancel-switch)
+  // [coverage retrofit] — updated field name
+  test("PROP-HSF-007: cancel-switch (valid) → EditingState has no pendingNextFocus field", async () => {
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-nf"));
     const state = makeSaveFailedState({
       currentNoteId: makeNoteId("note-A"),
-      pendingNextNoteId: makeNoteId("note-B"),
+      pendingNextFocus,
     });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "cancel-switch" };
@@ -397,13 +457,15 @@ describe("HandleSaveFailure pipeline", () => {
 
     const result = await runHandleSaveFailurePipeline(stage, state, decision, ports);
 
+    expect("pendingNextFocus" in result.nextSessionState).toBe(false);
     expect("pendingNextNoteId" in result.nextSessionState).toBe(false);
   });
 
-  // ── REQ-HSF-006: cancel-switch (invalid — no pendingNextNoteId) ──────────
+  // ── REQ-HSF-006: cancel-switch (invalid — no pendingNextFocus) ───────────
 
-  test("cancel-switch (invalid, no pending) → Promise.reject with invariant-violated SaveError", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+  // [genuine red] — error detail string changed to "cancel-switch requires pendingNextFocus"
+  test("cancel-switch (invalid, no pending) → Promise.reject with invariant-violated SaveError [genuine red]", async () => {
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "cancel-switch" };
     const spy = makeEventSpy();
@@ -424,12 +486,27 @@ describe("HandleSaveFailure pipeline", () => {
     expect(clock.getCallCount()).toBe(0);
   });
 
+  // [genuine red] — error detail must use new string
+  test("cancel-switch (invalid) → error.reason.detail === 'cancel-switch requires pendingNextFocus' [genuine red]", async () => {
+    const state = makeSaveFailedState({ pendingNextFocus: null });
+    const stage = makeSaveFailedStage();
+    const decision: UserDecision = { kind: "cancel-switch" };
+    const spy = makeEventSpy();
+    const clock = makeClockSpy();
+    const ports = makePorts(spy, clock);
+
+    const error = await runHandleSaveFailurePipeline(stage, state, decision, ports).catch((e) => e);
+    expect(error.reason.detail).toBe("cancel-switch requires pendingNextFocus");
+  });
+
   // ── REQ-HSF-001: non-save-failed state → invariant violation ────────────
 
+  // [coverage retrofit]
   test("non-save-failed state (editing) → Promise.reject with invariant-violated SaveError", async () => {
     const editingState: unknown = {
       status: "editing",
       currentNoteId: makeNoteId("note-A"),
+      focusedBlockId: null,
       isDirty: true,
       lastInputAt: null,
       idleTimerHandle: null,
@@ -458,6 +535,7 @@ describe("HandleSaveFailure pipeline", () => {
 
   // ── REQ-HSF-008: at most one event per invocation ────────────────────────
 
+  // [coverage retrofit]
   test("retry-save emits exactly 1 event (RetrySaveRequested)", async () => {
     const state = makeSaveFailedState();
     const stage = makeSaveFailedStage();
@@ -470,8 +548,9 @@ describe("HandleSaveFailure pipeline", () => {
     expect(spy.events[0].kind).toBe("retry-save-requested");
   });
 
+  // [coverage retrofit]
   test("discard (no pending) emits exactly 1 event (EditingSessionDiscarded)", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "discard-current-session" };
     const spy = makeEventSpy();
@@ -482,8 +561,10 @@ describe("HandleSaveFailure pipeline", () => {
     expect(spy.events[0].kind).toBe("editing-session-discarded");
   });
 
+  // [coverage retrofit]
   test("discard (with pending) emits exactly 1 event (EditingSessionDiscarded)", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: makeNoteId("note-B") });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-ev"));
+    const state = makeSaveFailedState({ pendingNextFocus });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "discard-current-session" };
     const spy = makeEventSpy();
@@ -494,8 +575,10 @@ describe("HandleSaveFailure pipeline", () => {
     expect(spy.events[0].kind).toBe("editing-session-discarded");
   });
 
+  // [coverage retrofit]
   test("cancel-switch (valid) emits zero events", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: makeNoteId("note-B") });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-ev2"));
+    const state = makeSaveFailedState({ pendingNextFocus });
     const stage = makeSaveFailedStage();
     const decision: UserDecision = { kind: "cancel-switch" };
     const spy = makeEventSpy();
@@ -507,6 +590,7 @@ describe("HandleSaveFailure pipeline", () => {
 
   // ── REQ-HSF-009: Clock.now() budget ─────────────────────────────────────
 
+  // [coverage retrofit]
   test("Clock.now() called exactly once on retry-save branch", async () => {
     const state = makeSaveFailedState();
     const stage = makeSaveFailedStage();
@@ -517,8 +601,9 @@ describe("HandleSaveFailure pipeline", () => {
     expect(clock.getCallCount()).toBe(1);
   });
 
+  // [coverage retrofit]
   test("Clock.now() called exactly once on discard (no pending) branch", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const stage = makeSaveFailedStage();
     const clock = makeClockSpy();
     const spy = makeEventSpy();
@@ -527,8 +612,10 @@ describe("HandleSaveFailure pipeline", () => {
     expect(clock.getCallCount()).toBe(1);
   });
 
+  // [coverage retrofit]
   test("Clock.now() called exactly once on discard (with pending) branch", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: makeNoteId("note-B") });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-ck"));
+    const state = makeSaveFailedState({ pendingNextFocus });
     const stage = makeSaveFailedStage();
     const clock = makeClockSpy();
     const spy = makeEventSpy();
@@ -537,8 +624,10 @@ describe("HandleSaveFailure pipeline", () => {
     expect(clock.getCallCount()).toBe(1);
   });
 
+  // [coverage retrofit]
   test("Clock.now() called exactly once on cancel-switch (valid) branch", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: makeNoteId("note-B") });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-ck2"));
+    const state = makeSaveFailedState({ pendingNextFocus });
     const stage = makeSaveFailedStage();
     const clock = makeClockSpy();
     const spy = makeEventSpy();
@@ -547,8 +636,9 @@ describe("HandleSaveFailure pipeline", () => {
     expect(clock.getCallCount()).toBe(1);
   });
 
+  // [coverage retrofit]
   test("Clock.now() called exactly 0 times on cancel-switch (invalid) branch", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const stage = makeSaveFailedStage();
     const clock = makeClockSpy();
     const spy = makeEventSpy();
@@ -561,6 +651,7 @@ describe("HandleSaveFailure pipeline", () => {
 
   // ── REQ-HSF-010: ResolvedState shape ────────────────────────────────────
 
+  // [coverage retrofit]
   test("retry-save → ResolvedState.kind='ResolvedState', resolution='retried'", async () => {
     const state = makeSaveFailedState();
     const stage = makeSaveFailedStage();
@@ -572,8 +663,9 @@ describe("HandleSaveFailure pipeline", () => {
     expect(result.resolvedState.resolution).toBe("retried");
   });
 
+  // [coverage retrofit]
   test("discard (no pending) → ResolvedState.resolution='discarded'", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const stage = makeSaveFailedStage();
     const spy = makeEventSpy();
     const clock = makeClockSpy();
@@ -582,8 +674,10 @@ describe("HandleSaveFailure pipeline", () => {
     expect(result.resolvedState.resolution).toBe("discarded");
   });
 
+  // [coverage retrofit]
   test("discard (with pending) → ResolvedState.resolution='discarded'", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: makeNoteId("note-B") });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-rs"));
+    const state = makeSaveFailedState({ pendingNextFocus });
     const stage = makeSaveFailedStage();
     const spy = makeEventSpy();
     const clock = makeClockSpy();
@@ -592,8 +686,10 @@ describe("HandleSaveFailure pipeline", () => {
     expect(result.resolvedState.resolution).toBe("discarded");
   });
 
+  // [coverage retrofit]
   test("cancel-switch (valid) → ResolvedState.resolution='cancelled'", async () => {
-    const state = makeSaveFailedState({ pendingNextNoteId: makeNoteId("note-B") });
+    const pendingNextFocus = makePendingNextFocus(makeNoteId("note-B"), makeBlockId("block-rs2"));
+    const state = makeSaveFailedState({ pendingNextFocus });
     const stage = makeSaveFailedStage();
     const spy = makeEventSpy();
     const clock = makeClockSpy();
@@ -604,6 +700,7 @@ describe("HandleSaveFailure pipeline", () => {
 
   // ── PROP-HSF-008: no error field in any emitted event (REQ-HSF-012) ──────
 
+  // [coverage retrofit]
   test("retry-save with error-carrying stage → emitted event has no error field", async () => {
     const stage: SaveFailedStage = {
       kind: "SaveFailedStage",
@@ -620,13 +717,14 @@ describe("HandleSaveFailure pipeline", () => {
     expect("error" in spy.events[0]).toBe(false);
   });
 
+  // [coverage retrofit]
   test("discard with error-carrying stage → emitted event has no error field", async () => {
     const stage: SaveFailedStage = {
       kind: "SaveFailedStage",
       noteId: makeNoteId("note-A"),
       error: { kind: "fs", reason: { kind: "permission", path: "/vault/test.md" } },
     };
-    const state = makeSaveFailedState({ pendingNextNoteId: null });
+    const state = makeSaveFailedState({ pendingNextFocus: null });
     const spy = makeEventSpy();
     const clock = makeClockSpy();
 

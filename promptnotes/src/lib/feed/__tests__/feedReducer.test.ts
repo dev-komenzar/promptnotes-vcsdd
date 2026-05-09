@@ -68,10 +68,18 @@ const arbNoteRowMetadata = fc.record({
 const arbNoteMetadata: fc.Arbitrary<Readonly<Record<string, import('$lib/feed/types').NoteRowMetadata>>> =
   fc.dictionary(arbNoteId, arbNoteRowMetadata);
 
+const arbPendingNextFocusOrNull: fc.Arbitrary<{ noteId: string; blockId: string } | null> = fc.option(
+  fc.record({
+    noteId: arbNoteId,
+    blockId: arbNoteId,
+  }),
+  { nil: null }
+);
+
 const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   editingStatus: arbEditingStatus,
   editingNoteId: arbNoteIdOrNull,
-  pendingNextNoteId: arbNoteIdOrNull,
+  pendingNextFocus: arbPendingNextFocusOrNull,
   visibleNoteIds: arbVisibleNoteIds,
   allNoteIds: arbVisibleNoteIds,
   loadingStatus: arbLoadingStatus,
@@ -80,6 +88,8 @@ const arbFeedViewState: fc.Arbitrary<FeedViewState> = fc.record({
   noteMetadata: arbNoteMetadata,
   tagAutocompleteVisibleFor: fc.constant(null),
   activeFilterTags: fc.constant([] as readonly string[]),
+  searchQuery: fc.constant(''),
+  sortDirection: fc.constantFrom('asc' as const, 'desc' as const),
 });
 
 const arbCause: fc.Arbitrary<FeedDomainSnapshot['cause']> = fc.oneof(
@@ -94,7 +104,7 @@ const arbFeedDomainSnapshot: fc.Arbitrary<FeedDomainSnapshot> = fc.record({
   editing: fc.record({
     status: arbEditingStatus,
     currentNoteId: arbNoteIdOrNull,
-    pendingNextNoteId: arbNoteIdOrNull,
+    pendingNextFocus: arbPendingNextFocusOrNull,
   }),
   feed: fc.record({
     visibleNoteIds: arbVisibleNoteIds,
@@ -127,7 +137,7 @@ function makeInitialState(overrides: Partial<FeedViewState> = {}): FeedViewState
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: [],
     allNoteIds: [],
     loadingStatus: 'loading',
@@ -136,6 +146,8 @@ function makeInitialState(overrides: Partial<FeedViewState> = {}): FeedViewState
     noteMetadata: {},
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
+    searchQuery: '',
+    sortDirection: 'desc',
     ...overrides,
   };
 }
@@ -145,7 +157,7 @@ function makeSnapshot(overrides: Partial<FeedDomainSnapshot> = {}): FeedDomainSn
     editing: {
       status: 'editing',
       currentNoteId: 'note-001',
-      pendingNextNoteId: null,
+      pendingNextFocus: null,
     },
     feed: {
       visibleNoteIds: ['note-001', 'note-002'],
@@ -241,15 +253,15 @@ describe('PROP-FEED-006: feedReducer referential transparency', () => {
 describe('PROP-FEED-007a: DomainSnapshotReceived mirrors editing fields', () => {
   test('PROP-FEED-007a-example: editingStatus mirrors S.editing.status', () => {
     const state = makeInitialState({ editingStatus: 'idle' });
-    const snapshot = makeSnapshot({ editing: { status: 'saving', currentNoteId: 'note-x', pendingNextNoteId: 'note-y' } });
+    const snapshot = makeSnapshot({ editing: { status: 'saving', currentNoteId: 'note-x', pendingNextFocus: { noteId: 'note-y', blockId: 'b1' } } });
     const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
     const result = feedReducer(state, action);
     expect(result.state.editingStatus).toBe('saving');
     expect(result.state.editingNoteId).toBe('note-x');
-    expect(result.state.pendingNextNoteId).toBe('note-y');
+    expect(result.state.pendingNextFocus).toEqual({ noteId: 'note-y', blockId: 'b1' });
   });
 
-  test('PROP-FEED-007a-fast-check: editingStatus/editingNoteId/pendingNextNoteId mirrored (≥200 runs)', () => {
+  test('PROP-FEED-007a-fast-check: editingStatus/editingNoteId/pendingNextFocus mirrored (≥200 runs)', () => {
     fc.assert(
       fc.property(arbFeedViewState, arbFeedDomainSnapshot, (state, snapshot) => {
         const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
@@ -257,7 +269,7 @@ describe('PROP-FEED-007a: DomainSnapshotReceived mirrors editing fields', () => 
         return (
           result.state.editingStatus === snapshot.editing.status &&
           result.state.editingNoteId === snapshot.editing.currentNoteId &&
-          result.state.pendingNextNoteId === snapshot.editing.pendingNextNoteId
+          JSON.stringify(result.state.pendingNextFocus) === JSON.stringify(snapshot.editing.pendingNextFocus)
         );
       }),
       { numRuns: 200 }
@@ -632,5 +644,92 @@ describe('REQ-FEED-005/006: FeedRowClicked emits select-past-note only when allo
     const result = feedReducer(state, action);
     const cmd = result.commands.find(c => c.kind === 'select-past-note');
     expect(cmd).toBeUndefined();
+  });
+});
+
+// ── Sprint 4 PROP-FEED-S4-006 / REQ-FEED-026 ─────────────────────────────────
+//
+// PROP-FEED-S4-006: feedReducer mirrors pendingNextFocus biconditional.
+//
+// feedReducer(s, { kind: 'DomainSnapshotReceived', snapshot: S }).state.pendingNextFocus
+// must deep-equal S.editing.pendingNextFocus for all inputs.
+//
+// RED: FeedViewState currently has pendingNextNoteId (string | null), not
+// pendingNextFocus ({ noteId, blockId } | null). FeedDomainSnapshot.editing also
+// has pendingNextNoteId. This test references the NEW field names that do not
+// exist yet in types.ts → type errors at compile time.
+//
+// We use @ts-expect-error to suppress type errors and allow the assertion
+// logic to execute, producing a genuine runtime failure when the field is absent.
+
+describe('PROP-FEED-S4-006 / REQ-FEED-026: pendingNextFocus mirror biconditional (Sprint 4 GREEN)', () => {
+  // Arbitrary for PendingNextFocus: null | { noteId, blockId }
+  const arbPendingNextFocusS4 = fc.option(
+    fc.record({
+      noteId: fc.string({ minLength: 1, maxLength: 40 }),
+      blockId: fc.string({ minLength: 1, maxLength: 40 }),
+    }),
+    { nil: null }
+  );
+
+  function makeSnapshotWithPendingNextFocus(
+    pendingNextFocus: { noteId: string; blockId: string } | null
+  ): FeedDomainSnapshot {
+    return {
+      editing: {
+        status: 'switching',
+        currentNoteId: 'note-1',
+        pendingNextFocus,
+      },
+      feed: { visibleNoteIds: ['note-1', 'note-2'], filterApplied: false },
+      delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
+      noteMetadata: {},
+      cause: { kind: 'EditingStateChanged' },
+    };
+  }
+
+  test('PROP-FEED-S4-006a: example — pendingNextFocus null mirrors to state.pendingNextFocus null', () => {
+    const snapshot = makeSnapshotWithPendingNextFocus(null);
+    const state = makeInitialState();
+    const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = feedReducer(state, action);
+
+    expect(result.state.pendingNextFocus).toBeNull();
+  });
+
+  test('PROP-FEED-S4-006b: example — pendingNextFocus { noteId, blockId } mirrors exactly', () => {
+    const pnf = { noteId: 'note-2', blockId: 'block-b' };
+    const snapshot = makeSnapshotWithPendingNextFocus(pnf);
+    const state = makeInitialState();
+    const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = feedReducer(state, action);
+
+    expect(result.state.pendingNextFocus).toEqual(pnf);
+  });
+
+  test('PROP-FEED-S4-006c: fast-check biconditional — pendingNextFocus mirrors for all inputs (≥200 runs)', () => {
+    fc.assert(
+      fc.property(arbPendingNextFocusS4, (pendingNextFocus) => {
+        const snapshot = makeSnapshotWithPendingNextFocus(pendingNextFocus);
+        const state = makeInitialState();
+        const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+        const result = feedReducer(state, action);
+
+        const mirrored = result.state.pendingNextFocus;
+        return JSON.stringify(mirrored) === JSON.stringify(pendingNextFocus);
+      }),
+      { numRuns: 200 }
+    );
+  });
+
+  test('PROP-FEED-S4-006d: pendingNextNoteId field must NOT exist in result.state (Sprint 4 rename)', () => {
+    const snapshot = makeSnapshotWithPendingNextFocus(null);
+    const state = makeInitialState();
+    const action: FeedAction = { kind: 'DomainSnapshotReceived', snapshot };
+    const result = feedReducer(state, action);
+
+    // After Sprint 4 migration, pendingNextNoteId must not be in the state.
+    // Currently this will PASS (the field IS present), making the rename check RED.
+    expect(Object.prototype.hasOwnProperty.call(result.state, 'pendingNextNoteId')).toBe(false);
   });
 });

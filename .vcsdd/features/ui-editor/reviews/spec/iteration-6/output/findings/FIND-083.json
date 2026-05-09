@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-083",
+  "dimension": "out_of_scope_discipline",
+  "category": "spec_gap",
+  "severity": "minor",
+  "description": "§15.5 line 1264 says 'The body parameter on the legacy helper is removed from the public API: the Rust DTO no longer carries body'. However it does NOT specify the migration path for the EXISTING TS-side consumer code that may rely on the body field reaching the editor through `editing_session_state_changed`. Specifically, `select_past_note` in feed.rs:259-263 currently emits the body via the editor payload's `body` field as the SOLE channel by which the past note's content reaches the EditorPanel. Removing `body` from the wire contract means `select_past_note` has no way to deliver the body unless: (a) the `blocks` field is populated (which §15.4 forbids in Sprint 8), or (b) a separate IPC channel delivers the body. §15.5 is silent on which path Sprint 8 takes. §15.6 acceptance signal lists '`bun run tauri dev` smoke: opening a past note via the feed shall populate the editor with the correct body (REQ-IPC-014 manual check)' — but with `body` removed and `blocks` None, the editor would be empty.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1264",
+      "snippet": "The body parameter on the legacy helper is removed from the public API: the Rust DTO no longer carries body (the TS DTO never did; bodies travel separately through select_past_note's editor-payload path or through the feed_state_changed snapshot's note_metadata)."
+    },
+    {
+      "path": "promptnotes/src-tauri/src/feed.rs",
+      "lineRange": "252-264",
+      "snippet": "let body = snapshot.note_metadata.get(&note_id).map(|m| m.body.as_str()).unwrap_or(\"\");\nlet editor_payload = crate::editor::make_editing_state_changed_payload(\"editing\", false, Some(note_id.clone()), None, None, body);\napp.emit(\"editing_session_state_changed\", editor_payload).map_err(|e| e.to_string())?;"
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1271",
+      "snippet": "bun run tauri dev smoke: opening a past note via the feed shall populate the editor with the correct body (REQ-IPC-014 manual check)."
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-014", "REQ-IPC-019"],
+  "recommendation": "Make the body-delivery path explicit in §15.5: 'Sprint 8 routes past-note body through `feed_state_changed.note_metadata[noteId].body` (already present in feed.rs:NoteRowMetadataDto). The TS EditorPanel reads `body` from the feed snapshot's note_metadata, not from the editor channel.' This pins the cross-feature dependency on `ui-feed-list-actions` and resolves the §15.6 smoke-test ambiguity. Without this pin, the smoke test can be passed only with an undocumented hack."
+}

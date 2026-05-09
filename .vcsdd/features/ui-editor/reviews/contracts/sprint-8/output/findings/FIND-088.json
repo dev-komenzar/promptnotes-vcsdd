@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-088",
+  "criterion": "CRIT-800",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "CRIT-800's threshold (weight 0.18) requires `grep -rn \"REQ-IPC-\" promptnotes/src-tauri/tests/` to return at least one match for each of REQ-IPC-001..020 (20 distinct IDs). The Sprint 8 Rust test files do not carry REQ-IPC-NNN string literals — they use PROP-IPC-NNN tags exclusively (per the §10.4 PROP↔REQ cross-reference convention adopted from Sprint 7 onward). Inspection of `tests/editor_wire_sprint8.rs` (1064 lines), `tests/editor_handlers.rs`, `tests/feed_handlers.rs`, and `tests/wire_audit.sh` finds no occurrences of the substring `REQ-IPC-`. The threshold therefore evaluates to 0 matches out of the required 20 and mechanically FAILs at Phase 5 / convergence time, regardless of whether the underlying tests cover REQ-IPC-001..020 (they do, transitively, via PROP-IPC-001..023). The threshold either needs to (a) be rewritten to grep for `PROP-IPC-` (the actual test-file convention) and rely on §10.4 of verification-architecture.md to certify the REQ↔PROP mapping, or (b) require the test files to add inline `// REQ-IPC-NNN` traceability tags before Phase 5. Without either change, CRIT-800 is unsatisfiable.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "lineRange": "39-43",
+    "snippet": "passThreshold: >\n  `cd promptnotes/src-tauri && cargo test --tests` exits 0 with all 89+ tests passing.\n  `grep -rn \"REQ-IPC-\" promptnotes/src-tauri/tests/` produces at least one match for\n  each of REQ-IPC-001..020 (20 IDs)."
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+    "lineRange": "1-60",
+    "snippet": "/// Proof obligations verified here:\n///   PROP-IPC-001 — 5-variant exhaustive match (Tier 0 compile-time)\n///   PROP-IPC-002 — Idle serializes to exactly {\"status\":\"idle\"}\n///   ... [no REQ-IPC- references in this 1064-line file] ..."
+  },
+  "routeToPhase": "1c"
+}

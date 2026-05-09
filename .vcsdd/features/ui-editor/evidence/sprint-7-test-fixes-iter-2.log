@@ -1,0 +1,65 @@
+Sprint 7 Phase 4 iter-2: Phase 2a test fixes for tautological tests + canCopy isDirty gate removal
+Timestamp: 2026-05-07T02:30:00Z
+
+## Tests fixed per finding
+
+### FIND-059 (critical, REQ-EDIT-032, PROP-EDIT-021)
+File: promptnotes/src/lib/editor/__tests__/dom/editor-panel.dom.vitest.ts
+- Line ~128: "REQ-EDIT-032: copy button has disabled and aria-disabled in idle state"
+  Added: adapter._emitState({ status: 'idle' }); flushSync(); before querySelector
+- Line ~135: "REQ-EDIT-032: copy button has disabled and aria-disabled in switching state"
+  Added: adapter._emitState({ status: 'switching', ... }); flushSync(); before querySelector
+- Line ~141: "REQ-EDIT-032: copy button has disabled when isNoteEmpty=true in editing state"
+  Added: adapter._emitState({ status: 'editing', ..., isNoteEmpty: true }); flushSync(); before querySelector
+File: promptnotes/src/lib/editor/EditorPanel.svelte
+- Line 103: Removed `&& !viewState.isDirty` gate from isCopyEnabled derived.
+  Changed: `const isCopyEnabled = $derived(canCopy(viewState) && !viewState.isDirty);`
+  To:      `const isCopyEnabled = $derived(canCopy(viewState));`
+
+### FIND-061 (REQ-EDIT-006, PROP-EDIT-026)
+File: promptnotes/src/lib/editor/__tests__/dom/block-element.dom.vitest.ts
+- Lines ~123-143: "REQ-EDIT-006: Enter at end of non-empty block dispatches InsertBlock"
+  Added: range.setStart(textNode, textNode.length); to set caret at end before Enter keydown
+- Lines ~145-158: "REQ-EDIT-006: InsertBlock carries prevBlockId"
+  Same caret-at-end setup added
+- Lines ~162-175: "REQ-EDIT-007: Enter mid-block dispatches SplitBlock"
+  Added: range.setStart(textNode, 2); to explicitly enforce mid-block caret position
+
+### FIND-061 (REQ-EDIT-008, PROP-EDIT-028)
+File: promptnotes/src/lib/editor/__tests__/dom/block-element.dom.vitest.ts
+- Lines ~210-232: "REQ-EDIT-008: Backspace at offset 0 of non-first block dispatches MergeBlocks"
+  Changed: now targets block-2 (data-block-index="1"), sets textContent='world' (non-empty to
+  bypass RemoveBlock guard), collapses range to offset 0 before Backspace dispatch
+
+### FIND-063 (major, EC-EDIT-014)
+File: promptnotes/src/lib/editor/__tests__/dom/editor-session-state.dom.vitest.ts
+- Lines ~337-369: "EC-EDIT-014: Cancel in save-failed restores focusedBlockId=priorFocusedBlockId"
+  Added: post-Cancel editing snapshot emission; assertion
+  `expect(document.activeElement?.getAttribute('data-block-id')).toBe('block-1')`
+
+### FIND-064 (major, REQ-EDIT-030, NFR-EDIT-007, PROP-EDIT-019)
+File: promptnotes/src/lib/editor/__tests__/dom/save-failure-banner.dom.vitest.ts
+- Lines ~200-218: Replaced `data-shadow-applied === 'deep'` assertion with className match on
+  'save-failure-banner'. Added source-grep test that reads SaveFailureBanner.svelte and asserts
+  presence of '0px 23px 52px' and '#dd5b00' literals.
+File: promptnotes/src/lib/editor/SaveFailureBanner.svelte
+- Removed `data-shadow-applied="deep"` and `data-accent-color="#dd5b00"` attributes from root div.
+
+### FIND-067 (major, REQ-EDIT-001, PROP-EDIT-025)
+File: promptnotes/src/lib/editor/__tests__/dom/block-element.dom.vitest.ts
+- Line ~96: Tightened "clicking a block element dispatches FocusBlock" to calledTimes(1) assertion
+- Added new test "domain echo of focusedBlockId does not cause a second FocusBlock dispatch":
+  Click block-1 (1 dispatch), emit snapshot with same focusedBlockId='block-1',
+  assert still calledTimes(1) — verifying the $effect guard (activeElement !== el) is effective.
+
+## Final test count
+bun run test:dom: 214 passed / 2 failed / 216 total
+
+## Remaining 2 failures (pre-existing red — not in scope of this iteration)
+1. editor-validation.dom.vitest.ts > REQ-EDIT-038: incompatible-content-for-type snapshot shows inline hint
+2. editor-validation.dom.vitest.ts > REQ-EDIT-038: control-character block error shows hint
+   Reason: EditingSessionStateDto does not yet carry per-block error data. These are Phase 2b
+   concerns noted in EditorPanel.svelte comment at line ~478. Not addressed in FIND-059/063/064/067.
+
+## bun run check editor-scope errors: 0
+`bun run check 2>&1 | grep "src/lib/editor/" | grep -E "ERROR|WARNING" | wc -l` → 0

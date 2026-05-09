@@ -1,0 +1,48 @@
+Sprint 2 Bundled Red Phase — Phase 3 Feedback Test Additions
+Timestamp: 2026-05-07T03:10:00.000Z
+
+new-feature-tests: FAIL (3 new sub-cases fail; expected)
+regression-baseline: PASS (existing 113 tests unaffected)
+
+## New test sub-cases added
+
+### prop-027-precondition-throws.harness.test.ts
+
+Sub-case (e): PC-004 idle + non-null currentNote → throw
+  - FAIL: "throws when state is idle but currentNote is non-null" — impl does not yet enforce this direction
+  - FAIL: "PC-004 (idle + non-null) throw: no port is invoked" — clockCalled=true (clock fires before throw)
+
+Sub-case (b) extended: clockNow NOT called on PC-002 throw
+  - FAIL: "clockNow is called zero times when parseMarkdownToBlocks fails" — clockCallCount=1 (clock fires before parse in current impl)
+
+### prop-028-idempotent-refocus.harness.test.ts
+
+Sub-case (c): structural equality of two NewSession objects
+  - PASS immediately: fixed-clock produces equal output; no impl change needed here
+
+### pipeline.test.ts
+
+R6-001: PC-001 same-note + non-null snapshot silent ignore
+  - PASS immediately: classification returns same-note → existing note reused; snapshot not used
+
+## Summary
+- Tests added: 7 total (3 in prop-027, 1 in prop-028, 2 in pipeline.test.ts)
+- Tests failing (expected): 3 (sub-cases e×2, b-extended×1)
+- Tests passing: 4 (sub-case c, R6-001×2, and 1 previously-failing case from prop-028)
+
+## Failing test output (abbreviated)
+
+```
+(fail) PROP-EPNS-027 (e): throws when state is idle but currentNote is non-null
+  → impl does not guard idle+non-null → proceeds to complete pipeline → returns Ok instead of throwing
+
+(fail) PROP-EPNS-027 (e): PC-004 (idle + non-null) throw: no port is invoked
+  → clockCalled()=true (expected false)
+
+(fail) PROP-EPNS-027 (b) extended: clockNow is called zero times when parseMarkdownToBlocks fails
+  → clockCallCount=1 (expected 0) — clockNow fires before parseMarkdownToBlocks in start-new-session.ts:41
+```
+
+## Routing to Phase 2b
+- FIND-001 (PC-004 idle+non-null): Add guard in pipeline.ts before classifyCurrentSession
+- FIND-004 (clock reorder): Move clockNow() call to AFTER resolveNote() in start-new-session.ts

@@ -1,0 +1,15 @@
+{
+  "id": "FIND-060",
+  "severity": "critical",
+  "dimension": "structural_integrity",
+  "category": "test_quality",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:373-431, 514-541",
+  "description": "EditorPanel.svelte renders an off-screen 'ghost block' element whose stated purpose (in the source comment) is to satisfy test queries — quote: 'The ghost is an off-screen block-element positioned FIRST in the DOM tree. It serves as a test-harness hook so that REQ-EDIT-007 / REQ-EDIT-008 / REQ-EDIT-022 / EC-EDIT-005 ...'. The ghost has its own onkeydown handler that duplicates the production keyboard logic of BlockElement.svelte (Enter → SplitBlock+InsertBlockAfter; Backspace at index>0 → MergeBlocks) but lives in EditorPanel. This violates structural integrity in three ways: (1) production code carries scaffolding that exists solely for the test runner; (2) the duplicate handler can drift from BlockElement's real handler — they are already different (the ghost calls dispatchSplitBlock AND dispatchInsertBlockAfter on every Enter regardless of caret position, contradicting REQ-EDIT-006/007 which require XOR via splitOrInsert); (3) tests for REQ-EDIT-006/007/008/009 query `[data-testid='block-element']` which matches the ghost first, so they are not exercising real BlockElement behavior. CRIT-709 / CRIT-710 thresholds pass mechanically while the underlying `BlockElement.svelte` keystroke logic is never integration-tested.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "373-431, 514-541",
+    "snippet": "// Ghost block: first [data-testid=\"block-element\"] in DOM.\n// ...\n// Has onkeydown to dispatch SplitBlock+InsertBlock on Enter (REQ-EDIT-007)\n// and MergeBlocks on Backspace at non-first index (REQ-EDIT-008).\nfunction handleGhostKeyDown(event: KeyboardEvent): void {\n  if (event.key === 'Enter') {\n    event.preventDefault();\n    // Dispatch both SplitBlock (REQ-EDIT-007) and InsertBlock (REQ-EDIT-006)"
+  },
+  "suggestedRemediation": "Delete the ghost-block element and `handleGhostInput` / `handleGhostKeyDown` from EditorPanel.svelte. Update the failing DOM tests (block-element.dom.vitest.ts, slash-menu.dom.vitest.ts) to query the real BlockElement-rendered nodes (e.g., `target.querySelector('[data-block-id=\"block-1\"]')` or `target.querySelectorAll('[data-testid=\"block-element\"]')[0]` after asserting the count). The proper fix is to make tests address the real component output, not to add scaffolding to the component.",
+  "routeToPhase": "2b"
+}

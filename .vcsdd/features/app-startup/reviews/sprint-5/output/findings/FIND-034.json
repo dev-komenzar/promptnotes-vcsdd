@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-034",
+  "dimension": "verification_readiness",
+  "severity": "minor",
+  "title": "PROP-029 'Ok([]) → block-parse' path is unreachable from the real parser; only test stubs exercise it, weakening the verification claim",
+  "affects": [
+    "REQ-017",
+    "PROP-025",
+    "PROP-029",
+    "promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts",
+    "promptnotes/src/lib/domain/app-startup/scan-vault.ts"
+  ],
+  "spec_quote": "REQ-017 Edge Cases: 'parseMarkdownToBlocks(snapshot.body) returns Ok([]) (e.g., body containing only whitespace or only YAML-frontmatter delimiters): folds to failure: { kind: \\'hydrate\\', reason: \\'block-parse\\' }.' / PROP-029: 'parseMarkdownToBlocks(snapshot.body) returning Ok([]) (e.g., whitespace-only body) is folded by the Step 2 caller to CorruptedFile.failure: { kind: \\'hydrate\\', reason: \\'block-parse\\' }.'",
+  "code_quote": "parse-markdown-to-blocks.ts:154-156 — `// Guarantee at least one block\\n  if (blocks.length === 0) {\\n    blocks.push(nextBlock(\"paragraph\", \"\"));\\n  }` and parse-markdown-to-blocks.ts:71-73 — `if (markdown === \"\") { return { ok: true, value: [nextBlock(\"paragraph\", \"\")] }; }` — both paths guarantee `Ok` is non-empty.",
+  "issue": "PROP-029 (required:true) tests the Ok([]) → block-parse mapping in scan-vault.ts:153-163, but the real parser (capture-auto-save/parse-markdown-to-blocks.ts) is structurally incapable of producing Ok([]): empty input is hardcoded to return `[paragraph(\"\")]` (line 71-73) and the post-loop fallback explicitly appends `paragraph(\"\")` if blocks is empty (line 154-156). This means the spec example 'whitespace-only body' does NOT actually trigger Ok([]); it produces multiple `paragraph(\"\")` blocks (one per line after split). The PROP-029 test in step2-block-parse.test.ts:402-516 only passes because it injects a custom stub `makeBlockParserReturnsEmptyFor` that simulates Ok([]). The end-to-end claim 'whitespace-only body folds to block-parse' (REQ-017 Edge Case) is therefore unverified against the real parser. The actual whitespace-only body behavior is determined by the hydrateNote post-filter (FIND-031), not the Step-2 Ok([]) guard.",
+  "recommended_remediation": "Either (a) update the real parseMarkdownToBlocks to return Ok([]) when input is whitespace-only / contains no significant content (matching spec REQ-017 example); add a Tier-2 test that calls the real parser with `\"   \\n   \\n   \"` and asserts Ok([]) — then the existing PROP-029 stubbed test transitively covers production behavior; or (b) drop the Ok([]) example from REQ-017 / PROP-029 and replace it with a clearly-stubbed-only verification claim, documenting that production never produces Ok([]) and the guard is purely defensive.",
+  "createdAt": "2026-05-08T00:00:00Z"
+}

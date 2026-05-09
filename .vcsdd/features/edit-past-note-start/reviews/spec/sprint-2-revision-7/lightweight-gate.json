@@ -1,0 +1,11 @@
+{
+  "phase": "1c",
+  "feature": "edit-past-note-start",
+  "sprint": 2,
+  "revision": 7,
+  "verdict": "PASS-LIGHT",
+  "reviewedBy": "builder-self-review",
+  "reviewedAt": "2026-05-07T03:02:00.000Z",
+  "rationale": "Revision 7 contains scope clarification (REQ-EPNS-008 preamble) and stale-port-name purge (hydrateSnapshot → parseMarkdownToBlocks). No design or contract changes; no new requirements; no proof-obligation deletions. Lightweight gate appropriate per VCSDD lean-mode advisory-patch convention.",
+  "findingsCount": 0
+}

@@ -250,6 +250,148 @@
       "timestamp": "2026-05-05T05:15:00.000Z",
       "reason": "Phase 6 PASS: 4D convergence achieved. Finding diminishment 9→0 (all resolved), all 9 file paths valid, all criteria evaluated, 0 duplicates, 45 cargo + 1475 bun tests PASS. Sprint 3 complete.",
       "sprint": 3
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-09T08:00:00.000Z",
+      "reason": "Sprint 4: block migration spec patch — REQ-FEED-002/009/024 を block-aware に書き直し (per docs/tasks/block-migration-spec-impact.md §ui-feed-list-actions)。Option B (ui-editor sprint-8) で Rust DTO が 5-arm tagged union に migrate 済みであることを前提とする",
+      "sprint": 3,
+      "nextSprintHint": 4
+    },
+    {
+      "from": "1c",
+      "to": "1a",
+      "timestamp": "2026-05-09T08:30:00.000Z",
+      "reason": "Phase 1c sprint-4 iter-1 FAIL routing: 11 findings (critical=2, high=4, medium=5). spec_fidelity and verification_readiness both FAIL. Return to earliest impacted phase (1a) for spec/PROP fixes.",
+      "sprint": 4,
+      "iteration": "1c-sprint-4-iter-1"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-09T09:00:00.000Z",
+      "reason": "Sprint 4 iter-2 spec fix: 11 findings resolved (FIND-S4-SPEC-001..011)",
+      "sprint": 4
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-09T09:00:00.000Z",
+      "reason": "Sprint 4 iter-2 verification-architecture fix: §13 + §9 amendments + PROP-FEED-S4-016 added",
+      "sprint": 4
+    },
+    {
+      "from": "1c",
+      "to": "1a",
+      "timestamp": "2026-05-09T09:30:00.000Z",
+      "reason": "Phase 1c sprint-4 iter-2 FAIL routing: 3 new findings (high=1, medium=2). All 11 iter-1 findings resolved. New findings: wire-shape AC gap, PROP Required mismatch, Tooling Map gap. Return to 1a for iter-3.",
+      "sprint": 4,
+      "iteration": "1c-sprint-4-iter-2"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-09T10:00:00.000Z",
+      "reason": "Sprint 4 iter-3 spec fix: 3 iter-2 findings resolved (FIND-S4-SPEC-iter2-001/002/003). parse_markdown_to_blocks contract strengthened (non-empty), ケース(3) wire禁止",
+      "sprint": 4
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-09T10:00:00.000Z",
+      "reason": "Sprint 4 iter-3 verification-architecture fix: PROP-FEED-S4-016 Required→true, §5/§6 amendments",
+      "sprint": 4
+    },
+    {
+      "from": "1c",
+      "to": "1c",
+      "timestamp": "2026-05-09T10:30:00.000Z",
+      "reason": "Sprint 4 iter-3 adversary verdict PASS (spec_fidelity PASS, verification_readiness PASS, 0 new findings, 3/3 iter-2 resolved). Awaiting human approval before transition to 2a.",
+      "sprint": 4,
+      "iteration": "1c-sprint-4-iter-3",
+      "verdict": "ADVERSARY_PASS_PENDING_HUMAN"
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-09T11:00:00.000Z",
+      "reason": "Phase 1c sprint-4 PASS (adversary iter-3 PASS + human approved). spec_fidelity PASS, verification_readiness PASS. iter1 11 findings → 0, iter2 3 findings → 0, iter3 0 findings.",
+      "sprint": 4,
+      "iteration": "1c-sprint-4-iter-3"
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-09T11:30:00.000Z",
+      "reason": "Red phase: 17 Sprint 4 tests (9 Rust + 4 TS reducer + 5 vitest DOM) all confirmed genuine red. Regression baseline intact (43 cargo lib + 1954 bun + 37 vitest pass).",
+      "sprint": 4
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-09T13:00:00.000Z",
+      "reason": "Green phase: 17 Sprint 4 tests + regression baseline all PASS. Rust 113 tests, bun 1958 tests, vitest 225 tests. compose_state_for_select_past_note signature migrated, parse_markdown_to_blocks added, EditingSubDto.pending_next_focus, TS feed types/reducer/FeedRow migrated.",
+      "sprint": 4
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-09T13:00:00.000Z",
+      "reason": "Refactor: ec_ipc_013 doc comment updated, make_editing_state_changed_payload_idempotent migrated to parse_markdown_to_blocks. All tests remain green. Grep audits clean.",
+      "sprint": 4
+    },
+    {
+      "from": "3",
+      "to": "2b",
+      "timestamp": "2026-05-09T13:30:00.000Z",
+      "reason": "Phase 3 sprint-4 iter-1 FAIL routing: 3 findings (test_quality only). Need TS parserParity test, real handler integration test, canonical snapshot. Spec/impl PASS — return to 2b for test additions only.",
+      "sprint": 4,
+      "iteration": "3-sprint-4-iter-1"
+    },
+    {
+      "from": "2b",
+      "to": "3",
+      "timestamp": "2026-05-09T14:00:00.000Z",
+      "reason": "iter-2 fixes: parserParity.test.ts (TS half of PROP-FEED-S4-016) added, prop_s4_016b canonical snapshot added, integration_smoke_select_past_note_handler_logic added (Tauri test feature deferred to Sprint 5). All tests PASS (cargo 19+, bun 1965, vitest 225).",
+      "sprint": 4
+    },
+    {
+      "from": "3",
+      "to": "2c",
+      "timestamp": "2026-05-09T14:30:00.000Z",
+      "reason": "Phase 3 sprint-4 iter-2 FAIL: 2 medium new findings (parser parity scope contradiction + handler antipattern recurrence). Routing to 2c for narrow scope adjustment + select_past_note compose split.",
+      "sprint": 4,
+      "iteration": "3-sprint-4-iter-2"
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-09T15:00:00.000Z",
+      "reason": "iter-3 fixes: parserParity scope narrowed (empty case removed, divergence documented), compose_select_past_note pure function extracted, prop_s4_017 verifies handler chain via pure compose. All tests PASS.",
+      "sprint": 4
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-09T15:30:00.000Z",
+      "reason": "Phase 3 sprint-4 iter-3 PASS at iteration limit (3/3). All 5 dimensions PASS, 0 new findings. iter-1 3 findings + iter-2 2 findings all resolved. compose_select_past_note pure refactor + parser parity scope adjustment achieved test_quality PASS.",
+      "sprint": 4,
+      "iteration": "3-sprint-4-iter-3"
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-09T18:30:00.000Z",
+      "reason": "Phase 5 Sprint 4 PASS: all 16 PROP-FEED-S4-001..016 proved (15 required + 1 non-required), 19 cargo tests PASS, 290 bun tests PASS, 225 vitest tests PASS, purity audit PASS, security audit PASS, regression baseline intact.",
+      "sprint": 4
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "timestamp": "2026-05-09T18:45:00.000Z",
+      "reason": "Phase 6 Sprint 4 PASS: four-dimensional convergence achieved — Phase 1c finding diminishment 11→3→0, Phase 3 finding diminishment 3→2→0 (both monotonically decreasing, critical+high=0 at final iter), all 16 Sprint 4 findings have valid path/line specificity, all 6 recommended block-migration actions addressed (action 5 approved deferred, action 6 substantially covered via compose_select_past_note extraction), 0 duplicate findings, 45/45 beads resolved. Tests: cargo 19 PASS, bun 1964 PASS, vitest 225 PASS.",
+      "sprint": 4
     }
   ],
   "iterations": {
@@ -265,7 +407,10 @@
     "complete": 2,
     "3-sprint-2": 2,
     "3-sprint-3": 1,
-    "1c-sprint-3": 1
+    "1c-sprint-3": 1,
+    "1a-sprint-4": 0,
+    "1c-sprint-4": 3,
+    "3-sprint-4": 3
   },
   "proofObligations": [
     {
@@ -582,6 +727,134 @@
       "required": true,
       "status": "proved",
       "artifact": "[PROP-FEED-S2-007 sprint-2] grep: +page.svelte contains '#e9e9e7'"
+    },
+    {
+      "id": "PROP-FEED-S4-001",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_001_compose_with_blocks_populates_focused_block_id"
+    },
+    {
+      "id": "PROP-FEED-S4-002",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_002_compose_with_empty_blocks_vec_is_note_empty_true"
+    },
+    {
+      "id": "PROP-FEED-S4-003",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_003_compose_with_none_blocks_gives_empty_state"
+    },
+    {
+      "id": "PROP-FEED-S4-004",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "grep audit: fn compose_state_for_select_past_note signature has no body:&str parameter — confirmed Option<Vec<DtoBlock>> signature"
+    },
+    {
+      "id": "PROP-FEED-S4-005",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "grep audit: FeedViewState.pendingNextFocus declared in types.ts; pendingNextNoteId absent in production feed/ code (0 hits)"
+    },
+    {
+      "id": "PROP-FEED-S4-006",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src/lib/feed/__tests__/feedReducer.test.ts (PROP-FEED-S4-006a..d, 43 tests pass via bun test)"
+    },
+    {
+      "id": "PROP-FEED-S4-007",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "grep audit: grep -r pendingNextNoteId src/lib/feed/ src/routes/ (non-test): 0 hits"
+    },
+    {
+      "id": "PROP-FEED-S4-008",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "grep audit: FeedRow.svelte line 60 contains viewState.pendingNextFocus?.noteId === noteId"
+    },
+    {
+      "id": "PROP-FEED-S4-009",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "grep audit: grep -r pending_next_note_id src-tauri/src/: 0 hits (exit code 1)"
+    },
+    {
+      "id": "PROP-FEED-S4-010",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_010_feed_domain_snapshot_pending_next_focus_round_trip"
+    },
+    {
+      "id": "PROP-FEED-S4-011",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "tsc --noEmit --strict --noUncheckedIndexedAccess: no new Sprint 4 errors in feed production types; pendingNextNoteId absent"
+    },
+    {
+      "id": "PROP-FEED-S4-012",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_012_payload_chain_no_body_field"
+    },
+    {
+      "id": "PROP-FEED-S4-013",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_013_payload_chain_focused_block_id_matches_first_block"
+    },
+    {
+      "id": "PROP-FEED-S4-014",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src-tauri/tests/feed_handlers.rs::prop_s4_014_payload_chain_none_blocks_gives_null_focused_and_empty"
+    },
+    {
+      "id": "PROP-FEED-S4-015",
+      "tier": 3,
+      "required": false,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts (40 tests pass, pending-switch-indicator verified)"
+    },
+    {
+      "id": "PROP-FEED-S4-016",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "sprint": 4,
+      "artifact": "Rust: feed_handlers.rs::prop_s4_016b + prop_s4_016; TS: promptnotes/src/lib/feed/__tests__/parserParity.test.ts (6 tests pass)"
     }
   ],
   "traceability": {
@@ -846,6 +1119,240 @@
         "createdAt": "2026-05-05T01:18:00.439Z",
         "createdInPhase": "6",
         "externalId": "FIND-S2-11"
+      },
+      {
+        "beadId": "BEAD-027",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-001.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-001",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-028",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-002.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-002",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-029",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-003.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-003",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-030",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-004.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-004",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-031",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-005.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-005",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-032",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-006.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-006",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-033",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-007.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-007",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-034",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-008.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-008",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-035",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-009.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-009",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-036",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-010.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-010",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-037",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output/findings/FIND-S4-SPEC-011.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T08:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-011",
+        "resolvedAt": "2026-05-09T09:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-038",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output-iter-2/findings/FIND-S4-SPEC-iter2-001.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T09:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-iter2-001",
+        "severity": "high",
+        "category": "spec_fidelity",
+        "resolvedAt": "2026-05-09T10:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-3"
+      },
+      {
+        "beadId": "BEAD-039",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output-iter-2/findings/FIND-S4-SPEC-iter2-002.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T09:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-iter2-002",
+        "severity": "medium",
+        "category": "verification_readiness",
+        "resolvedAt": "2026-05-09T10:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-3"
+      },
+      {
+        "beadId": "BEAD-040",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-4/output-iter-2/findings/FIND-S4-SPEC-iter2-003.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T09:30:00.000Z",
+        "createdInPhase": "1c-sprint-4",
+        "externalId": "FIND-S4-SPEC-iter2-003",
+        "severity": "medium",
+        "category": "verification_readiness",
+        "resolvedAt": "2026-05-09T10:30:00.000Z",
+        "resolvedInIter": "1c-sprint-4-iter-3"
+      },
+      {
+        "beadId": "BEAD-041",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output/findings/FIND-S4-IMPL-001.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T13:30:00.000Z",
+        "createdInPhase": "3-sprint-4",
+        "externalId": "FIND-S4-IMPL-001",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
+      },
+      {
+        "beadId": "BEAD-042",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output/findings/FIND-S4-IMPL-002.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T13:30:00.000Z",
+        "createdInPhase": "3-sprint-4",
+        "externalId": "FIND-S4-IMPL-002",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
+      },
+      {
+        "beadId": "BEAD-043",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output/findings/FIND-S4-IMPL-003.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T13:30:00.000Z",
+        "createdInPhase": "3-sprint-4",
+        "externalId": "FIND-S4-IMPL-003",
+        "resolvedAt": "2026-05-09T14:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-2"
+      },
+      {
+        "beadId": "BEAD-044",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output-iter-2/findings/FIND-S4-IMPL-iter2-001.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T14:30:00.000Z",
+        "createdInPhase": "3-sprint-4",
+        "externalId": "FIND-S4-IMPL-iter2-001",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
+      },
+      {
+        "beadId": "BEAD-045",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-4/output-iter-2/findings/FIND-S4-IMPL-iter2-002.json",
+        "status": "resolved",
+        "linkedBeads": [],
+        "createdAt": "2026-05-09T14:30:00.000Z",
+        "createdInPhase": "3-sprint-4",
+        "externalId": "FIND-S4-IMPL-iter2-002",
+        "resolvedAt": "2026-05-09T15:30:00.000Z",
+        "resolvedInIter": "3-sprint-4-iter-3"
       }
     ]
   },
@@ -1018,11 +1525,59 @@
         "iteration": 2,
         "sprint": 3,
         "iter1Verdict": "FAIL",
-        "iter1Findings": ["FIND-S3-001", "FIND-S3-002", "FIND-S3-003", "FIND-S3-004", "FIND-S3-005"],
+        "iter1Findings": [
+          "FIND-S3-001",
+          "FIND-S3-002",
+          "FIND-S3-003",
+          "FIND-S3-004",
+          "FIND-S3-005"
+        ],
         "iter2Verdict": "PASS",
-        "iter2Findings": ["FIND-S3-006 (low, resolved)"],
+        "iter2Findings": [
+          "FIND-S3-006 (low, resolved)"
+        ],
         "scope": "spec patch only — REQ-FEED-024 appended, no scope reduction"
       }
+    },
+    "1c-sprint-4": {
+      "verdict": "PASS",
+      "adversaryVerdict": "PASS",
+      "humanVerdict": "PASS",
+      "humanApproved": true,
+      "timestamp": "2026-05-09T11:00:00.000Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 3,
+        "sprint": 4,
+        "iterationLimitReached": true,
+        "spec_fidelity": "PASS",
+        "verification_readiness": "PASS",
+        "iter1Verdict": "FAIL",
+        "iter1Findings": [
+          "FIND-S4-SPEC-001",
+          "FIND-S4-SPEC-002",
+          "FIND-S4-SPEC-003",
+          "FIND-S4-SPEC-004",
+          "FIND-S4-SPEC-005",
+          "FIND-S4-SPEC-006",
+          "FIND-S4-SPEC-007",
+          "FIND-S4-SPEC-008",
+          "FIND-S4-SPEC-009",
+          "FIND-S4-SPEC-010",
+          "FIND-S4-SPEC-011"
+        ],
+        "iter1FindingsResolved": "11/11",
+        "iter2Verdict": "FAIL",
+        "iter2Findings": [
+          "FIND-S4-SPEC-iter2-001",
+          "FIND-S4-SPEC-iter2-002",
+          "FIND-S4-SPEC-iter2-003"
+        ],
+        "iter2FindingsResolved": "3/3",
+        "iter3Verdict": "PASS",
+        "iter3Findings": []
+      },
+      "humanApprovedAt": "2026-05-09T11:00:00.000Z"
     },
     "3-sprint-2": {
       "verdict": "PASS",
@@ -1080,6 +1635,174 @@
           "FIND-S3-103 (low): ? operator could suppress feed_state_changed if first emit fails"
         ],
         "reviewPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-3/output/verdict.json"
+      }
+    },
+    "5-sprint-4": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T18:30:00.000Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "sprint": 4,
+        "iteration": 1,
+        "propsProved": 16,
+        "propsRequired": 15,
+        "propsFailed": 0,
+        "propsSkipped": 0,
+        "cargoTests": "19/19 feed_handlers PASS (113 total Rust)",
+        "bunTests": "290/290 feed PASS",
+        "vitestTests": "225/225 DOM PASS",
+        "purityAudit": "PASS — 0 hits on pure modules",
+        "securityAudit": "PASS — no XSS, no panic vectors, no new deps",
+        "regressionCheck": "PASS — Sprint 1/2/3 baselines intact"
+      }
+    },
+    "3-sprint-4": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T15:30:00.000Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "iteration": 3,
+        "sprint": 4,
+        "findings": {
+          "critical": 0,
+          "high": 0,
+          "medium": 2,
+          "low": 1
+        },
+        "iter1": {
+          "verdict": "FAIL",
+          "timestamp": "2026-05-09T13:30:00.000Z",
+          "spec_fidelity": "PASS",
+          "implementation_correctness": "PASS",
+          "test_quality": "FAIL",
+          "purity_boundary": "PASS",
+          "wire_compatibility": "PASS",
+          "findingIds": [
+            "FIND-S4-IMPL-001",
+            "FIND-S4-IMPL-002",
+            "FIND-S4-IMPL-003"
+          ]
+        },
+        "iter2": {
+          "verdict": "FAIL",
+          "timestamp": "2026-05-09T14:30:00.000Z",
+          "findings": {
+            "critical": 0,
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "iter1FindingsResolved": "1.5/3",
+          "newFindingIds": [
+            "FIND-S4-IMPL-iter2-001",
+            "FIND-S4-IMPL-iter2-002"
+          ],
+          "spec_fidelity": "FAIL",
+          "test_quality": "FAIL",
+          "implementation_correctness": "PASS",
+          "purity_boundary": "PASS",
+          "wire_compatibility": "PASS"
+        },
+        "iter3": {
+          "verdict": "PASS",
+          "timestamp": "2026-05-09T15:30:00.000Z",
+          "findings": {
+            "critical": 0,
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "iter2FindingsResolved": "2/2",
+          "spec_fidelity": "PASS",
+          "implementation_correctness": "PASS",
+          "test_quality": "PASS",
+          "purity_boundary": "PASS",
+          "wire_compatibility": "PASS"
+        },
+        "iterationLimitReached": true
+      }
+    },
+    "6-sprint-4": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T18:45:00.000Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "sprint": 4,
+        "iteration": 1,
+        "fourDimensional": {
+          "findingDiminishment": {
+            "verdict": "PASS",
+            "phase1cIter1": 11,
+            "phase1cIter2": 3,
+            "phase1cIter3": 0,
+            "phase3Iter1": 3,
+            "phase3Iter2": 2,
+            "phase3Iter3": 0,
+            "criticalHighAtIterFinal": 0,
+            "monotonicallyDecreasing": true
+          },
+          "findingSpecificity": {
+            "verdict": "PASS",
+            "allFilePathsValid": true,
+            "checkedCount": 16,
+            "beadRange": "BEAD-027..045"
+          },
+          "criteriaCoverage": {
+            "verdict": "PASS",
+            "allCriteriaEvaluated": true,
+            "sprint4Requirements": [
+              "REQ-FEED-002 amendment (bodyPreviewLines input source)",
+              "REQ-FEED-009 amendment (pendingNextFocus)",
+              "REQ-FEED-024 amendment (block-aware payload)",
+              "REQ-FEED-025 (compose_state_for_select_past_note new signature)",
+              "REQ-FEED-026 (TS FeedViewState pendingNextFocus migration)",
+              "REQ-FEED-027 (Rust EditingSubDto pending_next_focus)",
+              "EC-FEED-013 amendment",
+              "EC-FEED-016 amendment",
+              "EC-FEED-017 unchanged",
+              "PROP-FEED-S4-016 (parser parity, Required: true)"
+            ],
+            "blockMigrationActions": {
+              "action1": "COVERED",
+              "action2": "COVERED",
+              "action3": "COVERED",
+              "action4": "COVERED",
+              "action5": "DEFERRED (approved per block-migration-spec-impact.md)",
+              "action6": "SUBSTANTIALLY_COVERED"
+            }
+          },
+          "duplicateDetection": {
+            "verdict": "PASS",
+            "sprint1Regressions": 0,
+            "sprint2Regressions": 0,
+            "sprint3Regressions": 0,
+            "sprint4Phase1cDuplicates": 0,
+            "sprint4Phase3Duplicates": 0
+          }
+        },
+        "combinedTests": "cargo:19, bun:1964, vitest:225",
+        "traceabilityCoverage": {
+          "verdict": "PASS",
+          "totalBeads": 45,
+          "resolved": 45,
+          "open": 0
+        },
+        "tauriDevMount": "SKIPPED (headless env — fallback: Sprint 2 baseline cargo build clean + Vite HTTP 200 on record)",
+        "formalHardeningArtifacts": {
+          "verificationReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/verification-report.md",
+          "securityReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/security-report.md",
+          "purityAudit": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/purity-audit.md",
+          "executionEvidence": [
+            "security-results/cargo-test-raw.txt",
+            "security-results/vitest-raw.txt",
+            "security-results/purity-security-audit-raw.txt"
+          ]
+        },
+        "openDeferrals": [
+          "PROP-FEED-S4-016 fast-check full parity (Sprint 5)",
+          "EC-FEED-017 emit-order autotest Mock Emitter (Sprint 5)",
+          "parserParity TS canonical import clarification (Sprint 5, non-blocking)"
+        ]
       }
     },
     "6-sprint-2": {
@@ -1214,7 +1937,9 @@
           "criteriaCoverage": {
             "verdict": "PASS",
             "allCriteriaEvaluated": true,
-            "evaluatedCriteria": ["REQ-FEED-024 acceptance criteria × 3"]
+            "evaluatedCriteria": [
+              "REQ-FEED-024 acceptance criteria × 3"
+            ]
           },
           "duplicateDetection": {
             "verdict": "PASS",
@@ -1247,100 +1972,9 @@
           ]
         }
       }
-    },
-          "findingSpecificity": {
-            "verdict": "PASS",
-            "allFilePathsValid": true,
-            "checkedCount": 26
-          },
-          "criteriaCoverage": {
-            "verdict": "PASS",
-            "allCriteriaEvaluated": true,
-            "sprint1EvaluatedCriteria": [
-              "CRIT-001",
-              "CRIT-002",
-              "CRIT-003",
-              "CRIT-004",
-              "CRIT-005",
-              "CRIT-006",
-              "CRIT-007",
-              "CRIT-008",
-              "CRIT-009",
-              "CRIT-010"
-            ],
-            "sprint2EvaluatedCriteria": [
-              "CRIT-100",
-              "CRIT-101",
-              "CRIT-102",
-              "CRIT-103",
-              "CRIT-104",
-              "CRIT-105",
-              "CRIT-106"
-            ]
-          },
-          "duplicateDetection": {
-            "verdict": "PASS",
-            "sprint1Regressions": 0,
-            "sprint2Duplicates": 0,
-            "sprint1RegressionDetected": false
-          }
-        },
-        "verticalSlice": {
-          "verdict": "PASS",
-          "rustHandlers": [
-            "fs_trash_file",
-            "select_past_note",
-            "request_note_deletion",
-            "confirm_note_deletion",
-            "cancel_note_deletion",
-            "feed_initial_state"
-          ],
-          "appShellMount": {
-            "feedSidebar": "aside.feed-sidebar at +page.svelte:96",
-            "editorMain": "div.editor-main at +page.svelte:104",
-            "gridTemplateColumns": "line 137: 320px 1fr",
-            "height100vh": "line 138: 100vh",
-            "whisperBorder": "line 144: #e9e9e7",
-            "warmNeutral": "line 145: #f7f7f5"
-          },
-          "tauriDevMount": "PASS — Rust PID 686487 + Vite HTTP 200 + 4 DOM tests",
-          "combinedTests": "cargo:27, bun:1475, vitest:195"
-        },
-        "formalHardeningArtifacts": {
-          "verificationReport": true,
-          "verificationReportSprint2": true,
-          "securityReport": true,
-          "purityAudit": true,
-          "executionEvidence": [
-            "security-results/security-audit-raw.txt",
-            "security-results/security-audit-sprint2-raw.txt"
-          ]
-        },
-        "traceabilityCoverage": {
-          "verdict": "PASS",
-          "totalFindingArtifacts": 26,
-          "beadsCreated": 26,
-          "resolvedBeads": 22,
-          "openBeads": 4,
-          "openFindingIds": [
-            "FIND-S2-08",
-            "FIND-S2-09",
-            "FIND-S2-10",
-            "FIND-S2-11"
-          ],
-          "openFindingsJustification": "Deferred: FIND-S2-08/09 spec text drift (medium, not functional), FIND-S2-10/11 low tradeoffs (no NFR bounds in spec). Approved at Phase 6 convergence."
-        },
-        "approvedDeferrals": [
-          "FIND-S2-08",
-          "FIND-S2-09",
-          "FIND-S2-10",
-          "FIND-S2-11",
-          "screenshot-gap"
-        ]
-      }
     }
   },
-  "sprintCount": 3,
+  "sprintCount": 4,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-05T05:00:00.000Z"
+  "updatedAt": "2026-05-09T18:45:00.000Z"
 }

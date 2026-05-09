@@ -1,0 +1,68 @@
+{
+  "feature": "ui-editor",
+  "phase": "1c",
+  "mode": "strict",
+  "iteration": 6,
+  "reviewedAt": "2026-05-09T01:00:00Z",
+  "reviewType": "spec",
+  "scope": "Sprint 8 additions only — behavioral-spec.md §15 (REQ-IPC-001..020, EC-IPC-001..010) and verification-architecture.md §10 (PROP-IPC-001..012)",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-073", "FIND-075", "FIND-076", "FIND-080"],
+      "evidence": []
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "FAIL",
+      "findings": ["FIND-078", "FIND-082", "FIND-084"],
+      "evidence": []
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-079"],
+      "evidence": []
+    },
+    {
+      "name": "wire_contract_consistency",
+      "verdict": "FAIL",
+      "findings": ["FIND-074", "FIND-077", "FIND-081", "FIND-086"],
+      "evidence": []
+    },
+    {
+      "name": "out_of_scope_discipline",
+      "verdict": "FAIL",
+      "findings": ["FIND-083", "FIND-085"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "§15.4 (lines 1253-1258) explicitly excludes Rust-side block parsing and TS-side reducer/view-state changes. The deferral target `ui-feed-list-actions Sprint 4` is named for the deferred items. This part of the out-of-scope discipline is well-formed — see FIND-073 and FIND-083 for the bookkeeping issues that pull this dimension to FAIL."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "narrative": "Sprint 8 adds 20 REQ-IPC, 10 EC-IPC, and 12 PROP-IPC over a ~7KB spec delta covering the Rust DTO migration to a 5-arm tagged union. The contract direction is right and the §10.1 purity-boundary additions are coherent (Tier 0 enum data + impure shell emit). However the iteration introduces 14 specific issues across all 5 review dimensions; the strict-mode threshold (zero critical AND zero major) is breached. \\n\\nCritical issues: (1) REQ-IPC-014 mandates Rust to compute the first Block.id of a past note while §15.4 explicitly bans Rust-side block parsing in this sprint — a direct contradiction (FIND-073). (2) REQ-IPC-015 outsources the cancel-switch focus restoration to a 'TS reducer-retained priorFocusedBlockId' but the existing PROP-EDIT-040 reducer obligation actively zeros priorFocusedBlockId on the editing arm, so the restoration is unspecified and unverifiable (FIND-074). \\n\\nMajor issues: REQ-IPC-005 is exclusionary-only and inconsistent with the positive phrasing of REQ-IPC-004/006/007 (FIND-075); REQ-IPC-007 omits isNoteEmpty from the save-failed positive list while PROP-IPC-005 includes it (FIND-076); EC-IPC-006/007/008 require null-not-skip serialization but §10.1 fails to explicitly forbid `#[serde(skip_serializing_if)]` on the relevant Option fields (FIND-077); PROP-IPC-011's 'frozen fixture' approach is not actual cross-language verification (FIND-078); EC-IPC misses 4+ documented edge cases including the failed-vault-scan path, cancel_switch without preceding save-failed, whitespace-only body, and emit-before-subscribe race (FIND-079); REQ-IPC-017 silently erases pendingNextFocus on save-during-switching, contradicting RD-018/EC-EDIT-014 (FIND-080); REQ-IPC-009 BlockType validation is unenforced because Rust uses block_type: String rather than a typed enum (FIND-081); per-handler emit-site PROPs are missing — only data-shape PROPs are defined (FIND-082). \\n\\nMinor issues: §15.5 body-removal lacks a documented body-delivery path post-migration so §15.6's smoke-test acceptance is ambiguous (FIND-083); PROP-IPC-010 cover-set is hand-wavy and excludes blocks=Some([nonEmpty]) (FIND-084); §15.5 helper-API shape is dual (variant-aware OR single-enum) but PROPs reference plural 'family' phrasing (FIND-085); REQ-IPC-020 'no extra fields' is unverifiable by TS narrowing alone (FIND-086). \\n\\nThe out-of-scope discipline (§15.4 / §15.5) is structurally sound — it correctly identifies the deferred items and names ui-feed-list-actions Sprint 4. However the body-channel migration (FIND-083) and the helper-API non-pinning (FIND-085) leave residual gaps. \\n\\nRecommendation: route findings to Phase 1a/1b for resolution before TDD entry. The contract is close to convergent but not yet implementable without rework on the focus-restoration mechanism (FIND-074), the body-delivery path (FIND-083), and the contradictory REQ-IPC-014/§15.4 pair (FIND-073).",
+    "iter5FindingsCarriedForward": [],
+    "newFindingsIntroducedInIter6": ["FIND-073", "FIND-074", "FIND-075", "FIND-076", "FIND-077", "FIND-078", "FIND-079", "FIND-080", "FIND-081", "FIND-082", "FIND-083", "FIND-084", "FIND-085", "FIND-086"],
+    "severityBreakdown": {
+      "critical": 2,
+      "major": 8,
+      "minor": 4
+    }
+  },
+  "convergenceSignals": {
+    "findingCount": 14,
+    "regressionStatus": "iter5-clean-iter6-new",
+    "newIssueCount": 14,
+    "newIssueSeverity": {
+      "critical": 2,
+      "major": 8,
+      "minor": 4
+    }
+  }
+}

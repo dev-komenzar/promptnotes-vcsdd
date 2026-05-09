@@ -52,12 +52,14 @@
 - **トリガー Command**: `SaveNote`（`SaveNoteRequested` の処理結果）
 - **プロパティ**:
   - `noteId: NoteId`
-  - `body: Body`
+  - `blocks: Block[]` — 保存された Note の最新ブロック列（ブロックベース UI 化により追加）
+  - `body: Body` — `serializeBlocksToMarkdown(blocks)` の派生。後方互換と検索インデックス用
   - `frontmatter: Frontmatter`
   - `previousFrontmatter: Frontmatter | null` — Curate の TagInventory 増分更新用
   - `occurredOn: Timestamp`
-- **Consumer**: Capture（編集状態の `isDirty=false` 化）、Curate（Feed の noteRefs 更新、TagInventory 更新）
+- **Consumer**: Capture（編集状態の `isDirty=false` 化）、Curate（Feed の noteRefs 更新、TagInventory 更新、ブロック列の表示更新）
 - **Enrichment**: Enrichment + 旧 frontmatter も含める（タグ差分計算のため）。Query-Back を避ける
+- **備考**: Note 全体のスナップショット（blocks 含む）を載せ、ブロック単位の差分は載せない
 
 #### `NoteSaveFailed`
 - **発生元**: Vault
@@ -91,10 +93,10 @@
 
 #### `NoteHydrationFailed`（追加：Phase 7 / F10）
 - **発生元 Aggregate**: Vault（scan 結果の ACL 変換段階）
-- **トリガー**: NoteFileSnapshot から Note Aggregate への変換失敗（YAML パースエラー、必須フィールド欠落、Tag VO の Smart Constructor 拒否など）
+- **トリガー**: NoteFileSnapshot から Note Aggregate への変換失敗（YAML パースエラー、必須フィールド欠落、Tag VO の Smart Constructor 拒否、Markdown → Block[] パース失敗など）
 - **プロパティ**:
   - `filePath: string`
-  - `reason: 'yaml-parse' | 'missing-field' | 'invalid-value' | 'unknown'`
+  - `reason: 'yaml-parse' | 'missing-field' | 'invalid-value' | 'block-parse' | 'unknown'`
   - `detail?: string` — エラーメッセージ
   - `occurredOn: Timestamp`
 - **Consumer**: Curate（壊れファイル数の集計、UI 警告バナー）
@@ -110,13 +112,14 @@
 - **トリガー Command**: `AutoSaveOnIdle` / `AutoSaveOnBlur` / Curate からの `RequestSaveAfterTagChipChange`
 - **プロパティ**:
   - `noteId: NoteId`
-  - `body: Body`
+  - `blocks: Block[]` — 保存対象のブロック列（ブロックベース UI 化により追加）
+  - `body: Body` — `serializeBlocksToMarkdown(blocks)` の派生。Vault は `body` を直接ファイルに書く
   - `frontmatter: Frontmatter`
   - `source: 'capture-idle' | 'capture-blur' | 'curate-tag-chip' | 'curate-frontmatter-edit-outside-editor'`
   - `occurredOn: Timestamp`
 - **Consumer**: Vault（処理して `NoteFileSaved` または `NoteSaveFailed` を返す）
 - **Enrichment**: 全データ。Vault が Capture/Curate のドメインに直接問い合わせるのを避ける（ACL 維持）
-- **備考**: 本イベントは Capture と Curate の両方が発行できる。`source` フィールドで発生元を識別
+- **備考**: 本イベントは Capture と Curate の両方が発行できる。`source` フィールドで発生元を識別。**ブロック単位の差分は持たず、Note 全体のフルリプレース** を Vault に依頼する
 
 #### `EmptyNoteDiscarded`
 - **発生元 Aggregate**: Note（Capture アプリ層）
@@ -131,16 +134,17 @@
 
 ### Curate Context が発行
 
-#### `PastNoteSelected`
+#### `PastNoteSelected`（Block Focus 取得の上位）
 - **発生元 Aggregate**: Feed
-- **トリガー Command**: `SelectPastNote`
+- **トリガー Command**: 過去ノートのブロックがクリック／キーボードフォーカスされた瞬間（旧 `SelectPastNote` Command を block-level に refine）
 - **プロパティ**:
   - `noteId: NoteId`
-  - `snapshot: NoteSnapshot` — 編集セッション開始のために body+frontmatter を Capture に渡す
+  - `blockId: BlockId` — フォーカス対象ブロック（ブロックベース UI 化により追加）
+  - `snapshot: NoteSnapshot` — 編集セッション開始のために blocks+frontmatter を Capture に渡す
   - `occurredOn: Timestamp`
-- **Consumer**: Capture（編集セッション開始 → `EditorFocusedOnPastNote` 内部イベントへ）
+- **Consumer**: Capture（編集セッション開始 → `BlockFocused` 内部イベントへ）
 - **Enrichment**: snapshot を含める（Capture が Curate に問い合わせるのを避ける）
-- **重要**: これが Curate → Capture の境界をまたぐ唯一の同期的トリガ
+- **重要**: これが Curate → Capture の境界をまたぐ唯一の同期的トリガ。ブロックベース UI 化以降は **クリックがそのまま `PastNoteSelected` を発行**するため「選択ボタン」のような中間 UI は存在しない
 
 #### `DeleteNoteRequested`（Domain Event Carrying Command）
 - **発生元 Aggregate**: Feed（Curate アプリ層）
@@ -159,11 +163,11 @@
 ### Capture 内
 - `AppLaunched`
 - `NewNoteAutoCreated`
-- `EditorFocusedOnNewNote`
-- `EditorFocusedOnPastNote`（追加：`PastNoteSelected` 受信後の Capture 内状態遷移）
-- `NoteBodyEdited`
+- `BlockFocused` — 新規・過去いずれの Note かを問わず、ブロックにキャレットが入った瞬間（旧 `EditorFocusedOnNewNote` / `EditorFocusedOnPastNote` を統合）
+- `BlockBlurred` — 個別ブロックからフォーカスが外れた
+- `EditorBlurredAllBlocks` — そのノートの全ブロックからフォーカスが外れた（旧 `EditorBlurred`）
+- `BlockContentEdited` / `BlockInserted` / `BlockRemoved` / `BlocksMerged` / `BlockSplit` / `BlockTypeChanged` / `BlockMoved` — ブロック構造・内容の変更（一過性）
 - `NoteFrontmatterEditedInline`
-- `EditorBlurred`
 - `NewNoteRequested`
 - `NoteAutoSavedAfterIdle`
 - `NoteAutoSavedOnBlur`
@@ -172,6 +176,8 @@
 - `RetrySaveRequested` — 保存失敗後にユーザーが「再試行」を選択した場合（F15 解決）
 
 > 上記の `NoteAutoSavedAfterIdle` / `NoteAutoSavedOnBlur` は **`SaveNoteRequested` を発行するトリガ**。それ自体は Capture 内 UI 表示用（保存中インジケータ等）。実際の永続化完了は `NoteFileSaved` で確認する。
+>
+> ブロックレベルの編集イベント（`BlockContentEdited` 等）はすべて **Internal**。Cross-Context へは `SaveNoteRequested` の Note 全体スナップショットとしてのみ流れる（差分は載せない）。
 
 ### Curate 内
 - `FeedRestored`

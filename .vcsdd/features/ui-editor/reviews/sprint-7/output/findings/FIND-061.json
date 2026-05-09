@@ -1,0 +1,15 @@
+{
+  "id": "FIND-061",
+  "severity": "major",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "location": "promptnotes/src/lib/editor/EditorPanel.svelte:399-417",
+  "description": "Ghost-block Enter handler dispatches BOTH SplitBlock AND InsertBlockAfter unconditionally on every Enter keypress, regardless of caret position. REQ-EDIT-006 (Enter at end → InsertBlock only) and REQ-EDIT-007 (Enter mid-block → SplitBlock only) are mutually exclusive per `splitOrInsert(offset, contentLength)` (PROP-EDIT-001 — XOR). Real BlockElement.svelte:143-170 implements the XOR correctly, but the ghost handler that the integration tests actually exercise (per FIND-060) emits both commands. PROP-EDIT-026 vitest expects `dispatchInsertBlockAfter` to be called and PROP-EDIT-027 expects `dispatchSplitBlock` to be called — both pass simultaneously because the ghost emits both. A real user would see two block-tree mutations per Enter keystroke under the test conditions.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/EditorPanel.svelte",
+    "lineRange": "399-417",
+    "snippet": "function handleGhostKeyDown(event: KeyboardEvent): void {\n  if (event.key === 'Enter') {\n    event.preventDefault();\n    // Dispatch both SplitBlock (REQ-EDIT-007) and InsertBlock (REQ-EDIT-006)\n    const offset = (window.getSelection?.()?.anchorOffset) ?? 0;\n    adapter.dispatchSplitBlock({...}).catch(() => {});\n    adapter.dispatchInsertBlockAfter({...}).catch(() => {});\n    return;\n  }"
+  },
+  "suggestedRemediation": "Remove the ghost block (FIND-060). If retained for some reason, replace the dual-dispatch with `splitOrInsert(offset, content.length)` and emit only the matching one. Either way, REQ-EDIT-006 / REQ-EDIT-007 must be tested against real BlockElement.svelte output.",
+  "routeToPhase": "2b"
+}

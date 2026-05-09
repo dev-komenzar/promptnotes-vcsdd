@@ -1,0 +1,108 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "mode": "strict",
+  "sprint": 8,
+  "iteration": 1,
+  "reviewedAt": "2026-05-09T04:00:00Z",
+  "reviewType": "contract",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "criteria": ["CRIT-800", "CRIT-801", "CRIT-808", "CRIT-809"],
+      "findings": ["FIND-088", "FIND-089"],
+      "evidence": []
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "PASS",
+      "criteria": ["CRIT-802"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1045-1064",
+          "description": "print_wire_fixtures emits the 14-fixture cover set with assertion arr.len() == 14"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/__tests__/dom/editorStateChannelWireFixtures.dom.vitest.ts:116-265",
+          "description": "TS narrowing test reads the generated JSON and asserts Set-equality of variant key sets per PROP-IPC-022 plus exhaustive assertNever per PROP-IPC-011"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh:42-166",
+          "description": "Three grep audits implementing PROP-IPC-012, PROP-IPC-020, PROP-IPC-021 with explicit summary counters"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "criteria": ["CRIT-803", "CRIT-811"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md:596-610",
+          "description": "§10.2.1 cover set table enumerates F01..F14 (14 rows). F04 carries 4 distinct BlockTypeDto variants (Paragraph, Heading1, Code, Divider); F14 carries Heading2+Bullet — combined union covers ≥4 of 9 variants as required by CRIT-803"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:621-633",
+          "description": "F04 fixture in wire_fixtures() materializes the 4-distinct-variant constraint exactly"
+        }
+      ]
+    },
+    {
+      "name": "wire_contract_consistency",
+      "verdict": "FAIL",
+      "criteria": ["CRIT-804", "CRIT-805", "CRIT-806"],
+      "findings": ["FIND-090"],
+      "evidence": []
+    },
+    {
+      "name": "out_of_scope_discipline",
+      "verdict": "PASS",
+      "criteria": ["CRIT-807", "CRIT-810"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/editor/__tests__/editorReducer.test.ts:354-377",
+          "description": "PROP-IPC-023 is deferred via test.todo (bun:test equivalent of it.todo); core DomainSnapshotReceived logic is not rewritten and only the placeholder + comment block is added — matches CRIT-810 deferred-placeholder framing"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/editor.rs:308-319",
+          "description": "compose_state_for_select_past_note unconditionally returns blocks: None, satisfying CRIT-810's prohibition on block-aware emission from the past-note path (deferred to ui-feed-list-actions Sprint 4)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/editor.rs:268-280",
+          "description": "compose_state_for_save_err always sets prior_focused_block_id: None, pending_next_focus: None, satisfying CRIT-810's prohibition on Sprint-9-deferred pendingNextFocus propagation"
+        }
+      ]
+    }
+  ],
+  "summary": "FAIL: CRIT-800 (weight 0.18) and CRIT-801 (weight 0.08) threshold both depend on grep -rn 'REQ-IPC-' and 'EC-IPC-' under promptnotes/src-tauri/tests/. The actual Sprint 8 test files use PROP-IPC-XXX tags and snake_case test names (prop_ipc_NNN_*) but contain no explicit REQ-IPC-001..020 or EC-IPC-001..014 string literals. Phase 5 evaluation of these thresholds will produce zero matches for any of the 34 IDs the contract requires, mechanically failing 0.26 of total weight even though the underlying tests do pass and cover the obligations indirectly via the §10.4 PROP↔REQ cross-reference table. CRIT-804's legacy 6-positional regex (and the parallel wire_audit.sh PROP-IPC-021 pattern) is line-bounded ([^)]* does not span newlines under grep -E line mode), so a hypothetical multi-line legacy call would silently escape the audit. Weights sum to 1.00 correctly. Dimensions verification_architecture, edge_case_coverage, and out_of_scope_discipline are sound. The contract cannot be used to grade Sprint 8 in its current form.",
+  "convergenceSignals": {
+    "findingCount": 3,
+    "criticalCount": 2,
+    "majorCount": 1,
+    "minorCount": 0,
+    "evaluatedCriteria": [
+      "CRIT-800", "CRIT-801", "CRIT-802", "CRIT-803", "CRIT-804",
+      "CRIT-805", "CRIT-806", "CRIT-807", "CRIT-808", "CRIT-809",
+      "CRIT-810", "CRIT-811"
+    ],
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "contractDigest": null
+  }
+}

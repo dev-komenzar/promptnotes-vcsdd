@@ -2,16 +2,21 @@
  * PROP-004: Success path I/O budget.
  *   clipboardWrite = 1, clockNow = 1, emitInternal = 1.
  *
+ * Sprint 3: arbitrary produces block-shaped Note `{ id, blocks, frontmatter }`.
+ * The bodyForClipboard port now delegates to serializeBlocksToMarkdown(note.blocks).
+ *
  * `publish = 0` is enforced statically: CopyBodyDeps does not include
  * `publish`, so the factory cannot reference it. No runtime check needed.
  *
  * Tier 1 — fast-check property test.
  * Required: true
+ * REQ: REQ-003, REQ-005, REQ-009, REQ-011
  */
 
 import { describe, test, expect } from "bun:test";
 import fc from "fast-check";
 import { copyBody, type CopyBodyPorts } from "$lib/domain/copy-body/pipeline";
+import { serializeBlocksToMarkdown } from "$lib/domain/capture-auto-save/serialize-blocks-to-markdown";
 import type { Result } from "promptnotes-domain-types/util/result";
 import type { FsError } from "promptnotes-domain-types/shared/errors";
 import type { Note } from "promptnotes-domain-types/shared/note";
@@ -38,7 +43,7 @@ describe("PROP-004: success-path I/O budget", () => {
             return { ok: true, value: undefined };
           },
           getCurrentNote: () => note,
-          bodyForClipboard: (n: Note) => n.body as unknown as string,
+          bodyForClipboard: (n: Note) => serializeBlocksToMarkdown(n.blocks),
           emitInternal: () => {
             internalCalls += 1;
           },

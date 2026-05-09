@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-032",
+  "dimension": "edge_case_coverage",
+  "severity": "major",
+  "title": "No test exercises the Step-3-only hydrateNote failure path on a snapshot that passed Step 2",
+  "affects": [
+    "REQ-008",
+    "PROP-027",
+    "PROP-030",
+    "promptnotes/src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts",
+    "promptnotes/src/lib/domain/__tests__/app-startup/parse-call-budget.test.ts"
+  ],
+  "spec_quote": "REQ-008 AC: 'If a snapshot's HydrateNote call returns Err(HydrationFailureReason) during Step 3 ... the workflow MUST treat this as a programming-error invariant violation. (Step 2's pre-validation makes this branch unreachable in normal operation.)'",
+  "code_quote": "step3-hydrate-feed.test.ts has no test that constructs a ScannedVault with a non-empty `snapshots` array AND configures hydrateNote (or the underlying block parser) to fail on one of those snapshots. The 'all-corrupted vault' test at step3-hydrate-feed.test.ts:349-358 only exercises empty-snapshots input. parse-call-budget.test.ts uses a counting block parser but its 'corrupt file' test (line 235-282) only fails the file at Step 2.",
+  "issue": "The Step-3 corruptedFile-merge code path in hydrate-feed.ts:52-57 (`if (!noteResult.ok) { step3CorruptedFiles.push(...) }`) is uncovered by tests. This is critical because: (1) PROP-030 explicitly claims 'Files that fail the Step 2 invocation never reach Step 3' — but the converse 'every snapshot that reaches Step 3 succeeds' is not tested anywhere; (2) the spec says the branch should be unreachable in normal operation yet the code path quietly accepts and absorbs it; (3) FIND-031 demonstrates the branch IS reachable (whitespace-only body case) but no test ever observes it. An adversary could remove the `step3CorruptedFiles.push(...)` block, replace it with `throw new Error(...)`, or drop the snapshot silently, and every existing test would still pass. The contract is not held by any assertion.",
+  "recommended_remediation": "Add tests in step3-hydrate-feed.test.ts that: (1) inject a ScannedVault with parseMarkdownToBlocks that succeeds for one body and fails (or returns Ok([])) for another, then assert the failing snapshot appears in HydratedFeed.corruptedFiles with the expected reason; (2) assert HydratedFeed.feed.noteRefs excludes that snapshot; (3) once REQ-008 AC behavior is finalized (see FIND-030), add a test asserting the chosen contract — either 'throws' or 'silently routes to corruptedFiles with reason X' — so future regressions are caught.",
+  "createdAt": "2026-05-08T00:00:00Z"
+}

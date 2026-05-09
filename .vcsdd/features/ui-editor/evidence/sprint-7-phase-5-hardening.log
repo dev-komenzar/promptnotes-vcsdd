@@ -1,0 +1,175 @@
+Sprint 7 Phase 5 Formal Hardening Evidence Log
+Feature: ui-editor | Date: 2026-05-06 | Mode: strict | Verifier: vcsdd-verifier
+
+==============================================================================
+GATE 1: Branch Coverage (CRIT-713)
+==============================================================================
+
+Command: cd promptnotes && bun test --coverage --timeout 30000 \
+  src/lib/editor/__tests__/editorPredicates.test.ts \
+  src/lib/editor/__tests__/editorReducer.test.ts \
+  src/lib/editor/__tests__/debounceSchedule.test.ts \
+  src/lib/editor/__tests__/prop/
+
+Output:
+  bun test v1.3.11 (af24e281)
+  ------------------------------------|---------|---------|-------------------
+  File                                | % Funcs | % Lines | Uncovered Line #s
+  ------------------------------------|---------|---------|-------------------
+  All files                           |   93.33 |   89.82 |
+   src/lib/editor/debounceSchedule.ts |  100.00 |  100.00 |
+   src/lib/editor/editorPredicates.ts |  100.00 |   80.68 | 27-30,54-58,63-66,82-85
+   src/lib/editor/editorReducer.ts    |   80.00 |   88.77 | 24-34,115-119,276-280
+  ------------------------------------|---------|---------|-------------------
+  171 pass, 0 fail, 329 expect() calls
+  Ran 171 tests across 6 files. [152ms]
+
+Analysis: Bun v1.3.11 does not expose a % Branches column. CRIT-713 fallback activated.
+Uncovered lines are exclusively TypeScript `never` exhaustiveness guards and `defaultIdleState()`
+called only from a `never` branch. No reachable logic is uncovered.
+
+Fallback conditions:
+  (a) CRIT-703 PASS: 46/46 property tests pass (see below)
+  (b) Purity grep: zero executable-code hits (see Gate 3)
+  (c) tsc: 0 editor-scope errors (see Gate 4)
+
+VERDICT: PASS (fallback clause satisfied)
+
+Prop tests separate run:
+  Command: cd promptnotes && bun test --timeout 30000 src/lib/editor/__tests__/prop/
+  Output: 46 pass, 0 fail [163ms]
+
+NOTE (cleanup): PROP-EDIT-010c in editorPredicates.prop.test.ts was using
+  fc.string().filter(s => s.startsWith('---') && s !== '---')
+  which caused a 5-second hard timeout (fast-check filter exhaustion on near-zero acceptance rate).
+  Fixed to: fc.string({ minLength: 1 }).map(suffix => '---' + suffix)
+  Semantics identical. File modified: promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts
+
+==============================================================================
+GATE 2: Security Audit (XSS)
+==============================================================================
+
+Command: grep -r "{@html\|innerHTML\|outerHTML\|insertAdjacentHTML" promptnotes/src/lib/editor/ | wc -l
+Output: 0
+
+VERDICT: PASS
+
+==============================================================================
+GATE 3: Purity Audit
+==============================================================================
+
+Command: grep -nE "Math\.random|crypto\.|performance\.|window\.|globalThis|self\.|document\.|navigator\.|requestAnimationFrame|requestIdleCallback|localStorage|sessionStorage|indexedDB|fetch\(|XMLHttpRequest|setTimeout|setInterval|clearTimeout|clearInterval|Date\.now|Date\(|new Date|\$state\b|\$effect\b|\$derived\b|import\.meta|invoke\(|@tauri-apps/api" \
+  promptnotes/src/lib/editor/editorPredicates.ts \
+  promptnotes/src/lib/editor/editorReducer.ts \
+  promptnotes/src/lib/editor/debounceSchedule.ts
+
+Output (full):
+  editorPredicates.ts:6: * Pure core module: must never import @tauri-apps/api or any forbidden API.
+  editorReducer.ts:6:    * Pure core module: must never import @tauri-apps/api or any forbidden API.
+  debounceSchedule.ts:6: * Pure core module: must never import @tauri-apps/api or any forbidden API.
+  debounceSchedule.ts:15: * REQ-EDIT-012: Named exported constant for the idle-save debounce window.
+  debounceSchedule.ts:82:   // The most recent edit governs the debounce window.
+
+All 5 matches are inside comment blocks (/** */ or //). Zero executable-code hits.
+
+VERDICT: PASS
+
+==============================================================================
+GATE 4: Type Safety Audit
+==============================================================================
+
+Command: cd promptnotes && bun run check 2>&1 | grep "src/lib/editor/" | grep -E "ERROR|WARNING" | wc -l
+Output: 0
+
+VERDICT: PASS
+
+==============================================================================
+GATE 5: Svelte 4 Store Audit
+==============================================================================
+
+Command: grep -r "from 'svelte/store'" promptnotes/src/lib/editor/ | wc -l
+Output: 0
+
+Additional: grep -rn "createEventDispatcher\|writable\|readable" promptnotes/src/lib/editor/*.svelte -> 0
+
+VERDICT: PASS
+
+==============================================================================
+GATE 6: State Mutation Audit
+==============================================================================
+
+Command: grep -rn "EditingSessionState\|EditorViewState" promptnotes/src/lib/editor/*.svelte | grep -E "= |\+="
+Output:
+  EditorPanel.svelte:39:  let viewState = $state<EditorViewState>({
+
+Analysis: This is the $state<EditorViewState>({...}) initialization — the Svelte 5 reactive
+declaration for the shell's local state variable. It is NOT a mutation bypassing the reducer.
+No direct property assignments (viewState.status = ..., viewState.isDirty = ...) exist.
+All state changes flow through `viewState = result.state` (pure reducer output).
+
+VERDICT: PASS
+
+==============================================================================
+GATE 7: Legacy Command Audit
+==============================================================================
+
+Command: grep -r "EditNoteBody\|edit-note-body" promptnotes/src/lib/editor/ | wc -l
+Output: 0
+
+VERDICT: PASS
+
+==============================================================================
+GATE 8: Adapter Responsibility Split (RD-016, CRIT-707)
+==============================================================================
+
+Command: grep "listen(" promptnotes/src/lib/editor/tauriEditorAdapter.ts | wc -l
+Output: 1 (JSDoc comment: "OUTBOUND only: does NOT call @tauri-apps/api/event listen()")
+Executable listen() calls: 0
+
+Command: grep "invoke(" promptnotes/src/lib/editor/editorStateChannel.ts | wc -l
+Output: 1 (JSDoc comment: "NEVER calls invoke()")
+Executable invoke() calls: 0
+
+VERDICT: PASS
+
+==============================================================================
+GATE 9: EditorCommand 17-Variant Audit
+==============================================================================
+
+Command: for k in focus-block edit-block-content insert-block-after insert-block-at-beginning \
+  remove-block merge-blocks split-block change-block-type move-block cancel-idle-timer \
+  trigger-idle-save trigger-blur-save retry-save discard-current-session cancel-switch \
+  copy-note-body request-new-note; \
+  do grep -q "'$k'" promptnotes/src/lib/editor/types.ts || echo "MISSING: $k"; done
+echo "Audit complete"
+
+Output: Audit complete
+
+All 17 EditorCommand kind literals present in types.ts.
+
+VERDICT: PASS
+
+==============================================================================
+GATE 10: DESIGN.md Token Conformance (CRIT-708)
+==============================================================================
+
+Font-weight:
+  Command: grep -r "font-weight" promptnotes/src/lib/editor/ | grep -vE "font-weight: ?(400|500|600|700)" | head
+  Output: (empty)
+  PASS
+
+Deep Shadow outer layer:
+  Command: grep "0px 23px 52px" promptnotes/src/lib/editor/SaveFailureBanner.svelte
+  Output: rgba(0, 0, 0, 0.05) 0px 23px 52px;
+  PASS
+
+#dd5b00 accent:
+  Command: grep "#dd5b00" promptnotes/src/lib/editor/SaveFailureBanner.svelte
+  Output: border-left: 4px solid #dd5b00;
+  PASS
+
+VERDICT: PASS
+
+==============================================================================
+FINAL VERDICT: ALL 10 GATES PASS — Phase 6 may proceed
+==============================================================================

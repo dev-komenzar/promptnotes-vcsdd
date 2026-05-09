@@ -1,0 +1,15 @@
+{
+  "id": "FIND-064",
+  "severity": "major",
+  "dimension": "edge_case_coverage",
+  "category": "test_quality",
+  "location": "promptnotes/src/lib/editor/__tests__/dom/save-failure-banner.dom.vitest.ts:200-218",
+  "description": "PROP-EDIT-019 (REQ-EDIT-030 / NFR-EDIT-007) banner visual style assertions are tautological. The tests assert `banner.getAttribute('data-shadow-applied') === 'deep'` and `banner.getAttribute('data-accent-color') === '#dd5b00'`. These data attributes are hardcoded on the SaveFailureBanner.svelte root (`data-shadow-applied=\"deep\" data-accent-color=\"#dd5b00\"`, lines 35-36) regardless of whether the actual CSS shadow string and border-left are correctly applied. The tests prove only that the static markup contains the literal strings — they do NOT verify the applied CSS contains the 5-layer shadow tokens or the #dd5b00 accent. Fortunately the CSS itself does contain the correct shadow + accent (lines 67-77), but the verification is via passive markup assertion rather than computed-style introspection. CRIT-708 grep `'0px 23px 52px'` on the same file does cover the shadow layer string, so the structural intent is met by grep alone, but the DOM-tier 'visual' assertions are theatre.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/SaveFailureBanner.svelte",
+    "lineRange": "30-37",
+    "snippet": "<div\n  class=\"save-failure-banner\"\n  role=\"alert\"\n  data-testid=\"save-failure-banner\"\n  data-shadow-applied=\"deep\"\n  data-accent-color=\"#dd5b00\"\n>"
+  },
+  "suggestedRemediation": "Remove the data-shadow-applied / data-accent-color attributes. In the DOM tests, either assert the grep'd CSS class is on the banner root and rely on the existing Phase-5 grep audit, or use `window.getComputedStyle(banner).boxShadow` to verify the shadow string actually applies (note: jsdom's computed style may not fully implement multi-layer shadows; in that case fall back to inspecting `banner.classList` plus a separate Phase-5 grep gate).",
+  "routeToPhase": "2a"
+}

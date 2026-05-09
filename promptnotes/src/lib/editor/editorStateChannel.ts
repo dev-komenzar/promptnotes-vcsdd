@@ -1,41 +1,51 @@
 /**
- * editorStateChannel.ts — INBOUND event channel (effectful shell, Sprint 2)
+ * editorStateChannel.ts — INBOUND event channel (effectful shell, Sprint 7)
  *
- * Wraps @tauri-apps/api/event listen('editing_session_state_changed', handler).
- * Extracts payload.payload.state and passes it to the subscriber callback.
+ * INBOUND only: implements subscribeToState(handler) that wraps
+ * @tauri-apps/api/event listen('editing_session_state_changed', ...).
+ *
+ * Returns the unlisten cleanup function.
+ * NEVER calls invoke(). NEVER imports anything from tauriEditorAdapter.
+ *
+ * RD-016: separation of OUTBOUND (tauriEditorAdapter.ts) and INBOUND (this file).
  */
 
 import { listen } from '@tauri-apps/api/event';
-import type { EditingSessionState } from './types.js';
+import type { EditingSessionStateDto } from './types.js';
 
-export interface EditorStateChannel {
-  /**
-   * Register `handler` to receive every inbound EditingSessionState snapshot.
-   * Returns an unsubscribe function; call it to stop receiving events.
-   */
-  subscribe(handler: (state: EditingSessionState) => void): () => void;
+/**
+ * Subscribe to domain EditingSessionState snapshots from the Rust backend.
+ *
+ * @param handler Callback invoked with each new EditingSessionStateDto snapshot.
+ * @returns Cleanup function that removes the event listener.
+ */
+export function subscribeToEditorState(
+  handler: (state: EditingSessionStateDto) => void
+): () => void {
+  let unlistenFn: (() => void) | null = null;
+
+  listen(
+    'editing_session_state_changed',
+    (event: { payload: { state: EditingSessionStateDto } }) => {
+      handler(event.payload.state);
+    }
+  ).then((fn) => {
+    unlistenFn = fn;
+  });
+
+  return () => {
+    unlistenFn?.();
+  };
 }
 
-export function createEditorStateChannel(): EditorStateChannel {
+/**
+ * Creates a subscribeToState function bound to the 'editing_session_state_changed' event.
+ * Used by EditorPanel to compose with the outbound adapter.
+ */
+export function createEditorStateChannel(): {
+  subscribeToState: (handler: (state: EditingSessionStateDto) => void) => () => void;
+} {
   return {
-    subscribe(handler: (state: EditingSessionState) => void): () => void {
-      // listen() is async; cache the unlisten callback once the Promise resolves.
-      // Any events that arrive before resolution are still forwarded via the
-      // synchronously registered inner callback.
-      let unlistenFn: (() => void) | null = null;
-
-      listen(
-        'editing_session_state_changed',
-        (event: { payload: { state: EditingSessionState } }) => {
-          handler(event.payload.state);
-        }
-      ).then((fn) => {
-        unlistenFn = fn;
-      });
-
-      return () => {
-        unlistenFn?.();
-      };
-    },
+    subscribeToState: subscribeToEditorState,
   };
 }

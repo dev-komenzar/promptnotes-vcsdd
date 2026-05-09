@@ -9,98 +9,94 @@
 ///   PROP-105: Session handlers (discard/cancel) emit correct state
 ///   PROP-106: Ack handlers (edit_note_body, copy_note_body) have no side-effects
 ///
-/// These tests MUST FAIL in Phase 2a because editor.rs does not yet exist.
-/// Once editor.rs is implemented (Phase 2b), all tests must pass.
+/// Sprint 8 Phase 2b migration:
+///   - EditingSessionStateDto is now a 5-arm enum (not a flat struct)
+///   - make_editing_state_changed_payload now takes &EditingSessionStateDto (1 arg)
+///   - Legacy 6-arg form and flat-struct construction are replaced with variant construction
 
 use promptnotes_lib::editor::{
     EditingSessionStateDto, FsErrorDto, SaveErrorDto, fs_write_file_atomic,
     make_editing_state_changed_payload, generate_frontmatter,
+    compose_state_idle, compose_state_for_save_ok, compose_state_for_save_err,
+    compose_state_for_cancel_switch, compose_state_for_select_past_note,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROP-100: DTO serialization — camelCase roundtrip
+// PROP-100: DTO serialization — camelCase roundtrip (Sprint 8 variant form)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 #[test]
 fn editing_session_state_dto_serializes_camel_case() {
-    // PROP-100: All fields must serialize as camelCase matching TS EditingSessionState.
-    let state = EditingSessionStateDto {
-        status: "editing".to_string(),
+    // PROP-100: Sprint 8 — editing variant must serialize all camelCase fields correctly.
+    let state = EditingSessionStateDto::Editing {
+        current_note_id: "/vault/note-1.md".to_string(),
+        focused_block_id: None,
         is_dirty: true,
-        current_note_id: Some("/vault/note-1.md".to_string()),
-        pending_next_note_id: None,
-        last_error: None,
-        body: "# Hello".to_string(),
+        is_note_empty: false,
+        last_save_result: None,
+        blocks: None,
     };
     let json = serde_json::to_string(&state).expect("serialize failed");
 
     assert!(json.contains("\"status\""), "Expected camelCase 'status': {}", json);
     assert!(json.contains("\"isDirty\""), "Expected camelCase 'isDirty': {}", json);
     assert!(json.contains("\"currentNoteId\""), "Expected camelCase 'currentNoteId': {}", json);
-    assert!(json.contains("\"pendingNextNoteId\""), "Expected camelCase 'pendingNextNoteId': {}", json);
-    assert!(json.contains("\"lastError\""), "Expected camelCase 'lastError': {}", json);
-    assert!(json.contains("\"body\""), "Expected 'body': {}", json);
+    assert!(json.contains("\"focusedBlockId\""), "Expected camelCase 'focusedBlockId': {}", json);
+    assert!(json.contains("\"isNoteEmpty\""), "Expected camelCase 'isNoteEmpty': {}", json);
+    assert!(json.contains("\"lastSaveResult\""), "Expected camelCase 'lastSaveResult': {}", json);
     assert!(json.contains("\"editing\""), "Expected status value 'editing': {}", json);
 }
 
 #[test]
 fn editing_session_state_dto_roundtrips() {
-    // PROP-100: JSON roundtrip is identity.
-    let state = EditingSessionStateDto {
-        status: "idle".to_string(),
-        is_dirty: false,
-        current_note_id: None,
-        pending_next_note_id: None,
-        last_error: None,
-        body: String::new(),
-    };
+    // PROP-100: Sprint 8 — JSON roundtrip over the Idle variant is identity.
+    let state = EditingSessionStateDto::Idle;
     let json = serde_json::to_string(&state).expect("serialize failed");
     let parsed: EditingSessionStateDto = serde_json::from_str(&json).expect("deserialize failed");
-    assert_eq!(parsed.status, "idle");
-    assert!(!parsed.is_dirty);
-    assert!(parsed.current_note_id.is_none());
-    assert!(parsed.pending_next_note_id.is_none());
-    assert!(parsed.last_error.is_none());
-    assert!(parsed.body.is_empty());
+    assert_eq!(parsed, EditingSessionStateDto::Idle);
+    // Verify the parsed JSON shape
+    let value: serde_json::Value = serde_json::from_str(&json).expect("parse json");
+    assert_eq!(value["status"], "idle");
+    assert!(value.as_object().unwrap().len() == 1, "Idle must have exactly one key");
 }
 
 #[test]
 fn editing_session_state_dto_with_save_error_serializes() {
-    // PROP-100: lastError field with fs error serializes nested structure.
-    let state = EditingSessionStateDto {
-        status: "save-failed".to_string(),
-        is_dirty: true,
-        current_note_id: Some("/vault/n.md".to_string()),
-        pending_next_note_id: None,
-        last_error: Some(SaveErrorDto {
+    // PROP-100: Sprint 8 — save-failed variant serializes with correct key set.
+    let state = EditingSessionStateDto::SaveFailed {
+        current_note_id: "/vault/n.md".to_string(),
+        prior_focused_block_id: None,
+        pending_next_focus: None,
+        last_save_error: SaveErrorDto {
             kind: "fs".to_string(),
             reason: Some(FsErrorDto {
                 kind: "permission".to_string(),
             }),
-        }),
-        body: "draft".to_string(),
+        },
+        is_note_empty: false,
+        blocks: None,
     };
     let json = serde_json::to_string(&state).expect("serialize failed");
 
     assert!(json.contains("\"save-failed\""), "Expected status 'save-failed': {}", json);
-    assert!(json.contains("\"lastError\""), "Expected 'lastError': {}", json);
+    assert!(json.contains("\"lastSaveError\""), "Expected 'lastSaveError': {}", json);
     assert!(json.contains("\"fs\""), "Expected kind 'fs': {}", json);
     assert!(json.contains("\"permission\""), "Expected reason 'permission': {}", json);
 }
 
 #[test]
 fn editing_session_state_changed_event_payload_has_state_wrapper() {
-    // PROP-100: The event payload wraps EditingSessionStateDto in { "state": ... }
-    // matching editorStateChannel.ts's event.payload.state access pattern.
-    let state = EditingSessionStateDto {
-        status: "editing".to_string(),
+    // PROP-100: Sprint 8 — The event payload wraps EditingSessionStateDto in { "state": ... }
+    // using the new singular make_editing_state_changed_payload(&state) form.
+    let state = EditingSessionStateDto::Editing {
+        current_note_id: "/vault/n.md".to_string(),
+        focused_block_id: None,
         is_dirty: false,
-        current_note_id: Some("/vault/n.md".to_string()),
-        pending_next_note_id: None,
-        last_error: None,
-        body: "content".to_string(),
+        is_note_empty: false,
+        last_save_result: None,
+        blocks: None,
     };
-    let payload = serde_json::json!({ "state": &state });
+    let payload = make_editing_state_changed_payload(&state);
     let json = serde_json::to_string(&payload).expect("serialize failed");
 
     // Verify the wrapper structure
@@ -138,9 +134,6 @@ fn fs_write_file_atomic_writes_complete_content() {
 fn fs_write_file_atomic_does_not_partial_write_on_error() {
     // PROP-101: When the tempfile write succeeds but rename fails (e.g., permission
     // on target directory), the target file must remain unchanged.
-    // We simulate this by writing to a target that already exists as a read-only file.
-    // Actually testing the atomic rename failure path is platform-dependent;
-    // this test verifies the basic success → file-exists path is correct.
     let target = "/tmp/promptnotes-atomic-readonly-target.md";
     let original = "original content";
 
@@ -186,7 +179,7 @@ fn fs_write_file_atomic_handles_empty_content() {
 
 #[test]
 fn fs_error_dto_kind_matches_spec() {
-    // PROP-102: FsErrorDto.kind field must accept the 4 spec values.
+    // PROP-102: FsErrorDto.kind field must accept the spec values.
     let kinds = vec!["permission", "disk-full", "lock", "unknown"];
     for k in &kinds {
         let dto = FsErrorDto {
@@ -263,59 +256,72 @@ fn generate_frontmatter_body_section_is_empty() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROP-104: Save handler emit patterns
+// PROP-104: Save handler emit patterns (Sprint 8 form)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 #[test]
 fn make_editing_state_changed_payload_success() {
-    // PROP-104: Success payload has status='editing', isDirty=false, no error.
-    let payload = make_editing_state_changed_payload(
-        "editing", false, Some("/vault/n.md".to_string()), None, None, "body text"
-    );
+    // PROP-104: Sprint 8 — Success payload uses compose_state_for_save_ok.
+    // status='editing', isDirty=false, no error.
+    let state = compose_state_for_save_ok("/vault/n.md", "body text");
+    let payload = make_editing_state_changed_payload(&state);
     let json = serde_json::to_string(&payload).expect("serialize");
-    assert!(json.contains("\"editing\""), "Status must be 'editing': {}", json);
+
+    let parsed: serde_json::Value = serde_json::from_str(&json).expect("parse");
+    let inner = &parsed["state"];
+    assert_eq!(inner["status"], "editing", "Status must be 'editing': {}", json);
+    assert_eq!(inner["isDirty"], false, "isDirty must be false: {}", json);
     assert!(!json.contains("\"save-failed\""), "Must not contain save-failed: {}", json);
 }
 
 #[test]
 fn make_editing_state_changed_payload_save_failed() {
-    // PROP-104: Failure payload has status='save-failed', lastError populated.
-    let err = SaveErrorDto {
-        kind: "fs".to_string(),
-        reason: Some(FsErrorDto { kind: "disk-full".to_string() }),
-    };
-    let payload = make_editing_state_changed_payload(
-        "save-failed", true, Some("/vault/n.md".to_string()), None, Some(err), "draft"
-    );
+    // PROP-104: Sprint 8 — Failure payload uses compose_state_for_save_err.
+    // status='save-failed', lastSaveError populated.
+    let fs_err = FsErrorDto { kind: "disk-full".to_string() };
+    let state = compose_state_for_save_err("/vault/n.md", "draft", fs_err);
+    let payload = make_editing_state_changed_payload(&state);
     let json = serde_json::to_string(&payload).expect("serialize");
-    assert!(json.contains("\"save-failed\""), "Status must be 'save-failed': {}", json);
+
+    let parsed: serde_json::Value = serde_json::from_str(&json).expect("parse");
+    let inner = &parsed["state"];
+    assert_eq!(inner["status"], "save-failed", "Status must be 'save-failed': {}", json);
     assert!(json.contains("\"disk-full\""), "Must contain error reason: {}", json);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROP-105: Session handler emit patterns
+// PROP-105: Session handler emit patterns (Sprint 8 form)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 #[test]
 fn discard_session_payload_is_idle_state() {
-    // PROP-105: discard_current_session must emit idle state with all fields reset.
-    let payload = make_editing_state_changed_payload(
-        "idle", false, None, None, None, ""
-    );
+    // PROP-105: Sprint 8 — discard_current_session emits compose_state_idle().
+    let state = compose_state_idle();
+    let payload = make_editing_state_changed_payload(&state);
     let json = serde_json::to_string(&payload).expect("serialize");
-    assert!(json.contains("\"idle\""), "Status must be 'idle': {}", json);
+
+    let parsed: serde_json::Value = serde_json::from_str(&json).expect("parse");
+    assert_eq!(parsed["state"]["status"], "idle", "Status must be 'idle': {}", json);
     assert!(!json.contains("\"save-failed\""), "Must not be save-failed");
+    // REQ-IPC-016: Idle must have ONLY status key
+    let state_obj = parsed["state"].as_object().unwrap();
+    assert_eq!(state_obj.len(), 1, "Idle state must have only 'status' key");
 }
 
 #[test]
 fn cancel_switch_payload_is_editing_with_dirty() {
-    // PROP-105: cancel_switch must emit editing state with isDirty=true.
-    let payload = make_editing_state_changed_payload(
-        "editing", true, Some("/vault/n.md".to_string()), None, None, "unsaved content"
-    );
+    // PROP-105: Sprint 8 — cancel_switch emits compose_state_for_cancel_switch().
+    // REQ-IPC-015: isDirty=true, focusedBlockId=null, isNoteEmpty=false.
+    let state = compose_state_for_cancel_switch("/vault/n.md");
+    let payload = make_editing_state_changed_payload(&state);
     let json = serde_json::to_string(&payload).expect("serialize");
-    assert!(json.contains("\"editing\""), "Status must be 'editing': {}", json);
-    assert!(json.contains("\"isDirty\":true"), "isDirty must be true: {}", json);
+
+    let parsed: serde_json::Value = serde_json::from_str(&json).expect("parse");
+    let inner = &parsed["state"];
+    assert_eq!(inner["status"], "editing", "Status must be 'editing': {}", json);
+    assert_eq!(inner["isDirty"], true, "isDirty must be true: {}", json);
+    assert_eq!(inner["focusedBlockId"], serde_json::Value::Null, "focusedBlockId must be null");
+    assert_eq!(inner["isNoteEmpty"], false, "isNoteEmpty must be false (conservative)");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -324,14 +330,16 @@ fn cancel_switch_payload_is_editing_with_dirty() {
 
 #[test]
 fn make_editing_state_changed_payload_idempotent() {
-    // PROP-106: make_editing_state_changed_payload is a pure constructor —
-    // calling it twice with same args produces identical output.
-    let p1 = make_editing_state_changed_payload(
-        "editing", false, Some("/v/n.md".to_string()), None, None, "b",
-    );
-    let p2 = make_editing_state_changed_payload(
-        "editing", false, Some("/v/n.md".to_string()), None, None, "b",
-    );
+    // PROP-106: Sprint 8 — make_editing_state_changed_payload is a pure constructor —
+    // calling it twice with same state produces identical output.
+    let blocks1 = promptnotes_lib::editor::parse_markdown_to_blocks("b")
+        .expect("parse must succeed");
+    let blocks2 = promptnotes_lib::editor::parse_markdown_to_blocks("b")
+        .expect("parse must succeed");
+    let state1 = compose_state_for_select_past_note("/v/n.md", Some(blocks1));
+    let state2 = compose_state_for_select_past_note("/v/n.md", Some(blocks2));
+    let p1 = make_editing_state_changed_payload(&state1);
+    let p2 = make_editing_state_changed_payload(&state2);
     let j1 = serde_json::to_string(&p1).expect("serialize");
     let j2 = serde_json::to_string(&p2).expect("serialize");
     assert_eq!(j1, j2, "Identical args must produce identical payload");

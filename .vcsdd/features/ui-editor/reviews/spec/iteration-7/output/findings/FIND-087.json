@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-087",
+  "dimension": "wire_contract_consistency",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-IPC-009 (behavioral-spec.md:1218) still describes the Rust source as `block_type: String`: 'The Rust block_type: String field shall serialize under the JSON key type.' This contradicts the iter-2 patch in §15.5 line 1272 which mandates a typed Rust enum `BlockTypeDto` with 9 variants and explicitly REJECTS the String form: 'Using a raw String for block_type ... is rejected for Sprint 8 because it admits invalid round-trip values'. PROP-IPC-018 (verification-architecture.md:584) and PROP-IPC-019 (line 585) both unambiguously assume the typed enum. An implementer reading REQ-IPC-009 in isolation would derive a `block_type: String` field that satisfies REQ-IPC-009's wire-shape claim but violates §15.5 and fails PROP-IPC-019. The wire-shape sentence ('shall serialize as { id, type, content }') is correct; only the parenthetical 'Rust block_type: String field' phrasing is stale and was not updated when §15.5 introduced BlockTypeDto. The internal contradiction is local but real, and Sprint 8 strict mode does not tolerate any major spec self-contradiction.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1218",
+      "snippet": "REQ-IPC-009 — DtoBlock shall serialize as { \"id\": string, \"type\": string, \"content\": string }. The Rust block_type: String field shall serialize under the JSON key type. Permitted type values mirror the TS BlockType literal union (paragraph | heading-1 | heading-2 | heading-3 | bullet | numbered | code | quote | divider)."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1272",
+      "snippet": "BlockTypeDto enum (typed block type): Sprint 8's DtoBlock shall serialize type from a typed Rust enum BlockTypeDto with the 9 variants Paragraph | Heading1 | Heading2 | Heading3 | Bullet | Numbered | Code | Quote | Divider, using #[serde(rename_all = \"kebab-case\")] plus #[serde(rename = \"heading-1\")] / \"heading-2\" / \"heading-3\" to match the TS BlockType literal union. Using a raw String for block_type ... is rejected for Sprint 8 because it admits invalid round-trip values..."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "584-585",
+      "snippet": "PROP-IPC-018 | 0 (compile-time) | The Rust BlockTypeDto enum has exactly 9 variants ... | An exhaustive match over BlockTypeDto in tests; missing arms are compile errors.\nPROP-IPC-019 | 1 (round-trip) | serde_json::from_str::<BlockTypeDto>(\"\\\"<value>\\\"\") succeeds iff <value> is one of the 9 kebab-case literals..."
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-009", "PROP-IPC-018", "PROP-IPC-019"],
+  "recommendation": "Update REQ-IPC-009's middle sentence from 'The Rust block_type: String field shall serialize under the JSON key type' to 'The Rust block_type field shall be of type BlockTypeDto (per §15.5) and shall serialize under the JSON key type, with serde rename rules producing the 9 kebab-case literals.' This brings REQ-IPC-009 in line with §15.5 and PROP-IPC-018/019. Trivial single-line edit; no other section requires changes."
+}

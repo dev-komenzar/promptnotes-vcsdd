@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-040",
+  "dimension": "contract_validity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "CRIT-707 passThreshold `grep -c \"dispatch\" promptnotes/src/lib/editor/tauriEditorAdapter.ts outputs exactly 16` is structurally unreliable. The adapter file contains `dispatch` substrings on (a) 16 method definition lines (`dispatchFocusBlock`, etc.), (b) multiple JSDoc comment lines that reference `dispatch* methods`, `dispatch_xxx`, etc., and (c) the file-header overview which mentions `16 dispatch* methods`. `grep -c` counts matching lines, so the comment lines pad the result above 16. The 16-method invariant cannot be checked by this threshold; either a more targeted regex (e.g., `^\\s*dispatch[A-Z]`) or an AST-level check is required. As written, the criterion is non-evaluable.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/tauriEditorAdapter.ts",
+    "lineRange": "1-145",
+    "snippet": "Header comment line 18 says `16 dispatch* methods` (matches `dispatch`). Comment line 38 says `subscribeToState method is NOT implemented here -- use editorStateChannel.ts for inbound state subscriptions`. Multiple internal comments reference `dispatchTriggerIdleSave` etc. Counting all lines containing `dispatch` exceeds 16."
+  },
+  "routeToPhase": "contract-revision"
+}

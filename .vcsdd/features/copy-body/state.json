@@ -67,19 +67,103 @@
       "timestamp": "2026-05-01T08:52:00.075Z",
       "reason": "phase 6 PASS",
       "sprint": 2
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-07T09:00:00.000Z",
+      "reason": "sprint 3 begin: block-based migration (docs/tasks/feature-impact.md)",
+      "sprint": 3
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-07T09:10:00.000Z",
+      "reason": "sprint 3: behavioral-spec.md updated for blocks; +REQ-013/014",
+      "sprint": 3
+    },
+    {
+      "from": "1b",
+      "to": "1a",
+      "reason": "phase 4 routing — sprint 3 1c FAIL: FIND-001/002/003/004 → 1a",
+      "timestamp": "2026-05-07T14:00:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "reason": "sprint 3 spec revision complete",
+      "timestamp": "2026-05-07T14:05:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "reason": "sprint 3 phase 1c re-review iter 2",
+      "timestamp": "2026-05-07T14:25:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "reason": "sprint 3 phase 1c PASS (iter 2); advancing to red phase",
+      "timestamp": "2026-05-07T14:35:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "reason": "sprint 3 red→green",
+      "timestamp": "2026-05-07T15:30:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "reason": "sprint 3 green PASS; refactor",
+      "timestamp": "2026-05-07T15:35:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "reason": "sprint 3 refactor done",
+      "timestamp": "2026-05-07T15:40:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "reason": "sprint 3 phase 3 PASS; advancing to formal hardening",
+      "timestamp": "2026-05-07T15:55:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "reason": "sprint 3 phase 5 hardening complete: 12/12 PROPs proved",
+      "timestamp": "2026-05-07T16:15:00.000Z",
+      "sprint": 3
+    },
+    {
+      "from": "6",
+      "to": "complete",
+      "reason": "sprint 3 phase 6 PASS; 4D convergence achieved",
+      "timestamp": "2026-05-07T16:30:00.000Z",
+      "sprint": 3
     }
   ],
   "iterations": {
-    "3": 1,
-    "5": 1,
-    "6": 1,
-    "1a": 1,
-    "1b": 1,
-    "1c": 1,
-    "2a": 1,
-    "2b": 1,
-    "2c": 1,
-    "complete": 1
+    "3": 2,
+    "5": 2,
+    "6": 2,
+    "1a": 3,
+    "1b": 3,
+    "1c": 2,
+    "2a": 2,
+    "2b": 2,
+    "2c": 2,
+    "complete": 2
   },
   "proofObligations": [
     {
@@ -151,44 +235,508 @@
       "required": true,
       "status": "proved",
       "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-010-fserror-pass-through.harness.test.ts"
+    },
+    {
+      "id": "PROP-011",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-011-serializer-delegation.harness.test.ts"
+    },
+    {
+      "id": "PROP-012",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-012-pipeline-shape.types.test.ts"
     }
   ],
   "traceability": {
     "epicId": "VCSDD-copy-body-1777624308740",
-    "beads": []
+    "lastBeadId": "BEAD-039",
+    "beads": [
+      {
+        "beadId": "BEAD-001",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-001",
+        "status": "active",
+        "linkedBeads": ["BEAD-018"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-001"
+      },
+      {
+        "beadId": "BEAD-002",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-002",
+        "status": "revised-sprint-3",
+        "linkedBeads": ["BEAD-016", "BEAD-017", "BEAD-025"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-002"
+      },
+      {
+        "beadId": "BEAD-003",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-003",
+        "status": "active",
+        "linkedBeads": ["BEAD-019"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-003"
+      },
+      {
+        "beadId": "BEAD-004",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-004",
+        "status": "active",
+        "linkedBeads": ["BEAD-020"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-004"
+      },
+      {
+        "beadId": "BEAD-005",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-005",
+        "status": "active",
+        "linkedBeads": ["BEAD-018"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-005"
+      },
+      {
+        "beadId": "BEAD-006",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-006",
+        "status": "active",
+        "linkedBeads": ["BEAD-022"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-006"
+      },
+      {
+        "beadId": "BEAD-007",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-007",
+        "status": "revised-sprint-3",
+        "linkedBeads": ["BEAD-023"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-007"
+      },
+      {
+        "beadId": "BEAD-008",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-008",
+        "status": "active",
+        "linkedBeads": ["BEAD-026"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-008"
+      },
+      {
+        "beadId": "BEAD-009",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-009",
+        "status": "active",
+        "linkedBeads": ["BEAD-019"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-009"
+      },
+      {
+        "beadId": "BEAD-010",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-010",
+        "status": "active",
+        "linkedBeads": ["BEAD-021"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-010"
+      },
+      {
+        "beadId": "BEAD-011",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-011",
+        "status": "active",
+        "linkedBeads": ["BEAD-019", "BEAD-020"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-011"
+      },
+      {
+        "beadId": "BEAD-012",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-012",
+        "status": "active",
+        "linkedBeads": ["BEAD-024"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-012"
+      },
+      {
+        "beadId": "BEAD-013",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-013",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-016", "BEAD-025"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-013"
+      },
+      {
+        "beadId": "BEAD-014",
+        "type": "spec-requirement",
+        "artifactPath": ".vcsdd/features/copy-body/specs/behavioral-spec.md#REQ-014",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-025"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1a",
+        "externalId": "REQ-014"
+      },
+      {
+        "beadId": "BEAD-015",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-001",
+        "status": "active",
+        "linkedBeads": [],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-001"
+      },
+      {
+        "beadId": "BEAD-016",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-002",
+        "status": "revised-sprint-3",
+        "linkedBeads": ["BEAD-002", "BEAD-013"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-002"
+      },
+      {
+        "beadId": "BEAD-017",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-003",
+        "status": "revised-sprint-3",
+        "linkedBeads": ["BEAD-002"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-003"
+      },
+      {
+        "beadId": "BEAD-018",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-004",
+        "status": "active",
+        "linkedBeads": ["BEAD-001", "BEAD-005"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-004"
+      },
+      {
+        "beadId": "BEAD-019",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-005",
+        "status": "active",
+        "linkedBeads": ["BEAD-003", "BEAD-009", "BEAD-011"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-005"
+      },
+      {
+        "beadId": "BEAD-020",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-006",
+        "status": "active",
+        "linkedBeads": ["BEAD-004", "BEAD-011"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-006"
+      },
+      {
+        "beadId": "BEAD-021",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-007",
+        "status": "active",
+        "linkedBeads": ["BEAD-010"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-007"
+      },
+      {
+        "beadId": "BEAD-022",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-008",
+        "status": "active",
+        "linkedBeads": ["BEAD-006"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-008"
+      },
+      {
+        "beadId": "BEAD-023",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-009",
+        "status": "revised-sprint-3",
+        "linkedBeads": ["BEAD-007"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-009"
+      },
+      {
+        "beadId": "BEAD-024",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-010",
+        "status": "active",
+        "linkedBeads": ["BEAD-001", "BEAD-012"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-010"
+      },
+      {
+        "beadId": "BEAD-025",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-011",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-013", "BEAD-014"],
+        "createdAt": "2026-05-07T09:05:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-011"
+      },
+      {
+        "beadId": "BEAD-026",
+        "type": "verification-property",
+        "artifactPath": ".vcsdd/features/copy-body/specs/verification-architecture.md#PROP-012",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-008"],
+        "createdAt": "2026-05-07T14:00:00.000Z",
+        "createdInPhase": "1b",
+        "externalId": "PROP-012"
+      },
+      {
+        "beadId": "BEAD-027",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-001-body-for-clipboard-purity.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-015"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-001-test"
+      },
+      {
+        "beadId": "BEAD-028",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-002-body-equals-note-body.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-016", "BEAD-002", "BEAD-013"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-002-test"
+      },
+      {
+        "beadId": "BEAD-029",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-003-frontmatter-exclusion.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-017", "BEAD-002"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-003-test"
+      },
+      {
+        "beadId": "BEAD-030",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-004-success-io-budget.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-018", "BEAD-001", "BEAD-005"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-004-test"
+      },
+      {
+        "beadId": "BEAD-031",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-005-failure-io-budget.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-019", "BEAD-003", "BEAD-009"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-005-test"
+      },
+      {
+        "beadId": "BEAD-032",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-006-save-error-exhaustive.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-020", "BEAD-004", "BEAD-010"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-006-test"
+      },
+      {
+        "beadId": "BEAD-033",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-007-read-only-inputs.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-021", "BEAD-006"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-007-test"
+      },
+      {
+        "beadId": "BEAD-034",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-008-empty-body-copy.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-022", "BEAD-007"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-008-test"
+      },
+      {
+        "beadId": "BEAD-035",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-009-pass-through.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-023", "BEAD-012"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-009-test"
+      },
+      {
+        "beadId": "BEAD-036",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-010-fserror-pass-through.harness.test.ts",
+        "status": "migrated-sprint-3",
+        "linkedBeads": ["BEAD-024", "BEAD-004"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-010-test"
+      },
+      {
+        "beadId": "BEAD-037",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-011-serializer-delegation.harness.test.ts",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-025", "BEAD-013", "BEAD-014"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-011-test"
+      },
+      {
+        "beadId": "BEAD-038",
+        "type": "test-case",
+        "artifactPath": "promptnotes/src/lib/domain/__tests__/copy-body/__verify__/prop-012-pipeline-shape.types.test.ts",
+        "status": "new-sprint-3",
+        "linkedBeads": ["BEAD-026", "BEAD-008"],
+        "createdAt": "2026-05-07T15:00:00.000Z",
+        "createdInPhase": "2a",
+        "externalId": "PROP-012-test"
+      },
+      {
+        "beadId": "BEAD-039",
+        "type": "implementation",
+        "artifactPath": "promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts",
+        "status": "sprint-3-rewrite",
+        "linkedBeads": ["BEAD-013", "BEAD-014", "BEAD-025", "BEAD-037"],
+        "createdAt": "2026-05-07T15:35:00.000Z",
+        "createdInPhase": "2b",
+        "externalId": "BEAD-039",
+        "note": "sprint 3 rewrite: delegates to serializeBlocksToMarkdown(note.blocks); stale note.body access removed; PROP-001..PROP-011 re-verified under blocks-shaped arbitraries"
+      }
+    ]
   },
   "gates": {
+    "5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-07T16:15:00.000Z",
+      "reviewedBy": "verifier",
+      "sprint": 3,
+      "details": {
+        "reason": "12/12 PROPs proved; lean Tier 0+1 only",
+        "evidence": "bun test src/lib/domain/__tests__/copy-body/__verify__/ => 29 pass / 4 skip / 0 fail (461 expect calls, 12 files); bun test src/lib/domain/__tests__/copy-body/ => 66 pass / 4 skip / 0 fail (535 expect calls, 14 files); tsc via svelte-check => zero copy-body errors; purity audit => no drift; security scan => clean"
+      }
+    },
     "3": {
       "verdict": "PASS",
-      "timestamp": "2026-05-01T08:48:31.066Z",
+      "timestamp": "2026-05-07T15:50:00.000Z",
       "reviewedBy": "adversary",
+      "sprint": 3,
       "details": {
-        "reason": "Adversary review PASS; 4 minor findings (FIND-001..004) identified and resolved in-place: vacuous publish=0 assertion replaced with type-level guarantee (CopyBodyDeps narrows to clockNow+clipboardWrite), tautological reference test fixed, unsound CaptureDeps cast removed, deep-freeze added to PROP-007.",
-        "adversaryVerdict": "PASS"
-      }
+        "reason": "sprint 3 impl review PASS; 1 minor (FIND-001 PROP-011 wording vs DI-spy pragmatic equivalent) + 1 nit (FIND-002 stale RED-condition comment) resolved in-place",
+        "adversaryVerdict": "PASS",
+        "verdictPath": ".vcsdd/features/copy-body/reviews/phase-3/sprint-3/output/verdict.md",
+        "findingsPath": ".vcsdd/features/copy-body/reviews/phase-3/sprint-3/output/findings.md",
+        "testEvidence": "66 pass / 4 skip / 0 fail (535 expect calls, 14 files)"
+      },
+      "history": [
+        {
+          "verdict": "PASS",
+          "timestamp": "2026-05-01T08:48:31.066Z",
+          "sprint": 2,
+          "reason": "sprint 2 adversary review PASS; 4 minor findings (FIND-001..004) resolved in-place"
+        }
+      ]
     },
     "6": {
       "verdict": "PASS",
-      "timestamp": "2026-05-01T08:51:39.773Z",
-      "reviewedBy": "adversary",
+      "timestamp": "2026-05-07T16:30:00.000Z",
+      "reviewedBy": "orchestrator",
+      "sprint": 3,
       "details": {
-        "reason": "4D convergence: findings 5→4→0 all resolved in-place; 10/10 PROPs proved.",
-        "adversaryVerdict": "PASS"
-      }
+        "reason": "sprint 3 phase 6 PASS; 4D convergence achieved: D1 diminishment (5→0 1c; 2→0 phase-3), D2 specificity (all findings cite file+line), D3 coverage (14 REQ / 12 PROP all proved, allCriteriaEvaluated=true), D4 no duplicates (1c vs phase-3 target different layers). Hardening artifacts present and post-Phase5. bun test: 66 pass / 4 skip / 0 fail.",
+        "adversaryVerdict": "PASS",
+        "convergenceSignals": {
+          "findingCount": 0,
+          "previousFindingCount": 5,
+          "allCriteriaEvaluated": true,
+          "evaluatedCriteria": ["PROP-001","PROP-002","PROP-003","PROP-004","PROP-005","PROP-006","PROP-007","PROP-008","PROP-009","PROP-010","PROP-011","PROP-012"],
+          "duplicatesDetected": false,
+          "hardeningArtifactsPresent": true
+        }
+      },
+      "history": [
+        {
+          "verdict": "PASS",
+          "timestamp": "2026-05-01T08:51:39.773Z",
+          "sprint": 2,
+          "reason": "4D convergence: findings 5→4→0 all resolved in-place; 10/10 PROPs proved."
+        }
+      ]
     },
     "1c": {
       "verdict": "PASS",
-      "timestamp": "2026-05-01T08:37:43.907Z",
+      "timestamp": "2026-05-07T14:30:00.000Z",
       "reviewedBy": "adversary",
+      "sprint": 3,
       "details": {
-        "reason": "lean spec gate; 5 minor findings addressed in-place (PROP cross-ref fixes, REQ-003 wording, REQ-012 added for noteId precondition)",
-        "adversaryVerdict": "PASS"
+        "reason": "sprint 3 spec gate PASS (iteration 2); all 5 prior findings RESOLVED in revision 3",
+        "adversaryVerdict": "PASS",
+        "verdictPath": ".vcsdd/features/copy-body/reviews/phase-1c/sprint-3-iter-2/output/verdict.md",
+        "findingsPath": ".vcsdd/features/copy-body/reviews/phase-1c/sprint-3-iter-2/output/findings.md"
       },
       "adversaryVerdict": "PASS",
-      "adversaryReviewedAt": "2026-05-01T08:37:43.907Z"
+      "adversaryReviewedAt": "2026-05-07T14:30:00.000Z",
+      "history": [
+        {
+          "verdict": "PASS",
+          "timestamp": "2026-05-01T08:37:43.907Z",
+          "sprint": 2,
+          "reason": "sprint 2 lean spec gate; 5 minor findings addressed in-place"
+        },
+        {
+          "verdict": "FAIL",
+          "timestamp": "2026-05-07T13:47:00.000Z",
+          "sprint": 3,
+          "iteration": 1,
+          "reason": "sprint 3 iter 1: 2 major + 3 minor; routed to phase 1a/1b"
+        }
+      ]
     }
   },
-  "sprintCount": 2,
+  "sprintCount": 3,
   "createdAt": "2026-05-01T08:31:48.740Z",
-  "updatedAt": "2026-05-01T08:52:00.075Z"
+  "updatedAt": "2026-05-07T16:30:00.000Z"
 }

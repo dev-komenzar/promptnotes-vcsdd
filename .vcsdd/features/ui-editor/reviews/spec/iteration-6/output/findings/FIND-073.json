@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-073",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "REQ-IPC-014 (behavioral-spec.md:1227) requires `select_past_note` to set `focusedBlockId` to 'the first `Block.id` of the loaded note (or `null` if the note has no blocks)'. However §15.4 (line 1255) explicitly declares 'Block parsing on the Rust side ... Sprint 8 emits `blocks: None` from all Rust handlers. Block-aware payload emission from `select_past_note` is deferred to `ui-feed-list-actions` Sprint 4.' Without block parsing on the Rust side, `select_past_note` cannot determine 'the first Block.id of the loaded note' — Rust only sees raw markdown bytes. The two requirements are mutually contradictory: REQ-IPC-014 mandates a value Rust cannot compute under §15.4. EC-IPC-010 partially defends the empty-body case (`null`) but the non-empty case is unimplementable without the parser.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1227-1228",
+      "snippet": "REQ-IPC-014 — promptnotes/src-tauri/src/feed.rs::select_past_note shall emit editing_session_state_changed with the editing variant. The emitted variant shall include focusedBlockId set to the first Block.id of the loaded note (or null if the note has no blocks), isDirty: false, lastSaveResult: null, and isNoteEmpty: <body == \"\">."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1253-1258",
+      "snippet": "### 15.4 Out-of-scope for Sprint 8 (explicit)\n\n- Block parsing on the Rust side (parseMarkdownToBlocks analogue): Sprint 8 emits blocks: None from all Rust handlers. Block-aware payload emission from select_past_note is deferred to ui-feed-list-actions Sprint 4."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1251",
+      "snippet": "EC-IPC-010 | select_past_note is called for a note whose body is empty (\"\"): emitted editing variant shall have focusedBlockId: null and isNoteEmpty: true. (Body parsing into blocks for the blocks field is OUT-OF-SCOPE in Sprint 8 and shall remain None.)"
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-014", "EC-IPC-010"],
+  "recommendation": "Resolve the contradiction by ONE of: (a) Reduce REQ-IPC-014 so `focusedBlockId: null` is the spec-mandated value for ALL non-empty bodies in Sprint 8, with a TS-side fallback that derives focus from EditorViewState.blocks[0] after the reducer mirrors the (yet-to-be-emitted) blocks. Add an explicit cross-reference to the deferred `ui-feed-list-actions` Sprint 4 hand-off. OR (b) Promote a minimal first-block-id extractor (e.g., split on '\\n', take first non-empty paragraph) into Sprint 8's Rust scope and remove the §15.4 exclusion. Pick one path and pin it in REQ-IPC-014's acceptance criteria."
+}

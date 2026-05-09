@@ -1,0 +1,44 @@
+bun run bunx tsc --noEmit
+Date: 2026-05-08
+
+Errors in handle-save-failure scope: 0
+Errors in tests/types/handle-save-failure.type-test.ts: 0
+
+Pre-existing errors in unrelated modules (out of scope):
+  - app-startup: 5 errors (Note.blocks migration gap)
+  - apply-filter-or-search: 1 error (Tag branding)
+  - edit-past-note-start: 11 errors (Note.body/body field migration)
+  - tag-chip-update: 9 errors (Note.blocks migration gap)
+  - feed: 14 errors (FeedViewState shape, TauriFeedAdapter export, etc.)
+
+All handle-save-failure source files (pipeline.ts, retry.ts, discard.ts,
+cancel-switch.ts, transitions.ts) and type-test file compile clean.
+
+PROP-HSF-005 (UserDecision exhaustiveness): VERIFIED
+  - @ts-expect-error on 'unknown-variant' suppresses a real TS error (PASS)
+  - @ts-expect-error on 'defer-save' suppresses a real TS error (PASS)
+  - assertNeverUserDecision never-branch compiles without error (PASS)
+
+PROP-HSF-016 (CaptureInternalEvent type classification): VERIFIED
+  - @ts-expect-error on PublicDomainEvent → emit suppresses a real TS error (PASS)
+  - RetrySaveRequested and EditingSessionDiscarded are CaptureInternalEvent members (PASS)
+
+PROP-HSF-022 widened signature (REQ-HSF-011): VERIFIED
+  - runHandleSaveFailurePipeline has 4 parameters (PASS)
+  - 3-param version not assignable to 4-param pipeline type (PASS)
+
+tsc exit code: 2 (due to unrelated pre-existing errors; handle-save-failure scope is CLEAN)
+
+bun test src/lib/domain/__tests__/handle-save-failure/__verify__/ output:
+bun test v1.3.11 (af24e281)
+ 19 pass
+ 0 fail
+ 13762 expect() calls
+Ran 19 tests across 5 files. [296.00ms]
+
+bun test src/lib/domain/__tests__/handle-save-failure/ (full suite) output:
+bun test v1.3.11 (af24e281)
+ 89 pass
+ 0 fail
+ 13892 expect() calls
+Ran 89 tests across 9 files. [324.00ms]

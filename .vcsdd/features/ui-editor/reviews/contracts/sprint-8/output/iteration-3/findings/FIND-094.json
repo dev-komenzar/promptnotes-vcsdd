@@ -1,0 +1,24 @@
+{
+  "findingId": "FIND-094",
+  "criterion": "CRIT-800",
+  "dimension": "spec_fidelity",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "The iter-3 patch adds two new tests (`prop_ipc_006_saving_key_set_equality` at editor_wire_sprint8.rs:315 and `ec_ipc_013_whitespace_only_body_is_not_empty` at editor_wire_sprint8.rs:1136), bringing the total from 20 to 22 in `editor_wire_sprint8.rs` and the suite-wide cargo total from 89 to 91. CRIT-800's passThreshold (sprint-8.md:40-41) literally states `cargo test --tests` exits 0 with all 89 tests passing (43 unit + 18 editor_handlers + 20 editor_wire_sprint8 + 8 feed_handlers, no additions or removals expected during contract review)`. After iter-3, the actual breakdown is 43 + 18 + **22** + 8 = **91**, not 89/20. The contract's itemized arithmetic now contradicts reality. FIND-091 (iter-2) explicitly anticipated this: its first remediation option said `update the coverage map line 35 to prop_ipc_006_saving_key_set_equality and the cargo test count threshold from 20 to 21`. The builder applied the coverage-map fix and added the test, but did NOT update sprint-8.md's `89` / `20 editor_wire_sprint8` literal counts; nor was the `no additions or removals expected during contract review` constraint amended even though iter-3 itself adds two tests during contract review. Phase 5 graders mechanically following the literal threshold will either (a) flag the count mismatch as a contract-implementation drift or (b) silently accept the higher count, depending on how strictly the grader reads the breakdown. Either way the contract is now internally incoherent: its own arithmetic does not sum to its stated total, and its meta-claim about review-time stability is self-falsifying.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "lineRange": "40-42",
+    "snippet": "`cd promptnotes/src-tauri && cargo test --tests` exits 0 with all 89 tests passing\n      (43 unit + 18 editor_handlers + 20 editor_wire_sprint8 + 8 feed_handlers, no\n      additions or removals expected during contract review)."
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+    "lineRange": "314-361, 1135-1161",
+    "snippet": "#[test] fn prop_ipc_006_saving_key_set_equality() { ... }\n#[test] fn ec_ipc_013_whitespace_only_body_is_not_empty() { ... }"
+  },
+  "remediationOptions": [
+    "Edit sprint-8.md:40-41 from `all 89 tests passing (43 unit + 18 editor_handlers + 20 editor_wire_sprint8 + 8 feed_handlers, no additions or removals expected during contract review)` to `all 91 tests passing (43 unit + 18 editor_handlers + 22 editor_wire_sprint8 + 8 feed_handlers; iter-3 added prop_ipc_006_saving_key_set_equality and ec_ipc_013_whitespace_only_body_is_not_empty per FIND-091/FIND-092)`. This restores arithmetic coherence and documents the additions explicitly.",
+    "Alternatively, soften the threshold from a literal count to a structural assertion such as `cargo test --tests exits 0; the editor_wire_sprint8 suite contains at least one prop_ipc_NNN test for each of REQ-IPC-001..020 (verified by the coverage map at editor_wire_sprint8.rs:30-65)`. This would survive future test-set deltas without requiring re-negotiation, but loses the audit precision of the itemized count.",
+    "Bump the contract's `negotiationRound` from 1 to 2 (or higher) to reflect the iter-3 amendment cycle, and re-stamp the `status` accordingly so the strict-mode convergence checker treats the iter-3 contract as a fresh artefact rather than the iter-1 baseline."
+  ],
+  "routeToPhase": "1c"
+}

@@ -1,0 +1,78 @@
+Phase 5 Security Audit — capture-auto-save Sprint 2
+Date: 2026-05-07
+Tool: manual static analysis (semgrep not installed; grep-based scan + source read)
+
+=== PATH TRAVERSAL SCAN ===
+Target: pipeline.ts line 124
+  const filePath = `${infra.vaultPath}/${validatedRequest.noteId}.md`;
+
+NoteId format (docs/domain/code/rust/src/value_objects.rs L254-L287):
+  Pattern: YYYY-MM-DD-HHmmss-SSS[-N]
+  Allowed chars: ASCII digits [0-9] and hyphens [-]
+  Smart Constructor: rejects all other characters including '/', '.', '\', ' '
+  Result: path traversal via noteId is STRUCTURALLY IMPOSSIBLE
+
+VaultPath validation (docs/domain/code/ts/src/shared/value-objects.ts L151-L156):
+  Smart Constructor: rejects empty strings and non-absolute paths
+  Result: VaultPath cannot be relative — reduces (but does not eliminate) path manipulation risk
+
+FINDING: No runtime validation of noteId in TypeScript layer — relies entirely on Rust Smart Constructor.
+The TypeScript domain treats NoteId as an opaque branded type received from Rust.
+Risk: ACCEPTED (Rust layer enforces invariant; domain boundary clearly documented)
+
+=== YAML INJECTION SCAN ===
+Target: serialize-note.ts frontmatterToYaml()
+  Tag serialization: `  - ${tag}`
+
+Tag Smart Constructor (docs/domain/code/rust/src/value_objects.rs L97-L106):
+  Status: `todo!("Phase 11+ 実装")` — NOT YET IMPLEMENTED
+  Behavior: Tag is a branded string wrapper with no current runtime constraint on content
+
+BlockContent newline stripping (aggregates.md L82):
+  "制御文字拒否・改行除去（複数行はブロックの分割で表現）"
+  code blocks are excepted (multi-line allowed)
+
+FINDING: Tag Smart Constructor is unimplemented (Phase 11+ placeholder).
+If a tag value were to contain a literal newline (e.g., "foo\n---\ninjected: true"),
+frontmatterToYaml would produce a structurally broken YAML block.
+However:
+  - Tags are currently sourced from Rust deserialization (serde) of existing YAML front matter
+  - The TypeScript test arbitraries (prop-001, prop-002) use /^[a-z][a-z0-9-]{0,19}$/ which excludes newlines
+  - MVP UI input path does not currently allow free-text tag entry
+Risk: LOW (not currently exploitable via normal UI flow; Tag Smart Constructor is a Phase 11+ item)
+
+=== CONTENT ESCAPE / PARAGRAPH --- COLLISION ===
+Target: serialize-blocks-to-markdown.ts serializeBlock()
+  paragraph case: returns raw content (no prefix, no escaping)
+
+If a paragraph block has content exactly "---":
+  serializeBlocksToMarkdown([{type:"paragraph", content:"---"}]) === "---"
+  parseMarkdownToBlocks("---") produces [{type:"divider"}]
+  Roundtrip FAILS: paragraph -> divider (structural type change)
+
+PROP-026 arbParagraphBlock filter:
+  const MARKDOWN_PREFIXES = /^(# |## |### |- |1\. |> |---$|```)/;
+  Paragraph content "---" is excluded from property test inputs
+  This documents the constraint but does NOT fix it
+
+FINDING: Paragraph block content starting with "---" (exact) or any Markdown prefix
+produces a lossless-parse violation. This is a KNOWN LIMITATION documented in the
+PROP-026 harness. The property test generator correctly avoids this case.
+Risk: MEDIUM for data integrity (affects users who type exactly "---" as paragraph text).
+     No security exploitability (affects only the user's own note content).
+     Tracked as advisory finding FIND-021 (open, from Phase 3 adversarial review).
+
+=== WYCHEPROOF / CRYPTOGRAPHIC CHECKS ===
+Not applicable. capture-auto-save does not perform cryptographic operations.
+File writes use atomic rename (temp file + rename) — no cryptographic integrity needed.
+
+=== SEMGREP AVAILABILITY ===
+semgrep: NOT INSTALLED
+Degraded to manual static analysis. All findings documented above.
+
+=== RESULT SUMMARY ===
+Critical findings: 0
+High findings: 0
+Medium findings: 1 (FIND-026-P5-001: paragraph/--- roundtrip collision — data integrity only, no security exploit; tracked as FIND-021)
+Low findings: 1 (Tag Smart Constructor deferred — not currently exploitable)
+Advisory: 1 (NoteId path safety relies on Rust layer only)

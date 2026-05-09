@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-036",
+  "dimension": "contract_validity",
+  "category": "verification_tool_mismatch",
+  "severity": "critical",
+  "description": "PassThresholds in CRIT-703, CRIT-704, CRIT-705, and CRIT-712 invoke `bun run test inside promptnotes/`. That script does not exist in `promptnotes/package.json` (only `dev`, `build`, `preview`, `check`, `check:watch`, `test:dom`, `test:dom:watch`, `tauri` are defined). `bun run test` will exit non-zero with a 'script not found' error, so every passThreshold relying on it is unsatisfiable as written. Phase 3 reviewers cannot evaluate these criteria without redefining the command.",
+  "evidence": {
+    "filePath": "promptnotes/package.json",
+    "lineRange": "5-15",
+    "snippet": "\"scripts\": { \"dev\": \"vite dev\", \"build\": \"vite build\", \"preview\": \"vite preview\", \"check\": \"svelte-kit sync && svelte-check --tsconfig ./tsconfig.json\", \"check:watch\": \"svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch\", \"test:dom\": \"vitest run\", \"test:dom:watch\": \"vitest\", \"tauri\": \"tauri\" }"
+  },
+  "routeToPhase": "contract-revision"
+}

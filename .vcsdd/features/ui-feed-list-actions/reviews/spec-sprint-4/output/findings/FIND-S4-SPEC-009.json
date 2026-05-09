@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-009",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "title": "PROP-FEED-S4-007 / PROP-FEED-S4-009 / PROP-FEED-S4-011 の grep audit が出力ファイル指定をしておらず実行可能性に疑義がある",
+  "location": "verification-architecture.md:589, 591, 593",
+  "description": "PROP-FEED-S4-007 は `grep \"pendingNextNoteId\" src/lib/feed/` がゼロヒット、PROP-FEED-S4-009 は `grep \"pending_next_note_id\" src-tauri/src/feed.rs` がゼロヒット、PROP-FEED-S4-011 は `tsc --strict + grep` を要求するが、(a) 検査対象パスが `src/lib/feed/` のみで `src/routes/` や `src/lib/` 上位など Sprint 2 で導入された AppShell マウントコードへ波及していないことの保証がない、(b) PROP-FEED-S4-009 の対象が `feed.rs` 単一ファイルに限定されているため `editor.rs` などに残存する `pending_next_note_id` 参照を見逃す、(c) PROP-FEED-S4-011 は grep pattern を具体的に書いておらず、tsc が compile-error を出すか / grep がどの pattern でゼロヒットを要求するかが曖昧。",
+  "evidence": "verification-architecture.md:589 `grep \"pendingNextNoteId\" src/lib/feed/ がゼロヒット（旧フィールド名完全削除）。`\nverification-architecture.md:591 `EditingSubDto に pending_next_focus: Option<PendingNextFocusDto> が存在し、pending_next_note_id が存在しない (grep: grep \"pending_next_note_id\" src-tauri/src/feed.rs ゼロヒット)。`\nverification-architecture.md:593 `TS 側 FeedDomainSnapshot.editing.pendingNextNoteId が存在しない（tsc --strict exit 0、grep ゼロヒット）。`\n(参照) feed.rs:50 `pub pending_next_note_id: Option<String>,` — 現状で残存する旧フィールド",
+  "remediation": "PROP-FEED-S4-007: 対象パスを `promptnotes/src/` 全体へ拡張 (TS 側コード)。PROP-FEED-S4-009: 対象を `src-tauri/src/` 全体へ拡張 (Rust 側全ファイル)。PROP-FEED-S4-011: 具体的な grep pattern (`grep -r \"pendingNextNoteId\" promptnotes/src/`) を明記し、tsc 検証は `tsc --noEmit --strict --noUncheckedIndexedAccess` を実行することを spec で固定。各 grep audit の Acceptance Criteria を Phase 5 grep audit step として実行可能な厳密文字列に書き直す。"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "FIND-030",
+  "severity": "minor",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md §6 Coverage Matrix line 335; §4 PROP-EDIT-045 line 213",
+  "description": "Coverage Matrix self-contradiction for EC-EDIT-009. The Coverage Matrix row at line 335 maps EC-EDIT-009 to PROP-EDIT-045 only ('| EC-EDIT-009 | PROP-EDIT-045 | Integration | editor-panel.dom.vitest.ts |'). However, PROP-EDIT-045 itself at line 213 explicitly defers OS-sleep/resume coverage: 'OS sleep/resume covered only by the timer mock test (PROP-EDIT-033)'. So the actual covering property is PROP-EDIT-033, not PROP-EDIT-045. The Coverage Matrix row should at minimum include PROP-EDIT-033, otherwise a Phase 3 reviewer following the matrix will conclude EC-EDIT-009 is covered by PROP-EDIT-045 alone — when in fact PROP-EDIT-045's text disclaims OS-sleep coverage and points elsewhere.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+    "lineRange": "335-335",
+    "snippet": "| EC-EDIT-009 | PROP-EDIT-045 | Integration | `editor-panel.dom.vitest.ts` |"
+  },
+  "suggestedRemediation": "Update the Coverage Matrix EC-EDIT-009 row to read: '| EC-EDIT-009 | PROP-EDIT-033, PROP-EDIT-045 | Integration | editor-panel.dom.vitest.ts |'. Alternatively, remove the disclaimer in PROP-EDIT-045 and have it own the OS-sleep assertion directly.",
+  "routeToPhase": "1b"
+}

@@ -1,0 +1,27 @@
+PROP-027 — HydrateNote ACL purity (Tier 1 fast-check)
+Date: 2026-05-08T00:00:00Z
+Sprint: 5 iteration 2
+Command: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts
+
+bun test v1.3.11 (af24e281)
+ 13 pass
+ 0 fail
+ 45 expect() calls
+Ran 13 tests across 1 file. [78.00ms]
+
+Test mapping:
+  PROP-027 — simple paragraph body: same snapshot → same Ok(Note) result both times                          PASS
+  PROP-027 — multi-block body: Block[] is identical on both calls (including BlockId values)                 PASS
+  PROP-027 property (fast-check): ∀ snapshot, hydrateNote(snapshot) deepEquals hydrateNote(snapshot)        PASS (100 runs)
+  PROP-027 — hydrateNote takes only NoteFileSnapshot: arity is 1                                             PASS
+  PROP-027 — hydrateNote produces Note with noteId matching snapshot.noteId                                  PASS
+  PROP-027 — unterminated code fence body → always Err('block-parse'), both calls                           PASS
+  PROP-027 — Ok([]) body → always Err('block-parse') (downstream invariant: blocks.length >= 1)             PASS
+  PROP-027 — no I/O: Date.now not called during hydrateNote                                                  PASS (callCount=0)
+  REQ-002 rev8 — hydrateNote with stub returning [paragraph(''), heading('X'), paragraph('')] passes ALL 3  PASS
+  REQ-002 rev8 — hydrateNote with stub returning [paragraph('')] passes through the 1 block (NOT Err)       PASS
+  REQ-002 rev8 — hydrateNote with stub returning non-empty blocks does NOT reassign BlockIds                 PASS
+  PROP-027 — two hydrateNote calls with same snapshot produce same Note (enables hydrateFeed purity)         PASS
+  PROP-027 — hydrateNote does NOT call FrontmatterParser.parse (frontmatter is already VO on snapshot)       PASS
+
+RESULT: PROVED — all 13 tests pass, fast-check 100 runs, 0 counterexamples found

@@ -58,7 +58,7 @@ function makeViewState(overrides: Partial<FeedViewState> = {}): FeedViewState {
   return {
     editingStatus: 'idle',
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: [],
     loadingStatus: 'ready',
     activeDeleteModalNoteId: null,
@@ -204,7 +204,7 @@ describe('PROP-FEED-024 / REQ-FEED-013: deleted note row disappears from DOM', (
 
     // Emit deletion snapshot
     const deletionSnapshot: FeedDomainSnapshot = {
-      editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: 'idle', currentNoteId: null, pendingNextFocus: null },
       feed: { visibleNoteIds: ['note-001'], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [],
@@ -245,7 +245,7 @@ describe('PROP-FEED-025 / REQ-FEED-018: filter update changes visible rows', () 
 
     // Emit filter snapshot reducing to 1 note
     const filterSnapshot: FeedDomainSnapshot = {
-      editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: 'idle', currentNoteId: null, pendingNextFocus: null },
       feed: { visibleNoteIds: ['note-001'], filterApplied: true },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: {}, tagAutocompleteVisibleFor: null, activeFilterTags: [],
@@ -273,7 +273,7 @@ describe('REQ-FEED-001/002/003/017 / FIND-014: FeedList renders real metadata fr
 
   function makeSnapshotWithMeta(): FeedDomainSnapshot {
     return {
-      editing: { status: 'idle', currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: 'idle', currentNoteId: null, pendingNextFocus: null },
       feed: { visibleNoteIds: [NOTE_ID], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: {

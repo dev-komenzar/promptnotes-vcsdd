@@ -1,36 +1,37 @@
 /**
- * editor-accessibility.dom.vitest.ts — PROP-EDIT-033
+ * editor-accessibility.dom.vitest.ts — Integration tests (vitest + jsdom + Svelte 5 mount API)
  *
- * NFR-EDIT-001, NFR-EDIT-002, REQ-EDIT-022, REQ-EDIT-023
- * FIND-012: New Note button lacks aria-disabled; banner buttons lack aria attributes.
+ * Sprint 7 Red phase. Tests FAIL because editor components do not exist yet.
  *
- * Verifies:
- * - PROP-EDIT-033: aria-disabled="true" on New Note button when disabled (switching state).
- * - PROP-EDIT-033: aria-disabled="false" on New Note button when enabled.
- * - PROP-EDIT-033: Save-failure banner has role="alert".
- * - PROP-EDIT-033: tabIndex is not negative on enabled interactive elements.
- * - PROP-EDIT-033: Banner buttons have accessible labels (their visible text is sufficient
- *   per NFR-EDIT-001 when labels are descriptive enough; we assert text is non-empty).
- *
- * RED phase: New Note button has no aria-disabled attribute; FIND-012 not yet fixed.
+ * Coverage:
+ *   PROP-EDIT-044 (NFR-EDIT-001, NFR-EDIT-002):
+ *     - All interactive elements have non-negative tabIndex when enabled
+ *     - Saving indicator has role=status
+ *     - Banner has role=alert
+ *     - aria-disabled=true on disabled buttons
+ *     - Focus ring on interactive elements
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
-import type { EditingSessionState } from '../../types.js';
+import type { EditorIpcAdapter, EditingSessionStateDto, SaveError } from '$lib/editor/types';
+import EditorPanel from '$lib/editor/EditorPanel.svelte';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
 
-import EditorPane from '../../EditorPane.svelte';
-import type { TauriEditorAdapter } from '../../tauriEditorAdapter.js';
-import type { EditorStateChannel } from '../../editorStateChannel.js';
-import type { DebounceTimer } from '../../debounceTimer.js';
-import type { ClipboardAdapter } from '../../clipboardAdapter.js';
-
-function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeof vi.fn>> {
+function createMockAdapter() {
+  let _stateHandler: ((s: EditingSessionStateDto) => void) | null = null;
   return {
-    dispatchEditNoteBody: vi.fn().mockResolvedValue(undefined),
+    dispatchFocusBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchEditBlockContent: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAfter: vi.fn().mockResolvedValue(undefined),
+    dispatchInsertBlockAtBeginning: vi.fn().mockResolvedValue(undefined),
+    dispatchRemoveBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchMergeBlocks: vi.fn().mockResolvedValue(undefined),
+    dispatchSplitBlock: vi.fn().mockResolvedValue(undefined),
+    dispatchChangeBlockType: vi.fn().mockResolvedValue(undefined),
+    dispatchMoveBlock: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerIdleSave: vi.fn().mockResolvedValue(undefined),
     dispatchTriggerBlurSave: vi.fn().mockResolvedValue(undefined),
     dispatchRetrySave: vi.fn().mockResolvedValue(undefined),
@@ -38,312 +39,170 @@ function makeMockAdapter(): TauriEditorAdapter & Record<string, ReturnType<typeo
     dispatchCancelSwitch: vi.fn().mockResolvedValue(undefined),
     dispatchCopyNoteBody: vi.fn().mockResolvedValue(undefined),
     dispatchRequestNewNote: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
-type MockStateChannel = EditorStateChannel & { emit: (state: EditingSessionState) => void };
-
-function makeMockStateChannel(): MockStateChannel {
-  let _handler: ((s: EditingSessionState) => void) | null = null;
-  return {
-    subscribe(handler) {
-      _handler = handler;
-      return () => { _handler = null; };
-    },
-    emit(state) {
-      _handler?.(state);
+    subscribeToState: vi.fn((handler: (s: EditingSessionStateDto) => void) => {
+      _stateHandler = handler;
+      return () => { _stateHandler = null; };
+    }),
+    _emitState(state: EditingSessionStateDto) {
+      if (_stateHandler) _stateHandler(state);
     },
   };
 }
 
-function makeMockTimer(): DebounceTimer {
-  return { scheduleIdleSave: vi.fn(), cancel: vi.fn() };
-}
+let target: HTMLDivElement;
+let adapter: ReturnType<typeof createMockAdapter>;
+let component: ReturnType<typeof mount> | null = null;
 
-function makeMockClipboard(): ClipboardAdapter {
-  return { write: vi.fn().mockResolvedValue(undefined) };
-}
+const FS_PERMISSION_ERROR: SaveError = { kind: 'fs', reason: { kind: 'permission' } };
 
-const idleSnapshot: EditingSessionState = {
-  status: 'idle',
-  isDirty: false,
-  currentNoteId: null,
-  pendingNextNoteId: null,
-  lastError: null,
-  body: '',
-};
-
-const editingSnapshot: EditingSessionState = {
-  status: 'editing',
-  isDirty: false,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: null,
-  lastError: null,
-  body: 'some content',
-};
-
-const switchingSnapshot: EditingSessionState = {
-  status: 'switching',
-  isDirty: true,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: 'note-002',
-  lastError: null,
-  body: 'content',
-};
-
-const saveFailedSnapshot: EditingSessionState = {
-  status: 'save-failed',
-  isDirty: true,
-  currentNoteId: 'note-001',
-  pendingNextNoteId: null,
-  lastError: { kind: 'fs', reason: { kind: 'unknown' } },
-  body: 'content',
-};
-
-describe('editor-accessibility — PROP-EDIT-033', () => {
-  let target: HTMLDivElement;
-  let adapter: ReturnType<typeof makeMockAdapter>;
-  let stateChannel: MockStateChannel;
-
-  beforeEach(() => {
-    target = document.createElement('div');
-    document.body.appendChild(target);
-    adapter = makeMockAdapter();
-    stateChannel = makeMockStateChannel();
+beforeEach(() => {
+  target = document.createElement('div');
+  document.body.appendChild(target);
+  adapter = createMockAdapter();
+  component = mount(EditorPanel, {
+    target,
+    props: {
+      adapter,
+      initialBlocks: [{ id: 'block-1', type: 'paragraph', content: 'test' }],
+    },
   });
+  flushSync();
+});
 
-  afterEach(() => {
-    document.body.innerHTML = '';
-  });
+afterEach(() => {
+  if (component) { unmount(component); component = null; }
+  target.remove();
+  vi.clearAllMocks();
+});
 
-  // ── FIND-012: New Note button aria-disabled ──
+// ── PROP-EDIT-044 (NFR-EDIT-001): Keyboard reachability ────────────────────────
 
-  test('FIND-012: New Note button has aria-disabled="true" in switching state', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+describe('Keyboard reachability (PROP-EDIT-044, NFR-EDIT-001)', () => {
+  test('NFR-EDIT-001: block elements have non-negative tabIndex when enabled', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
-
-    stateChannel.emit(switchingSnapshot);
-    flushSync();
-
-    const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-testid="new-note-button"]');
-    expect(newNoteBtn).not.toBeNull();
-    expect(newNoteBtn!.getAttribute('aria-disabled')).toBe('true');
-
-    unmount(app);
+    const blockEls = target.querySelectorAll('[data-testid="block-element"]');
+    expect(blockEls.length).toBeGreaterThan(0); // FAILS: no component rendered
+    blockEls.forEach(el => {
+      const tabIndex = parseInt(el.getAttribute('tabindex') ?? '0', 10);
+      expect(tabIndex).toBeGreaterThanOrEqual(0);
+    });
   });
 
-  test('FIND-012: New Note button has aria-disabled="false" in idle state', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('NFR-EDIT-001: copy button is keyboard-reachable (tabIndex >= 0) when enabled', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
-
-    stateChannel.emit(idleSnapshot);
-    flushSync();
-
-    const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-testid="new-note-button"]');
-    expect(newNoteBtn).not.toBeNull();
-    expect(newNoteBtn!.getAttribute('aria-disabled')).toBe('false');
-
-    unmount(app);
+    const btn = target.querySelector('[data-testid="copy-body-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    const tabIndex = parseInt(btn?.getAttribute('tabindex') ?? '0', 10);
+    expect(tabIndex).toBeGreaterThanOrEqual(0);
   });
 
-  test('FIND-012: New Note button has aria-disabled="false" in editing state', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('NFR-EDIT-001: new-note button is keyboard-reachable when enabled', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
+    const btn = target.querySelector('[data-testid="new-note-button"]');
+    expect(btn).not.toBeNull(); // FAILS
+    const tabIndex = parseInt(btn?.getAttribute('tabindex') ?? '0', 10);
+    expect(tabIndex).toBeGreaterThanOrEqual(0);
+  });
+});
 
-    stateChannel.emit(editingSnapshot);
+// ── PROP-EDIT-044 (NFR-EDIT-002): ARIA roles and live regions ─────────────────
+
+describe('ARIA roles and live regions (PROP-EDIT-044, NFR-EDIT-002)', () => {
+  test('NFR-EDIT-002: save indicator has role=status in saving state', () => {
+    adapter._emitState({
+      status: 'saving',
+      currentNoteId: 'note-1',
+      isNoteEmpty: false,
+    });
     flushSync();
-
-    const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-testid="new-note-button"]');
-    expect(newNoteBtn).not.toBeNull();
-    expect(newNoteBtn!.getAttribute('aria-disabled')).toBe('false');
-
-    unmount(app);
+    const indicator = target.querySelector('[role="status"]');
+    expect(indicator).not.toBeNull(); // FAILS
   });
 
-  // ── NFR-EDIT-002: Banner has role="alert" ──
-
-  test('NFR-EDIT-002: Save-failure banner has role="alert"', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('NFR-EDIT-002: banner has role=alert in save-failed state', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: FS_PERMISSION_ERROR,
+      isNoteEmpty: false,
     });
     flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
     const banner = target.querySelector('[data-testid="save-failure-banner"]');
-    expect(banner).not.toBeNull();
-    expect(banner!.getAttribute('role')).toBe('alert');
-
-    unmount(app);
+    expect(banner).not.toBeNull(); // FAILS
+    expect(banner?.getAttribute('role')).toBe('alert');
   });
 
-  // ── NFR-EDIT-001: Interactive elements are keyboard reachable (tabIndex not -1) ──
-
-  test('NFR-EDIT-001: Textarea tabIndex is not negative when enabled', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('NFR-EDIT-002: no interactive element uses tabIndex=-1 while enabled', () => {
+    adapter._emitState({
+      status: 'editing',
+      currentNoteId: 'note-1',
+      focusedBlockId: 'block-1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
     });
     flushSync();
-
-    stateChannel.emit(editingSnapshot);
-    flushSync();
-
-    const textarea = target.querySelector<HTMLTextAreaElement>('[data-testid="editor-body"]');
-    expect(textarea).not.toBeNull();
-    expect(textarea!.tabIndex).not.toBe(-1);
-
-    unmount(app);
+    const interactive = target.querySelectorAll('button:not([disabled]), [contenteditable="true"]');
+    expect(interactive.length).toBeGreaterThan(0); // FAILS
+    interactive.forEach(el => {
+      const tabIndex = parseInt(el.getAttribute('tabindex') ?? '0', 10);
+      expect(tabIndex).not.toBe(-1);
+    });
   });
 
-  test('NFR-EDIT-001: Copy button tabIndex is not negative when enabled', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
+  test('NFR-EDIT-002: disabled buttons have aria-disabled=true', () => {
+    adapter._emitState({ status: 'idle' });
     flushSync();
-
-    stateChannel.emit(editingSnapshot);
-    flushSync();
-
-    const copyBtn = target.querySelector<HTMLButtonElement>('[data-testid="copy-body-button"]');
-    expect(copyBtn).not.toBeNull();
-    expect(copyBtn!.tabIndex).not.toBe(-1);
-
-    unmount(app);
+    const copyBtn = target.querySelector('[data-testid="copy-body-button"][disabled]');
+    expect(copyBtn).not.toBeNull(); // FAILS
+    expect(copyBtn?.getAttribute('aria-disabled')).toBe('true');
   });
 
-  test('NFR-EDIT-001: New Note button tabIndex is not negative when enabled', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+  test('NFR-EDIT-001: retry, discard, cancel buttons in save-failed state are keyboard-reachable', () => {
+    adapter._emitState({
+      status: 'save-failed',
+      currentNoteId: 'note-1',
+      priorFocusedBlockId: 'block-1',
+      pendingNextFocus: null,
+      lastSaveError: FS_PERMISSION_ERROR,
+      isNoteEmpty: false,
     });
     flushSync();
-
-    stateChannel.emit(idleSnapshot);
-    flushSync();
-
-    const newNoteBtn = target.querySelector<HTMLButtonElement>('[data-testid="new-note-button"]');
-    expect(newNoteBtn).not.toBeNull();
-    expect(newNoteBtn!.tabIndex).not.toBe(-1);
-
-    unmount(app);
-  });
-
-  // ── Banner buttons: visible label assertions (NFR-EDIT-001 "descriptive labels") ──
-
-  test('NFR-EDIT-001: Banner Retry button has non-empty, descriptive visible label', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
+    const retryBtn = target.querySelector('[data-testid="retry-save-button"]');
+    const discardBtn = target.querySelector('[data-testid="discard-session-button"]');
+    const cancelBtn = target.querySelector('[data-testid="cancel-switch-button"]');
+    expect(retryBtn).not.toBeNull();   // FAILS
+    expect(discardBtn).not.toBeNull(); // FAILS
+    expect(cancelBtn).not.toBeNull();  // FAILS
+    [retryBtn, discardBtn, cancelBtn].forEach(btn => {
+      const tabIndex = parseInt(btn?.getAttribute('tabindex') ?? '0', 10);
+      expect(tabIndex).toBeGreaterThanOrEqual(0);
     });
-    flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const retryBtn = target.querySelector<HTMLButtonElement>('[data-testid="retry-save-button"]');
-    expect(retryBtn).not.toBeNull();
-    const label = retryBtn!.textContent?.trim() ?? retryBtn!.getAttribute('aria-label') ?? '';
-    expect(label.length).toBeGreaterThan(0);
-
-    unmount(app);
-  });
-
-  test('NFR-EDIT-001: Banner Discard button has non-empty, descriptive visible label', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const discardBtn = target.querySelector<HTMLButtonElement>('[data-testid="discard-session-button"]');
-    expect(discardBtn).not.toBeNull();
-    const label = discardBtn!.textContent?.trim() ?? discardBtn!.getAttribute('aria-label') ?? '';
-    expect(label.length).toBeGreaterThan(0);
-
-    unmount(app);
-  });
-
-  test('NFR-EDIT-001: Banner Cancel button has non-empty, descriptive visible label', () => {
-    const app = mount(EditorPane, {
-      target,
-      props: {
-        adapter,
-        stateChannel,
-        timer: makeMockTimer(),
-        clipboard: makeMockClipboard(),
-      },
-    });
-    flushSync();
-
-    stateChannel.emit(saveFailedSnapshot);
-    flushSync();
-
-    const cancelBtn = target.querySelector<HTMLButtonElement>('[data-testid="cancel-switch-button"]');
-    expect(cancelBtn).not.toBeNull();
-    const label = cancelBtn!.textContent?.trim() ?? cancelBtn!.getAttribute('aria-label') ?? '';
-    expect(label.length).toBeGreaterThan(0);
-
-    unmount(app);
   });
 });

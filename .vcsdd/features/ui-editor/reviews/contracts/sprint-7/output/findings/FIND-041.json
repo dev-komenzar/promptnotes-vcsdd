@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-041",
+  "dimension": "contract_validity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "CRIT-708 passThreshold `grep -r \"rgba(0,0,0,0.01) 0px 1px 3px\" promptnotes/src/lib/editor/SaveFailureBanner.svelte returns exactly one hit` is unsatisfiable as written. The actual SaveFailureBanner.svelte source at lines 73-77 uses spaces inside the rgba() argument list: `rgba(0, 0, 0, 0.01) 0px 1px 3px`. The contract grep pattern omits the spaces (`rgba(0,0,0,0.01)`). A literal grep for the contract pattern returns zero hits, not one. Either the threshold pattern must be updated to match the source style, or the banner CSS must be normalised — but as written the criterion fails despite the banner correctly applying the 5-layer Deep Shadow.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/SaveFailureBanner.svelte",
+    "lineRange": "72-77",
+    "snippet": "box-shadow:\n      rgba(0, 0, 0, 0.01) 0px 1px 3px,\n      rgba(0, 0, 0, 0.02) 0px 3px 7px,\n      rgba(0, 0, 0, 0.02) 0px 7px 15px,\n      rgba(0, 0, 0, 0.04) 0px 14px 28px,\n      rgba(0, 0, 0, 0.05) 0px 23px 52px;"
+  },
+  "routeToPhase": "contract-revision"
+}

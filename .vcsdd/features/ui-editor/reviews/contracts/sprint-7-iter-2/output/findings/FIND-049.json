@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-049",
+  "dimension": "contract_validity",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "FIND-042 (iter-1) was not addressed. CRIT-713 still queries `branchCoverage.pct` from `coverage/coverage-summary.json` (contract sprint-7.md line 313). The standard @vitest/coverage-v8 (and Istanbul-format) summary uses key path `branches.pct`, not `branchCoverage.pct`. Per-file entries follow the shape `{ statements: {...}, branches: {...}, functions: {...}, lines: {...} }`. Querying `branchCoverage.pct` returns undefined for every file, so the `>=95` comparison is vacuously false and the criterion is unsatisfiable.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "lineRange": "311-316",
+    "snippet": "the JSON coverage report produced by @vitest/coverage-v8 (requires reporter: ['json-summary'] in vitest.config.ts; output path coverage/coverage-summary.json) shows branchCoverage.pct >= 95 for each of"
+  },
+  "routeToPhase": "contract-revision"
+}

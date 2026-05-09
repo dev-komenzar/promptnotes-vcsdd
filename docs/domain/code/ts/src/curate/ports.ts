@@ -12,7 +12,9 @@ import type { Result } from "../util/result.js";
 /** Clock — 時刻取得。 */
 export type ClockNow = () => Timestamp;
 
-/** Vault Snapshot から Note Aggregate へのハイドレート。ACL 責務。 */
+/** Vault Snapshot から Note Aggregate へのハイドレート。ACL 責務。
+ * 内部で `parseMarkdownToBlocks(snapshot.body)` を呼び、Markdown 文字列を
+ * Block[] に変換する（aggregates.md §1.6 / glossary.md §3 Hydration）。 */
 export type HydrateNote = (
   snapshot: NoteFileSnapshot,
 ) => Result<Note, HydrationFailureReason>;

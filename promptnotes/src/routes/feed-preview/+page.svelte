@@ -74,7 +74,7 @@
   const initialState: FeedViewState & { filterApplied: boolean } = {
     editingStatus: "idle",
     editingNoteId: null,
-    pendingNextNoteId: null,
+    pendingNextFocus: null,
     visibleNoteIds: ["note-001", "note-002", "note-003"],
     allNoteIds: ["note-001", "note-002", "note-003"],
     loadingStatus: "ready",
@@ -83,13 +83,15 @@
     noteMetadata: sampleMetadata,
     tagAutocompleteVisibleFor: null,
     activeFilterTags: [],
+    searchQuery: "",
+    sortDirection: "desc",
     filterApplied: false,
   };
 
   // Helper buttons to simulate domain events (so reviewer can poke states).
   function simulateLoadingStart() {
     publishSnapshot({
-      editing: { status: "idle", currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: "idle", currentNoteId: null, pendingNextFocus: null },
       feed: { visibleNoteIds: [], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: {},
@@ -100,7 +102,7 @@
 
   function simulateRefilledFeed() {
     publishSnapshot({
-      editing: { status: "idle", currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: "idle", currentNoteId: null, pendingNextFocus: null },
       feed: { visibleNoteIds: ["note-001", "note-002", "note-003"], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: sampleMetadata,
@@ -111,7 +113,7 @@
 
   function simulateFilteredEmpty() {
     publishSnapshot({
-      editing: { status: "idle", currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: "idle", currentNoteId: null, pendingNextFocus: null },
       feed: { visibleNoteIds: [], filterApplied: true },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: {},
@@ -122,7 +124,7 @@
 
   function simulateEditingNote001() {
     publishSnapshot({
-      editing: { status: "editing", currentNoteId: "note-001", pendingNextNoteId: null },
+      editing: { status: "editing", currentNoteId: "note-001", pendingNextFocus: null },
       feed: { visibleNoteIds: ["note-001", "note-002", "note-003"], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: sampleMetadata,
@@ -133,7 +135,7 @@
 
   function simulatePendingSwitch() {
     publishSnapshot({
-      editing: { status: "switching", currentNoteId: "note-001", pendingNextNoteId: "note-002" },
+      editing: { status: "switching", currentNoteId: "note-001", pendingNextFocus: { noteId: "note-002", blockId: "" } },
       feed: { visibleNoteIds: ["note-001", "note-002", "note-003"], filterApplied: false },
       delete: { activeDeleteModalNoteId: null, lastDeletionError: null },
       noteMetadata: sampleMetadata,
@@ -144,7 +146,7 @@
 
   function simulateDeletionPermissionError() {
     publishSnapshot({
-      editing: { status: "idle", currentNoteId: null, pendingNextNoteId: null },
+      editing: { status: "idle", currentNoteId: null, pendingNextFocus: null },
       feed: { visibleNoteIds: ["note-001", "note-002", "note-003"], filterApplied: false },
       delete: {
         activeDeleteModalNoteId: null,

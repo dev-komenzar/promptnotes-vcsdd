@@ -1,0 +1,114 @@
+## Sprint 5 — Phase 2b (Green Phase) Evidence
+
+**Feature**: app-startup
+**Sprint**: 5
+**Phase**: 2b (Green) + 2c (Refactor)
+**Date**: 2026-05-08
+**Spec revision**: 7 (FIND-019..026 resolved)
+
+---
+
+## Gate Result
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+---
+
+## Test Suite Summary (Phase 2b — Green)
+
+### Full test suite
+- **Total tests**: 1923 (across 156 files)
+- **Pass**: 1915
+- **Fail**: 0
+- **Skip**: 4 (pre-existing, unchanged)
+- **Todo**: 4 (pre-existing, unchanged)
+
+### Previously failing tests now passing
+All 23 failing tests and 1 module-error file from sprint-5-red-phase.log are now passing:
+
+- PROP-025 (7 tests): `parse-markdown-to-blocks-purity.test.ts` — deterministic positional BlockIds
+- PROP-026 + PROP-029 (7 tests): `step2-block-parse.test.ts` — block-parse failure routing in scanVault
+- PROP-028 + REQ-018 (4 tests): `step2-hydration-unknown-fallback.test.ts` — defensive unknown fallback
+- PROP-027 (12 tests, was module error): `hydrate-note-purity.test.ts` — hydrateNote pure ACL function
+- PROP-030 (4 tests): `parse-call-budget.test.ts` — exactly 2 parseMarkdownToBlocks calls per file
+
+---
+
+## bun test output
+
+```
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+[perf] applyFilterOrSearch median: 0.726ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.004ms (advisory bound: 5ms)
+
+ 1915 pass
+ 4 skip
+ 4 todo
+ 0 fail
+ 27884 expect() calls
+Ran 1923 tests across 156 files. [14.31s]
+```
+
+---
+
+## Files Modified / Created
+
+### Modified
+
+1. `promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts`
+   - Removed module-level `_blockCounter` and global `freshBlockId()` function
+   - Added per-call `blockIndex` local counter inside `parseMarkdownToBlocks`
+   - Added `nextBlock` closure that increments local counter
+   - `makeBlock()` now takes `index: number` parameter instead of calling `freshBlockId()`
+   - BlockIds now positional: `block-0`, `block-1`, ... (zero-indexed, reset per call)
+   - PROP-025: same input always produces identical Result including BlockId values
+
+2. `promptnotes/src/lib/domain/app-startup/stages.ts`
+   - Added imports: `Block` from note types, `BlockParseError` from parse-markdown-to-blocks, `Result` from util
+   - Added optional `parseMarkdownToBlocks` field to `ScannedVault` type
+   - Field carries the injected block parser from Step 2 for PROP-030 call-budget counting in Step 3
+
+3. `promptnotes/src/lib/domain/app-startup/scan-vault.ts`
+   - Added `Block` type import
+   - Added `BlockParseError` import from capture-auto-save
+   - Added `KNOWN_HYDRATION_REASONS` Set for runtime variant guard
+   - Added optional `parseMarkdownToBlocks` port to `ScanVaultPorts`
+   - Per-file loop: wrapped `parseNote` call in try/catch (REQ-018 / PROP-028)
+   - Added unrecognised-Err-variant folding to `reason:'unknown'` (PROP-028)
+   - Added block-parse validation step after `parseNote` succeeds (REQ-017 / PROP-026/PROP-029)
+   - Both `Err(BlockParseError)` and `Ok([])` fold to `reason:'block-parse'`
+   - `makeUnknownFailure` helper: builds `CorruptedFile` with `reason:'unknown'` from caught exception
+   - `blockResultDetail` helper: human-readable BlockParseError description for `detail` field
+   - `isKnownHydrationReason` helper: runtime guard for known `HydrationFailureReason` variants
+   - Returns `ScannedVault` with `parseMarkdownToBlocks: ports.parseMarkdownToBlocks` (PROP-030)
+
+4. `promptnotes/src/lib/domain/app-startup/hydrate-feed.ts`
+   - Added `CorruptedFile` import
+   - Added `hydrateNote` import from new `hydrate-note.ts`
+   - Per-snapshot loop: calls `hydrateNote(snapshot, blockParser)` or `hydrateNote(snapshot)`
+   - Snapshots where `hydrateNote` fails go to `step3CorruptedFiles` with `reason: noteResult.error`
+   - Successfully hydrated snapshots build `noteRefs` and `tagInventory`
+   - Merges `step2CorruptedFiles` and `step3CorruptedFiles` in the return value
+   - PROP-030: uses `scannedVault.parseMarkdownToBlocks` as the block parser for `hydrateNote`
+
+### Created
+
+5. `promptnotes/src/lib/domain/app-startup/hydrate-note.ts` (new file)
+   - Pure ACL function: `hydrateNote(snapshot, blockParser?) → Result<Note, HydrationFailureReason>`
+   - Default `blockParser` = module-level `parseMarkdownToBlocks` (arity 1, `fn.length === 1`)
+   - Calls `blockParser(snapshot.body)` — does NOT call `FrontmatterParser.parse`
+   - `Err(BlockParseError)` → `Err('block-parse')`
+   - `Ok([])` → `Err('block-parse')` (aggregates.md §1.5 invariant 6)
+   - Filters empty paragraph blocks (`paragraph("")`) from parsed results
+     (blank-line artifacts from real Markdown files using `\n\n` as separator)
+   - Reassigns positional BlockIds (`block-0`, `block-1`, ...) after filtering
+   - Remaining blocks built into `Note { id: snapshot.noteId, blocks, frontmatter }`
+
+---
+
+## Typecheck
+
+TypeScript: `bunx tsc --noEmit` → 74 errors (all pre-existing, no new errors introduced)

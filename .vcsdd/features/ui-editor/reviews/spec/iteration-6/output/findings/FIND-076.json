@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-076",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-IPC-007 enumerates the save-failed arm fields as `priorFocusedBlockId, pendingNextFocus, lastSaveError`. It omits `isNoteEmpty` from the positive list (although REQ-IPC-003 mandates `isNoteEmpty` on every non-idle variant globally). PROP-IPC-005 (verification-architecture.md:571) DOES include `isNoteEmpty` in the SaveFailed key list, and the TS DTO (types.ts:153-163) and §10 (behavioral-spec.md:1006-1029) both carry `isNoteEmpty`. Within Sprint 8 alone, REQ-IPC-007 is internally inconsistent with PROP-IPC-005 (they would produce different conformance fixtures). A reviewer reading only REQ-IPC-007 would miss the `isNoteEmpty` field on save-failed.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1211",
+      "snippet": "REQ-IPC-007 — When an emitted state is the save-failed variant, the JSON object shall contain priorFocusedBlockId: string | null, pendingNextFocus: { noteId: string, blockId: string } | null, and lastSaveError: SaveErrorDto."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+      "lineRange": "571",
+      "snippet": "PROP-IPC-005 | 1 (unit) | The `SaveFailed` variant serializes the keys status, currentNoteId, priorFocusedBlockId, pendingNextFocus, lastSaveError, isNoteEmpty (and optionally blocks); ..."
+    },
+    {
+      "path": "promptnotes/src/lib/editor/types.ts",
+      "lineRange": "153-163",
+      "snippet": "{ status: 'save-failed'; currentNoteId: string; priorFocusedBlockId: string | null; pendingNextFocus: PendingNextFocus | null; lastSaveError: SaveError; isNoteEmpty: boolean; blocks?: ReadonlyArray<DtoBlock>; }"
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-007", "REQ-IPC-003", "PROP-IPC-005"],
+  "recommendation": "Rewrite REQ-IPC-007 to include `isNoteEmpty: boolean` in the positive enumeration (matching PROP-IPC-005 and TS types.ts). Apply the same review to REQ-IPC-006 (switching) which also omits `isNoteEmpty` from the positive list."
+}

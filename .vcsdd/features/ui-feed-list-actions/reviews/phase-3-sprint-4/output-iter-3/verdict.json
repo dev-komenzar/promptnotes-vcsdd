@@ -1,0 +1,48 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 4,
+  "iteration": 3,
+  "timestamp": "2026-05-09T00:00:00Z",
+  "iterationLimitReached": true,
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "regressionCheck": true,
+      "notes": "iter-3 narrows parserParity.test.ts to 'structural parser agreement on non-empty inputs' and documents the TS↔Rust empty-input divergence as architecturally fixed. The test no longer claims parity over the empty-input branch, removing the in-test contradiction iter-2 FIND-S4-IMPL-iter2-001 cited. The compose_select_past_note function correctly implements REQ-FEED-024 amendment / 3-case fixed table for ケース (1) None and ケース (2) non-empty branches: it forwards None on note-not-found, parses body via parse_markdown_to_blocks, falls back to None on parse error (EC-FEED-016), and delegates to compose_state_for_select_past_note. Note that REQ-FEED-025 spec text at behavioral-spec.md:716-723 still asserts TS↔Rust consistency on the empty-input branch, which contradicts the actual TS production parser's Ok([]) behavior — but this is a pre-existing spec wording issue inherited from earlier iterations, not a regression introduced by iter-3, and the test layer no longer perpetuates the contradiction. The single-empty-paragraph case 2 special-form (spec line 765 — Some([{id,Paragraph,''}]) must yield is_note_empty: true) is also a pre-existing implementation gap inherited from iter-1 baseline (compose_state_for_select_past_note returns is_note_empty: false for any non-empty Vec); this was not introduced or worsened in iter-3 and is out of scope for this regression review."
+    },
+    "implementation_correctness": {
+      "verdict": "PASS",
+      "regressionCheck": true,
+      "notes": "feed.rs::compose_select_past_note correctly orchestrates the vault scan → parse → editor-state composition chain. Handler select_past_note becomes a 4-line emit wrapper that calls compose then emits editing_session_state_changed before feed_state_changed (EC-FEED-017 order preserved structurally). EC-FEED-016 fallback (parse error → blocks: None) is implemented at feed.rs:272-274. Existing handlers (request_note_deletion, confirm_note_deletion, cancel_note_deletion, fs_trash_file, feed_initial_state) are untouched. No logic regressions detected."
+    },
+    "test_quality": {
+      "verdict": "PASS",
+      "iter2FindingsResolved": "2/2",
+      "perFindingStatus": {
+        "FIND-S4-IMPL-iter2-001": "RESOLVED — parserParity.test.ts:11-29 narrows scope to 'structural parser agreement on non-empty inputs' with explicit doc-comment carve-out for the TS↔Rust empty-input divergence (TS REQ-018/PROP-031 returns Ok([]); Rust REQ-FEED-025 returns Ok([paragraph('')])). The empty-string test case (formerly lines 64-70) is removed. The remaining 6 cases (canonical fixture + 5 non-empty cases) compare structural type+content tuples — real assertions, not tautologies. The two-implementation contract is now coherently testable: this file covers non-empty parity, and the architectural empty-input divergence is documented as out-of-scope rather than legitimized by an in-test assertion.",
+        "FIND-S4-IMPL-iter2-002": "RESOLVED — feed.rs introduces pub struct SelectPastNoteResult { editing_payload, feed_snapshot } and pub fn compose_select_past_note(note_id, vault_path) -> SelectPastNoteResult (lines 242-288). select_past_note (lines 300-316) becomes a thin emit wrapper: compose, emit editing first, emit feed second. prop_s4_017_compose_select_past_note_returns_well_formed_result (feed_handlers.rs:694-777) directly invokes compose_select_past_note and asserts on both editing_payload (status, currentNoteId, isDirty, isNoteEmpty, focusedBlockId non-null, body absent, blocks present) and feed_snapshot (cause.kind, editing.status, editing.current_note_id, feed.visible_note_ids contains note_path, note_metadata contains note_path). This is exactly iter-2 remediation option (b): a regression in compose_select_past_note (missing parse_markdown_to_blocks call, swapped args, wrong note_metadata lookup, missing editor payload field) now causes prop_s4_017 to fail. The handler's emit order is structurally trivial (two adjacent emit lines on a struct that already separates the two payloads); per iter-2 remediation, the orchestration layer is what matters and is now genuinely under test."
+      },
+      "notes": "Both iter-2 findings are fully resolved. The new prop_s4_017 test exercises the actual orchestration function (not a manual reconstruction). The replacement of integration_smoke_select_past_note_handler_logic with prop_s4_017 closes the antipattern iter-1/iter-2 cited."
+    },
+    "purity_boundary": {
+      "verdict": "PASS",
+      "regressionCheck": true,
+      "notes": "compose_select_past_note is non-IO-emitting: it calls scan_vault_feed (filesystem read, inherited from existing implementation) and parse_markdown_to_blocks (pure), then composes a struct. No AppHandle, no Emitter::emit, no atomic file writes. The 'pure' label is loose because scan_vault_feed reads the filesystem, but this is the same boundary feed.rs has used since Sprint 2 (FIND-S2-05/06) — not a regression. select_past_note handler retains the only IPC emit responsibility (editor + feed events), keeping the IPC shell isolation intact. parserParity.test.ts imports only $lib/domain/capture-auto-save/parse-markdown-to-blocks, no Tauri APIs, no svelte/store. No purity-boundary regression."
+    },
+    "wire_compatibility": {
+      "verdict": "PASS",
+      "regressionCheck": true,
+      "notes": "SelectPastNoteResult is a Rust-internal struct that never crosses the IPC boundary; only its members (editing_payload as serde_json::Value, feed_snapshot as FeedDomainSnapshotDto) are emitted, and both retain the existing Sprint 4 wire contracts (status, currentNoteId, focusedBlockId, blocks present-or-absent, isDirty, isNoteEmpty, lastSaveResult; cause discriminator with kind+savedNoteId/deletedNoteId/etc.). prop_s4_017 asserts these JSON keys directly. No change to FeedDomainSnapshotDto, EditingSubDto, CauseDto, or EditingSessionStateDto. No camelCase regressions, no key rename, no skip_serializing_if changes."
+    }
+  },
+  "overallVerdict": "PASS",
+  "findingCounts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "reviewer": "adversary",
+  "freshContext": true
+}

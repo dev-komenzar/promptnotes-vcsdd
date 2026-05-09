@@ -1,4 +1,4 @@
-/// editor.rs — Rust backend handlers for ui-editor Sprint 2.
+/// editor.rs — Rust backend handlers for ui-editor Sprint 8.
 ///
 /// REQ-EDIT-028: edit_note_body command
 /// REQ-EDIT-029: trigger_idle_save command
@@ -11,8 +11,9 @@
 /// REQ-EDIT-036: editing_session_state_changed event emit rules
 /// REQ-EDIT-037: fs_write_file_atomic implementation
 ///
-/// All DTOs use `#[serde(rename_all = "camelCase")]` to match the TypeScript
-/// EditingSessionState type in `src/lib/editor/types.ts`.
+/// Sprint 8 IPC wire contract:
+/// REQ-IPC-001..020 — EditingSessionStateDto is now a 5-arm tagged enum.
+/// REQ-IPC-013 — All emit sites use the singular make_editing_state_changed_payload.
 ///
 /// Design: this module is a thin IPC shell. No domain logic is re-implemented
 /// here. The Rust side is responsible only for:
@@ -29,17 +30,17 @@ use tauri::{AppHandle, Emitter};
 
 static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
 
-// ── DTOs (must match TS types.ts EditingSessionState) ────────────────────────
+// ── DTOs (must match TS types.ts EditingSessionStateDto) ─────────────────────
 
-/// Maps to TS FsError: { kind: 'permission' | 'disk-full' | 'lock' | 'unknown' }
-#[derive(Serialize, Deserialize, Debug, Clone)]
+/// Maps to TS FsError: { kind: 'permission' | 'disk-full' | 'lock' | 'not-found' | 'unknown' }
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct FsErrorDto {
     pub kind: String,
 }
 
 /// Maps to TS SaveError: { kind: 'fs' | 'validation', reason?: FsErrorDto }
 /// reason is skipped when None (matches TS Option<FsErrorDto>).
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SaveErrorDto {
     pub kind: String,
@@ -47,17 +48,105 @@ pub struct SaveErrorDto {
     pub reason: Option<FsErrorDto>,
 }
 
-/// Maps to TS EditingSessionState:
-/// { status, isDirty, currentNoteId, pendingNextNoteId, lastError, body }
-#[derive(Serialize, Deserialize, Debug, Clone)]
+/// Maps to TS PendingNextFocus: { noteId: string; blockId: string }
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct EditingSessionStateDto {
-    pub status: String,
-    pub is_dirty: bool,
-    pub current_note_id: Option<String>,
-    pub pending_next_note_id: Option<String>,
-    pub last_error: Option<SaveErrorDto>,
-    pub body: String,
+pub struct PendingNextFocusDto {
+    pub note_id: String,
+    pub block_id: String,
+}
+
+/// Maps to TS BlockType — the 9 valid block type literals.
+/// Uses kebab-case with explicit renames for heading-1/2/3.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum BlockTypeDto {
+    Paragraph,
+    #[serde(rename = "heading-1")]
+    Heading1,
+    #[serde(rename = "heading-2")]
+    Heading2,
+    #[serde(rename = "heading-3")]
+    Heading3,
+    Bullet,
+    Numbered,
+    Code,
+    Quote,
+    Divider,
+}
+
+/// Maps to TS DtoBlock: { id: string; type: BlockType; content: string }
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct DtoBlock {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub block_type: BlockTypeDto,
+    pub content: String,
+}
+
+/// Maps to TS EditingSessionStateDto — 5-arm tagged union.
+/// Discriminant field: `status` (kebab-case).
+///
+/// REQ-IPC-001: status values are "idle" | "editing" | "saving" | "switching" | "save-failed".
+/// REQ-IPC-004: editing key-set is exactly {status, currentNoteId, focusedBlockId, isDirty, isNoteEmpty, lastSaveResult[, blocks]}.
+/// REQ-IPC-005: saving key-set is exactly {status, currentNoteId, isNoteEmpty[, blocks]}.
+/// REQ-IPC-006: switching key-set is exactly {status, currentNoteId, pendingNextFocus, isNoteEmpty[, blocks]}.
+/// REQ-IPC-007: save-failed key-set is exactly {status, currentNoteId, priorFocusedBlockId, pendingNextFocus, lastSaveError, isNoteEmpty[, blocks]}.
+/// REQ-IPC-011: blocks is omitted when None; present as array when Some.
+///
+/// IMPORTANT: focused_block_id / prior_focused_block_id / pending_next_focus (Option fields)
+/// MUST NOT carry the skip-when-None serde attribute — they serialize as JSON null per
+/// REQ-IPC-007 / §15.5 "Forbidden serde annotations on focus fields".
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(tag = "status", rename_all = "kebab-case")]
+pub enum EditingSessionStateDto {
+    Idle,
+    Editing {
+        #[serde(rename = "currentNoteId")]
+        current_note_id: String,
+        #[serde(rename = "focusedBlockId")]
+        focused_block_id: Option<String>,
+        #[serde(rename = "isDirty")]
+        is_dirty: bool,
+        #[serde(rename = "isNoteEmpty")]
+        is_note_empty: bool,
+        #[serde(rename = "lastSaveResult")]
+        last_save_result: Option<String>,
+        #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+        blocks: Option<Vec<DtoBlock>>,
+    },
+    Saving {
+        #[serde(rename = "currentNoteId")]
+        current_note_id: String,
+        #[serde(rename = "isNoteEmpty")]
+        is_note_empty: bool,
+        #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+        blocks: Option<Vec<DtoBlock>>,
+    },
+    Switching {
+        #[serde(rename = "currentNoteId")]
+        current_note_id: String,
+        #[serde(rename = "pendingNextFocus")]
+        pending_next_focus: PendingNextFocusDto,
+        #[serde(rename = "isNoteEmpty")]
+        is_note_empty: bool,
+        #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+        blocks: Option<Vec<DtoBlock>>,
+    },
+    SaveFailed {
+        #[serde(rename = "currentNoteId")]
+        current_note_id: String,
+        #[serde(rename = "priorFocusedBlockId")]
+        prior_focused_block_id: Option<String>,
+        #[serde(rename = "pendingNextFocus")]
+        pending_next_focus: Option<PendingNextFocusDto>,
+        #[serde(rename = "lastSaveError")]
+        last_save_error: SaveErrorDto,
+        #[serde(rename = "isNoteEmpty")]
+        is_note_empty: bool,
+        #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+        blocks: Option<Vec<DtoBlock>>,
+    },
 }
 
 // ── Error mapping ─────────────────────────────────────────────────────────────
@@ -154,44 +243,312 @@ pub fn generate_frontmatter(now_ms: i64) -> String {
     )
 }
 
-// ── Payload helper ────────────────────────────────────────────────────────────
+// ── Compose helpers (per-variant pure constructors) ───────────────────────────
 
-/// REQ-EDIT-036: Construct the `{ state: EditingSessionStateDto }` payload
-/// wrapper that matches editorStateChannel.ts's `event.payload.state` access pattern.
-pub fn make_editing_state_changed_payload(
-    status: &str,
-    is_dirty: bool,
-    current_note_id: Option<String>,
-    pending_next_note_id: Option<String>,
-    last_error: Option<SaveErrorDto>,
-    body: &str,
-) -> serde_json::Value {
-    let state = EditingSessionStateDto {
-        status: status.to_string(),
-        is_dirty,
-        current_note_id,
-        pending_next_note_id,
-        last_error,
-        body: body.to_string(),
-    };
-    serde_json::json!({ "state": state })
+/// PROP-IPC-013 — Returns the Idle variant.
+pub fn compose_state_idle() -> EditingSessionStateDto {
+    EditingSessionStateDto::Idle
 }
 
-/// Emit `editing_session_state_changed` with the given payload.
-fn emit_state_changed(
-    app: &AppHandle,
-    status: &str,
-    is_dirty: bool,
-    current_note_id: Option<String>,
-    pending_next_note_id: Option<String>,
-    last_error: Option<SaveErrorDto>,
-    body: &str,
-) -> Result<(), String> {
-    let payload = make_editing_state_changed_payload(
-        status, is_dirty, current_note_id, pending_next_note_id, last_error, body,
-    );
-    app.emit("editing_session_state_changed", payload)
-        .map_err(|e| e.to_string())
+/// PROP-IPC-016 — Returns Editing after a successful save.
+/// isDirty: false, lastSaveResult: "success", isNoteEmpty: body.is_empty().
+pub fn compose_state_for_save_ok(note_id: &str, body: &str) -> EditingSessionStateDto {
+    EditingSessionStateDto::Editing {
+        current_note_id: note_id.to_string(),
+        focused_block_id: None,
+        is_dirty: false,
+        is_note_empty: body.is_empty(),
+        last_save_result: Some("success".to_string()),
+        blocks: None,
+    }
+}
+
+/// PROP-IPC-016 — Returns SaveFailed after a write error.
+/// priorFocusedBlockId: null, pendingNextFocus: null.
+pub fn compose_state_for_save_err(note_id: &str, body: &str, fs_err: FsErrorDto) -> EditingSessionStateDto {
+    EditingSessionStateDto::SaveFailed {
+        current_note_id: note_id.to_string(),
+        prior_focused_block_id: None,
+        pending_next_focus: None,
+        last_save_error: SaveErrorDto {
+            kind: "fs".to_string(),
+            reason: Some(fs_err),
+        },
+        is_note_empty: body.is_empty(),
+        blocks: None,
+    }
+}
+
+/// PROP-IPC-014 — Returns Editing for cancel_switch.
+/// REQ-IPC-015: isDirty: true, focusedBlockId: null, isNoteEmpty: false (conservative).
+pub fn compose_state_for_cancel_switch(note_id: &str) -> EditingSessionStateDto {
+    EditingSessionStateDto::Editing {
+        current_note_id: note_id.to_string(),
+        focused_block_id: None,
+        is_dirty: true,
+        is_note_empty: false,
+        last_save_result: None,
+        blocks: None,
+    }
+}
+
+/// PROP-IPC-015 — Returns Editing for request_new_note.
+/// REQ-IPC-018: isDirty: false, focusedBlockId: null, isNoteEmpty: true (new empty note).
+pub fn compose_state_for_request_new_note(note_id: &str) -> EditingSessionStateDto {
+    EditingSessionStateDto::Editing {
+        current_note_id: note_id.to_string(),
+        focused_block_id: None,
+        is_dirty: false,
+        is_note_empty: true,
+        last_save_result: None,
+        blocks: None,
+    }
+}
+
+/// PROP-IPC-017 — Returns Editing for select_past_note.
+/// REQ-IPC-014 / REQ-FEED-025: Takes optional parsed blocks (not raw body).
+///   - None            → ケース 1 (note not found): focusedBlockId: null, isNoteEmpty: true
+///   - Some(vec![])    → ケース 3 (defensive): focusedBlockId: null, isNoteEmpty: true
+///   - Some(non-empty) → ケース 2: focusedBlockId: blocks[0].id, isNoteEmpty: false
+pub fn compose_state_for_select_past_note(
+    note_id: &str,
+    blocks: Option<Vec<DtoBlock>>,
+) -> EditingSessionStateDto {
+    let (focused_block_id, is_note_empty) = match &blocks {
+        None => (None, true),
+        Some(b) if b.is_empty() => (None, true),
+        Some(b) => (Some(b[0].id.clone()), false),
+    };
+    EditingSessionStateDto::Editing {
+        current_note_id: note_id.to_string(),
+        focused_block_id,
+        is_dirty: false,
+        is_note_empty,
+        last_save_result: None,
+        blocks,
+    }
+}
+
+// ── BlockParseError ───────────────────────────────────────────────────────────
+
+#[derive(Debug)]
+pub struct BlockParseError(pub String);
+
+// ── parse_markdown_to_blocks ──────────────────────────────────────────────────
+
+/// REQ-FEED-025: Parse a markdown body string into a Vec<DtoBlock>.
+///
+/// Non-empty invariant: empty input returns vec![DtoBlock(paragraph, "")].
+/// Matches TS parseMarkdownToBlocks output structure (type + content equivalence).
+///
+/// Block type detection (in priority order per line/section):
+///   `# `  → heading-1
+///   `## ` → heading-2
+///   `### `→ heading-3
+///   `- `  → bullet
+///   `1. ` (digit + `. `) → numbered
+///   `> `  → quote
+///   `---` alone → divider
+///   ` ``` ` fence (opening) → code (multi-line, content joined)
+///   otherwise → paragraph
+///
+/// Multi-paragraph: blank lines separate logical blocks for non-code types.
+pub fn parse_markdown_to_blocks(body: &str) -> Result<Vec<DtoBlock>, BlockParseError> {
+    if body.is_empty() {
+        return Ok(vec![DtoBlock {
+            id: "block-0".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: String::new(),
+        }]);
+    }
+
+    let mut blocks: Vec<DtoBlock> = Vec::new();
+    let mut block_index: usize = 0;
+    let lines: Vec<&str> = body.lines().collect();
+    let mut i = 0;
+
+    while i < lines.len() {
+        let line = lines[i];
+
+        // Code fence detection
+        if line.trim_start().starts_with("```") {
+            let mut code_lines: Vec<&str> = Vec::new();
+            i += 1;
+            while i < lines.len() && !lines[i].trim_start().starts_with("```") {
+                code_lines.push(lines[i]);
+                i += 1;
+            }
+            // Skip closing fence if present
+            if i < lines.len() {
+                i += 1;
+            }
+            let content = code_lines.join("\n");
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Code,
+                content,
+            });
+            block_index += 1;
+            continue;
+        }
+
+        // Divider
+        if line.trim() == "---" {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Divider,
+                content: String::new(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Blank line: skip (paragraph separator)
+        if line.trim().is_empty() {
+            i += 1;
+            continue;
+        }
+
+        // Heading-3 (must check before heading-2 and heading-1)
+        if let Some(content) = line.strip_prefix("### ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Heading3,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Heading-2
+        if let Some(content) = line.strip_prefix("## ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Heading2,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Heading-1
+        if let Some(content) = line.strip_prefix("# ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Heading1,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Bullet
+        if let Some(content) = line.strip_prefix("- ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Bullet,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Quote
+        if let Some(content) = line.strip_prefix("> ") {
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Quote,
+                content: content.to_string(),
+            });
+            block_index += 1;
+            i += 1;
+            continue;
+        }
+
+        // Numbered list: digit(s) + ". "
+        if line.len() >= 3 {
+            let dot_pos = line.find(". ");
+            if let Some(pos) = dot_pos {
+                if pos > 0 && line[..pos].chars().all(|c| c.is_ascii_digit()) {
+                    let content = line[pos + 2..].to_string();
+                    blocks.push(DtoBlock {
+                        id: format!("block-{}", block_index),
+                        block_type: BlockTypeDto::Numbered,
+                        content,
+                    });
+                    block_index += 1;
+                    i += 1;
+                    continue;
+                }
+            }
+        }
+
+        // Paragraph: accumulate consecutive non-blank, non-special lines
+        let mut para_lines: Vec<&str> = Vec::new();
+        while i < lines.len() {
+            let current = lines[i];
+            // Stop at blank line or special-prefix line
+            if current.trim().is_empty() {
+                break;
+            }
+            if current.trim_start().starts_with("```")
+                || current.trim() == "---"
+                || current.starts_with("### ")
+                || current.starts_with("## ")
+                || current.starts_with("# ")
+                || current.starts_with("- ")
+                || current.starts_with("> ")
+            {
+                break;
+            }
+            // Check numbered list prefix
+            if current.len() >= 3 {
+                if let Some(pos) = current.find(". ") {
+                    if pos > 0 && current[..pos].chars().all(|c| c.is_ascii_digit()) {
+                        break;
+                    }
+                }
+            }
+            para_lines.push(current);
+            i += 1;
+        }
+        if !para_lines.is_empty() {
+            let content = para_lines.join("\n");
+            blocks.push(DtoBlock {
+                id: format!("block-{}", block_index),
+                block_type: BlockTypeDto::Paragraph,
+                content,
+            });
+            block_index += 1;
+        }
+    }
+
+    // Non-empty invariant: if no blocks were produced, return one empty paragraph.
+    if blocks.is_empty() {
+        blocks.push(DtoBlock {
+            id: "block-0".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: String::new(),
+        });
+    }
+
+    Ok(blocks)
+}
+
+// ── Payload helper (singular form) ────────────────────────────────────────────
+
+/// REQ-IPC-012 / PROP-IPC-009: Wrap an EditingSessionStateDto in the
+/// `{ "state": <variant> }` envelope expected by editorStateChannel.ts.
+///
+/// This is the ONLY form permitted in Sprint 8 — the legacy 6-positional-arg
+/// form is removed. PROP-IPC-021 grep audit enforces this.
+pub fn make_editing_state_changed_payload(state: &EditingSessionStateDto) -> serde_json::Value {
+    serde_json::json!({ "state": state })
 }
 
 // ── Shared save helper ───────────────────────────────────────────────────────
@@ -203,20 +560,13 @@ fn save_note_and_emit(
     note_id: String,
     body: String,
 ) -> Result<(), String> {
-    match fs_write_file_atomic(&note_id, &body) {
-        Ok(()) => {
-            emit_state_changed(app, "editing", false, Some(note_id), None, None, &body)
-        }
-        Err(io_err) => {
-            let save_err = SaveErrorDto {
-                kind: "fs".to_string(),
-                reason: Some(io_err),
-            };
-            emit_state_changed(
-                app, "save-failed", true, Some(note_id), None, Some(save_err), &body,
-            )
-        }
-    }
+    let state = match fs_write_file_atomic(&note_id, &body) {
+        Ok(()) => compose_state_for_save_ok(&note_id, &body),
+        Err(io_err) => compose_state_for_save_err(&note_id, &body, io_err),
+    };
+    let payload = make_editing_state_changed_payload(&state);
+    app.emit("editing_session_state_changed", payload)
+        .map_err(|e| e.to_string())
 }
 
 // ── Tauri commands ────────────────────────────────────────────────────────────
@@ -280,6 +630,7 @@ pub fn retry_save(
 }
 
 /// REQ-EDIT-032: discard_current_session — emit idle state, no file I/O.
+/// REQ-IPC-016: emits the Idle variant (only {"status":"idle"}).
 #[tauri::command]
 pub fn discard_current_session(
     app: AppHandle,
@@ -287,11 +638,14 @@ pub fn discard_current_session(
     issued_at: String,
 ) -> Result<(), String> {
     let _ = (note_id, issued_at);
-    emit_state_changed(&app, "idle", false, None, None, None, "")
+    let state = compose_state_idle();
+    let payload = make_editing_state_changed_payload(&state);
+    app.emit("editing_session_state_changed", payload)
+        .map_err(|e| e.to_string())
 }
 
 /// REQ-EDIT-033: cancel_switch — emit editing state, preserve dirty flag.
-/// No file I/O — just emit that we're back in editing mode.
+/// REQ-IPC-015: isDirty: true, focusedBlockId: null.
 #[tauri::command]
 pub fn cancel_switch(
     app: AppHandle,
@@ -299,9 +653,10 @@ pub fn cancel_switch(
     issued_at: String,
 ) -> Result<(), String> {
     let _ = issued_at;
-    emit_state_changed(
-        &app, "editing", true, Some(note_id), None, None, "",
-    )
+    let state = compose_state_for_cancel_switch(&note_id);
+    let payload = make_editing_state_changed_payload(&state);
+    app.emit("editing_session_state_changed", payload)
+        .map_err(|e| e.to_string())
 }
 
 /// REQ-EDIT-034: copy_note_body — thin acknowledgement.
@@ -319,6 +674,7 @@ pub fn copy_note_body(
 
 /// REQ-EDIT-035: request_new_note — generate new note ID, create empty .md file
 /// with frontmatter, emit editing state.
+/// REQ-IPC-018: emits Editing with isNoteEmpty: true, isDirty: false.
 ///
 /// Vault path is read from settings via `settings_load_impl()`.
 #[tauri::command]
@@ -349,10 +705,11 @@ pub fn request_new_note(
     fs_write_file_atomic(&note_path, &contents)
         .map_err(|e| format!("Failed to create new note: {:?}", e))?;
 
-    // Emit editing state for the new note
-    emit_state_changed(
-        &app, "editing", false, Some(note_path.clone()), None, None, "",
-    )?;
+    // Emit editing state for the new note (REQ-IPC-018)
+    let state = compose_state_for_request_new_note(&note_path);
+    let payload = make_editing_state_changed_payload(&state);
+    app.emit("editing_session_state_changed", payload)
+        .map_err(|e| e.to_string())?;
 
     // Emit feed_state_changed so the feed sidebar refreshes with the new note
     let (visible_note_ids, note_metadata) = crate::feed::scan_vault_feed(&vault_path);
@@ -381,20 +738,31 @@ mod tests {
     // ── DTO serialization ─────────────────────────────────────────────────
 
     #[test]
-    fn editing_session_state_dto_serializes_camel_case_inline() {
-        let state = EditingSessionStateDto {
-            status: "editing".to_string(),
+    fn editing_session_state_idle_serializes_status_only() {
+        let state = EditingSessionStateDto::Idle;
+        let value = serde_json::to_value(&state).expect("serialize");
+        let obj = value.as_object().expect("object");
+        assert_eq!(obj.len(), 1, "Idle must have exactly one key");
+        assert_eq!(obj.get("status").and_then(|v| v.as_str()), Some("idle"));
+    }
+
+    #[test]
+    fn editing_session_state_editing_serializes_camel_case() {
+        let state = EditingSessionStateDto::Editing {
+            current_note_id: "/v/n.md".to_string(),
+            focused_block_id: None,
             is_dirty: true,
-            current_note_id: Some("/v/n.md".to_string()),
-            pending_next_note_id: None,
-            last_error: None,
-            body: "text".to_string(),
+            is_note_empty: false,
+            last_save_result: None,
+            blocks: None,
         };
         let json = serde_json::to_string(&state).expect("serialize");
-        assert!(json.contains("\"currentNoteId\""));
-        assert!(json.contains("\"pendingNextNoteId\""));
-        assert!(json.contains("\"isDirty\""));
-        assert!(json.contains("\"lastError\":null"));
+        assert!(json.contains("\"currentNoteId\""), "camelCase currentNoteId: {}", json);
+        assert!(json.contains("\"focusedBlockId\""), "camelCase focusedBlockId: {}", json);
+        assert!(json.contains("\"isDirty\""), "camelCase isDirty: {}", json);
+        assert!(json.contains("\"isNoteEmpty\""), "camelCase isNoteEmpty: {}", json);
+        assert!(json.contains("\"lastSaveResult\""), "camelCase lastSaveResult: {}", json);
+        assert!(!json.contains("\"blocks\""), "blocks absent when None: {}", json);
     }
 
     #[test]
@@ -404,7 +772,7 @@ mod tests {
             reason: None,
         };
         let json = serde_json::to_string(&err).expect("serialize");
-        assert!(!json.contains("\"reason\""));
+        assert!(!json.contains("\"reason\""), "reason absent when None: {}", json);
     }
 
     #[test]
@@ -416,8 +784,34 @@ mod tests {
             }),
         };
         let json = serde_json::to_string(&err).expect("serialize");
-        assert!(json.contains("\"reason\""));
+        assert!(json.contains("\"reason\""), "reason present when Some: {}", json);
         assert!(json.contains("\"disk-full\""));
+    }
+
+    #[test]
+    fn save_failed_null_literals_are_present() {
+        let state = EditingSessionStateDto::SaveFailed {
+            current_note_id: "n1".to_string(),
+            prior_focused_block_id: None,
+            pending_next_focus: None,
+            last_save_error: SaveErrorDto {
+                kind: "fs".to_string(),
+                reason: None,
+            },
+            is_note_empty: false,
+            blocks: None,
+        };
+        let json = serde_json::to_string(&state).expect("serialize");
+        assert!(
+            json.contains("\"priorFocusedBlockId\":null"),
+            "priorFocusedBlockId must be null literal: {}",
+            json
+        );
+        assert!(
+            json.contains("\"pendingNextFocus\":null"),
+            "pendingNextFocus must be null literal: {}",
+            json
+        );
     }
 
     // ── Error mapping ─────────────────────────────────────────────────────
@@ -456,7 +850,6 @@ mod tests {
 
     #[test]
     fn io_error_to_fs_kind_all_variants_testable() {
-        // PROP-102: Verify key mappings
         use std::io::ErrorKind;
         let cases = vec![
             (ErrorKind::PermissionDenied, "permission"),
@@ -539,43 +932,186 @@ mod tests {
         assert_eq!(lines.len(), 6, "Must have empty line after --- (body placeholder)");
     }
 
-    // ── make_editing_state_changed_payload ────────────────────────────────
+    // ── make_editing_state_changed_payload (singular form) ────────────────
 
     #[test]
     fn make_payload_wraps_in_state_key() {
-        let payload = make_editing_state_changed_payload(
-            "idle", false, None, None, None, "",
-        );
+        let state = compose_state_idle();
+        let payload = make_editing_state_changed_payload(&state);
         let json = serde_json::to_string(&payload).expect("serialize");
         assert!(json.starts_with("{\"state\":"), "Must wrap in state: {}", json);
     }
 
     #[test]
     fn make_payload_editing_state() {
-        let payload = make_editing_state_changed_payload(
-            "editing", false, Some("/v/n.md".to_string()), None, None, "hello",
-        );
+        let state = compose_state_for_select_past_note("/v/n.md", None);
+        let payload = make_editing_state_changed_payload(&state);
         let json = serde_json::to_string(&payload).expect("serialize");
         assert!(json.contains("\"editing\""));
         assert!(json.contains("\"isDirty\":false"));
         assert!(json.contains("\"/v/n.md\""));
-        assert!(json.contains("\"hello\""));
     }
 
     #[test]
     fn make_payload_save_failed_state() {
-        let err = SaveErrorDto {
-            kind: "fs".to_string(),
-            reason: Some(FsErrorDto {
-                kind: "permission".to_string(),
-            }),
-        };
-        let payload = make_editing_state_changed_payload(
-            "save-failed", true, Some("/v/n.md".to_string()), None, Some(err), "draft",
-        );
+        let fs_err = FsErrorDto { kind: "permission".to_string() };
+        let state = compose_state_for_save_err("/v/n.md", "draft", fs_err);
+        let payload = make_editing_state_changed_payload(&state);
         let json = serde_json::to_string(&payload).expect("serialize");
         assert!(json.contains("\"save-failed\""));
-        assert!(json.contains("\"isDirty\":true"));
         assert!(json.contains("\"permission\""));
+    }
+
+    // ── compose_* helpers ─────────────────────────────────────────────────
+
+    #[test]
+    fn compose_idle_returns_idle() {
+        assert_eq!(compose_state_idle(), EditingSessionStateDto::Idle);
+    }
+
+    #[test]
+    fn compose_save_ok_is_dirty_false() {
+        let state = compose_state_for_save_ok("/v/n.md", "body");
+        match state {
+            EditingSessionStateDto::Editing { is_dirty, last_save_result, .. } => {
+                assert!(!is_dirty);
+                assert_eq!(last_save_result.as_deref(), Some("success"));
+            }
+            _ => panic!("Expected Editing"),
+        }
+    }
+
+    #[test]
+    fn compose_cancel_switch_is_dirty_true() {
+        let state = compose_state_for_cancel_switch("/v/n.md");
+        match state {
+            EditingSessionStateDto::Editing { is_dirty, .. } => assert!(is_dirty),
+            _ => panic!("Expected Editing"),
+        }
+    }
+
+    #[test]
+    fn compose_request_new_note_is_note_empty_true() {
+        let state = compose_state_for_request_new_note("/v/new.md");
+        match state {
+            EditingSessionStateDto::Editing { is_note_empty, .. } => assert!(is_note_empty),
+            _ => panic!("Expected Editing"),
+        }
+    }
+
+    // ── compose_state_for_select_past_note (new signature) ───────────────
+
+    #[test]
+    fn compose_select_past_note_none_gives_empty_state() {
+        let state = compose_state_for_select_past_note("n1", None);
+        match state {
+            EditingSessionStateDto::Editing { blocks, focused_block_id, is_note_empty, .. } => {
+                assert_eq!(blocks, None);
+                assert_eq!(focused_block_id, None);
+                assert!(is_note_empty);
+            }
+            _ => panic!("Expected Editing"),
+        }
+    }
+
+    #[test]
+    fn compose_select_past_note_some_blocks_populates_focused() {
+        let b = vec![DtoBlock { id: "b1".to_string(), block_type: BlockTypeDto::Paragraph, content: "hi".to_string() }];
+        let state = compose_state_for_select_past_note("n1", Some(b.clone()));
+        match state {
+            EditingSessionStateDto::Editing { blocks, focused_block_id, is_note_empty, .. } => {
+                assert_eq!(blocks, Some(b));
+                assert_eq!(focused_block_id, Some("b1".to_string()));
+                assert!(!is_note_empty);
+            }
+            _ => panic!("Expected Editing"),
+        }
+    }
+
+    // ── parse_markdown_to_blocks ──────────────────────────────────────────
+
+    #[test]
+    fn parse_markdown_to_blocks_empty_returns_single_paragraph() {
+        let blocks = parse_markdown_to_blocks("").expect("Ok");
+        assert_eq!(blocks.len(), 1);
+        assert_eq!(blocks[0].content, "");
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Paragraph);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_single_paragraph() {
+        let blocks = parse_markdown_to_blocks("hello world").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].content, "hello world");
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Paragraph);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_heading1() {
+        let blocks = parse_markdown_to_blocks("# Title").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Heading1);
+        assert_eq!(blocks[0].content, "Title");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_heading2() {
+        let blocks = parse_markdown_to_blocks("## Sub").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Heading2);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_heading3() {
+        let blocks = parse_markdown_to_blocks("### Third").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Heading3);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_bullet() {
+        let blocks = parse_markdown_to_blocks("- item one").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Bullet);
+        assert_eq!(blocks[0].content, "item one");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_numbered() {
+        let blocks = parse_markdown_to_blocks("1. first").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Numbered);
+        assert_eq!(blocks[0].content, "first");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_quote() {
+        let blocks = parse_markdown_to_blocks("> quote text").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Quote);
+        assert_eq!(blocks[0].content, "quote text");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_divider() {
+        let blocks = parse_markdown_to_blocks("---").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Divider);
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_code() {
+        let blocks = parse_markdown_to_blocks("```\ncode here\n```").expect("Ok");
+        assert!(!blocks.is_empty());
+        assert_eq!(blocks[0].block_type, BlockTypeDto::Code);
+        assert_eq!(blocks[0].content, "code here");
+    }
+
+    #[test]
+    fn parse_markdown_to_blocks_multiple_paragraphs() {
+        let blocks = parse_markdown_to_blocks("first\n\nsecond").expect("Ok");
+        assert!(blocks.len() >= 2, "expected >=2 blocks, got {}", blocks.len());
+        assert_eq!(blocks[0].content, "first");
+        assert_eq!(blocks[1].content, "second");
     }
 }

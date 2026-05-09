@@ -28,6 +28,7 @@ import type { Note } from "promptnotes-domain-types/shared/note";
 import type { EditingState, SavingState, SaveFailedState } from "promptnotes-domain-types/capture/states";
 import type { CaptureDeps } from "promptnotes-domain-types/capture/ports";
 import type { DirtyEditingSession } from "promptnotes-domain-types/capture/stages";
+import type { CaptureAutoSave } from "promptnotes-domain-types/capture/workflows";
 import { prepareSaveRequest, type PrepareSaveRequestDeps } from "./prepare-save-request.js";
 import { serializeNote } from "./serialize-note.js";
 import { updateProjections, type UpdateProjectionsDeps, type TagInventoryUpdated } from "./update-projections.js";
@@ -103,9 +104,11 @@ export function makeCaptureAutoSavePipeline(
       const savingState = infra.beginAutoSave(state, validatedRequest.requestedAt);
 
       // REQ-008: emit SaveNoteRequested at the state transition point
+      // REQ-018: include blocks alongside derived body (PROP-024 coherence)
       const saveRequested: SaveNoteRequested = {
         kind: "save-note-requested",
         noteId: validatedRequest.noteId,
+        blocks: validatedRequest.blocks,
         body: validatedRequest.body,
         frontmatter: validatedRequest.frontmatter,
         previousFrontmatter: validatedRequest.previousFrontmatter,
@@ -140,9 +143,11 @@ export function makeCaptureAutoSavePipeline(
       }
 
       // REQ-009: emit NoteFileSaved
+      // REQ-018: include blocks alongside derived body (PROP-024 coherence)
       const savedEvent: NoteFileSaved = {
         kind: "note-file-saved",
         noteId: validatedRequest.noteId,
+        blocks: validatedRequest.blocks,
         body: validatedRequest.body,
         frontmatter: validatedRequest.frontmatter,
         previousFrontmatter: validatedRequest.previousFrontmatter,
@@ -183,6 +188,29 @@ export function captureAutoSave(
   };
   return makeCaptureAutoSavePipeline(ports)(deps);
 }
+
+/**
+ * Canonical CaptureAutoSave typed as the domain workflow type.
+ * REQ-017 / PROP-028: This export conforms exactly to the CaptureAutoSave signature:
+ *   (deps: CaptureDeps) => (state: EditingState, trigger: "idle" | "blur") => Promise<Result<NoteFileSaved, SaveError>>
+ *
+ * Application-level assembly is required before use: callers must supply PipelineInfra
+ * via makeCaptureAutoSavePipeline. This export exists for compile-time type assertion only.
+ *
+ * At runtime, calling the returned function without infra will throw.
+ */
+export const canonicalCaptureAutoSave: CaptureAutoSave = (
+  deps: CaptureDeps,
+): ((state: EditingState, trigger: "idle" | "blur") => Promise<Result<NoteFileSaved, SaveError>>) => {
+  return async (_state: EditingState, _trigger: "idle" | "blur"): Promise<Result<NoteFileSaved, SaveError>> => {
+    // REQ-017: runtime placeholder — application layer must use makeCaptureAutoSavePipeline(infra)(deps)
+    void deps;
+    throw new Error(
+      "canonicalCaptureAutoSave: application-level assembly required. " +
+      "Use makeCaptureAutoSavePipeline(infra)(deps) to construct a working pipeline.",
+    );
+  };
+};
 
 function mapFsErrorToReason(err: FsError): "permission" | "disk-full" | "lock" | "unknown" {
   switch (err.kind) {

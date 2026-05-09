@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-006",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "title": "REQ-FEED-024 amendment が空 paragraph の `focused_block_id` 取り扱いを矛盾なく規定していない",
+  "location": "behavioral-spec.md:660-662, behavioral-spec.md:681, behavioral-spec.md:722-723",
+  "description": "REQ-FEED-024 amendment line 660-662 は『note が空（blocks が空 paragraph 1 件）の場合は先頭 block id を渡す（空 paragraph の id）』と規定する一方、Acceptance Criteria line 681 は『focusedBlockId is the id of the first block in the note when note_metadata contains the note』と書き、Edge Case の line 722 は『blocks が空: focused_block_id: None』と相反する記述を持つ。「note の blocks が空」と「note が空 (paragraph 1 件)」は別物であるが、両ケースで `focused_block_id` が None / Some(...) いずれになるかは曖昧。さらに REQ-FEED-025 line 723 の単一空 paragraph ケースの記述では `focused_block_id: Some(blocks[0].id)` だが、REQ-FEED-024 の Edge Case 686-687 は『note_id not found in vault → ... blocks: [] (or omitted), isNoteEmpty: true』と書き、blocks が空のケースを明示しているのに focused_block_id が `null` であることは別の場所で言及される (line 681 の「null when not found」のみ)。`compose_state_for_select_past_note` のパラメータが Vec<DtoBlock> で空 paragraph 1 件と空 vec のどちらが note 未存在ケースなのかを spec が確定しないと、実装者が任意決定する余地が残る。",
+  "evidence": "behavioral-spec.md:660-662 `note が空（blocks が空 paragraph 1 件）の場合は先頭 block id を渡す（空 paragraph の id）。note_metadata に note が存在しない場合は null。`\nbehavioral-spec.md:681 `focusedBlockId is the id of the first block in the note when note_metadata contains the note; null when not found.`\nbehavioral-spec.md:722-723 `blocks が空: is_note_empty: true、focused_block_id: None。Markdown parse が空文字列を返した場合。 / blocks が単一空 paragraph: is_note_empty: true、focused_block_id: Some(blocks[0].id)。`",
+  "remediation": "REQ-FEED-024 / REQ-FEED-025 にまたがる以下 3 ケースを表にして固定する: (1) note_metadata に note 未存在 → blocks=None, focused_block_id=None, isNoteEmpty=true (2) note 存在 + blocks=空 vec (parseMarkdownToBlocks が空文字列を返した) → blocks=Some([]), focused_block_id=None, isNoteEmpty=true — ただし FIND-S4-SPEC-001 で blocks=None に統一する場合は別 (3) note 存在 + 単一空 paragraph → blocks=Some([{id, paragraph, ''}]), focused_block_id=Some(id), isNoteEmpty=true。Acceptance Criteria に Rust unit test の expected output を表で書き下す。"
+}

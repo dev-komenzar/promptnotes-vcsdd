@@ -1,301 +1,289 @@
 /**
- * editorReducer.ts — pure state reducer for the ui-editor feature
+ * editorReducer.ts — pure mirror reducer for the block-based ui-editor (Sprint 7)
  *
- * Pure core module: deterministic, no side effects, no forbidden APIs.
- * See verification-architecture.md §2 for the canonical purity-audit pattern.
+ * Phase 2b implementation: full logic replacing the Phase 2a stub.
  *
- * Contract:
- * - Total over all (EditorAction.kind × EditingSessionStatus) = 55 cells.
- * - Never throws in production.
- * - Returns { state: EditorViewState, commands: ReadonlyArray<EditorCommand> }.
- * - state.status is always one of the 5 EditingSessionStatus values.
- * - commands[i].kind is always one of the 9 EditorCommand variants.
+ * Pure core module: must never import @tauri-apps/api or any forbidden API.
+ * Signatures match verification-architecture.md §2 exactly.
+ *
+ * The reducer is a UI mirror — it does NOT invent transitions, only mirrors
+ * DomainSnapshotReceived and emits commands for outbound action types.
  */
 
-import type { EditorViewState, EditorAction, EditorCommand, NewNoteSource } from './types.js';
-import { canCopy } from './editorPredicates.js';
+import type { EditorViewState, EditorAction, EditorCommand, EditingSessionStateDto, DtoBlock } from './types.js';
 
-/** Returns the current note id, or '' when null (used by retry/discard/cancel). */
-function currentNoteIdOrEmpty(state: EditorViewState): string {
-  return state.currentNoteId ?? '';
-}
+export type { EditorAction, EditorCommand, EditorViewState } from './types.js';
 
-/** Return type of editorReducer: updated view state plus zero or more side-effect commands. */
+/** Return type of editorReducer. */
 export type ReducerResult = {
   state: EditorViewState;
   commands: ReadonlyArray<EditorCommand>;
 };
 
+/** Default idle view state — used when no other fields apply. */
+function defaultIdleState(): EditorViewState {
+  return {
+    status: 'idle',
+    isDirty: false,
+    currentNoteId: null,
+    focusedBlockId: null,
+    pendingNextFocus: null,
+    isNoteEmpty: true,
+    lastSaveError: null,
+    lastSaveResult: null,
+    blocks: [],
+  };
+}
+
 /**
- * REQ-EDIT-001..REQ-EDIT-019, REQ-EDIT-021..REQ-EDIT-026
- * Mirror reducer: reflects EditorAction inputs into EditorViewState outputs
- * and emits EditorCommand side-effect signals for the impure shell.
+ * Mirror a DTO snapshot into EditorViewState.
+ * Per PROP-EDIT-040: map per-variant fields; default absent fields.
+ * RD-021: when snapshot carries `blocks`, mirror into state.blocks;
+ * when absent, preserve currentBlocks (caller passes prior state.blocks).
+ */
+function mirrorSnapshot(
+  snapshot: EditingSessionStateDto,
+  currentBlocks: ReadonlyArray<DtoBlock>,
+): EditorViewState {
+  switch (snapshot.status) {
+    case 'idle':
+      return {
+        status: 'idle',
+        isDirty: false,
+        currentNoteId: null,
+        focusedBlockId: null,
+        pendingNextFocus: null,
+        isNoteEmpty: true,
+        lastSaveError: null,
+        lastSaveResult: null,
+        blocks: [],
+      };
+
+    case 'editing':
+      return {
+        status: 'editing',
+        isDirty: snapshot.isDirty,
+        currentNoteId: snapshot.currentNoteId,
+        focusedBlockId: snapshot.focusedBlockId,
+        pendingNextFocus: null,
+        isNoteEmpty: snapshot.isNoteEmpty,
+        lastSaveError: null,
+        lastSaveResult: snapshot.lastSaveResult,
+        blocks: snapshot.blocks ?? currentBlocks,
+      };
+
+    case 'saving':
+      return {
+        status: 'saving',
+        isDirty: true,
+        currentNoteId: snapshot.currentNoteId,
+        focusedBlockId: null,
+        pendingNextFocus: null,
+        isNoteEmpty: snapshot.isNoteEmpty,
+        lastSaveError: null,
+        lastSaveResult: null,
+        blocks: snapshot.blocks ?? currentBlocks,
+      };
+
+    case 'switching':
+      return {
+        status: 'switching',
+        isDirty: false,
+        currentNoteId: snapshot.currentNoteId,
+        focusedBlockId: null,
+        pendingNextFocus: snapshot.pendingNextFocus,
+        isNoteEmpty: snapshot.isNoteEmpty,
+        lastSaveError: null,
+        lastSaveResult: null,
+        blocks: snapshot.blocks ?? currentBlocks,
+      };
+
+    case 'save-failed':
+      return {
+        status: 'save-failed',
+        isDirty: true,
+        currentNoteId: snapshot.currentNoteId,
+        // PROP-EDIT-014: save-failed.priorFocusedBlockId → state.focusedBlockId
+        focusedBlockId: snapshot.priorFocusedBlockId,
+        pendingNextFocus: snapshot.pendingNextFocus,
+        isNoteEmpty: snapshot.isNoteEmpty,
+        lastSaveError: snapshot.lastSaveError,
+        lastSaveResult: null,
+        blocks: snapshot.blocks ?? currentBlocks,
+      };
+
+    default: {
+      const _exhaustive: never = snapshot;
+      void _exhaustive;
+      return defaultIdleState();
+    }
+  }
+}
+
+/**
+ * Produces a ReducerResult where the only state change is isDirty=true.
+ * Used by all block-mutation actions (BlockContentEdited, BlockInserted, etc.)
+ * which share identical reducer semantics: mark dirty, emit no commands.
+ *
+ * PROP-EDIT-007, PROP-EDIT-008
+ */
+function markDirty(state: EditorViewState): ReducerResult {
+  return { state: { ...state, isDirty: true }, commands: [] };
+}
+
+/**
+ * Produces a ReducerResult that passes state through unchanged with no commands.
+ * Used by focus actions that are pure pass-throughs in the mirror reducer.
+ */
+function passThrough(state: EditorViewState): ReducerResult {
+  return { state: { ...state }, commands: [] };
+}
+
+/**
+ * PROP-EDIT-007, PROP-EDIT-008, PROP-EDIT-040
+ * Mirror reducer: total over all (EditorAction.kind × EditingSessionStatus) pairs.
+ * Returns { state: EditorViewState, commands: ReadonlyArray<EditorCommand> }.
+ * Never throws. Pure: no side effects, no I/O, no mutation of inputs.
  */
 export function editorReducer(
   state: EditorViewState,
   action: EditorAction
 ): ReducerResult {
   switch (action.kind) {
-    case 'NoteBodyEdited': {
-      // REQ-EDIT-001: User keystroke — update body and set isDirty=true when editing.
-      // EC-EDIT-003: Also fires in save-failed state (textarea stays editable per REQ-EDIT-013).
-      // In idle/saving/switching, the action is unexpected but must not throw; return unchanged.
-      if (state.status !== 'editing' && state.status !== 'save-failed') {
-        return { state, commands: [] };
+    // ── Block content mutation actions — set isDirty=true optimistically ───────
+    // All 7 variants share identical reducer semantics: mark dirty, no commands.
+    case 'BlockContentEdited':
+    case 'BlockInserted':
+    case 'BlockRemoved':
+    case 'BlocksMerged':
+    case 'BlockSplit':
+    case 'BlockTypeChanged':
+    case 'BlockMoved':
+      return markDirty(state);
+
+    // ── Focus actions ──────────────────────────────────────────────────────────
+    // BlockFocused: same-note focus continues idle timer; no save commands (REQ-EDIT-017).
+    // BlockBlurred: block-level blur; EditorPanel handles all-blocks blur separately.
+    case 'BlockFocused':
+    case 'BlockBlurred':
+      return passThrough(state);
+
+    case 'EditorBlurredAllBlocks': {
+      // EC-EDIT-002: blur while saving/switching → no trigger-blur-save.
+      if (state.status === 'saving' || state.status === 'switching') {
+        return passThrough(state);
       }
-      const nextState: EditorViewState = {
-        ...state,
-        body: action.payload.newBody,
-        isDirty: true,
-      };
-      const commands: EditorCommand[] = [
-        {
-          kind: 'edit-note-body',
+      // While editing+isDirty: emit trigger-blur-save.
+      if (state.status === 'editing' && state.isDirty) {
+        const cmd: EditorCommand = {
+          kind: 'trigger-blur-save',
           payload: {
-            noteId: action.payload.noteId,
-            newBody: action.payload.newBody,
+            // NOTE: source is always 'capture-blur' for all-blocks-blur events.
+            // The reducer infers source from action kind, per verification-architecture.md §2.
+            source: 'capture-blur',
+            noteId: state.currentNoteId ?? '',
             issuedAt: action.payload.issuedAt,
-            dirty: true,
           },
-        },
-      ];
-      return { state: nextState, commands };
-    }
-
-    case 'BlurEvent': {
-      // REQ-EDIT-006, REQ-EDIT-007: Textarea blur while editing and isDirty → trigger blur save.
-      // REQ-EDIT-008, EC-EDIT-002: In saving, ignore blur (guard against double-fire).
-      if (state.status === 'saving') {
-        // Already saving — do not emit any commands; stay in saving
-        return { state, commands: [] };
-      }
-      if (state.status === 'editing' && state.isDirty) {
-        const nextState: EditorViewState = {
-          ...state,
-          status: 'saving',
         };
-        const commands: EditorCommand[] = [
-          {
-            kind: 'trigger-blur-save',
-            payload: {
-              source: 'capture-blur',
-              noteId: action.payload.noteId,
-              body: action.payload.body,
-              issuedAt: action.payload.issuedAt,
-            },
-          },
-        ];
-        return { state: nextState, commands };
+        return { state: { ...state }, commands: [cmd] };
       }
-      // editing + isDirty=false, or any other status: no-op
-      return { state, commands: [] };
+      return passThrough(state);
     }
 
-    case 'IdleTimerFired': {
-      // REQ-EDIT-004: Idle debounce timer fired — trigger idle save when editing and dirty.
-      if (state.status === 'editing' && state.isDirty) {
-        const nextState: EditorViewState = {
-          ...state,
-          status: 'saving',
-        };
-        const commands: EditorCommand[] = [
-          {
-            kind: 'trigger-idle-save',
-            payload: {
-              source: 'capture-idle',
-              noteId: action.payload.noteId,
-              body: action.payload.body,
-              issuedAt: action.payload.issuedAt,
-            },
-          },
-        ];
-        return { state: nextState, commands };
-      }
-      // Not in editing+dirty — no-op
-      return { state, commands: [] };
-    }
-
+    // ── Domain snapshot mirror ─────────────────────────────────────────────────
     case 'DomainSnapshotReceived': {
-      // REQ-EDIT-014, PROP-EDIT-040: Mirror the snapshot fields 1:1 into view state.
-      // FIND-017: emit cancel-idle-timer when inbound snapshot has isDirty=false
-      //   (domain confirmed clean — the idle timer must be cancelled).
-      // FIND-014: drain pendingNewNoteIntent when domain leaves 'saving'.
-      //   - saving → editing (success): emit request-new-note from the pending intent.
-      //   - saving → save-failed (failure): drop the intent (banner is shown).
-      const { snapshot } = action;
+      // TODO PROP-IPC-023 (Phase 2b): When prior state is 'switching' and the
+      // incoming snapshot is Editing { focusedBlockId: null } (emitted by
+      // cancel_switch per REQ-IPC-015), this reducer must NOT throw and must
+      // produce state.focusedBlockId: null. Focus restoration is the responsibility
+      // of EditorPanel.svelte's retained DOM reference (RD-022), NOT the reducer.
+      // See behavioral-spec.md §15.2 EC-IPC-012 and verification-architecture.md
+      // §10.2 PROP-IPC-023.
+      const newState = mirrorSnapshot(action.snapshot, state.blocks);
       const commands: EditorCommand[] = [];
 
-      // FIND-017: cancel idle timer whenever the domain says isDirty=false
-      if (!snapshot.isDirty) {
+      // When transitioning to editing from saving (NoteFileSaved): emit cancel-idle-timer.
+      // Per REQ-EDIT-013: saving→editing snapshot emits cancel-idle-timer.
+      if (state.status === 'saving' && action.snapshot.status === 'editing') {
         commands.push({ kind: 'cancel-idle-timer' });
       }
 
-      // FIND-014: resolve deferred new-note intent based on save outcome
-      let resolvedIntent: { source: NewNoteSource; issuedAt: string } | null =
-        state.pendingNewNoteIntent;
-
-      if (state.status === 'saving' && state.pendingNewNoteIntent !== null) {
-        if (snapshot.status === 'editing' && !snapshot.isDirty) {
-          // Save succeeded — dispatch the deferred new-note request
-          commands.push({
-            kind: 'request-new-note',
-            payload: {
-              source: state.pendingNewNoteIntent.source,
-              issuedAt: state.pendingNewNoteIntent.issuedAt,
-            },
-          });
-          resolvedIntent = null;
-        } else if (snapshot.status === 'save-failed') {
-          // Save failed — drop the intent; the banner will be shown
-          resolvedIntent = null;
-        }
-        // Still saving or other transitions: leave intent intact
-      }
-
-      const nextState: EditorViewState = {
-        ...state,
-        status: snapshot.status,
-        isDirty: snapshot.isDirty,
-        currentNoteId: snapshot.currentNoteId,
-        pendingNextNoteId: snapshot.pendingNextNoteId,
-        lastError: snapshot.lastError,
-        body: snapshot.body,
-        pendingNewNoteIntent: resolvedIntent,
-      };
-      return { state: nextState, commands };
+      return { state: newState, commands };
     }
 
-    case 'NoteFileSaved': {
-      // REQ-EDIT-002, PROP-EDIT-010, CRIT-008: Successful save — clear dirty, cancel timer.
-      // Transition saving → editing.
-      const nextState: EditorViewState = {
-        ...state,
-        status: 'editing',
-        isDirty: false,
-        lastError: null,
+    // ── Save trigger actions ───────────────────────────────────────────────────
+    // Each maps a UI-side action to a single outbound EditorCommand; state is
+    // unchanged (domain snapshot will arrive via DomainSnapshotReceived).
+    case 'TriggerIdleSaveRequested':
+      // NOTE: source 'capture-idle' is inferred from action kind (verification-architecture.md §2).
+      return {
+        state: { ...state },
+        commands: [{
+          kind: 'trigger-idle-save',
+          payload: { source: 'capture-idle', noteId: action.payload.noteId, issuedAt: action.payload.issuedAt },
+        }],
       };
-      const commands: EditorCommand[] = [
-        { kind: 'cancel-idle-timer' },
-      ];
-      return { state: nextState, commands };
-    }
 
-    case 'NoteSaveFailed': {
-      // REQ-EDIT-002, REQ-EDIT-013: Save failure — transition to save-failed, retain isDirty.
-      const nextState: EditorViewState = {
-        ...state,
-        status: 'save-failed',
-        lastError: action.payload.error,
+    case 'TriggerBlurSaveRequested':
+      // NOTE: source 'capture-blur' is inferred from action kind (verification-architecture.md §2).
+      return {
+        state: { ...state },
+        commands: [{
+          kind: 'trigger-blur-save',
+          payload: { source: 'capture-blur', noteId: action.payload.noteId, issuedAt: action.payload.issuedAt },
+        }],
       };
-      return { state: nextState, commands: [] };
-    }
 
-    case 'RetryClicked': {
-      // REQ-EDIT-017: Retry save from save-failed state.
-      // FIND-015: issuedAt is supplied by the impure shell via action.payload.issuedAt.
-      if (state.status !== 'save-failed') {
-        return { state, commands: [] };
-      }
-      const noteId = currentNoteIdOrEmpty(state);
-      const nextState: EditorViewState = {
-        ...state,
-        status: 'saving',
-      };
-      const commands: EditorCommand[] = [
-        {
+    case 'RetrySaveRequested':
+      return {
+        state: { ...state },
+        commands: [{
           kind: 'retry-save',
-          payload: {
-            noteId,
-            body: state.body,
-            issuedAt: action.payload.issuedAt,
-          },
-        },
-      ];
-      return { state: nextState, commands };
-    }
+          payload: { noteId: action.payload.noteId, issuedAt: action.payload.issuedAt },
+        }],
+      };
 
-    case 'DiscardClicked': {
-      // REQ-EDIT-018: Discard current session from save-failed state.
-      if (state.status !== 'save-failed') {
-        return { state, commands: [] };
-      }
-      const noteId = currentNoteIdOrEmpty(state);
-      const commands: EditorCommand[] = [
-        {
+    case 'DiscardCurrentSessionRequested':
+      return {
+        state: { ...state },
+        commands: [{
           kind: 'discard-current-session',
-          payload: { noteId },
-        },
-      ];
-      return { state, commands };
-    }
+          payload: { noteId: action.payload.noteId, issuedAt: action.payload.issuedAt },
+        }],
+      };
 
-    case 'CancelClicked': {
-      // REQ-EDIT-019: Cancel switch from save-failed state (banner Cancel button).
-      // Also handles switching state for symmetry.
-      if (state.status !== 'save-failed' && state.status !== 'switching') {
-        return { state, commands: [] };
-      }
-      const noteId = currentNoteIdOrEmpty(state);
-      const commands: EditorCommand[] = [
-        {
+    case 'CancelSwitchRequested':
+      return {
+        state: { ...state },
+        commands: [{
           kind: 'cancel-switch',
-          payload: { noteId },
-        },
-      ];
-      return { state, commands };
-    }
+          payload: { noteId: action.payload.noteId, issuedAt: action.payload.issuedAt },
+        }],
+      };
 
-    case 'CopyClicked': {
-      // REQ-EDIT-021: Copy body to clipboard — only when copy is allowed.
-      if (!canCopy(action.payload.body, state.status)) {
-        return { state, commands: [] };
-      }
-      const commands: EditorCommand[] = [
-        {
+    // ── Copy and new-note actions ──────────────────────────────────────────────
+    case 'CopyNoteBodyRequested':
+      return {
+        state: { ...state },
+        commands: [{
           kind: 'copy-note-body',
-          payload: {
-            noteId: action.payload.noteId,
-            body: action.payload.body,
-          },
-        },
-      ];
-      return { state, commands };
-    }
+          payload: { noteId: action.payload.noteId, issuedAt: action.payload.issuedAt },
+        }],
+      };
 
-    case 'NewNoteClicked': {
-      // REQ-EDIT-023, REQ-EDIT-024, REQ-EDIT-025: New Note request.
-      // FIND-014: When the reducer's current status is 'saving' (BlurEvent was already
-      // dispatched in the same tick by handleNewNoteClick), record the intent and defer
-      // request-new-note until DomainSnapshotReceived confirms the domain left 'saving'.
-      // When not saving, pass through immediately.
-      if (state.status === 'saving') {
-        // Record the deferred intent; do NOT emit request-new-note yet.
-        const nextState: EditorViewState = {
-          ...state,
-          pendingNewNoteIntent: {
-            source: action.payload.source,
-            issuedAt: action.payload.issuedAt,
-          },
-        };
-        return { state: nextState, commands: [] };
-      }
-      // Not saving: dispatch immediately.
-      const commands: EditorCommand[] = [
-        {
+    case 'RequestNewNoteRequested':
+      return {
+        state: { ...state },
+        commands: [{
           kind: 'request-new-note',
-          payload: {
-            source: action.payload.source,
-            issuedAt: action.payload.issuedAt,
-          },
-        },
-      ];
-      return { state, commands };
-    }
+          payload: { source: action.payload.source, issuedAt: action.payload.issuedAt },
+        }],
+      };
 
     default: {
       const _exhaustive: never = action;
       void _exhaustive;
-      return { state, commands: [] };
+      return passThrough(state);
     }
   }
 }

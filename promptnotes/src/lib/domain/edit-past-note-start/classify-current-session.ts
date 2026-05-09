@@ -2,26 +2,30 @@
 // Step 1: Pure classification of the current editing session.
 //
 // REQ-EPNS-007: Pure function — no ports, no I/O, no Clock.
-//   Signature: (EditingSessionState, Note | null) → CurrentSessionDecision
+//   Signature: (EditingSessionState, BlockFocusRequest, Note | null) → CurrentSessionDecision
 // PROP-EPNS-001: Referential transparency.
 // PROP-EPNS-002: IdleState → no-current.
-// PROP-EPNS-003: EditingState → empty | dirty (based on isEmpty).
-// PROP-EPNS-004: SaveFailedState → dirty.
+// PROP-EPNS-003: EditingState → same-note | empty | dirty (based on noteId match + isEmpty).
+// PROP-EPNS-004: EditingState|SaveFailedState + same-noteId → same-note.
+//
+// FIND-EPNS-S2-P3-006: isEmptyNote moved to is-empty-note.ts (canonical shared helper).
 
 import type { Note } from "promptnotes-domain-types/shared/note";
 import type { EditingSessionState } from "promptnotes-domain-types/capture/states";
-import type { CurrentSessionDecision } from "promptnotes-domain-types/capture/stages";
+import type { BlockFocusRequest, CurrentSessionDecision } from "promptnotes-domain-types/capture/stages";
+import { isEmptyNote } from "./is-empty-note.js";
 
 /**
  * Pure classification of the current editing session.
- * No ports, no I/O — just pattern matching on state and note emptiness.
+ * No ports, no I/O — deterministic over (state, request, currentNote).
  *
  * Preconditions:
- * - SavingState / SwitchingState → throws (caller must guard)
- * - EditingState / SaveFailedState with null currentNote → throws (caller bug)
+ * - SavingState / SwitchingState → throws (PC-003: caller must guard)
+ * - EditingState / SaveFailedState with null currentNote → throws (PC-004: caller bug)
  */
 export function classifyCurrentSession(
   state: EditingSessionState,
+  request: BlockFocusRequest,
   currentNote: Note | null,
 ): CurrentSessionDecision {
   switch (state.status) {
@@ -34,14 +38,15 @@ export function classifyCurrentSession(
           "classifyCurrentSession: currentNote must not be null when status is 'editing'"
         );
       }
-      if (isEmpty(currentNote)) {
+      // Same-note detection: request targets the currently loaded note
+      if (request.noteId === state.currentNoteId) {
+        return { kind: "same-note", noteId: state.currentNoteId, note: currentNote };
+      }
+      // Cross-note: classify by isEmpty
+      if (isEmptyNote(currentNote)) {
         return { kind: "empty", noteId: state.currentNoteId };
       }
-      return {
-        kind: "dirty",
-        noteId: state.currentNoteId,
-        note: currentNote,
-      };
+      return { kind: "dirty", noteId: state.currentNoteId, note: currentNote };
     }
 
     case "save-failed": {
@@ -50,11 +55,15 @@ export function classifyCurrentSession(
           "classifyCurrentSession: currentNote must not be null when status is 'save-failed'"
         );
       }
-      return {
-        kind: "dirty",
-        noteId: state.currentNoteId,
-        note: currentNote,
-      };
+      // Same-note detection (REQ-EPNS-005)
+      if (request.noteId === state.currentNoteId) {
+        return { kind: "same-note", noteId: state.currentNoteId, note: currentNote };
+      }
+      // Cross-note on SaveFailedState is always dirty — never empty.
+      // REQ-EPNS-007: isEmpty is NOT checked for save-failed cross-note.
+      // A note in save-failed was previously dirty; discarding via 'empty' path
+      // would silently drop content the user attempted to save.
+      return { kind: "dirty", noteId: state.currentNoteId, note: currentNote };
     }
 
     case "saving":
@@ -66,8 +75,5 @@ export function classifyCurrentSession(
   }
 }
 
-/** isEmpty: body is empty or whitespace-only. Matches NoteOps.isEmpty semantics. */
-function isEmpty(note: Note): boolean {
-  const raw = note.body as unknown as string;
-  return raw.trim().length === 0;
-}
+// isEmptyNote is now imported from ./is-empty-note.ts (FIND-EPNS-S2-P3-006).
+// See is-empty-note.ts for the canonical NoteOps.isEmpty definition.

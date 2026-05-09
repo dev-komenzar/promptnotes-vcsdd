@@ -1,0 +1,65 @@
+{
+  "feature": "ui-editor",
+  "phase": "1c",
+  "mode": "strict",
+  "iteration": 4,
+  "reviewedAt": "2026-05-06T00:00:00Z",
+  "reviewType": "spec",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-025", "FIND-026", "FIND-027", "FIND-028", "FIND-029", "FIND-033"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "§10 lines 425-443 enumerate 17 EditorCommand variants but RD-017, PROP-EDIT-007 line 174, the Tier 0 obligation line 90, and behavioral-spec.md §10 outbound list all assert '16-variant' or '16 outbound methods' — internal contradiction. The InsertBlock decomposition into two kinds ('insert-block-after' and 'insert-block-at-beginning') in §10 line 428-429 introduces kind strings that do NOT exist in capture/commands.ts (the canonical kind is 'insert-block' with atBeginning discriminator). The EditorCommand request-new-note source literal union matches RequestNewNote in capture/commands.ts, but the trigger-idle-save / trigger-blur-save EditorCommand variants carry a 'source' payload field that is absent from the corresponding TriggerIdleSave / TriggerBlurSave commands in capture/commands.ts (lines 153-163) — wire-boundary contract is unstated."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "§10 lines 952-979 define EditingSessionStateDto with 'save-failed' carrying focusedBlockId: string | null, but capture/states.ts SaveFailedState lines 70-75 does NOT have a focusedBlockId field (only currentNoteId, pendingNextFocus, lastSaveError). This is type-contract drift: the spec extends the DTO with a field that is not in the source-of-truth aggregate, with no documented projection rule. REQ-EDIT-029 / RD-018 / PROP-EDIT-014 all rely on save-failed.focusedBlockId, so this is load-bearing. Likewise, PROP-EDIT-040 asserts a field-for-field mirror across an enumerated set of fields (status, isDirty, currentNoteId, focusedBlockId, pendingNextFocus, isNoteEmpty, lastSaveError) for ANY snapshot S, but the discriminated DTO union exposes different field subsets per status (e.g., isDirty appears only on 'editing'; lastSaveError only on 'save-failed'; focusedBlockId only on 'editing' and 'save-failed'). The mirror property cannot hold field-for-field as written. Section §3 Tier 0 line 91 lists 'BlurEvent' as a member of EditorAction, but no payload shape is defined in either spec file."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-030", "FIND-031", "FIND-032", "FIND-034"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "Coverage Matrix §6 line 335 maps EC-EDIT-009 to PROP-EDIT-045 only, but PROP-EDIT-045 itself (line 213) explicitly defers OS-sleep/resume coverage to PROP-EDIT-033 ('OS sleep/resume covered only by the timer mock test (PROP-EDIT-033)') — the Coverage Matrix entry is wrong. §10 EditorCommand 'cancel-idle-timer' (line 435) has no payload and no corresponding outbound dispatch method in behavioral-spec §10 outbound list (line 928-947), but the §10 Tier 0 exhaustive-switch obligation (line 474-476) tells the impure shell to exhaustively switch on every variant — the spec never tells the implementer that this variant is intentionally adapter-less and must be handled by a non-IPC branch (timerModule.cancelIdleSave). The structural-conformance assertions (line 459-470) only cover three variants and do not pin which variants are adapter-less. The dispatchTriggerIdleSave / dispatchTriggerBlurSave adapter signatures (behavioral-spec.md lines 940-941) carry a 'source' parameter, but capture/commands.ts TriggerIdleSave / TriggerBlurSave (lines 153-163) have no 'source' field, so the IPC wire boundary is asymmetric and the spec never states which side erases or transforms the source."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "REQ-EDIT-035 (lines 570-583) and PROP-EDIT-024a / 024b (lines 191-192) cover only the editing+isDirty=true case and the save-failed case for RequestNewNote. The case 'editing AND isDirty===false' is left unspecified: the REQ acceptance criterion gates blur-save on isDirty===true, but no PROP asserts the direct-dispatch behaviour for the editing+clean case, and no PROP says TriggerBlurSave MUST NOT be dispatched in that case. Phase 2 must guess the expected behaviour."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "iter3FindingsObsoleteByRespec": 2,
+    "newFindingsIntroducedInIter4": 10,
+    "severityBreakdown": {
+      "critical": 0,
+      "major": 4,
+      "minor": 6
+    },
+    "narrative": "Sprint 7 respec rebuilt both spec files end-to-end against the new block-based type contracts. The bulk of the rewrite is internally coherent: REQ/EC/PROP indices line up, the Coverage Matrix lists every REQ-EDIT-001..038 and EC-EDIT-001..014, the FsError / BlockOperationError / BlockType / SaveValidationError enumerations match the type contracts verbatim, the IDLE_SAVE_DEBOUNCE_MS constant is consistently 2000, the Phase 5 audit greps cover purity / svelte-store / EditingSessionState mutation / legacy edit-note-body / @html, and the editorPredicates.ts predicate exports listed in §2 of verification-architecture (canCopy, bannerMessageFor, classifySource, splitOrInsert, classifyMarkdownPrefix, classifyBackspaceAtZero) match the predicate names referenced from REQ acceptance criteria and §7 of behavioral-spec. However, the rewrite introduced four major contract-drift issues that block strict-mode dimension PASS: (a) the EditorCommand union §10 enumerates 17 variants while RD-017 / PROP-EDIT-007 / the Tier 0 obligation / the behavioral §10 outbound list all say '16'; (b) EditingSessionStateDto.save-failed carries a focusedBlockId field that does not exist on the canonical SaveFailedState in capture/states.ts; (c) PROP-EDIT-040 declares a field-for-field mirror that is impossible against a discriminated DTO with per-status field subsets (isDirty, focusedBlockId, pendingNextFocus, lastSaveError each exist on only a subset of variants); (d) the EditorAction discriminated union (§3 Tier 0 line 91) references a 'BlurEvent' variant whose payload shape is defined nowhere. Plus six minor findings: Coverage Matrix EC-EDIT-009 → PROP-EDIT-045 contradicts PROP-EDIT-045's own deferral to PROP-EDIT-033; the EditorCommand 'cancel-idle-timer' variant is adapter-less but the Tier 0 exhaustive-switch obligation never acknowledges this; the dispatchTriggerIdleSave / Blur adapter signatures carry 'source' but the wire-boundary erasure is unstated; REQ-EDIT-035 leaves editing+isDirty=false uncovered; classifyMarkdownPrefix line-context for '---' divider is ambiguous; the Coverage Matrix omits NFR-EDIT-001..008 entries (NFR coverage lives only in §4). All four iter-3 findings (FIND-019..022) are obsolete due to the respec; iter-3 FIND-023 (EditNoteBody payload completeness) and FIND-024 (computeNextFireAt signature) are also obsolete because the corresponding sections were rewritten and the new signatures match. Strict-mode rule: dimension PASS requires zero critical AND zero major. Both dimensions have ≥1 major. Overall verdict FAIL. Human approval gate must NOT proceed; route findings via /vcsdd-feedback to Phase 1a/1b."
+  },
+  "convergenceSignals": {
+    "findingCount": 10,
+    "regressionStatus": "respec-fresh",
+    "newIssueCount": 10,
+    "newIssueSeverity": {
+      "critical": 0,
+      "major": 4,
+      "minor": 6
+    }
+  }
+}

@@ -18,6 +18,9 @@ export type FilterCriteria = {
   readonly frontmatterFields: ReadonlyMap<string, string>;
 };
 
+/** 検索対象スコープ。
+ * `body` は `serializeBlocksToMarkdown(blocks)` の派生プロパティ
+ * （blocks を Markdown 直列化した文字列）を指す。Curate は派生 body 経由で検索する。 */
 export type SearchScope = "body+frontmatter" | "body" | "frontmatter";
 
 export type SearchQuery = {

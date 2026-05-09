@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-008",
+  "severity": "high",
+  "dimension": "verification_readiness",
+  "title": "Sprint 4 が `parseMarkdownToBlocks` の Rust 実装と TS 規範実装の output 一致を検証する PROP を持たない",
+  "location": "verification-architecture.md:580-597",
+  "description": "REQ-FEED-025 line 716-718 は Rust 側で `parseMarkdownToBlocks(body)` を実装する責務を select_past_note 呼び出し元に課す。しかし §13 Sprint 4 Verification Extensions の PROP-FEED-S4-001..015 のいずれもが **Rust 実装が TS 規範実装と同一 block 配列を生成する** ことを保証しない。PROP-FEED-S4-001/002 は compose 関数の入出力を、PROP-FEED-S4-003/010/012/013/014 は serde / event payload 形式を、PROP-FEED-S4-004..009/011 は grep / tsc を、PROP-FEED-S4-015 は DOM をそれぞれ検証するのみ。block 化以前は body を文字列で IPC 越しに送ればよかったが、Sprint 4 で Rust が独自 markdown→block 変換を担う以上、Rust 実装と TS 規範 (`docs/domain/code/ts/src/shared/blocks.ts`) の output が一致しないと wire 上で同じ note でも EditorPane と select_past_note 経路で別 block 構造が露出する。これは block-aware migration の根本目的 (単一情報源化) を裏切るため、verification gap として critical 寄りの high。",
+  "evidence": "behavioral-spec.md:716-718 `NoteRowMetadata.body から parseMarkdownToBlocks(body) 経由で block リストを得る（Rust 側で実装）。`\nverification-architecture.md:580-597 PROP-FEED-S4-001..015 のいずれも Rust↔TS の parser parity を検証する命題が無い。\nshared/blocks.ts (Source of truth) `parseMarkdownToBlocks` / `BlockParseError` を TypeScript で定義。",
+  "remediation": "PROP-FEED-S4-016 (新規) を追加: `Rust parse_markdown_to_blocks(body) と TS parseMarkdownToBlocks(body) が任意の markdown 入力に対して同一 (Vec<DtoBlock>, BlockParseError) ペアを返す`。Tier 2 fast-check で markdown arbitrary を生成し、Rust (cargo test) / TS (vitest) の両方を実行して shared expected JSON snapshot で対比、または double-cross-check として TS 側が parse 結果 JSON を Rust 側 expected と比較する E2E 整合 test を追加。または `app-startup` feature の Hydration parser 実装と同一コード (例: WASM / 単一 Rust crate) を使う方針を spec に書き、別実装を禁止する。"
+}

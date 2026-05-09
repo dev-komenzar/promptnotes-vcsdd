@@ -1,0 +1,24 @@
+{
+  "findingId": "FIND-095",
+  "sprint": 8,
+  "iteration": 1,
+  "dimension": "out_of_scope_discipline",
+  "category": "verification_tool_mismatch",
+  "severity": "minor",
+  "title": "REQ-IPC-017 emit logic on trigger_idle_save / trigger_blur_save / retry_save is unreachable in production due to a pre-Sprint-8 wire-glue mismatch",
+  "description": "The Rust handlers `trigger_idle_save`, `trigger_blur_save`, and `retry_save` (`promptnotes/src-tauri/src/editor.rs:373-408`) declare `body: String` as a required parameter. The TypeScript adapter that forwards these dispatches (`promptnotes/src/lib/editor/tauriEditorAdapter.ts:108-124`) sends ONLY `{ noteId, issuedAt }` — `body` (and, for the trigger variants, `source`) are absent from the IPC payload. In production, Tauri's serde deserialization of the command parameter struct will reject the call (missing field 'body') so save_note_and_emit and the REQ-IPC-017 emit path (Editing on Ok / SaveFailed on Err) is never executed end-to-end. This is NOT a Sprint-8-introduced defect — the signature mismatch exists on `main` and is independent of the wire-payload migration. It is also explicitly out-of-scope for Sprint 8 per §15.4 (Sprint 8 scope is the emit-side payload only). It is recorded here so that Phase 5 / a follow-up sprint cannot mistake the green Sprint-8 unit-test result for a green end-to-end save path.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/tauriEditorAdapter.ts",
+    "lineRange": "108-124",
+    "snippet": "dispatchTriggerIdleSave(payload: { source: 'capture-idle'; noteId: string; issuedAt: string }): Promise<void> {\n  return invoke(CMD.triggerIdleSave, {\n    noteId: payload.noteId,\n    issuedAt: payload.issuedAt,\n  });\n},"
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "373-408",
+    "snippet": "pub fn trigger_idle_save(\n    app: AppHandle,\n    note_id: String,\n    body: String,\n    issued_at: String,\n    source: String,\n) -> Result<(), String> {"
+  },
+  "recommendation": "Sprint 8 PASS does NOT imply that REQ-IPC-017 success/failure paths are reachable in production. A follow-up sprint must either (a) extend the TS adapter to forward `body` (and optionally `source`) over the wire, or (b) refactor the Rust handler to read the latest body from a Rust-owned session buffer. Track as a known limitation in the Sprint 8 closing notes; do NOT treat as a Sprint 8 blocker.",
+  "routeToPhase": "follow-up-sprint",
+  "discoveredVia": "manual-review",
+  "scope": "out-of-scope-for-sprint-8"
+}

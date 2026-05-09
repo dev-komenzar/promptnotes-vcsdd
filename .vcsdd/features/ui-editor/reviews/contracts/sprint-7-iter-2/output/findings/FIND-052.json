@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-052",
+  "dimension": "contract_alignment",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "FIND-043 (iter-1) was only partially resolved. The actual test descriptions in `__tests__/prop/*.prop.test.ts` and `__tests__/{editorReducer,editorPredicates,debounceSchedule}.test.ts` use Unicode characters `≥` (U+2265) and `→` (U+2192), but the contract cites these same names with ASCII substitutes `>=` and `->`. Examples: contract CRIT-703 cites `'PROP-EDIT-001a: splitOrInsert(contentLength, contentLength) === insert for any contentLength >= 0 (>=100 runs)'` but source line 79 of editorPredicates.prop.test.ts has `'PROP-EDIT-001a: splitOrInsert(contentLength, contentLength) === insert for any contentLength ≥ 0 (≥100 runs)'`. CRIT-704 cites `'REQ-EDIT-013: saving->editing snapshot emits cancel-idle-timer'` but editorReducer.test.ts line 190 has `'REQ-EDIT-013: saving→editing snapshot emits cancel-idle-timer'`. CRIT-705 cites `'CRIT-705: debounce elapsed, unsaved -> shouldFire=true'` but debounceSchedule.test.ts line 49 has `'CRIT-705: debounce elapsed, unsaved → shouldFire=true'`. CRIT-714 PROP-EDIT-040a etc. all use `→` and `≥` in source. Reviewers running exact-string grep against the contract names will report mismatch despite the tests existing.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/editor/__tests__/prop/editorPredicates.prop.test.ts",
+    "lineRange": "79",
+    "snippet": "test('PROP-EDIT-001a: splitOrInsert(contentLength, contentLength) === insert for any contentLength ≥ 0 (≥100 runs)', () => {"
+  },
+  "routeToPhase": "contract-revision"
+}

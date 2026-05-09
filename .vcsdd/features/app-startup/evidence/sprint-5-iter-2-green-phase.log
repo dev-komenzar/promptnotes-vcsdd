@@ -1,0 +1,140 @@
+## Sprint 5 iter-2 — Phase 2b (Green Phase) Evidence
+
+**Feature**: app-startup
+**Sprint**: 5
+**Iteration**: 2
+**Phase**: 2b (Green)
+**Date**: 2026-05-08
+**Spec revision**: 8 (FIND-030/031 resolved, Q5=A, Q6=A)
+
+---
+
+## Gate Result
+
+target-feature-tests: PASS
+regression-baseline: PARTIAL (see blocker below)
+
+---
+
+## Test Suite Summary
+
+- **Target (app-startup)**: 212 pass / 0 fail across 17 files
+- **Full suite**: 1941 pass / 2 fail / 4 skip / 4 todo across 1951 tests in 157 files
+- **New tests from iter-2 (28)**: ALL PASS
+- **Pre-existing regressions**: 2 FAIL in `prop-026-blocks-markdown-roundtrip.harness.test.ts` (BLOCKER — see below)
+
+---
+
+## Files Changed
+
+### 1. `promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts`
+
+**PROP-031 / REQ-002 rev8 / FIND-031 / Q5=A**:
+
+- Removed: `if (markdown === "") return Ok([paragraph("")])` (empty-string fallback)
+- Removed: `if (blocks.length === 0) blocks.push(paragraph(""))` (end-of-input guarantee)
+- Added: `if (markdown.trim() === "") return Ok([])` at top (whitespace-only → empty result)
+- Added per-line: `if (line.trim() === "") { i++; continue; }` (blank lines as separators, not content)
+- Result: parser NEVER emits `paragraph("")` for any input; whitespace-only bodies → `Ok([])`
+
+### 2. `promptnotes/src/lib/domain/app-startup/hydrate-note.ts`
+
+**REQ-002 rev8 / PROP-027 / FIND-031 / Q5=A**:
+
+- Removed: `const contentBlocks = blocksResult.value.filter(...)` (empty-paragraph filter)
+- Removed: `if (contentBlocks.length === 0) return Err('block-parse')` (post-filter length check)
+- Removed: `contentBlocks.map((block, idx) => ({ ...block, id: \`block-${idx}\` }))` (BlockId reassignment)
+- Removed: `import type { BlockId }` (no longer used)
+- Added: `const blocks: ReadonlyArray<Block> = blocksResult.value` (pure pass-through)
+- The `blocksResult.value.length === 0 → Err('block-parse')` check at the head is preserved (PROP-029 / aggregates.md §1.5 invariant 6)
+- Updated leading comment to remove "Empty-paragraph filtering" section (no longer accurate)
+
+### 3. `promptnotes/src/lib/domain/app-startup/hydrate-feed.ts`
+
+**PROP-032 / REQ-008 rev8 / FIND-030 / Q6=A**:
+
+- Removed: `const step3CorruptedFiles: CorruptedFile[] = []` accumulator
+- Removed: routing hydrateNote Err to `step3CorruptedFiles`
+- Added: `throw new Error(\`hydrateNote-invariant-violation: ${snapshot.filePath}: ${noteResult.error}\`)`
+- Removed: merge of step2 + step3 corrupted files (now just passes step2CorruptedFiles through)
+- Updated comment and JSDoc to reflect PROP-032 semantics
+
+---
+
+## New Passing Tests (28 from iter-2)
+
+### parse-markdown-to-blocks-blank-lines.test.ts (PROP-031) — 18 tests
+- Whitespace-only inputs → `Ok([])` (8 parameterized cases)
+- Blank-line coalescing between content blocks (6 named cases)
+- Property test: no `paragraph('')` in any output (fast-check, 200 runs)
+
+### hydrate-note-purity.test.ts (REQ-002 rev8) — 3 new tests
+- Pass-through test: stub returning `[paragraph(''), heading-1(''), paragraph('')]` → all 3 blocks preserved
+- No-filter test: stub returning `[paragraph('')]` → `Ok(Note)` with 1 block (not `Err`)
+- No-BlockId-reassignment test: stub returning `[{id: 'block-5', ...}, {id: 'block-7', ...}]` → IDs preserved
+
+### step3-hydrate-feed.test.ts (PROP-032) — 4 new tests
+- Throws on divergent parser stub → `Error` matching `/^hydrateNote-invariant-violation: .+: .+$/`
+- Thrown message contains `snapshot.filePath` and `reason`
+- Throws even when 1 snapshot succeeds and 1 diverges
+- Does NOT throw on happy path (all snapshots succeed)
+
+### Additional tests (3 from other new tests)
+- (Accounted for in total)
+
+---
+
+## BLOCKER: PROP-026 Roundtrip Regression — RESOLVED (iter-2 continuation)
+
+**Cause**: PROP-031 (rev8) and PROP-026 (pre-rev8, required: false) are mutually contradictory.
+
+- PROP-031 requires: `parseMarkdownToBlocks("") = Ok([])` (empty string → empty result, no `paragraph("")`)
+- PROP-026 requires: `paragraph("")` round-trips through `serializeBlocksToMarkdown → parseMarkdownToBlocks`
+- `serializeBlocksToMarkdown([paragraph("")]) = ""` (serializer emits `""` for empty paragraph)
+- Therefore: round-trip gives `Ok([])` not `[paragraph("")]` → PROP-026 "empty paragraph" test fails
+
+**Decision**: Update the capture-auto-save PROP-026 test, NOT the parser.
+**Justification**: In production, `note.isEmpty()` validation prevents saving notes where blocks
+degenerate to `[paragraph("")]` — so the round-trip case is unreachable. The harness test exercises
+a corner that never occurs in production. PROP-031 is `required: true`; PROP-026 is `required: false`.
+
+**Changes made**:
+- Updated file header comment to document the cross-feature conflict rationale
+- Replaced `"empty paragraph block roundtrips structurally"` test with
+  `"empty paragraph block does NOT roundtrip (rev8 contract)"` that asserts:
+  `serializeBlocksToMarkdown([paragraph("")]) === ""` AND
+  `parseMarkdownToBlocks("") = Ok([])` (not `[paragraph("")]`)
+- Updated `arbParagraphBlock()` to filter out empty-content paragraphs from the
+  property-based roundtrip domain (empty content would fail the fast-check property)
+- File: `promptnotes/src/lib/domain/__tests__/capture-auto-save/__verify__/prop-026-blocks-markdown-roundtrip.harness.test.ts`
+
+---
+
+## FIND-033 Deferral
+
+**Status**: deferred (not resolved)
+**Rationale**: Removing `parseMarkdownToBlocks` from `ScannedVault` would require restructuring
+the PROP-030 call-counting tests in the test harness. This is beyond minimum-scope for sprint-5 iter-2.
+**Action taken**:
+- Added deferral comment to `stages.ts` in the `ScannedVault` type JSDoc
+- Updated `.vcsdd/features/app-startup/reviews/sprint-5/output/findings/FIND-033.json` with
+  `"resolution": "deferred"` and deferral note
+
+---
+
+## Final Test Suite Summary (iter-2 continuation)
+
+target-feature-tests: PASS
+regression-baseline: PASS
+
+- **bun test (full suite)**: 1943 pass / 0 fail / 4 skip / 4 todo across 1951 tests in 157 files
+- **bun run test:dom (vitest)**: 216 pass / 0 fail across 18 files
+- **PROP-026 harness**: 20 pass / 0 fail (was 18 pass / 2 fail before fix)
+- **App-startup**: 212 pass (unchanged, as expected)
+- **New TypeScript errors introduced**: 0
+
+---
+
+## Typecheck
+
+TypeScript: `bunx tsc --noEmit` → 74 errors (all pre-existing, no new errors introduced)

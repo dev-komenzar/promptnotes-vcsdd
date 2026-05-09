@@ -1,0 +1,98 @@
+{
+  "verdict": "PASS",
+  "timestamp": "2026-05-07T00:00:00Z",
+  "feature": "capture-auto-save",
+  "iteration": 5,
+  "phase": "1c",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L155-156",
+          "description": "REQ-004 acceptance criterion #1 now correctly distinguishes per-variant body shape: paragraph-only variants → empty/whitespace-only string; divider-bearing variants → contains `---`. Matches FIND-020 recommended fix verbatim and aligns with aggregates.md L78 (divider Markdown form `---`) and blocks.ts L40-44 (SerializeBlocksToMarkdown contract)."
+        },
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L97-108, L114-123",
+          "description": "Note.isEmpty broader definition (FIND-012) consistently applied: REQ-003 prose definition matches the variants table (all 5 true-isEmpty variants enumerated). aggregates.md L120 and L142 cited."
+        },
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L411-412, verification-architecture.md L177",
+          "description": "Factory pattern (FIND-013): REQ-018 acceptance and PROP-024 both reference `buildValidatedSaveRequest`. Rust echo policy explicitly noted (REQ-018 cross-language clarification)."
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "type": "file",
+          "location": "verification-architecture.md L157",
+          "description": "PROP-004 description now explicitly limits its assertion to pipeline routing (`result.kind === 'validated'`) and delegates body-shape coherence to REQ-018/PROP-024. Removes the previous test-author trap of asserting body emptiness."
+        },
+        {
+          "type": "file",
+          "location": "verification-architecture.md L178",
+          "description": "PROP-025 generator enumerates all 8 variants (5 true + 3 false), making the property test concretely buildable."
+        },
+        {
+          "type": "file",
+          "location": "verification-architecture.md L181, L200",
+          "description": "PROP-028 (Tier 0 type-level signature assertion) preserved; required:true list still has 8 entries matching the body."
+        }
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L114-123",
+          "description": "Empty-Note variants table is exhaustive over the 8 enumerated shapes; idle/blur behavior is specified per row. Acceptance criteria for both REQ-003 (idle discard) and REQ-004 (blur save) explicitly mention all 5 true-isEmpty variants by name."
+        },
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L156",
+          "description": "Variant-specific body shape now spelled out for blur path; closes the previously hand-waved divider-variant case."
+        }
+      ]
+    },
+    "purity_boundary_clarity": {
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "type": "file",
+          "location": "verification-architecture.md L13-25",
+          "description": "Purity Boundary Map cleanly separates pure core (`serializeBlocksToMarkdown`, `serializeNote`, `Note.isEmpty`, mappings) from effectful shell (`Clock.now`, `FileSystem.writeFileAtomic`, `publish`). `updateProjections` correctly marked Out of scope."
+        },
+        {
+          "type": "file",
+          "location": "verification-architecture.md L68-118",
+          "description": "Internal pure functions section distinguishes Shared Kernel pure functions (`SerializeBlocksToMarkdown`, `FrontmatterSerializerToYaml`, `IsEmptyOrWhitespaceContent`) from injected ports — none are in CaptureDeps (ports.ts confirms: only clockNow, allocateNoteId, clipboardWrite, publish)."
+        }
+      ]
+    },
+    "traceability_completeness": {
+      "verdict": "PASS",
+      "evidence": [
+        {
+          "type": "file",
+          "location": "verification-architecture.md L206-225",
+          "description": "Coverage Matrix has 18 rows (REQ-001..REQ-018) and every REQ has at least one PROP. Total PROPs: 28 (PROP-001..PROP-028) — matches stated total at L227. Required:true count is 8 (PROP-001, PROP-002, PROP-003, PROP-004, PROP-005, PROP-014, PROP-024, PROP-028) — matches L192-200 enumeration."
+        },
+        {
+          "type": "file",
+          "location": "behavioral-spec.md L11-25, verification-architecture.md L231-241",
+          "description": "Both Revision Logs include the new 4.1 entry for FIND-020. Revision counts and PROP/REQ totals are coherent across the two files."
+        }
+      ]
+    }
+  },
+  "priorFindingResolutions": {
+    "FIND-020": "resolved"
+  },
+  "summary": "Revision 4.1 cleanly resolves FIND-020. REQ-004 acceptance criterion #1 (behavioral-spec.md L156) now states variant-specific body shape, matching aggregates.md L78 (divider → `---`) and blocks.ts SerializeBlocksToMarkdown contract. PROP-004 description (verification-architecture.md L157) was updated to limit its assertion to pipeline routing only, delegating body coherence to REQ-018/PROP-024. Revision 4 fixes (FIND-012..019) remain intact: the broader Note.isEmpty rule is consistently applied across REQ-003, REQ-004, the variants table, PROP-025, and the Event Catalog; the Step 4 reframing leaves no contradictions in REQ-016 acceptance or the Pipeline Overview; the factory pattern is correctly defined with `buildValidatedSaveRequest` referenced from both REQ-018 and PROP-024. PROP/REQ counts (28/18) and required:true count (8) remain coherent. No new defects identified."
+}

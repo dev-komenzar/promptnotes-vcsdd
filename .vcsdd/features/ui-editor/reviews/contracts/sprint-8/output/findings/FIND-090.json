@@ -1,0 +1,19 @@
+{
+  "findingId": "FIND-090",
+  "criterion": "CRIT-804",
+  "dimension": "wire_contract_consistency",
+  "category": "verification_tool_mismatch",
+  "severity": "major",
+  "description": "CRIT-804's regex for catching the legacy 6-positional `make_editing_state_changed_payload` form is line-bounded under `grep -nE`. The pattern `make_editing_state_changed_payload\\s*\\([^)]*,[^)]*,[^)]*,[^)]*,[^)]*,[^)]*\\)` uses `[^)]*` between commas; in line-based grep these character classes do NOT cross newlines because each input line is matched independently. A multi-line legacy call such as:\n\n```rust\nmake_editing_state_changed_payload(\n    status, is_dirty, current_note_id,\n    pending_next_note_id, last_error, body,\n)\n```\n\nwould silently escape the audit because no single line contains all 5 (or 6) commas with the closing paren on the same line. The companion `wire_audit.sh` PROP-IPC-021 pattern (`make_editing_state_changed_payload[[:space:]]*([^)]+,[^)]+,[^)]+,[^)]+,[^)]+,[^)]+)`) suffers from the same line-mode limitation. Sprint 8's actual Phase 2c migration eliminated all legacy call-sites (verified via `cargo test` 89/89 PASS), so the audit currently returns zero hits for the right reason — but the regex is not robust against a future regression that reintroduces a multi-line legacy call. To force the regex to be sound, either (a) add `-z` (null-delimited) or `-P` (PCRE2 with `(?s)` DOTALL) or `pcregrep -M` to span newlines, or (b) tighten the PROP-IPC-021 obligation so the audit asserts the helper is only EVER called with exactly one positional argument by counting top-level commas inside the paren. As written, CRIT-804 is implementable but its 'soundness against regression' guarantee is weaker than the description claims.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "lineRange": "105-111",
+    "snippet": "passThreshold: >\n  `grep -n \"is_dirty: bool\" promptnotes/src-tauri/src/editor.rs | grep -v \"Editing {\"`\n  returns zero hits (no remaining flat field outside the Editing variant).\n  `grep -nE \"make_editing_state_changed_payload\\s*\\([^)]*,[^)]*,[^)]*,[^)]*,[^)]*,[^)]*\\)\"\n  promptnotes/src-tauri/src/` returns zero hits."
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/tests/wire_audit.sh",
+    "lineRange": "146-166",
+    "snippet": "LEGACY_PATTERN='make_editing_state_changed_payload[[:space:]]*([^)]+,[^)]+,[^)]+,[^)]+,[^)]+,[^)]+)'\n# Use grep -E on all .rs files in src/\nlegacy_hits=$(grep -rn -E \"$LEGACY_PATTERN\" \"$SRC_TAURI/src/\" 2>/dev/null || true)"
+  },
+  "routeToPhase": "1c"
+}

@@ -1,0 +1,22 @@
+PROP-025 — parseMarkdownToBlocks purity (Tier 1 fast-check)
+Date: 2026-05-08T00:00:00Z
+Sprint: 5 iteration 2
+Command: cd promptnotes && bun test src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-purity.test.ts
+
+bun test v1.3.11 (af24e281)
+ 8 pass
+ 0 fail
+ 38 expect() calls
+Ran 8 tests across 1 file. [87.00ms]
+
+Test mapping:
+  PROP-025 — simple paragraph: same markdown → same Block[] with same BlockIds                              PASS
+  PROP-025 — multi-block markdown: both calls produce same BlockId sequence (block-0, block-1, ...)        PASS
+  PROP-025 — code block (fence): deterministic BlockId even after other parse calls                         PASS
+  PROP-025 / PROP-031 rev8 — empty string produces Ok([]) (whitespace-only → no content blocks)           PASS
+  PROP-025 property (fast-check): ∀ markdown, parseMarkdownToBlocks(m) deepEquals parseMarkdownToBlocks(m) PASS (100 runs)
+  PROP-025 — positional BlockId: 5-block document has IDs block-0 through block-4                          PASS
+  PROP-025 — interleaved calls: multiple different inputs don't contaminate each other's BlockIds           PASS
+  PROP-025 — BlockIds are NOT UUID format (must be positional block-N)                                      PASS
+
+RESULT: PROVED — all 8 tests pass, fast-check 100 runs, 0 counterexamples found

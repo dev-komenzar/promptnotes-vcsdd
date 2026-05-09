@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-079",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "major",
+  "description": "Sprint 8 EC-IPC-001..010 enumerates 10 edge cases but is missing several wire-shape edges that are observable from the existing handler implementations and the TS↔Rust contract: (1) `select_past_note` for a note that fails the vault scan (file unreadable / disappeared mid-scan in feed.rs:339-374): `scan_vault_feed` silently drops failed entries, but `select_past_note` (feed.rs:243-269) still proceeds and the `body` lookup at line 257 returns `\"\"` via `unwrap_or(\"\")`. The emitted variant would be `editing` with `currentNoteId` of a missing note and `isNoteEmpty: true` — there is NO EC-IPC for this. (2) `cancel_switch` when there is no preceding `save-failed` state (i.e., user cancels a `switching` state directly): REQ-IPC-015 still emits `editing` with `focusedBlockId: null`, but the TS reducer's 'retained priorFocusedBlockId' is undefined in this path (see FIND-074). (3) `body=\"\"` vs `body=\"\\n\"` vs `body=\"  \"` (whitespace-only) for `isNoteEmpty`: §15.4 line 1258 says Sprint 8 emits `isNoteEmpty = body.is_empty()` — a strict byte-empty check — meaning `body=\"\\n\"` would emit `isNoteEmpty: false`, while the canonical `note.isEmpty()` (NoteOps) would return `true` for whitespace-only. EC-IPC-010 covers `body=\"\"` only; the whitespace-only case is undefined. (4) `request_new_note` racing with the FIRST emit subscriber: the `app.emit` in editor.rs:354 may fire BEFORE the TS-side `subscribeToEditorState` listener is registered during app cold start. Tauri events are not buffered. No EC-IPC covers the emit-before-subscribe race.",
+  "fileEvidence": [
+    {
+      "path": "promptnotes/src-tauri/src/feed.rs",
+      "lineRange": "243-269",
+      "snippet": "pub fn select_past_note( app: AppHandle, note_id: String, vault_path: String, issued_at: String, ) -> Result<(), String> {\n    let _ = issued_at;\n    let snapshot = make_editing_state_changed_snapshot(&note_id, &vault_path);\n    let body = snapshot.note_metadata.get(&note_id).map(|m| m.body.as_str()).unwrap_or(\"\");\n    ..."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1258",
+      "snippet": "note.isEmpty() evaluation on the Rust side from raw bytes: Sprint 8 emits isNoteEmpty = body.is_empty() as a conservative byte-level check; richer block-based emptiness (whitespace-only) is owned by capture-auto-save."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1240-1251",
+      "snippet": "### 15.3 Edge cases (EC-IPC-001..010)\n... (10 cases enumerated; no row for failed vault scan, no row for cancel_switch without preceding save-failed, no row for body=\"\\n\", no row for emit-before-subscribe race)"
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-014", "REQ-IPC-015", "REQ-IPC-018", "EC-IPC-010"],
+  "recommendation": "Add four EC-IPC entries: (a) EC-IPC-011 — `select_past_note(noteId)` for a noteId not present in scan_vault_feed's metadata: `body` resolves to `\"\"`, emitted variant is `editing` with `isNoteEmpty: true`. (b) EC-IPC-012 — `cancel_switch` invoked when the prior state is `switching` (not `save-failed`): emitted variant is `editing` with `focusedBlockId: null` AND the TS reducer must NOT reach for a non-existent `priorFocusedBlockId`. (c) EC-IPC-013 — `body=\"\\n\"` (whitespace-only, byte-non-empty): emitted `isNoteEmpty: false` with explicit warning that this differs from `NoteOps.isEmpty()` — and the TS Copy button enable matrix uses the byte-level check until block parsing is added. (d) EC-IPC-014 — emit-before-subscribe race for `request_new_note` during cold start: caller must `await listenReady` (or equivalent) before invoking `request_new_note`."
+}

@@ -53,11 +53,11 @@
   const deleteDisabled = $derived(isDeleteButtonDisabled(noteId, viewState.editingStatus, viewState.editingNoteId));
 
   /**
-   * FIND-006 fix: showPendingSwitch requires BOTH pendingNextNoteId match AND
+   * FIND-006 fix / REQ-FEED-026: showPendingSwitch requires BOTH pendingNextFocus.noteId match AND
    * editingStatus ∈ {'switching', 'save-failed'} (defense-in-depth guard per REQ-FEED-009).
    */
   const showPendingSwitch = $derived(
-    viewState.pendingNextNoteId === noteId &&
+    viewState.pendingNextFocus?.noteId === noteId &&
     (viewState.editingStatus === 'switching' || viewState.editingStatus === 'save-failed')
   );
 

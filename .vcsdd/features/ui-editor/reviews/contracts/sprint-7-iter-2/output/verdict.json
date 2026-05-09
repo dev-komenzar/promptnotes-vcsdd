@@ -1,0 +1,58 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "mode": "strict",
+  "sprint": 7,
+  "iteration": 2,
+  "reviewedAt": "2026-05-06T00:00:00Z",
+  "reviewType": "contract",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "contract_validity",
+      "verdict": "FAIL",
+      "findings": ["FIND-048", "FIND-049", "FIND-050", "FIND-051"],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-editor/contracts/sprint-7.md", "description": "Weight Total now sums to 1.00 (FIND-035 resolved); contract uses `bun run test:dom` consistently (FIND-036 resolved at the script-name level); rgba grep uses `0px 23px 52px` substring (FIND-041 resolved)."}
+      ]
+    },
+    {
+      "name": "contract_alignment",
+      "verdict": "FAIL",
+      "findings": ["FIND-052", "FIND-053", "FIND-054"],
+      "evidence": [
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/prop/", "description": "Property test files exist at the cited paths (FIND-037 resolved)."},
+        {"type": "file", "location": "promptnotes/src/lib/editor/__tests__/dom/", "description": "DOM vitest files live at the cited dom/ subdirectory (FIND-038 resolved)."},
+        {"type": "file", "location": ".vcsdd/features/ui-editor/contracts/sprint-7.md", "description": "EC-EDIT regex `0(0[1-9]|1[0-4])` covers exactly the 14 spec IDs (FIND-045 resolved); editor-scope type-check via `bun run check | grep src/lib/editor/` (FIND-044 resolved)."}
+      ]
+    }
+  ],
+  "summary": "Contract iter-2 fixes 9 of the 13 iter-1 findings cleanly (FIND-035, 036, 037, 038, 040, 041, 044, 045, 047 resolved). However, three substantive iter-1 issues persist (FIND-039 partially, FIND-042 not at all, FIND-043 partially) and four new issues are introduced. Test-runner mismatch is the dominant new defect: `bun run test:dom` runs only `*.dom.vitest.ts` per vitest.config.ts include pattern, but CRIT-703/704/705/714 require pure-tier prop tests and bun:test unit tests to pass via `bun run test:dom`; those tests use `import from 'bun:test'` and are not picked up by vitest. Additional defects: CRIT-702 `kind:` grep still over-counts because three `_Assert*` type aliases in types.ts use `{ kind: 'X' }` syntax (would output 20, not 17); coverage JSON path still queries non-existent `branchCoverage.pct` (actual key is `branches.pct`); SaveFailureBanner contains `#dd5b00` twice (data-accent-color attribute and border-left CSS) so `grep -c == 1` is unsatisfiable; assertion strings use Unicode `≥`/`→` in source but ASCII `>=`/`->` in contract (CRIT-703/704/705/714 cited names mismatch). Phase 3 cannot proceed against this contract: at least four passThresholds remain unevaluable as written and test-runner architecture has not been verified by the builder.",
+  "convergenceSignals": {
+    "findingCount": 7,
+    "criticalCount": 4,
+    "majorCount": 3,
+    "minorCount": 0,
+    "evaluatedCriteria": [
+      "CRIT-700", "CRIT-701", "CRIT-702", "CRIT-703", "CRIT-704",
+      "CRIT-705", "CRIT-706", "CRIT-707", "CRIT-708", "CRIT-709",
+      "CRIT-710", "CRIT-711", "CRIT-712", "CRIT-713", "CRIT-714"
+    ],
+    "duplicateFindings": [],
+    "iter1FindingsResolved": [
+      "FIND-035", "FIND-036", "FIND-037", "FIND-038", "FIND-040",
+      "FIND-041", "FIND-044", "FIND-045", "FIND-047"
+    ],
+    "iter1FindingsPartiallyResolved": [
+      "FIND-039", "FIND-043", "FIND-046"
+    ],
+    "iter1FindingsUnresolved": [
+      "FIND-042"
+    ]
+  },
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "contractDigest": null
+  }
+}

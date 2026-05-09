@@ -1,0 +1,15 @@
+{
+  "id": "FIND-025",
+  "severity": "major",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md §10 lines 425-443; behavioral-spec.md §9 RD-017; verification-architecture.md §3 Tier 0 line 90; verification-architecture.md §4 PROP-EDIT-007 line 174",
+  "description": "EditorCommand union arity contradiction. The canonical union definition at verification-architecture.md §10 lines 425-443 lists 17 distinct kind values: focus-block, edit-block-content, insert-block-after, insert-block-at-beginning, remove-block, merge-blocks, split-block, change-block-type, move-block, cancel-idle-timer, trigger-idle-save, trigger-blur-save, retry-save, discard-current-session, cancel-switch, copy-note-body, request-new-note. However, the spec asserts a 16-variant count in three places: RD-017 (behavioral-spec.md line 916: 'EditorCommand discriminated union: 16-variant union matching the new block-based contract'), PROP-EDIT-007 (verification-architecture.md line 174: 'each element\\'s `kind` is one of the 16 variants in §10'), and Tier 0 obligation (verification-architecture.md line 90: 'EditorCommand 16-variant union §10'). The behavioral-spec.md §10 outbound dispatch list has 16 entries (lines 931-946) — matching the 16-claim — but that count is correct because cancel-idle-timer is intentionally adapter-less (it triggers a local timerModule call, not an IPC). The mismatch is therefore between the union arity (17) and the assertion text (16). Phase 2 property tests for PROP-EDIT-007 will assert against the wrong arity unless this is resolved.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+    "lineRange": "425-443",
+    "snippet": "type EditorCommand = | { kind: 'focus-block'; ... } | ... | { kind: 'cancel-idle-timer' } | ... | { kind: 'request-new-note'; ... } // 17 variants total"
+  },
+  "suggestedRemediation": "Either (a) revise RD-017, PROP-EDIT-007, and the Tier 0 obligation to say '17 variants' AND explicitly note that 16 are IPC-adapter variants plus 1 local-effect variant (cancel-idle-timer), OR (b) remove cancel-idle-timer from EditorCommand and treat idle-timer cancellation as a non-command shell side-effect derived from snapshot transitions (saving / saved). Option (a) is preferred to preserve PROP-EDIT-012's reducer obligation that NoteFileSaved produces a cancel-idle-timer command.",
+  "routeToPhase": "1b"
+}

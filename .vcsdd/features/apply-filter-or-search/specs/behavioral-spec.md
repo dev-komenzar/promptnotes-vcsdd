@@ -35,6 +35,8 @@ These decisions are recorded here because they are not yet reflected in the upst
 
 **Decision**: For MVP, the `"body+frontmatter"` search scope covers `snapshot.body` and the string representations of `snapshot.frontmatter.tags`. It does NOT cover `createdAt`/`updatedAt` timestamps (not natural search targets) nor future user-defined frontmatter fields (not yet in the MVP schema).
 
+**Block migration note (2026-05-09)**: In the block-based model (`feature/inplace-edit-migration`), the canonical representation of note content is `note.blocks: Block[]`. The `snapshot.body` used as the search target is the **derived body** — the Markdown string produced by `serializeBlocksToMarkdown(note.blocks)`. The search implementation SHALL use this derived body string. The `NoteFileSnapshot.body` at the file boundary retains the same Markdown string form, so the search predicate and its acceptance criteria remain unchanged. See `docs/tasks/block-migration-spec-impact.md` §apply-filter-or-search and `shared/blocks.ts` `serializeBlocksToMarkdown`.
+
 **Rationale**: `aggregates.ts` defines `SearchScope = "body+frontmatter" | "body" | "frontmatter"`. The MVP frontmatter schema has only `tags`, `createdAt`, and `updatedAt`. Timestamps are not natural free-text targets. No other text-typed frontmatter fields exist in MVP. REQ-011 scopes to tag name strings only. If future text-typed frontmatter fields are added, a spec amendment is required.
 
 **Open question for future amendment**: Extend REQ-011 and the search implementation to cover additional text-typed frontmatter fields when they are added to the schema.
@@ -221,6 +223,8 @@ The pipeline is **fully pure**: no I/O, no clock reads, no shared mutable state.
 **EARS**: WHEN `applied.query` is non-null THEN a snapshot SHALL be included if and only if `query.text` (as a literal substring, case-insensitive) appears in the snapshot's `body` string OR in any of its `frontmatter.tags` string representations. No regex semantics apply.
 
 **Search scope (Design Decision DD-2)**: Frontmatter search covers `frontmatter.tags` string representations only. Timestamps (`createdAt`, `updatedAt`) are excluded — they are not natural free-text search targets. No other text-typed frontmatter fields exist in the MVP schema. See DD-2 in the Design Decisions section above.
+
+**Block migration note (2026-05-09)**: The `snapshot.body` referenced here is the **derived body** — the Markdown string obtained via `serializeBlocksToMarkdown(note.blocks)`. The `NoteFileSnapshot.body` at the file boundary retains the same Markdown representation, so the acceptance criteria below are unchanged. See DD-2 block migration note for details.
 
 **Source**: aggregates.md §2 `SearchQuery.scope: 'body+frontmatter'` and the `applySearch` operation; ui-fields.md §1D ("部分一致、大文字小文字無視 = MVP 仕様"; "MVP は部分一致前提で `searchTextRaw: string` を `SearchQuery.text: string` に直流し"); validation.md Scenario 6 ("検索でハイライト確認"); glossary.md ("検索：フリーテキストによる絞り込み（本文 + frontmatter）").
 

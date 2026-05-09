@@ -1,0 +1,130 @@
+{
+  "feature": "ui-editor",
+  "phase": "contract-review",
+  "mode": "strict",
+  "sprint": 8,
+  "iteration": 2,
+  "reviewedAt": "2026-05-09T04:30:00Z",
+  "reviewType": "contract",
+  "overallVerdict": "FAIL",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "criteria": ["CRIT-800", "CRIT-801", "CRIT-808", "CRIT-809"],
+      "findings": ["FIND-091", "FIND-092"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:30-65",
+          "description": "Spec REQ / EC coverage map comment block is present. Lines 31-50 contain 20 REQ-IPC entries (REQ-IPC-001..020), each prefixed by `///   ` (matching `^///\\s+REQ-IPC-0(0[1-9]|1[0-9]|20)`). Lines 52-65 contain 14 EC-IPC entries (EC-IPC-001..014), each matching `^///\\s+EC-IPC-0(0[1-9]|1[0-4])`. The mechanical line-count thresholds in CRIT-800 / CRIT-801 (`wc -l == 20` / `wc -l == 14`) DO pass."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:96-1101",
+          "description": "Concrete `#[test] fn prop_ipc_NNN_*` definitions exist for: prop_ipc_001 (L96), prop_ipc_002 (L158), prop_ipc_003 (L176), prop_ipc_004 (L247), prop_ipc_005_save_failed_key_set_equality (L312), prop_ipc_005_save_failed_null_literals_present (L382), prop_ipc_006_switching_key_set_equality (L414), prop_ipc_007 (L488), prop_ipc_008 (L526), prop_ipc_009 (L601), prop_ipc_010 (L773), prop_ipc_013 (L891), prop_ipc_014 (L910), prop_ipc_015 (L944), prop_ipc_016 (L979), prop_ipc_017 (L1041), prop_ipc_018 (L793), prop_ipc_019_round_trip_valid (L837), prop_ipc_019_invalid_strings (L867), print_wire_fixtures (L1083). Cargo test count of 20 in editor_wire_sprint8 matches CRIT-800."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs:246-271",
+          "description": "test_select_past_note_nonexistent_body_is_empty exists, satisfying EC-IPC-011 mapping in the coverage map line 62."
+        }
+      ]
+    },
+    {
+      "name": "verification_architecture",
+      "verdict": "PASS",
+      "criteria": ["CRIT-802"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:1083-1101",
+          "description": "print_wire_fixtures emits the 14-fixture cover set with assertion arr.len() == 14"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh:42-221",
+          "description": "Three grep audits (PROP-IPC-012, PROP-IPC-020, PROP-IPC-021) implemented with explicit pass/fail counters and a final `PASS: 3 / FAIL: 0` summary section. Iter-2 patch added the awk-based multi-line scan starting at line 172."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/contracts/sprint-8.md:85-90",
+          "description": "CRIT-802 thresholds are unchanged from iter-1 (PASS in iter-1) and remain executable."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "criteria": ["CRIT-803", "CRIT-811"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:633-768",
+          "description": "wire_fixtures() defines exactly 14 fixtures (F01..F14). F04 uses 4 distinct BlockTypeDto variants (Paragraph, Heading1, Code, Divider); F14 adds Heading2 and Bullet — combined ≥4-of-9 variant constraint is met."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs:773-785",
+          "description": "prop_ipc_010_round_trip_cover_set iterates over all 14 fixtures with serde round-trip + PartialEq assertion."
+        }
+      ]
+    },
+    {
+      "name": "wire_contract_consistency",
+      "verdict": "FAIL",
+      "criteria": ["CRIT-804", "CRIT-805", "CRIT-806"],
+      "findings": ["FIND-093"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh:217",
+          "description": "Iter-2 patch produces the exact PASS line `PASS: PROP-IPC-021: No legacy 6-arg make_editing_state_changed_payload found (single+multi-line scan)` that CRIT-804 references at sprint-8.md:120-122. The text match is verified."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/wire_audit.sh:172-214",
+          "description": "Awk-based multi-line scan flattens make_editing_state_changed_payload(...) call expressions across newlines and counts top-level commas; emits a hit when commas >= 5. Implementation is sound for files within the bash glob's reach."
+        }
+      ]
+    },
+    {
+      "name": "out_of_scope_discipline",
+      "verdict": "PASS",
+      "criteria": ["CRIT-807", "CRIT-810"],
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/editor.rs:308-319",
+          "description": "compose_state_for_select_past_note unconditionally returns blocks: None, satisfying CRIT-810 deferred-block prohibition."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/editor.rs:266-280",
+          "description": "compose_state_for_save_err always sets prior_focused_block_id: None and pending_next_focus: None, satisfying CRIT-810 deferred-Sprint-9 prohibition on pendingNextFocus propagation."
+        }
+      ]
+    }
+  ],
+  "summary": "FAIL: Iter-2 patch successfully fixes the mechanical regex/text checks of FIND-088, FIND-089, FIND-090 — the comment block at editor_wire_sprint8.rs:30-65 mechanically yields 20 REQ-IPC and 14 EC-IPC matches; the wire_audit.sh PROP-IPC-021 PASS line text matches CRIT-804 verbatim. However, the iter-2 patch introduces NEW semantic gaps. (1) CRIT-800 requires 'each of REQ-IPC-001..020 is mapped to at least one prop_ipc_* test name'; the map's REQ-IPC-005 entry references `prop_ipc_006_saving (within prop_ipc_006_*)` — no such test exists, and the actual prop_ipc_006_switching_key_set_equality (L414) constructs only the Switching variant, never Saving, so REQ-IPC-005 (Saving exact key set) has no asserting test [FIND-091, critical]. (2) CRIT-801 covers EC-IPC-013 (whitespace-only body) by pointing to prop_ipc_017 with the comment 'relies on body.is_empty() byte-level check'; the test only exercises empty string and '# Hello', never a whitespace-only body like '   '. body.is_empty() returns false for whitespace, so EC-IPC-013 is not actually verified [FIND-092, major]. (3) CRIT-804's 'cannot evade detection' claim is overstated: the awk multi-line scan globs `$SRC_TAURI/src/**/*.rs` without `shopt -s globstar`, so files deeper than one subdirectory (e.g., src/domain/vault/mod.rs) escape the multi-line scan entirely. The single-line `grep -rn` IS recursive, so single-line legacy forms are caught everywhere; only the multi-line variant in nested modules slips through [FIND-093, minor]. Weights sum to 1.00 correctly. CRIT-802, 803, 805, 806, 807, 808, 809, 810, 811 are unchanged from iter-1 and remain sound. Net result: spec_fidelity and wire_contract_consistency dimensions FAIL; this contract still cannot grade Sprint 8 cleanly because two REQ/EC obligations are mechanically counted but semantically uncovered.",
+  "convergenceSignals": {
+    "findingCount": 3,
+    "criticalCount": 1,
+    "majorCount": 1,
+    "minorCount": 1,
+    "evaluatedCriteria": [
+      "CRIT-800", "CRIT-801", "CRIT-802", "CRIT-803", "CRIT-804",
+      "CRIT-805", "CRIT-806", "CRIT-807", "CRIT-808", "CRIT-809",
+      "CRIT-810", "CRIT-811"
+    ],
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-editor/contracts/sprint-8.md",
+    "contractDigest": null
+  }
+}

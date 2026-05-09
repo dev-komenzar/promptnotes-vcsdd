@@ -1,0 +1,116 @@
+{
+  "feature": "ui-editor",
+  "phase": "1c",
+  "mode": "strict",
+  "iteration": 5,
+  "reviewedAt": "2026-05-06T00:00:00Z",
+  "reviewType": "spec",
+  "overallVerdict": "PASS",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-025 RESOLVED: PROP-EDIT-007 line 109 and PROP-EDIT-007 §4 line 174 now read '17 variants in §10 EditorCommand union (16 IPC-adapter variants + 1 local-effect variant cancel-idle-timer)'. RD-017 (behavioral-spec.md line 918) reads '17-variant union matching the new block-based contract: 16 IPC-adapter variants + 1 local-effect variant (cancel-idle-timer, handled by timerModule.cancelIdleSave — no IPC)'. The Tier 0 obligation at line 93 cleanly references '§10' as the source of truth without numerical contradiction."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "FIND-026 RESOLVED: §10 lines 994-1014 define the save-failed DTO arm with priorFocusedBlockId (renamed from focusedBlockId) explicitly documented as 'DTO-only projection field' carried from the preceding EditingState by the Rust IPC emission layer. RD-011 line 912 documents per-arm fields: editing carries focusedBlockId; save-failed carries priorFocusedBlockId. RD-018 line 919, REQ-EDIT-029 line 485, and EC-EDIT-014 line 818 all reference priorFocusedBlockId consistently. PROP-EDIT-014 (verification-architecture.md line 181) and PROP-EDIT-040 (line 209) treat priorFocusedBlockId as the source field for save-failed and copy it into state.focusedBlockId. PROP-EDIT-050 (line 219) uses priorFocusedBlockId. §3.6a line 391 notes EditorViewState.focusedBlockId is populated from editing.focusedBlockId or save-failed.priorFocusedBlockId per PROP-EDIT-014."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-027 RESOLVED: PROP-EDIT-040 §4 line 209 is now per-variant: it explicitly enumerates field sets per status (idle / editing / saving / switching / save-failed) and the per-field idle-default fallback table (currentNoteId→null, focusedBlockId→null, priorFocusedBlockId→null, isDirty→false, isNoteEmpty→true, pendingNextFocus→null, lastSaveError→null, lastSaveResult→null). The §3 Tier 2 entry at line 114 mirrors this rule. The property is now verifiable as written for the discriminated DTO."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-028 RESOLVED: §3 Tier 0 line 91 EditorAction enumeration no longer mentions BlurEvent. The text reads 'EditorBlurredAllBlocks covers the all-blocks-blurred case (REQ-EDIT-014); there is no separate BlurEvent variant.' The save-action set is now explicitly enumerated (TriggerIdleSave, TriggerBlurSave, NoteFileSaved, NoteSaveFailed, RetrySave, DiscardCurrentSession, CancelSwitch)."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-029 RESOLVED: §10 InsertBlock decomposition note at line 448 documents the wire-format mapping bidirectionally: EditorCommand 'insert-block-after' → invoke('insert_block', { kind: 'insert-block', atBeginning: false, prevBlockId, ... }); 'insert-block-at-beginning' → invoke('insert_block', { kind: 'insert-block', atBeginning: true, ... }). The Rust handler receives the canonical CaptureCommand.InsertBlock shape; the split is UI-internal only. The §10 adapter binding table lines 460-461 also pin the kind translation."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "FIND-033 RESOLVED: REQ-EDIT-010 line 222 adds an explicit 'Divider recognition rule' bullet: classifyMarkdownPrefix returns { newType: 'divider', trimmedContent: '' } iff content === '---' exactly (no surrounding whitespace, no trailing characters). §7 line 873 carries the same rule. PROP-EDIT-010 (verification-architecture.md line 177) now contains the matching divider-rule clause."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "isNoteEmpty DTO projection consistency (pre-emptive remediation): §10 lines 970-1014 carry an isNoteEmpty field on every non-idle DTO arm (editing / saving / switching / save-failed) with each non-editing arm flagged as a 'DTO projection field — not present on Rust aggregate; populated by the IPC emission layer'. This closes the gap that previously existed for saving / switching / save-failed."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "lastSaveResult field consistency (pre-emptive remediation): §3.6a line 391 lists lastSaveResult as a field of EditorViewState mirrored from the editing DTO arm; null for all other statuses. §10 line 967 places lastSaveResult only on the editing arm. PROP-EDIT-040 §4 line 209 places lastSaveResult in the editing field set and includes lastSaveResult→null in the absent-field defaults table. Glossary §6 line 844 enumerates lastSaveResult in EditorViewState. Editor mirror reducer in §2 verification-architecture.md line 62 notes lastSaveResult is mirrored from the editing arm DTO field; null for all other statuses. Field is consistent across all four locations."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-030 RESOLVED: Coverage Matrix §6 line 336 EC-EDIT-009 row now reads 'PROP-EDIT-033, PROP-EDIT-045 | Integration | editor-panel.dom.vitest.ts'. PROP-EDIT-045 line 214 retains the disclaimer pointing OS-sleep coverage to PROP-EDIT-033, and the matrix is now consistent with that disclaimer."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-031 RESOLVED: §10 'Adapter binding table' lines 454-475 enumerate every EditorCommand variant's shell handler. cancel-idle-timer is explicitly mapped to timerModule.cancelIdleSave(currentHandle) with IPC=No. Line 476 underscores 'cancel-idle-timer is the only non-IPC variant. Phase 2 tests for the impure shell must mock timerModule (not the IPC adapter) to assert this variant\\'s side-effect.'"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "FIND-032 RESOLVED: §10 'Wire-boundary source-field erasure note' lines 478-486 describes the intentional asymmetry: the UI sends source as part of the outbound IPC payload because the Rust handler uses it to populate SaveNoteRequested.source; the source is NOT stored on the Rust intermediate command (in-process only). The note exists in both spec files (also behavioral-spec.md §10 lines 952-977). REQ-EDIT-037 (line 600), PROP-EDIT-002 (line 169), and RD-001 (line 902) all stay consistent with this asymmetry."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+          "description": "FIND-034 RESOLVED: REQ-EDIT-035 acceptance criteria line 584 adds 'When status === editing AND isDirty === false, RequestNewNote is dispatched directly without preceding TriggerBlurSave (there is no dirty content to save). (See PROP-EDIT-024c.)'. PROP-EDIT-024c (verification-architecture.md line 193) is a new integration property covering this case: 'RequestNewNote while editing AND isDirty === false is dispatched directly without preceding TriggerBlurSave. No save IPC call is made.' The Coverage Matrix §6 line 324 now lists PROP-EDIT-024a / 024b / 024c against REQ-EDIT-035."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "Coverage Matrix completeness (§6 lines 290-341): every REQ-EDIT-001..038 and EC-EDIT-001..014 has at least one PROP-EDIT-XXX. Spot-checked REQ-EDIT-001..038 contiguously and EC-EDIT-001..014 contiguously; no gaps."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-editor/specs/verification-architecture.md",
+          "description": "Required-PROP labelling (§4 lines 168-220): every PROP-EDIT-XXX with Required=true has a tier (0/1/2/Integration), a tool (fast-check / vitest / vitest+jsdom / tsc / grep), and a Pure-or-Shell label. Spot-checked PROP-EDIT-001 through PROP-EDIT-051; required entries (001-015, 040, 042, 047) all carry the three labels."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "iter4FindingsResolved": ["FIND-025", "FIND-026", "FIND-027", "FIND-028", "FIND-029", "FIND-030", "FIND-031", "FIND-032", "FIND-033", "FIND-034"],
+    "iter4FindingsUnresolved": [],
+    "newFindingsIntroducedInIter5": 0,
+    "severityBreakdown": {
+      "critical": 0,
+      "major": 0,
+      "minor": 0
+    },
+    "narrative": "All ten iter-4 findings (FIND-025..034) are remediated end-to-end across both spec files. Spec_fidelity dimension: the EditorCommand union is now consistently described as a 17-variant union composed of 16 IPC-adapter variants plus 1 local-effect variant cancel-idle-timer; PROP-EDIT-007 §3 line 109 and §4 line 174, RD-017 (behavioral-spec.md line 918), and the Tier 0 obligation line 93 all align with §10's canonical enumeration. The save-failed DTO arm now carries priorFocusedBlockId as a documented IPC-emission-layer projection (not an aggregate field), with consistent references in REQ-EDIT-029, RD-018, EC-EDIT-014, PROP-EDIT-014, PROP-EDIT-040, and PROP-EDIT-050. PROP-EDIT-040 is now per-variant with an explicit field-set table and idle-default fallbacks, making it verifiable against the discriminated DTO. EditorAction discriminated union §3 Tier 0 line 91 no longer references BlurEvent; the save-action set is enumerated explicitly. The InsertBlock UI-internal split into insert-block-after / insert-block-at-beginning is documented with a bidirectional wire-format mapping at the Tauri IPC boundary. classifyMarkdownPrefix divider rule is pinned to content === '---' exact equality across §3 / §7 / PROP-EDIT-010. The pre-emptive isNoteEmpty DTO projection (now present on every non-idle DTO arm) and the lastSaveResult field consistency across §10 / §3.6a / §11 / §2 of verification-architecture / PROP-EDIT-040 are both internally coherent. Verification_readiness dimension: Coverage Matrix EC-EDIT-009 row now lists both PROP-EDIT-033 and PROP-EDIT-045, consistent with PROP-EDIT-045's deferment text. cancel-idle-timer adapter binding is explicit in §10 adapter binding table (line 467) — handled by timerModule.cancelIdleSave with IPC=No. Wire-boundary source-field asymmetry is documented in both spec files' §10. REQ-EDIT-035 acceptance criteria covers the (editing AND isDirty === false) case via the new bullet at line 584 and the new PROP-EDIT-024c entry. Coverage Matrix is complete (every REQ-EDIT-001..038 and EC-EDIT-001..014 has at least one PROP); every Required: true PROP carries tier / tool / pure-or-shell. No new issues identified in iter-5. Strict-mode rule: dimension PASS requires zero critical AND zero major findings. Both dimensions have zero. Overall verdict PASS. The human-approval gate may now proceed."
+  },
+  "convergenceSignals": {
+    "findingCount": 0,
+    "regressionStatus": "iter4-resolved",
+    "newIssueCount": 0,
+    "newIssueSeverity": {
+      "critical": 0,
+      "major": 0,
+      "minor": 0
+    }
+  }
+}

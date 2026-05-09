@@ -1,0 +1,13 @@
+{
+  "findingId": "FIND-037",
+  "dimension": "contract_validity",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "CRIT-702, CRIT-703, CRIT-714 cite property-test files that do NOT exist in the repository. The contract names `editorPredicates.property.test.ts`, `editorReducer.property.test.ts`, and `debounceSchedule.property.test.ts` and asserts named properties like `'reducer-totality'`, `'snapshot-per-variant-mirroring'`, `'split-or-insert-totality'`, `'banner-exhaustiveness'`, `'copy-enable-parity'`, `'markdown-prefix-totality'`, `'backspace-classifier-coverage'`, `'source-pass-through'`, `'reducer-purity'`, `'debounce-semantics'`, `'blur-cancels-idle'` each pass >=100 fast-check runs. None of those files exist under `promptnotes/src/lib/editor/__tests__/`. The actual test files (`editorPredicates.test.ts`, `editorReducer.test.ts`, `debounceSchedule.test.ts`) use `bun:test` example-based assertions, not fast-check property runs. Every passThreshold mentioning `>=100 fast-check runs` against these files is vacuous.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-editor/contracts/sprint-7.md",
+    "lineRange": "87-94",
+    "snippet": "editorPredicates.property.test.ts properties 'split-or-insert-totality', 'banner-exhaustiveness', 'copy-enable-parity', 'markdown-prefix-totality', 'backspace-classifier-coverage' each pass >=100 fast-check runs; editorReducer.property.test.ts properties 'source-pass-through', 'reducer-totality', 'reducer-purity', 'snapshot-per-variant-mirroring' each pass >=100 fast-check runs; debounceSchedule.property.test.ts properties 'debounce-semantics', 'blur-cancels-idle' each pass >=100 fast-check runs."
+  },
+  "routeToPhase": "contract-revision"
+}

@@ -1,0 +1,31 @@
+{
+  "findingId": "FIND-080",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "major",
+  "description": "REQ-IPC-017 specifies that `trigger_idle_save`, `trigger_blur_save`, AND `retry_save` all emit `save-failed` with `pendingNextFocus: null` on `Err(io_err)`. This contradicts the existing semantics for save-during-switching (REQ-EDIT-022, EC-EDIT-005, EC-EDIT-014, RD-018): when the user attempts to switch to another note via Block focus while the current note is dirty, the domain transitions through `switching → saving → save-failed` (or `→ editing` on success) AND `save-failed.pendingNextFocus` carries the queued switch target so the UI shows the pending switch cue and the Cancel button can dismiss it. Sprint 8 erases the queued-switch information by hard-coding `pendingNextFocus: null` in REQ-IPC-017. The Rust handlers `trigger_idle_save` / `trigger_blur_save` / `retry_save` (editor.rs:246-280) currently take only `note_id, body, issued_at, source` parameters — they do NOT receive a `pending_next_focus` argument. So REQ-IPC-017 reflects the LIMIT of the current Rust API, not the desired wire-contract semantics.",
+  "fileEvidence": [
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1230",
+      "snippet": "REQ-IPC-017 — trigger_idle_save, trigger_blur_save, and retry_save shall emit the editing variant on Ok(()) ..., and the save-failed variant on Err(io_err) (with priorFocusedBlockId: null, pendingNextFocus: null, lastSaveError: { kind: \"fs\", reason: <FsErrorDto> }, isNoteEmpty: <body == \"\">)."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "920",
+      "snippet": "RD-018 | SaveFailedState focus restoration | ... pendingNextFocus = { noteId, blockId } is rendered as a visual \"queued switch\" cue but never edited by the UI."
+    },
+    {
+      "path": ".vcsdd/features/ui-editor/specs/behavioral-spec.md",
+      "lineRange": "1162",
+      "snippet": "EC-EDIT-014 | SwitchError.pendingNextFocus: Cancel restores prior focusedBlockId"
+    },
+    {
+      "path": "promptnotes/src-tauri/src/editor.rs",
+      "lineRange": "246-280",
+      "snippet": "pub fn trigger_idle_save( app: AppHandle, note_id: String, body: String, issued_at: String, source: String, ) -> Result<(), String> { ... save_note_and_emit(&app, note_id, body) }"
+    }
+  ],
+  "affectedRequirements": ["REQ-IPC-017", "REQ-EDIT-022", "EC-EDIT-014", "RD-018"],
+  "recommendation": "Either (a) extend `trigger_idle_save` / `trigger_blur_save` / `retry_save` Rust signatures to optionally carry a `pendingNextFocus: Option<PendingNextFocusDto>` parameter that the TS adapter forwards from its `pendingNextFocus` retention, and update REQ-IPC-017 to emit that value on save-failed; OR (b) add an explicit Sprint 8 caveat: 'Sprint 8 does not preserve pendingNextFocus across save-failure paths; the TS reducer is responsible for re-emitting the queued switch on retry. This is a known regression vs Sprint 7 RD-018; full fix in Sprint 9.' The current REQ-IPC-017 silently demotes a documented behavior with no migration note."
+}

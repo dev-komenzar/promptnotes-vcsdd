@@ -1,0 +1,24 @@
+{
+  "findingId": "FIND-091",
+  "criterion": "CRIT-800",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "critical",
+  "description": "CRIT-800's threshold has TWO parts: (a) regex `^///\\s+REQ-IPC-0(0[1-9]|1[0-9]|20)` returns 20 matches, and (b) 'each of REQ-IPC-001..020 is mapped to at least one `prop_ipc_*` test name'. Iter-2 satisfies part (a) — the comment block at editor_wire_sprint8.rs:30-65 mechanically yields 20 lines. But part (b) is FALSE for REQ-IPC-005. The coverage map at line 35 says: `REQ-IPC-005 (Saving exact key set)       — prop_ipc_006_saving (within prop_ipc_006_*)`. No test named `prop_ipc_006_saving` exists in the file. The only `prop_ipc_006_*` test is `prop_ipc_006_switching_key_set_equality` (line 414), which constructs `EditingSessionStateDto::Switching` exclusively — see lines 415-423 (no_blocks variant) and lines 457-465 (with_blocks variant). The Saving variant key set is NEVER asserted by any prop_ipc_006_* test. Furthermore, no other prop_ipc_* test in the file exercises Saving variant key-set equality (key SET assertion via BTreeSet) — prop_ipc_008_blocks_optionality only tests blocks-key behavior on the Editing variant (lines 528, 545, 577), and prop_ipc_010_round_trip_cover_set only round-trips F05/F06 Saving fixtures via serde without asserting the key set. Phase 5 graders will discover REQ-IPC-005 has no asserting test despite the map claiming so, mechanically failing the semantic part of CRIT-800.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+    "lineRange": "35",
+    "snippet": "///   REQ-IPC-005 (Saving exact key set)       — prop_ipc_006_saving (within prop_ipc_006_*)"
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
+    "lineRange": "411-479",
+    "snippet": "/// PROP-IPC-006 — Switching variant has exactly the right key set.\n/// pendingNextFocus is always an object {noteId, blockId}, never null.\n#[test]\nfn prop_ipc_006_switching_key_set_equality() {\n    let switching_no_blocks = EditingSessionStateDto::Switching {\n        ...\n    [no construction of EditingSessionStateDto::Saving anywhere in this test or its companion tests]"
+  },
+  "remediationOptions": [
+    "Add a new test `prop_ipc_006_saving_key_set_equality` mirroring prop_ipc_006_switching_key_set_equality but constructing EditingSessionStateDto::Saving { current_note_id, is_note_empty, blocks } and asserting expected_keys = {status, currentNoteId, isNoteEmpty} (and {status, currentNoteId, isNoteEmpty, blocks} for the with-blocks case).",
+    "Then update the coverage map line 35 to `prop_ipc_006_saving_key_set_equality` and the cargo test count threshold from 20 to 21.",
+    "Alternatively, repoint the map to `prop_ipc_010` (round-trip on F05/F06 Saving fixtures) AND add an explicit key-set assertion inside prop_ipc_010 for Saving fixtures so the mapping becomes truthful."
+  ],
+  "routeToPhase": "1c"
+}

@@ -1,0 +1,24 @@
+{
+  "findingId": "FIND-096",
+  "sprint": 8,
+  "iteration": 1,
+  "dimension": "wire_contract_consistency",
+  "category": "spec_gap",
+  "severity": "minor",
+  "title": "SaveErrorDto.kind is a raw String, not a typed Rust enum — round-trip safety is asymmetric vs BlockTypeDto",
+  "description": "The Sprint 8 spec REQ-IPC-010 pins `SaveErrorDto` to `{ \"kind\": \"fs\" | \"validation\", \"reason\"?: ... }`, and §15.5 explicitly upgrades `BlockType` to a typed `BlockTypeDto` Rust enum specifically because a raw `String` admits typo'd values that 'silently cross the wire and structurally typecheck on the TS side without runtime error'. The same risk applies to `SaveErrorDto.kind` and `FsErrorDto.kind`, both of which are declared as `pub kind: String` in `editor.rs:36-49`. A typo (e.g. `kind: \"fs \"` with a trailing space, or `kind: \"validaton\"`) at any compose / construction site would serialize cleanly, deserialize cleanly via `serde_json::from_str`, and only fail at the TS narrowing layer if the TS literal-union narrow rejects unknown strings (which is type-erased at runtime). PROP-IPC-019 round-trip rejection is exercised for BlockTypeDto but there is no equivalent invalid-string assertion for SaveErrorDto.kind / FsErrorDto.kind. The implementation populates these fields via string literals (`compose_state_for_save_err: SaveErrorDto { kind: \"fs\".to_string(), .. }` at editor.rs:273; `io_error_to_fs_kind` at editor.rs:155-164 returns one of `\"permission\" | \"lock\" | \"disk-full\" | \"unknown\"` literally) so today no typo exists, but the type system does not enforce it.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "36-49",
+    "snippet": "#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]\npub struct FsErrorDto {\n    pub kind: String,\n}\n\n#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]\n#[serde(rename_all = \"camelCase\")]\npub struct SaveErrorDto {\n    pub kind: String,\n    #[serde(skip_serializing_if = \"Option::is_none\")]\n    pub reason: Option<FsErrorDto>,\n}"
+  },
+  "secondaryEvidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "61-85",
+    "snippet": "#[serde(rename_all = \"kebab-case\")]\npub enum BlockTypeDto {\n    Paragraph,\n    #[serde(rename = \"heading-1\")]\n    Heading1, ..."
+  },
+  "recommendation": "Promote `SaveErrorDto::kind` to a typed enum (e.g. `enum SaveErrorKindDto { Fs, Validation }` with `#[serde(rename_all = \"kebab-case\")]`) and `FsErrorDto::kind` to a typed enum (e.g. `enum FsErrorKindDto { Permission, DiskFull, Lock, NotFound, Unknown }` with explicit kebab-case renames for `disk-full` / `not-found`). Add invalid-string PROP tests analogous to `prop_ipc_019_block_type_dto_invalid_strings`. This change is OUT-OF-SCOPE for Sprint 8 (spec §15.5 only enumerates BlockTypeDto for typed promotion); raise as a Sprint 9 candidate.",
+  "routeToPhase": "follow-up-sprint",
+  "discoveredVia": "manual-review",
+  "scope": "out-of-scope-for-sprint-8"
+}

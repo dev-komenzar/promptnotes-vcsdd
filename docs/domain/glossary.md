@@ -6,13 +6,19 @@
 
 | 日本語 | 英語 | 定義 |
 |--------|------|------|
-| ノート | **Note** | プロンプト下書き 1 件。`id` + `body` + `frontmatter` の三つ組で構成される不変の集合体（Aggregate Root） |
+| ノート | **Note** | プロンプト下書き 1 件。`id` + `blocks` + `frontmatter` の三つ組で構成される不変の集合体（Aggregate Root） |
 | ノート ID | **NoteId** | ノートの不変識別子。形式 `YYYY-MM-DD-HHmmss-SSS[-N]`。同一ミリ秒衝突時のみ `-N` サフィックスが付く |
-| 本文 | **Body** | frontmatter を除いた Markdown 文字列。コピー対象・検索対象・編集対象 |
+| ブロック | **Block** | Note 内の編集単位（段落・見出し・箇条書き・コードブロック等）。Note Aggregate 内の Sub-entity。`id` + `type` + `content` の三つ組 |
+| ブロック ID | **BlockId** | Note 内ローカルな安定 ID（並べ替え・差分計算用）。形式は実装詳細（UUID v4 or `block-<n>`）。**ファイルには永続化されず、再読み込み時に再採番** |
+| ブロック種別 | **BlockType** | `paragraph` / `heading-1` / `heading-2` / `heading-3` / `bullet` / `numbered` / `code` / `quote` / `divider`（MVP セット） |
+| ブロック内容 | **BlockContent** | ブロック内のインラインテキスト。インライン Markdown（`**bold**`, `` `code` ``, `[link](url)`）を含む。`code` ブロックは複数行可、その他は単一行 |
+| 本文 | **Body** | `blocks` 全体を Markdown 直列化した派生プロパティ（`note.body = serializeBlocksToMarkdown(blocks)`）。コピー対象・検索対象・Vault への保存単位 |
 | メタデータ | **Frontmatter** | ノートの YAML 形式メタデータ。固定スキーマ（後述） |
 | タグ | **Tag** | 分類ラベル。`Tag` Value Object として Smart Constructor で正規化（小文字化・先頭 `#` 除去・空文字拒否） |
 | 時刻 | **Timestamp** | ISO 8601 形式の時刻。ミリ秒精度 |
 | 結果型 | **Result&lt;Ok, Err&gt;** | 成功/失敗を表す代数的データ型。例外を使わずエラーを表現 |
+| ブロック直列化 | **serializeBlocksToMarkdown** | 純粋関数 `Block[] → string`。Block 列を Markdown 文字列に直列化 |
+| ブロック解析 | **parseMarkdownToBlocks** | 純粋関数 `string → Result<Block[], ParseError>`。Markdown を Block 列に解析（未知構造は paragraph で逃がす） |
 
 ### MVP 固定 Frontmatter スキーマ（discover フェーズで確定 → Phase 8 で詳細化）
 
@@ -36,15 +42,22 @@ updatedAt: 2026-04-27T16:12:03.001Z   # createdAt 以後
 
 | 日本語 | 英語 | 定義 |
 |--------|------|------|
-| 編集セッション | **Editing Session** | エディタにフォーカスが入った瞬間から、フォーカスが外れる／別ノートに切り替わるまでの 1 ノートの編集ライフサイクル。新規・過去いずれの Note にも適用 |
-| 編集セッション状態 | **EditingSessionState** | 編集セッションの内部状態。`{ currentNoteId, isDirty, lastInputAt, idleTimerHandle, status, pendingNextNoteId, lastSaveResult, lastSaveError }` を含む Value Object |
+| 編集セッション | **Editing Session** | Note 内のいずれかのブロックに Block Focus が入った瞬間から、そのフォーカスが全ブロックから外れる／別ノートのブロックに切り替わるまでの 1 ノート分の編集ライフサイクル。新規・過去いずれの Note にも適用 |
+| 編集セッション状態 | **EditingSessionState** | 編集セッションの内部状態。`{ currentNoteId, focusedBlockId, isDirty, lastInputAt, idleTimerHandle, status, pendingNextFocus, lastSaveResult, lastSaveError }` を含む Value Object |
 | セッション状態 | **session status** | `idle` / `editing` / `saving` / `switching` / `save-failed` の状態機械（aggregates.md 参照） |
 | 未保存マーク | **isDirty** | 直近の永続化以降に編集が加えられたことを示すフラグ |
-| エディタフォーカス | **Editor Focus** | カーソルが本文編集領域にある状態 |
-| アイドル保存 | **Idle Save** | 入力停止が一定時間（debounce、MVP は ~2 秒）続いたときに発火する自動保存 |
-| ブラー保存 | **Blur Save** | フォーカスアウト時に発火する自動保存 |
+| ブロックフォーカス | **Block Focus** | あるノートのある Block の `contenteditable` に DOM 上のキャレットがある状態。同時に複数ブロックがフォーカスを保持することはない（at most one） |
+| エディタフォーカス | **Editor Focus**（旧称） | Block Focus への上位概念。**Capture Context では Block Focus と読み替える** |
+| WYSIWYG レンダリング | **WYSIWYG Rendering** | Markdown シンタックス（見出し記号、リスト記号、コードフェンス等）を**入力時にその場で見た目に反映**する描画方式 |
+| 組み込みエディタ | **Inline Editor Library** | 各ブロックに埋め込む組み込みエディタ（CodeMirror 6 / ProseMirror / Slate 等）。ブロックエディタ責務の薄いラッパとして使う |
+| ブロック分割 | **Block Split** | テキスト中の Enter キーでブロックを 2 つに分ける操作（`note.splitBlock` で表現） |
+| ブロック結合 | **Block Merge** | 行頭 Backspace で前ブロックと結合する操作（`note.mergeBlockWithPrevious` で表現） |
+| ブロック種変換 | **Block Type Conversion** | `# ` 入力で見出しに、`/` メニュー等で種別を切り替える操作（`note.changeBlockType` で表現） |
+| ブロック並べ替え | **Block Move / Reorder** | ドラッグ&ドロップ等でブロック順序を変更する操作（`note.moveBlock` で表現） |
+| アイドル保存 | **Idle Save** | 入力停止が一定時間（debounce、MVP は ~2 秒）続いたときに発火する自動保存（Note 単位） |
+| ブラー保存 | **Blur Save** | そのノートのいずれのブロックからもフォーカスが外れた契機の自動保存（Note 単位） |
 | インライン Frontmatter 編集 | **Inline Frontmatter Editing** | エディタ内の YAML 領域を直接編集する操作 |
-| 空ノート | **Empty Note** | 一度も意味のある入力がされていない新規ノート（trim 後の body が空文字）。Vault に届く前に破棄対象 |
+| 空ノート | **Empty Note** | 全ブロックが空（または `divider` のみ）の新規ノート。Vault に届く前に破棄対象 |
 | 破棄 | **Discard** | 未保存編集を捨てる操作。新規ノートの空状態破棄、保存失敗からの破棄選択など |
 | 新規ノートショートカット | **New Note Shortcut** | `Ctrl+N` または「+ 新規」ボタン |
 | コピー | **Copy** | 編集中ノートの body のみをクリップボードへ（frontmatter は除外）。`note.bodyForClipboard()` で表現 |
@@ -55,12 +68,18 @@ updatedAt: 2026-04-27T16:12:03.001Z   # createdAt 以後
 
 | Event | Public/Internal | 説明 |
 |-------|-----------------|------|
-| `NewNoteAutoCreated` | Internal | 起動時 or `Ctrl+N` で新規ノートが Note Aggregate として生成された |
-| `EditorFocusedOnNewNote` | Internal | カーソルが新規ノート本文に置かれた |
-| `EditorFocusedOnPastNote` | Internal | `PastNoteSelected` 受信後の状態遷移 |
-| `NoteBodyEdited` | Internal | キー入力単位の本文変更（一過性） |
+| `NewNoteAutoCreated` | Internal | 起動時 or `Ctrl+N` で新規ノートが Note Aggregate として生成された（先頭ブロックは空 paragraph） |
+| `BlockFocused` | Internal | 特定 Block にキャレットが入った（noteId, blockId 付き）。`EditorFocusedOnNewNote` / `EditorFocusedOnPastNote` を統合したイベント |
+| `BlockBlurred` | Internal | 個別 Block からフォーカスが外れた（次に `BlockFocused` が来なければ最終的に `EditorBlurredAllBlocks` に進む） |
+| `EditorBlurredAllBlocks` | Internal | 同一 Note の全ブロックからフォーカスが外れた（blur save トリガ） |
+| `BlockContentEdited` | Internal | キー入力単位のブロック内容変更（一過性） |
+| `BlockInserted` | Internal | 新規ブロック挿入（Enter キー、`/` メニュー等） |
+| `BlockRemoved` | Internal | ブロック削除 |
+| `BlocksMerged` | Internal | 前ブロックとの結合（行頭 Backspace） |
+| `BlockSplit` | Internal | ブロック分割（テキスト中央 Enter） |
+| `BlockTypeChanged` | Internal | ブロック種別変換（`# ` → heading-1 等） |
+| `BlockMoved` | Internal | ブロック並べ替え |
 | `NoteFrontmatterEditedInline` | Internal | エディタ内の YAML 領域が変更された |
-| `EditorBlurred` | Internal | フォーカスが外れた |
 | `NewNoteRequested` | Internal | 新規作成要求が出された |
 | `EmptyNoteDiscarded` | Cross-Context | 空のまま遷移した新規ノートが破棄された（Vault には届かない） |
 | `NoteAutoSavedAfterIdle` | Internal | idle save 発火（`SaveNoteRequested` のトリガ） |
@@ -69,6 +88,8 @@ updatedAt: 2026-04-27T16:12:03.001Z   # createdAt 以後
 | `EditingSessionDiscarded` | Internal | 保存失敗後の破棄選択 |
 | `RetrySaveRequested` | Internal | 再試行選択 |
 | `SaveNoteRequested` | **Public** | Vault への保存依頼（Domain Event Carrying Command） |
+
+> ブロックレベルのイベント（`BlockContentEdited` 等）は **すべて Internal**：Capture アプリケーション層が EditingSessionState の更新と idle timer 管理に使うのみで、Cross-Context へは出さない。Cross-Context へ向かうのは `SaveNoteRequested` で、payload は **Note 全体の最新スナップショット**（blocks 含む）であり、個別ブロックの差分は載せない。
 
 ---
 
@@ -125,14 +146,16 @@ Markdown ファイルの永続化と Obsidian 互換性を担保する。
 | Vault | **Vault** | Markdown ファイル群を格納するディレクトリ全体（Aggregate） |
 | Vault パス | **VaultPath** | Vault のファイルシステムパス（Value Object） |
 | Vault 状態 | **VaultStatus** | `'unconfigured' \| 'ready' \| 'scanning'` |
-| Markdown ファイル | **Markdown File** | ノートの物理表現（`.md` 拡張子）。冒頭に YAML frontmatter |
+| Markdown ファイル | **Markdown File** | ノートの物理表現（`.md` 拡張子）。冒頭に YAML frontmatter。**ブロック構造は持たない平坦な Markdown 文字列として保存される**（Obsidian 互換） |
 | YAML Frontmatter | **YAML Frontmatter** | `---` で囲まれたファイル冒頭の YAML ブロック |
 | タイムスタンプファイル名 | **Timestamp Filename** | `YYYY-MM-DD-HHmmss-SSS[-N].md` 形式のファイル名。Obsidian でもソート可能 |
 | Vault スキャン | **Vault Scan** | Vault 内 Markdown を走査して NoteFileSnapshot 一覧を返す操作 |
-| ノートファイルスナップショット | **NoteFileSnapshot** | `{ noteId, body, frontmatter, filePath, fileMtime }`。Vault が返す読み取り表現（DTO） |
-| ハイドレーション | **Hydration** | NoteFileSnapshot を Note Aggregate に変換する ACL 処理 |
-| ハイドレーション失敗 | **Hydration Failure** | YAML 不正・必須欠落・VO 拒否などで snapshot から Note Aggregate に変換できなかった状態（**read 失敗は含まない**） |
-| ハイドレーション失敗理由 | **HydrationFailureReason** | `'yaml-parse' \| 'missing-field' \| 'invalid-value' \| 'unknown'` |
+| ノートファイルスナップショット | **NoteFileSnapshot** | `{ noteId, body, frontmatter, filePath, fileMtime }`。Vault が返す読み取り表現（DTO）。`body` はファイル上の生 Markdown 文字列（ブロック化前） |
+| ハイドレーション | **Hydration** | NoteFileSnapshot を Note Aggregate に変換する ACL 処理。**Markdown → Block[] 変換を含む** |
+| ハイドレーション失敗 | **Hydration Failure** | YAML 不正・必須欠落・VO 拒否・ブロック化不能な構造などで snapshot から Note Aggregate に変換できなかった状態（**read 失敗は含まない**） |
+| ハイドレーション失敗理由 | **HydrationFailureReason** | `'yaml-parse' \| 'missing-field' \| 'invalid-value' \| 'block-parse' \| 'unknown'` |
+| Markdown↔Block 変換 | **Markdown ↔ Block Conversion** | `parseMarkdownToBlocks` / `serializeBlocksToMarkdown` の純粋関数ペア（Shared Kernel）。Vault の Hydration / 保存時に使用 |
+| ラウンドトリップ性質 | **Round-trip Stability** | `parse(serialize(b)) ≈ b` および `serialize(parse(m)) ≈ m`（意味上の同値、外見上の差異は許容）。完全な byte 一致は保証しない |
 | 壊れファイル | **CorruptedFile** | `VaultScanned.corruptedFiles[]` の要素。`{ filePath, failure: ScanFileFailure, detail? }` |
 | スキャンファイル失敗 | **ScanFileFailure** | scanVault でのファイル単位失敗の判別ユニオン。`{kind:'read', fsError}` または `{kind:'hydrate', reason: HydrationFailureReason}`。read 失敗（OS）と hydrate 失敗（フォーマット）を型で区別 |
 | 読み取り時正規化 | **Read-time Normalization** | タグ等の正規化は ACL 変換時のみ行い、ファイル自体は書き換えない方針 |
@@ -164,16 +187,18 @@ Markdown ファイルの永続化と Obsidian 互換性を担保する。
 
 | 用語 | Capture での焦点 | Curate での焦点 | Vault での焦点 |
 |------|----------------|----------------|---------------|
-| **Note** | 編集セッション中のノート | フィード表示・選択・削除対象 | Markdown ファイル（物理） |
-| **Body** | 入力中の文字列・コピー対象 | 検索対象テキスト | YAML frontmatter を除く本文 |
+| **Note** | 編集セッション中のノート（`Block[]` の集合体） | フィード表示・選択・削除対象 | Markdown ファイル（物理、平坦） |
+| **Block** | 編集単位（contenteditable 要素として描画） | 表示単位（フォーカス未取得時） | （登場しない、Markdown 文字列の構造化派生） |
+| **Body** | 入力中ノートの `serializeBlocksToMarkdown(blocks)` 派生・コピー対象 | 検索対象テキスト | YAML frontmatter を除く本文（Markdown） |
 | **Frontmatter** | エディタ内 YAML（直接編集可） | タグチップ・フィルタ条件 | YAML ヘッダ |
-| **Save** | Idle/Blur 自動保存（編集セッション内） | タグチップ操作後の即時保存依頼 | ファイル書き込み |
+| **Save** | Idle/Blur 自動保存（編集セッション内） | タグチップ操作後の即時保存依頼 | ファイル書き込み（Block[] → Markdown 直列化を含む） |
 | **Delete** | （登場しない） | 削除モーダル経由 | OS ゴミ箱送り |
 | **Tag** | エディタ内 YAML としてのみ | タグチップ・フィルタ条件・TagInventory | frontmatter 内 YAML 配列 |
-| **Edit** | 編集セッション内の入力行為 | （登場しない／"Tag Chip Operation" が近似） | （登場しない） |
-| **Session** | Editing Session | （登場しない） | Vault Scan の処理状態 |
+| **Edit** | 編集セッション内の入力行為（ブロック単位） | （登場しない／"Tag Chip Operation" が近似） | （登場しない） |
+| **Focus** | Block Focus（at most one block per Note） | （ノートカードのホバー等は UI 表現） | （登場しない） |
+| **Session** | Editing Session（Note 単位） | （登場しない） | Vault Scan の処理状態 |
 
-**Capture と Curate を分ける本質**：「**エディタにフォーカスが入っている間**」が境界。フォーカス内 = Capture、フォーカス外 = Curate。
+**Capture と Curate を分ける本質**：「**いずれかのブロックにキャレットが入っている間**」が境界。Block Focus 取得中 = Capture、未取得 = Curate。
 
 ---
 
@@ -183,12 +208,13 @@ Markdown ファイルの永続化と Obsidian 互換性を担保する。
 
 | 種別 | 命名 | 例 |
 |------|------|-----|
-| Aggregate / Entity | PascalCase | `Note`, `Feed`, `Vault` |
-| Value Object | PascalCase | `NoteId`, `Body`, `Tag`, `FilterCriteria` |
+| Aggregate / Entity | PascalCase | `Note`, `Block`, `Feed`, `Vault` |
+| Value Object | PascalCase | `NoteId`, `BlockId`, `BlockContent`, `Body`, `Tag`, `FilterCriteria` |
+| Enum / Tagged Union | PascalCase / kebab-case 値 | `BlockType` = `'paragraph' \| 'heading-1' \| ...` |
 | Read Model | PascalCase | `TagInventory`, `TagEntry` |
-| Domain Event | PascalCase 過去分詞 | `NoteFileSaved`, `VaultScanned`, `EmptyNoteDiscarded` |
-| Command（メソッド） | camelCase 命令形 | `editBody`, `applyTagFilter`, `allocateNoteId` |
-| Pure Function | camelCase | `computeVisible`, `bodyForClipboard` |
+| Domain Event | PascalCase 過去分詞 | `NoteFileSaved`, `VaultScanned`, `EmptyNoteDiscarded`, `BlockSplit`, `BlockTypeChanged` |
+| Command（メソッド） | camelCase 命令形 | `editBlockContent`, `splitBlock`, `applyTagFilter`, `allocateNoteId` |
+| Pure Function | camelCase | `computeVisible`, `bodyForClipboard`, `serializeBlocksToMarkdown`, `parseMarkdownToBlocks` |
 | 状態（enum） | kebab-case 文字列リテラル | `'editing'`, `'saving'`, `'save-failed'` |
 
 **例外の少なさを保つルール**：例外は「真にプログラマがハンドルできない」場合のみ。ドメインの失敗は `Result<Ok, Err>` で返す（DMMF 原則）。
@@ -202,13 +228,16 @@ Markdown ファイルの永続化と Obsidian 互換性を担保する。
 | 用語 | 検討 | 結論 |
 |------|------|------|
 | `Note` | 3 Context にまたがる | **Shared Kernel**（既決） |
+| `Block` / `BlockId` / `BlockType` / `BlockContent` | Note の構成要素として 3 Context に共有される | **Shared Kernel**（Note と一蓮托生） |
 | `Tag` | Curate / Vault に登場、Capture では YAML 内のみ | **Shared Kernel**（VO の Smart Constructor は共通） |
+| `serializeBlocksToMarkdown` / `parseMarkdownToBlocks` | Vault Hydration / Save、Capture コピー、Curate 検索で使用 | **Shared Kernel**（純粋関数） |
 | `EditingSessionState` | Capture 専用 | Capture |
+| `Block Focus` / `WYSIWYG Rendering` / `Inline Editor Library` | UI 駆動だが概念的に Capture 内 | Capture |
 | `TagInventory` | Curate 専用 | Curate（Read Model） |
 | `Feed` | Curate 専用 | Curate |
 | `Vault` | Vault 専用 | Vault |
 | `NoteFileSnapshot` | Vault → Curate に流れる DTO | Vault が定義、Curate ACL が変換 |
-| `SaveNoteRequested` | Capture / Curate どちらも発行 | Public Domain Event（共通の payload 型） |
+| `SaveNoteRequested` | Capture / Curate どちらも発行 | Public Domain Event（共通の payload 型、Note 全体スナップショット） |
 | `PastNoteSelected` | Curate → Capture | Public Domain Event |
 | `Result<Ok, Err>` | 全 Context | Shared Kernel（DMMF 風） |
 

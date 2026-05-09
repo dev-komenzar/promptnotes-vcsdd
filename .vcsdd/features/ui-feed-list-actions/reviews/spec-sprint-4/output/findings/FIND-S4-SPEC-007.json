@@ -1,0 +1,10 @@
+{
+  "id": "FIND-S4-SPEC-007",
+  "severity": "high",
+  "dimension": "verification_readiness",
+  "title": "PROP-FEED-S4-004 (旧シグネチャ廃止 grep audit) の grep pattern が compose_state_for_select_past_note の旧シグネチャを実際には捕捉できない",
+  "location": "behavioral-spec.md:732, verification-architecture.md:586",
+  "description": "REQ-FEED-025 Acceptance Criteria line 732 は『旧シグネチャ (note_id, body: &str) を参照するコードが存在しない (grep audit: grep \"body:\" src-tauri/src/editor.rs に compose_state_for_select_past_note 行がゼロヒット)』を要求し、PROP-FEED-S4-004 (verification-architecture.md:586) もこれを再掲する。しかし `grep \"body:\" src-tauri/src/editor.rs` は struct fields など `body:` 文字列を含む全ての行にヒットするため、`compose_state_for_select_past_note` の旧シグネチャ削除を確認するのに **適切な grep ではない**。例えば構造体 `NoteRowMetadataDto.body` (`feed.rs:78` には `pub body: String,` あり) や spec コメント中の `body:` も誤ヒットする。この grep が PASS したことが旧シグネチャ消滅を保証しないため、Phase 5 の audit を素通りさせるリスクがある。",
+  "evidence": "behavioral-spec.md:732 `旧シグネチャ (note_id, body: &str) を参照するコードが存在しない (grep audit: grep \"body:\" src-tauri/src/editor.rs に compose_state_for_select_past_note 行がゼロヒット)。`\nverification-architecture.md:586 `grep \"compose_state_for_select_past_note\" src-tauri/src に body: 引数参照がゼロヒット（旧シグネチャ廃止確認）。`\nfeed.rs:78 `pub body: String,` (NoteRowMetadataDto) — 一般的な `body:` の例",
+  "remediation": "grep pattern を旧シグネチャ専用に絞る。例: `rg -n 'fn compose_state_for_select_past_note\\([^)]*body: ?&str' src-tauri/src/` のような正規表現で関数定義の body 引数だけを捕捉する。または ast-grep (`sg`) で関数シグネチャを構造的にマッチさせる pattern を提示する。PROP-FEED-S4-004 / Acceptance Criteria の grep 文を Phase 5 で実行可能な厳密形式に書き直す。"
+}

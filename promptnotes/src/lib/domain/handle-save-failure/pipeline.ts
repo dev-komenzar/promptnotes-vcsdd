@@ -3,10 +3,10 @@
 //
 // REQ-HSF-001: Precondition — input must be SaveFailedState
 // REQ-HSF-002: Branch — RetrySave
-// REQ-HSF-003: Branch — DiscardCurrentSession without pendingNextNoteId
-// REQ-HSF-004: Branch — DiscardCurrentSession with pendingNextNoteId
-// REQ-HSF-005: Branch — CancelSwitch (valid: pendingNextNoteId present)
-// REQ-HSF-006: Branch — CancelSwitch invalid when no pendingNextNoteId
+// REQ-HSF-003: Branch — DiscardCurrentSession without pendingNextFocus
+// REQ-HSF-004: Branch — DiscardCurrentSession with pendingNextFocus
+// REQ-HSF-005: Branch — CancelSwitch (valid: pendingNextFocus present)
+// REQ-HSF-006: Branch — CancelSwitch invalid when no pendingNextFocus
 // REQ-HSF-007: UserDecision exhaustiveness
 // REQ-HSF-008: At most one event per invocation
 // REQ-HSF-009: Clock.now() budget — exactly once on valid branches; 0 on cancel-switch-invalid
@@ -90,7 +90,7 @@ function makeInvariantViolatedError(detail: string): SaveError {
  *
  * Widened signature per REQ-HSF-011: accepts (stage, state, decision) as distinct
  * parameters. `stage` carries the failure context (error for logging); `state`
- * carries the transition targets (currentNoteId, pendingNextNoteId).
+ * carries the transition targets (currentNoteId, pendingNextFocus).
  *
  * Clock.now() is called exactly once on valid branches, before the pure transition,
  * and the same timestamp is used for both the state-transition parameter and the
@@ -156,11 +156,11 @@ export function runHandleSaveFailurePipeline(
     }
 
     case "cancel-switch": {
-      // REQ-HSF-006: guard — cancel-switch requires pendingNextNoteId !== null.
+      // REQ-HSF-006: guard — cancel-switch requires pendingNextFocus !== null.
       // This guard fires BEFORE Clock.now() is called (REQ-HSF-009, PROP-HSF-020).
-      if (state.pendingNextNoteId === null) {
+      if (state.pendingNextFocus === null) {
         return Promise.reject(
-          makeInvariantViolatedError("cancel-switch requires pendingNextNoteId"),
+          makeInvariantViolatedError("cancel-switch requires pendingNextFocus"),
         );
       }
 

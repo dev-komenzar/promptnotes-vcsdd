@@ -1,0 +1,51 @@
+Security Scan — sprint 5 iteration 2
+Date: 2026-05-08T00:00:00Z
+
+--- bun audit ---
+Command: cd promptnotes && bun audit
+
+Output:
+  cookie  <0.7.0
+    @sveltejs/kit › cookie
+    low: cookie accepts cookie name, path, and domain with out of bounds characters
+    https://github.com/advisories/GHSA-pxg6-pf52-xh8x
+
+  1 vulnerabilities (1 low)
+
+Assessment:
+  Severity: LOW
+  Package: cookie (<0.7.0) via @sveltejs/kit
+  Impact: cookie name/path/domain out-of-bounds characters
+  Applicability to app-startup feature:
+    - app-startup domain code (hydrate-feed.ts, hydrate-note.ts, scan-vault.ts,
+      parse-markdown-to-blocks.ts, etc.) has NO dependency on the cookie package.
+    - The vulnerability is in @sveltejs/kit's HTTP cookie handling, which is
+      exercised by the Tauri IPC layer, NOT by the app-startup domain logic.
+    - app-startup performs local file system reads via Tauri ports; no HTTP
+      request/response handling is in scope.
+  Disposition: ACKNOWLEDGED but NOT applicable to app-startup domain scope.
+               Infrastructure sprint to update @sveltejs/kit recommended.
+
+--- npm audit ---
+Command: cd promptnotes && npm audit
+Error: npm error code ENOLOCK (no package-lock.json; bun.lock used instead)
+Status: NOT APPLICABLE — bun lockfile only
+
+--- semgrep ---
+Status: NOT INSTALLED
+
+--- cargo-audit ---
+Status: NOT INSTALLED
+
+--- Static analysis (inline grep) ---
+Command: grep -nE "Date\.now\(\)" app-startup/*.ts | grep -v "//"
+Result: 0 hits in non-comment code
+
+Command: grep -nE "process\.|eval\(|exec\(|spawn\(" app-startup/*.ts
+Result: 0 hits
+
+Command: grep -nE "Date\.now\(\)" capture-auto-save/parse-markdown-to-blocks.ts | grep -v "//"
+Result: 0 hits
+
+--- Wycheproof ---
+Status: NOT APPLICABLE — no cryptographic operations in app-startup feature scope

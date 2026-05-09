@@ -1,0 +1,234 @@
+## Sprint 5 — Phase 2a (Red Phase) Evidence
+
+**Feature**: app-startup
+**Sprint**: 5
+**Phase**: 2a (Red)
+**Date**: 2026-05-08
+**Spec revision**: 7 (FIND-019..026 resolved)
+
+---
+
+## Gate Result
+
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+---
+
+## Test Suite Summary
+
+### app-startup test suite (targeted)
+- **Total tests**: 175 (across 16 files)
+- **Pass**: 152
+- **Fail**: 23
+- **Error** (module-not-found): 1 (`hydrate-note-purity.test.ts` — `$lib/domain/app-startup/hydrate-note` does not exist yet)
+- **Skip/Todo**: 0
+
+### Full test suite (regression baseline)
+- **Total tests**: 1914 (across 156 files)
+- **Pass**: 1883
+- **Fail**: 23  (all new, all in app-startup sprint-5 files)
+- **Error**: 1  (hydrate-note-purity.test.ts — module not found)
+- **Skip**: 4 (pre-existing, unchanged)
+- **Todo**: 4 (pre-existing, unchanged)
+
+---
+
+## Failing Tests by REQ/PROP
+
+### REQ-018 / PROP-028 — 'unknown' defensive fallback (4 failures)
+File: `step2-hydration-unknown-fallback.test.ts`
+
+Root cause: `scan-vault.ts` per-file loop has no try-catch around `parseNote()` calls
+and no handling of unrecognised `Result.Err` variants. Exceptions propagate uncaught.
+
+1. `PROP-028 — FrontmatterParser.parse throwing synchronously → failure:{kind:'hydrate',reason:'unknown'}`
+   - Expected: caught exception → `{kind:'hydrate',reason:'unknown'}` in corruptedFiles
+   - Actual: exception propagates, test fails with unhandled error
+
+2. `PROP-028 — parseNote returns Err with unrecognised future variant → failure:{kind:'hydrate',reason:'unknown'}`
+   - Expected: unrecognised `error: 'unrecognized-future-variant'` → folded to `reason:'unknown'`
+   - Actual: reason is `'unrecognized-future-variant'` (passed through directly)
+
+3. `PROP-028 — remaining files process normally after 'unknown' exception on one file`
+   - Expected: exception on file 1 caught → 2 snapshots, 1 corrupted with `reason:'unknown'`
+   - Actual: exception propagates, test crashes
+
+4. `PROP-028 — 'unknown' reason has detail field with human-readable error message`
+   - Expected: `corrupted.detail` contains the error message string
+   - Actual: exception propagates uncaught
+
+### PROP-025 — parseMarkdownToBlocks deterministic positional BlockId (7 failures)
+File: `parse-markdown-to-blocks-purity.test.ts`
+
+Root cause: `capture-auto-save/parse-markdown-to-blocks.ts` uses a MODULE-LEVEL COUNTER
+(`_blockCounter`) that increments globally. BlockIds are `block-0001`, `block-0002`, ...
+and on a second call, they are `block-0003`, `block-0004`, ... (not `block-0001` again).
+This violates PROP-025 (plain deepEquals fails) and REQ-002 rev7 (positional block-N scheme).
+
+5. `PROP-025 — simple paragraph: same markdown → same Block[] with same BlockIds`
+   - Expected: `result1.value deepEquals result2.value` (BlockIds identical: `block-0`)
+   - Actual: result1 has `block-0001`, result2 has `block-0002`
+
+6. `PROP-025 — multi-block markdown: both calls produce same BlockId sequence (block-0, block-1, ...)`
+   - Expected: positional block-0, block-1, block-2 on both calls
+   - Actual: counter keeps incrementing across calls
+
+7. `PROP-025 — code block (fence): deterministic BlockId even after other parse calls`
+   - Expected: block-0 on both calls
+   - Actual: different counter value each call
+
+8. `PROP-025 — empty string produces Ok([empty-paragraph]) with stable BlockId`
+   - Expected: both calls produce `block-0` as the BlockId
+   - Actual: counter diverges
+
+9. `PROP-025 property (fast-check): ∀ markdown, parseMarkdownToBlocks(m) deepEquals parseMarkdownToBlocks(m)`
+   - Expected: fast-check finds no counter-example
+   - Actual: fast-check immediately finds a counter-example (any non-empty string)
+
+10. `PROP-025 — positional BlockId: 5-block document has IDs block-0 through block-4`
+    - Expected: `block-0, block-1, block-2, block-3, block-4`
+    - Actual: counter-based IDs starting from wherever counter is currently at
+
+11. `PROP-025 — interleaved calls: multiple different inputs don't contaminate each other's BlockIds`
+    - Expected: `parseMarkdownToBlocks("a")` always returns `block-0` regardless of prior calls
+    - Actual: counter increments across all calls
+
+### REQ-017 / PROP-026 — block-parse failure → CorruptedFile reason='block-parse' (5 failures)
+File: `step2-block-parse.test.ts`
+
+Root cause: `scan-vault.ts` has no `parseMarkdownToBlocks` field in `ScanVaultPorts` and
+no call to `parseMarkdownToBlocks` in the per-file loop. Block-parse failures are invisible
+to `scanVault`; all files pass through to snapshots regardless of block structure.
+
+12. `PROP-026 — unterminated-code-fence error → failure:{kind:'hydrate',reason:'block-parse'}`
+    - Expected: 0 snapshots, 1 corruptedFile with `reason:'block-parse'`
+    - Actual: 1 snapshot (file accepted), 0 corruptedFiles
+
+13. `PROP-026 — malformed-structure error → failure:{kind:'hydrate',reason:'block-parse'}`
+    - Expected: 0 snapshots, 1 corruptedFile with `reason:'block-parse'`
+    - Actual: 1 snapshot, 0 corruptedFiles
+
+14. `PROP-026 — frontmatter-ok but block-parse-fail → reason='block-parse' (not 'yaml-parse')`
+    - Expected: `reason:'block-parse'`, not `'yaml-parse'`
+    - Actual: file in snapshots (no block-parse check performed)
+
+15. `PROP-026 — block-parse failure on one file; remaining files still processed`
+    - Expected: 2 snapshots, 1 corruptedFile with `reason:'block-parse'`
+    - Actual: 3 snapshots (no block-parse check)
+
+16. `PROP-026 — total invariant preserved when block-parse fails on N files`
+    - Expected: 0 snapshots, 2 corruptedFiles (both fail block-parse)
+    - Actual: 2 snapshots (no block-parse check)
+
+### PROP-029 (Q4) — Ok([]) → CorruptedFile reason='block-parse' (2 failures)
+File: `step2-block-parse.test.ts`
+
+Root cause: same as PROP-026 — `scanVault` has no `parseMarkdownToBlocks` integration.
+Ok([]) bodies are accepted as valid snapshots (the note would violate invariant 6).
+
+17. `PROP-029 — body producing Ok([]) → failure:{kind:'hydrate',reason:'block-parse'}`
+    - Expected: 0 snapshots, 1 corruptedFile with `reason:'block-parse'`
+    - Actual: 1 snapshot (empty block array accepted)
+
+18. `PROP-029 — Ok([]) is not auto-padded: resulting snapshot must not have blocks.length > 0`
+    - Expected: 0 snapshots (no auto-padding)
+    - Actual: 1 snapshot (file accepted without block validation)
+
+### PROP-030 — parseMarkdownToBlocks called exactly twice per non-corrupt file (4 failures)
+File: `parse-call-budget.test.ts`
+
+Root cause: `scan-vault.ts` makes 0 calls to `parseMarkdownToBlocks` (no port);
+`hydrate-feed.ts` makes 0 calls to `hydrateNote` / `parseMarkdownToBlocks`.
+Total per file = 0, expected = 2.
+
+19. `PROP-030 — 1 non-corrupt file: total parseMarkdownToBlocks call count = 2`
+    - Expected: step2 count = 1, after hydrateFeed total = 2
+    - Actual: step2 count = 0, after hydrateFeed total = 0
+
+20. `PROP-030 — 3 non-corrupt files: total parseMarkdownToBlocks call count = 6 (3 × 2)`
+    - Expected: 3 (step 2) + 3 (step 3) = 6
+    - Actual: 0
+
+21. `PROP-030 — corrupt file (block-parse fail): only 1 call (Step 2), never reaches Step 3`
+    - Expected: step2 count = 1, after hydrateFeed still = 1 (corrupt file excluded)
+    - Actual: 0
+
+22. `PROP-030 — mixed: 2 ok + 1 corrupt = 4 calls total`
+    - Expected: 3 (step 2) + 2 (step 3, ok files only) = 5
+    - Actual: 0
+
+### PROP-027 — HydrateNote purity (1 module error)
+File: `hydrate-note-purity.test.ts`
+
+Root cause: `$lib/domain/app-startup/hydrate-note` module does NOT EXIST.
+All 12 tests in this file fail with a module-not-found error.
+
+23. (module error) `Cannot find module '$lib/domain/app-startup/hydrate-note'`
+    - This single module-not-found error causes the entire file's test suite to abort.
+    - The 12 PROP-027 tests in this file are all Red by virtue of the missing module.
+
+---
+
+## Pre-existing Tests Status
+
+All 1868 previously-passing tests continue to pass. The +15 new tests that pass immediately
+are the PROP-019 exhaustiveness tests in `step2-scan-vault.test.ts` — these are Tier-0
+type-level tests that pass because `HydrationFailureReason` in `shared/snapshots.ts` already
+includes all 5 values (`'yaml-parse' | 'missing-field' | 'invalid-value' | 'block-parse' | 'unknown'`)
+from the block-based migration. The runtime assertions (which reason produces each value)
+also pass because we're just asserting type members, not implementation routing.
+
+---
+
+## What Phase 2b Must Implement
+
+To make all 23 failing tests (and 1 module-error file) pass, Phase 2b must:
+
+1. **`capture-auto-save/parse-markdown-to-blocks.ts`** — Replace module-level counter with
+   per-call positional BlockId allocation (`block-0`, `block-1`, ... reset per invocation).
+   This fixes PROP-025 (7 tests).
+
+2. **`app-startup/scan-vault.ts`** — Add `parseMarkdownToBlocks` to `ScanVaultPorts`;
+   call it after `parseNote` in the per-file loop; fold `Err(BlockParseError)` and `Ok([])`
+   to `{kind:'hydrate', reason:'block-parse'}`; wrap the per-file parse block in try-catch
+   to catch parser exceptions and fold to `{kind:'hydrate', reason:'unknown', detail:<message>}`;
+   fold unrecognised `Result.Err` variants to `reason:'unknown'` as well.
+   This fixes PROP-026 (5 tests), PROP-029 (2 tests), PROP-028 (4 tests), PROP-030 partial (Step 2).
+
+3. **`app-startup/hydrate-note.ts`** (new file) — Implement `hydrateNote(snapshot)` as a pure
+   function: `parseMarkdownToBlocks(snapshot.body)` + `Note.fromSnapshot(snapshot, blocks)`.
+   Export `hydrateNote` from this module.
+   This fixes PROP-027 (12 tests, module-error file).
+
+4. **`app-startup/hydrate-feed.ts`** — Import and call `hydrateNote` per snapshot in the
+   `hydrateFeed` function to materialize `Note` aggregates. This keeps hydrateFeed pure
+   (since hydrateNote is pure). Update return value to include `noteRefs` from successfully
+   hydrated snapshots; add HydrationFailureReason-based corruptedFiles from Step 3 hydration.
+   This fixes PROP-030 partial (Step 3 counting tests).
+
+5. **`app-startup/scan-vault.ts` — `ScanVaultPorts` type** — Add `parseMarkdownToBlocks` field
+   (type: `(markdown: string) => Result<ReadonlyArray<Block>, BlockParseError>`).
+   The field is pure; it is a port only in the structural sense that it is injected.
+
+---
+
+## Files Created / Modified
+
+### New test files (Phase 2a sprint 5):
+- `promptnotes/src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts`
+  → REQ-017, PROP-026, PROP-029, REQ-002 rev7 (18 tests, 10 failing)
+- `promptnotes/src/lib/domain/__tests__/app-startup/step2-hydration-unknown-fallback.test.ts`
+  → REQ-018, PROP-028 (5 tests, 4 failing + 1 passing: PROP-028 'read kind vs hydrate')
+- `promptnotes/src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-purity.test.ts`
+  → PROP-025 (9 tests, 7 failing + 2 passing: BlockIds are NOT UUID, BlockType assertions)
+- `promptnotes/src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts`
+  → PROP-027 (12 tests, all fail via module-not-found error)
+- `promptnotes/src/lib/domain/__tests__/app-startup/parse-call-budget.test.ts`
+  → PROP-030 (5 tests, 4 failing + 1 passing: PROP-030 Q2 determinism tracking test)
+
+### Modified existing test files:
+- `promptnotes/src/lib/domain/__tests__/app-startup/step2-scan-vault.test.ts`
+  → Added PROP-019 exhaustiveness tests (10 new tests, all PASS — type already correct)
+  → Updated header docstring for sprint 5 additions
+  → Added `HydrationFailureReason`, `ScanFileFailure` to imports

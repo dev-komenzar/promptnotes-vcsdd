@@ -1,0 +1,122 @@
+## Sprint 5 iter-2 — Phase 2a (Red Phase) Evidence
+
+**Feature**: app-startup
+**Sprint**: 5
+**Iteration**: 2
+**Phase**: 2a (Red)
+**Date**: 2026-05-08
+**Spec revision**: 8 (FIND-030/031 resolved, Q5=A, Q6=A)
+
+---
+
+## Gate Result
+
+new-feature-tests: FAIL
+regression-baseline: PASS
+
+---
+
+## Test Suite Summary (app-startup only)
+
+- **Total tests**: 212 (across 17 files)
+- **Pass**: 184
+- **Fail**: 28 (all new rev8 tests — correct Red phase behavior)
+- **Skip/Todo**: 0
+
+### Regression baseline (non-app-startup domain tests)
+- All tests in `src/lib/domain/__tests__/` outside `app-startup/` pass.
+- 1244 pass / 0 fail outside app-startup.
+
+---
+
+## Failing Tests (all intentional — Red phase PASS condition)
+
+### PROP-031 (REQ-017 rev8) — parseMarkdownToBlocks blank-line behavior
+File: `parse-markdown-to-blocks-blank-lines.test.ts` (NEW)
+
+1. `PROP-031 — 'a\n\n\nb' returns Ok([paragraph('a'), paragraph('b')]) with no empty paragraph between them`
+   - Expected: 2 blocks. Got: 4 (parser emits paragraph('') for each blank line).
+2. `PROP-031 — '\n\n\n' (blank lines only) returns Ok([])`
+   - Expected: 0 blocks. Got: 4.
+3. `PROP-031 — '   ' (spaces only) returns Ok([])`
+   - Expected: 0 blocks. Got: 1 (paragraph('   ')).
+4. `PROP-031 — '\t\n  \n\t' (mixed whitespace) returns Ok([])`
+   - Expected: 0 blocks. Got: 3.
+5. `PROP-031 — '' (empty string) returns Ok([])`
+   - Expected: 0 blocks. Got: 1 (paragraph('') fallback).
+6. `PROP-031 — 'a\n\nb' (single blank line between two paragraphs) returns no empty paragraph`
+   - Expected: 2 blocks. Got: 3.
+7. `PROP-031 — '# Heading\n\n\nParagraph' returns [heading, paragraph] with no empty paragraph`
+   - Expected: 2 blocks. Got: 4.
+8. `PROP-031 — typical note body 'First\n\nSecond\n\nThird' returns 3 content blocks, no empty paragraphs`
+   - Expected: 3 blocks. Got: 5.
+9. `PROP-031 — '\n  content  \n' (leading/trailing whitespace lines) returns no empty paragraph`
+   - Expected: 1 block. Got: 3.
+10. `PROP-031 property (fast-check): for any markdown, result.value has NO paragraph('') blocks`
+    - Property fails: current impl emits paragraph('') for blank lines.
+11-18. `PROP-031 — whitespace-only body variants all yield Ok([])` (8 parameterized inputs)
+    - All fail because current impl emits content for whitespace.
+
+### PROP-025 / PROP-031 rev8 (existing test modified)
+File: `parse-markdown-to-blocks-purity.test.ts` (MODIFIED)
+
+19. `PROP-025 / PROP-031 rev8 — empty string produces Ok([]) (whitespace-only → no content blocks)`
+    - Expected: 0 blocks. Got: 1 (old empty-string fallback).
+
+### PROP-032 (REQ-008 rev8) — hydrateFeed throws on hydrateNote Err
+File: `step3-hydrate-feed.test.ts` (MODIFIED — new tests added)
+
+20. `PROP-032 — throws Error when hydrateNote returns Err for any snapshot (divergent parser stub)`
+    - Expected: throws /^hydrateNote-invariant-violation:/. Got: no throw (routes to corruptedFiles).
+21. `PROP-032 — thrown Error message contains snapshot.filePath and reason`
+    - Expected: thrownError defined with filePath+reason. Got: undefined (no throw).
+22. `PROP-032 — corruptedFiles[] does NOT gain new entries from Step-3 divergent-stub Err (throw aborts)`
+    - Expected: throws. Got: no throw (routes block-parse to corruptedFiles).
+23. `PROP-032 — throws even when 1 snapshot succeeds and 1 diverges (any Err triggers throw)`
+    - Expected: throws. Got: no throw (routes to corruptedFiles).
+
+### REQ-002 rev8 — hydrateNote pass-through (no filter)
+File: `hydrate-note-purity.test.ts` (MODIFIED — new tests added)
+
+24. `REQ-002 rev8 — hydrateNote with stub returning [paragraph(''), heading('X'), paragraph('')] passes ALL 3 blocks through`
+    - Expected: 3 blocks. Got: 1 (filter removes 2 empty paragraphs).
+25. `REQ-002 rev8 — hydrateNote with stub returning [paragraph('')] passes through the 1 block (NOT Err)`
+    - Expected: Ok(Note) with 1 block. Got: Err('block-parse') (filter removes all, then length=0 → Err).
+26. `REQ-002 rev8 — hydrateNote with stub returning non-empty blocks does NOT reassign BlockIds`
+    - Expected: blocks[0].id = 'block-5'. Got: 'block-0' (reassignment still occurs).
+
+### PROP-029 (Q5=A reachable) — real parser + whitespace body → block-parse
+File: `step2-block-parse.test.ts` (MODIFIED — new tests added)
+
+27. `PROP-029 (Q5=A reachable) — snapshot with body='\n\n\n' → real parser Ok([]) → CorruptedFile reason='block-parse'`
+    - Expected: 0 snapshots, 1 corruptedFile reason=block-parse. Got: 1 snapshot (parser returns non-empty).
+28. `PROP-029 (Q5=A reachable) — snapshot with body='   ' (spaces only) → real parser Ok([]) → block-parse`
+    - Expected: 0 snapshots, 1 corruptedFile. Got: 1 snapshot.
+
+---
+
+## Root Causes (to be fixed in Phase 2b)
+
+1. **`parse-markdown-to-blocks.ts`**: emits `paragraph('')` for each blank line and emits `paragraph('')` fallback for empty string. Must coalesce blank lines and return `Ok([])` for whitespace-only input.
+
+2. **`hydrate-feed.ts`**: routes `hydrateNote` Err results to `step3CorruptedFiles` instead of throwing `Error('hydrateNote-invariant-violation: <filePath>: <reason>')`.
+
+3. **`hydrate-note.ts`**: filters `paragraph('')` blocks and reassigns BlockIds after filtering. Must be a pure pass-through — no filtering, no ID reassignment. The parser contract (PROP-031) owns blank-line coalescing.
+
+---
+
+## New Test Files Created
+
+- `src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-blank-lines.test.ts` (NEW)
+  - 21 tests covering PROP-031
+
+## Existing Test Files Modified
+
+- `src/lib/domain/__tests__/app-startup/step3-hydrate-feed.test.ts`
+  - Added 5 tests for PROP-032 (throw on hydrateNote Err)
+- `src/lib/domain/__tests__/app-startup/hydrate-note-purity.test.ts`
+  - Added 3 tests for REQ-002 rev8 pass-through contract
+- `src/lib/domain/__tests__/app-startup/step2-block-parse.test.ts`
+  - Added 2 tests for PROP-029 Q5=A real-parser reachability
+- `src/lib/domain/__tests__/app-startup/parse-markdown-to-blocks-purity.test.ts`
+  - Modified 1 test (empty-string behavior: rev7 → rev8)
