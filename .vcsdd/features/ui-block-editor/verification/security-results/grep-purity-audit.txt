@@ -1,0 +1,7 @@
+=== purity-audit grep on pure modules ===
+--- blockPredicates.ts ---
+8: * Pure core module: must never import @tauri-apps/api or any forbidden API.
+--- debounceSchedule.ts ---
+6: * Pure core module: must never import @tauri-apps/api or any forbidden API.
+15: * REQ-BE-022 / PROP-BE-012: Named exported constant for the idle-save debounce window.
+82:  // The most recent edit governs the debounce window.

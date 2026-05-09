@@ -1,0 +1,2 @@
+=== console.error / throw in catch handlers ===
+ZERO HITS

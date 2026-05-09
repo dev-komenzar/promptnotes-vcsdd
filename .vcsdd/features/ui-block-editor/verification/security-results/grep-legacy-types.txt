@@ -1,0 +1,2 @@
+=== PROP-BE-040 legacy type check (production src, excl comments) ===
+ZERO NON-COMMENT HITS
