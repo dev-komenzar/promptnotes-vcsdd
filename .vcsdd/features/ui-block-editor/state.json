@@ -418,6 +418,74 @@
       "predicate": "directory absence",
       "reqs": [],
       "status": "pending"
+    },
+    {
+      "id": "PROP-BE-038",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "focusin → dispatchFocusBlock",
+      "reqs": [
+        "REQ-BE-002b"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-039",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "SlashMenu open 中の Enter 排他",
+      "reqs": [
+        "REQ-BE-006"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-043",
+      "tier": 5,
+      "target": "src/lib/block-editor/",
+      "predicate": "2000 literal forbidden outside debounceSchedule.ts",
+      "reqs": [
+        "REQ-BE-022"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-044",
+      "tier": 5,
+      "target": "src/lib/block-editor/",
+      "predicate": "no REQ-EDIT/PROP-EDIT IDs (post Phase 2c)",
+      "reqs": [
+        "NFR-BE-007"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-045",
+      "tier": 5,
+      "target": "specs/*.md",
+      "predicate": "PROP-BE ID continuity",
+      "reqs": [],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-046",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "textContent control char strip",
+      "reqs": [
+        "NFR-BE-006"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "PROP-BE-047",
+      "tier": 4,
+      "target": "BlockElement.svelte",
+      "predicate": "BlockEditorAdapter Promise rejection swallow",
+      "reqs": [
+        "adapter contract"
+      ],
+      "status": "pending"
     }
   ],
   "traceability": {
@@ -427,5 +495,5 @@
   "gates": {},
   "sprintCount": 0,
   "createdAt": "2026-05-09T10:32:25.472Z",
-  "updatedAt": "2026-05-09T10:57:35.432Z"
+  "updatedAt": "2026-05-09T11:14:58.765Z"
 }

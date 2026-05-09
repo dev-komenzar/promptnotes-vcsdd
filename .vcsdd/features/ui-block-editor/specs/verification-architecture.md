@@ -20,10 +20,11 @@ coherence:
 
 **Feature**: `ui-block-editor`
 **Phase**: 1b
-**Revision**: 1
+**Revision**: 2
 **Mode**: strict
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 **Created**: 2026-05-09
+**Last revision**: 2026-05-09 (Phase 1c adversary feedback rev1)
 
 **Source of truth**:
 - `specs/behavioral-spec.md`（REQ-BE-001..027 / EC-BE-001..013 / NFR-BE-001..005）
@@ -131,7 +132,12 @@ fast-check を使用し、全入力ドメインに対して不変条件を検証
 
 ### Tier 3 — Branch coverage gate (@vitest/coverage-v8)
 
-Stryker は未導入。fast-check (Tier 2) + branch coverage ≥ 95% で同等の rigor を担保する。
+Stryker は未導入。本 feature では (1) **branch coverage ≥ 95%** と (2) **すべての PROP は exact value assertion を要求** の 2 ルールを置く。
+
+> **rigor 担保の補足**（FIND-BE-1C-011 対応）: branch coverage は実行されたかを測るのみで assertion 強度は測らない。fast-check は input domain を網羅するが assertion 強度は測らない。両者と独立に「PROP の assertion shape を exact match に揃える」CI ゲートを置くことで mutation testing 相当の strict assertion を担保する。具体的には:
+> - 全 PROP-BE-* property test 内で `expect(x).toEqual(<concrete value>)` または `expect(x).toBe(<concrete value>)` を使う（`expect(x).toBeDefined()` / `typeof x === 'string'` 等の弱 assertion を禁止）
+> - DOM tier (Tier 4) は `mock.calls` の引数を deep-equal で検証する（`called` のみのチェックでは不十分）
+> - 将来 Stryker 導入で mutation score を別途計測することは task として記録（NFR-BE-007 の付記）
 
 **対象 (pure modules only)**:
 - `blockPredicates.ts`: branch coverage ≥ 95%
@@ -143,18 +149,21 @@ Effectful shell（Svelte components）はカバレッジゲート対象外（jsd
 
 DOM tier では Svelte 5 mount API で各プリミティブをマウントし、UI 振る舞いを検証する。`@testing-library/svelte` は使わない。
 
-- **`block-element.dom.vitest.ts`**: REQ-BE-001 (タグ別レンダリング) / REQ-BE-002 (focus 受け渡し) / REQ-BE-003 (input → EditBlockContent) / REQ-BE-005 (markdown prefix → ChangeBlockType) / REQ-BE-006 (Enter → InsertBlock or SplitBlock) / REQ-BE-007 (空 + Backspace → RemoveBlock) / REQ-BE-008 (行頭 Backspace → MergeBlocks) / REQ-BE-009..010 (`/` メニュー)
+- **`block-element.dom.vitest.ts`**: REQ-BE-001 (タグ別レンダリング) / REQ-BE-002 (focus 受け渡し) / REQ-BE-002b (focusin → dispatchFocusBlock) / REQ-BE-003 (input → EditBlockContent) / REQ-BE-005 (markdown prefix → ChangeBlockType) / REQ-BE-006 (Enter → InsertBlock or SplitBlock、SlashMenu open ガード) / REQ-BE-007 (空 + Backspace → RemoveBlock) / REQ-BE-008 (行頭 Backspace → MergeBlocks) / REQ-BE-009..010 (`/` メニュー)
 - **`slash-menu.dom.vitest.ts`**: REQ-BE-011 (9 種列挙 + filter) / REQ-BE-012 (キーボード操作)
-- **`block-drag-handle.dom.vitest.ts`**: REQ-BE-013 (dragstart + dataTransfer) / REQ-BE-014 (dragend で state リセット)
+- **`block-drag-handle.dom.vitest.ts`**: REQ-BE-013 (dragstart + dataTransfer) / REQ-BE-014 (dragend で state リセット) / REQ-BE-014b (`onMoveBlock` optional 確認)
 - **`save-failure-banner.dom.vitest.ts`**: REQ-BE-015 (表示条件) / REQ-BE-016 (3 アクションボタン)
 
-これらは mock の `BlockEditorAdapter` を注入する。adapter のメソッドは `vi.fn().mockResolvedValue(undefined)` で stub する。
+これらは mock の `BlockEditorAdapter` を注入する。adapter のメソッドは `vi.fn().mockResolvedValue(undefined)` で stub する。`vi.fn().mock.invocationCallOrder` を使い同 input event 内の dispatch 順序を厳密検証する（FIND-BE-1C-009 / REQ-BE-005 / REQ-BE-006）。
 
 ### Tier 5 — Source-grep checks (CI)
 
-- **PROP-BE-040** (旧 EditorPane 型残留チェック): `grep -rn "EditorIpcAdapter\|EditorViewState\|EditorAction\b\|EditorCommand\b\|EditingSessionStateDto\|EditingSessionStatus" src/lib/block-editor/` がコメント以外でゼロヒット
+- **PROP-BE-040** (旧 EditorPane 型残留チェック): `grep -rnE "\b(EditorIpcAdapter|EditorViewState|EditorAction|EditorCommand|EditingSessionStateDto|EditingSessionStatus|subscribeToState)\b" src/lib/block-editor/ --include='*.ts' --include='*.svelte' | grep -vE '^\s*(//|\*|/\*)'` がゼロヒット（FIND-BE-1C-019 対応）
 - **PROP-BE-041** (Pure module の禁止 API ゼロ): canonical purity-audit grep pattern で `blockPredicates.ts` / `debounceSchedule.ts` がゼロヒット
 - **PROP-BE-042** (旧 editor/ ディレクトリの不存在): `test ! -d src/lib/editor` が CI で成立
+- **PROP-BE-043** (`2000` リテラル禁止): `grep -rnE "\b2000\b" src/lib/block-editor/ --include='*.ts' --include='*.svelte' | grep -v 'debounceSchedule.ts'` がゼロヒット（FIND-BE-1C-012 対応）
+- **PROP-BE-044** (Phase 2c 後の REQ-EDIT/PROP-EDIT 残留チェック): `grep -rnE "\b(REQ-EDIT|PROP-EDIT)-[0-9]+\b" src/lib/block-editor/` がゼロヒット（FIND-BE-1C-016 対応、Phase 2c 完了で評価）
+- **PROP-BE-045** (PROP-BE ID の連続性): `grep -oE "PROP-BE-[0-9]+" .vcsdd/features/ui-block-editor/specs/*.md | sort -u` の数値が `001..NNN` で連続（gap 検出、FIND-BE-1C-005 対応）
 
 ---
 
@@ -199,11 +208,18 @@ DOM tier では Svelte 5 mount API で各プリミティブをマウントし、
 | PROP-BE-035 | SaveFailureBanner 表示条件 | 4 | REQ-BE-015 |
 | PROP-BE-036 | SaveFailureBanner 3 アクションボタン | 4 | REQ-BE-016 |
 | PROP-BE-037 | BlockEditorAdapter shape (Tier 0) | 0 | REQ-BE-026 |
+| PROP-BE-038 | BlockElement focusin → dispatchFocusBlock | 4 | REQ-BE-002b |
+| PROP-BE-039 | SlashMenu open 中の BlockElement Enter 排他 | 4 | REQ-BE-006 |
 | PROP-BE-040 | 旧 EditorPane 型残留チェック | 5 | REQ-BE-027 |
 | PROP-BE-041 | Pure module 禁止 API ゼロ | 5 | NFR-BE-001 |
 | PROP-BE-042 | 旧 editor/ ディレクトリ不存在 | 5 | — |
+| PROP-BE-043 | `2000` リテラル禁止（debounceSchedule.ts 以外） | 5 | REQ-BE-022 |
+| PROP-BE-044 | Phase 2c 後の REQ-EDIT/PROP-EDIT 残留チェック | 5 | NFR-BE-007 |
+| PROP-BE-045 | PROP-BE ID 連続性 | 5 | — |
+| PROP-BE-046 | textContent control char strip on dispatchEditBlockContent | 4 | NFR-BE-006 |
+| PROP-BE-047 | BlockEditorAdapter Promise rejection 握り潰し | 4 | adapter contract |
 
-合計: 41 propositions（Tier 0=1、Tier 2=20、Tier 4=16、Tier 5=3、Tier 1 は example-based で counts に含めない）
+合計: 47 propositions（Tier 0=1, Tier 2=20, Tier 4=18, Tier 5=8。Tier 1 は example-based で counts に含めない）
 
 ---
 

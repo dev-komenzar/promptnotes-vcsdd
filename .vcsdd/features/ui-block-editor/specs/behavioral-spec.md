@@ -41,10 +41,11 @@ coherence:
 
 **Feature**: `ui-block-editor`
 **Phase**: 1a
-**Revision**: 1
+**Revision**: 2
 **Mode**: strict
 **Language**: TypeScript (Svelte 5 + SvelteKit + Tauri 2 desktop)
 **Created**: 2026-05-09
+**Last revision**: 2026-05-09 (Phase 1c adversary feedback rev1)
 
 ## Source of Truth
 
@@ -92,11 +93,32 @@ coherence:
 - **Tauri IPC の実装**: `BlockEditorAdapter` インターフェースの実装は外部から注入される
 - **Note Aggregate の不変条件保証**: ドメイン層（Rust 側 capture モジュール）が担う。UI 側は不変条件違反を発生させないよう注意するが検証は backend 側
 - **Markdown ↔ Block の変換**: ACL 層（`docs/domain/code/ts/src/shared/blocks.ts`）の責務
+- **Tag 系 Inline Command**（`InsertTagInline` / `RemoveTagInline`）: `tag-chip-update` および `apply-filter-or-search` の責務。本 feature の `BlockEditorAdapter` は Tag 系 dispatch を**含まない**（FIND-BE-1C-002 対応）
+- **`BlockBlurred` / `EditorBlurredAllBlocks` Internal Event の発火**: blur save トリガを伴うため上位レイヤ（FeedRow Sprint 5）の責務。`BlockElement` の `onfocusout` ハンドラは個別 block のクラス更新等を行うのみで Internal Event は発火しない（FIND-BE-1C-017 対応）
+- **IME composition との連携**: `oninput` が IME 確定中に発火する挙動の検証は jsdom 限界により本 spec の範囲外。実機検証は `ui-feed-list-actions` Sprint 5 の integration test に持ち越し（FIND-BE-1C-020 対応）
 
 **重要な前提**:
 - `BlockElement` は **単一 Block のレンダラ**であり、Note 全体の `blocks: Block[]` は外部から props で注入される
-- `BlockElement` の `adapter: BlockEditorAdapter` 経由で発火されるコマンドは `Promise<void>` を返す。失敗ハンドリングは上位レイヤの責務（本コンポーネントは `.catch(() => {})` で握り潰す）
+- `BlockElement` の `adapter: BlockEditorAdapter` 経由で発火されるコマンドは `Promise<void>` を返す
 - `SaveFailureBanner` は **stateless** であり、`error: SaveError` props のみで表示判断する。`save-failed` 状態の検出と props 注入は上位レイヤの責務
+
+**Adapter Promise 契約**（FIND-BE-1C-013 対応）:
+- 全ての `dispatchXxx` は `Promise<void>` を返し、reject は `.catch(() => {})` で握り潰す（UI バナー等のエラー表示は上位 `feedStateChannel` 経由のサーバ側 SaveError で行う）
+- 同一 `issuedAt` 文字列での連続発火を許容（重複発行はドメイン側で idempotent に処理されるため UI は防止しない）
+- 単一 input/keydown イベントから複数 dispatch を発火する場合の順序は呼び出しコード行の順序通り（同期的 invocation; await しない）
+
+**`isFocused` prop の projection 規則**（FIND-BE-1C-015 対応）:
+上位レイヤは以下の写像で `isFocused` を導出して props として渡す:
+
+```
+isFocused === (
+  domainState.kind === 'editing' &&
+  domainState.currentNoteId === note.id &&
+  domainState.focusedBlockId === block.id
+)
+```
+
+`saving` / `switching` / `save-failed` 状態では UI 上のフォーカスは保持され続けるが、`focusedBlockId` を保持する状態は `editing`（および `save-failed.priorFocusedBlockId`）のみ。FeedRow / FeedReducer 側で正規化する責務。本 feature の `BlockElement` は与えられた `isFocused` を信頼する（多重 focus 防止は上位の不変条件）。
 
 ---
 
@@ -164,11 +186,12 @@ coherence:
 - `isEditable === false`: すべての type で `contenteditable="false"` となり、`tabindex="-1"`
 
 **Acceptance Criteria**:
-- DOM に `data-testid="block-element"` 属性を持つルート要素が 1 つ存在する
-- ルート要素は `data-block-id={block.id}` 属性を持つ
-- ルート要素は `data-block-index={blockIndex}` 属性を持つ
-- ルート要素は `data-block-empty={block.content === '' ? 'true' : 'false'}` 属性を持つ
+- DOM に `data-testid="block-element"` 属性を持つルート要素が 1 つ存在する（`<div>` / `<hr>` のいずれの分岐でも成立）
+- ルート要素は `data-block-id={block.id}` 属性を持つ（両分岐）
+- ルート要素は `data-block-index={blockIndex}` 属性を持つ（両分岐）
+- ルート要素は `data-block-empty={block.content === '' ? 'true' : 'false'}` 属性を持つ（両分岐）
 - `block.type === 'divider'` のとき、ルート要素は `<hr>` タグである
+- `block.type !== 'divider'` のとき、ルート要素は `<div>` タグである（heading/paragraph/list/code/quote 全て `<div>`、`role="textbox"` を別途付与）
 
 ---
 
@@ -182,10 +205,30 @@ coherence:
 - `isFocused === true` 初期マウント時: ルート要素は `document.body` などへ未配置の場合がある。`$effect` 内で `blockEl != null` を確認した上で `focus()` する
 - `isEditable === false` で `isFocused === true`: divider 等にフォーカスを渡す要求は domain 側で発生しない前提だが、UI は no-op として扱う（`tabindex=-1` のため `.focus()` は失敗するが例外は投げない）
 - 連続的な `isFocused` true → false → true: 都度 `.focus()` を呼ぶ。冪等
+- `block.type === 'divider'` のとき: 仕様上 focus 要求は届かない前提（`isEditable=false`）。万一届いても `<hr>` 要素は `bind:this` を持たないため `.focus()` は no-op（FIND-BE-1C-008 対応）
 
 **Acceptance Criteria**:
-- `isFocused: true` で mount すると `document.activeElement` がブロック DOM 要素になる（vitest + jsdom 検証）
+- `block.type !== 'divider'` かつ `isFocused: true` で mount すると `document.activeElement` がブロック DOM 要素になる（vitest + jsdom 検証）
 - `isFocused: false` で mount すると `document.activeElement` は `body` のまま
+- `block.type === 'divider'` 分岐では focus AC を要求しない（`<hr>` は contenteditable 非対象）
+
+---
+
+#### REQ-BE-002b: フォーカス取得通知（DOM → domain）
+
+**EARS**: WHEN `BlockElement` の DOM ルート要素で `focusin` イベント、または `click` イベントが発生する THEN コンポーネントは `adapter.dispatchFocusBlock({ noteId, blockId: block.id, issuedAt: issuedAt() })` を 1 回呼ばなければならない。
+
+> **根拠**: `aggregates.md §EditingSessionState L354-361` — `idle → editing` および `editing → editing(refocus)` の遷移トリガとして `BlockFocused` Internal Event が必要。`internal-events.ts BlockFocused` がそのイベント。`focusin` を起源とすることで keyboard navigation・programmatic `.focus()`・mouse focus を同一経路で扱う。
+
+**Edge Cases**:
+- jsdom では `click` が `focusin` を発火しない: ハンドラ側で `blockEl.focus()` を呼んで `focusin` を起こすか、`click` から直接 `dispatchFocusBlock` を呼ぶ
+- `block.type === 'divider'`: `tabindex=-1` のため `focusin` は発生しない前提。発生した場合は dispatch される（domain 側で no-op となる）
+- 同一 block 内での連続 click: 都度発火する（adapter / domain で idempotent）
+
+**Acceptance Criteria**:
+- `<div data-testid="block-element">` に対する `focusin` 発火 → mock の `dispatchFocusBlock` が 1 回呼ばれる
+- `<div data-testid="block-element">` への click → 結果として（直接または `.focus()` 経由で）`dispatchFocusBlock` が 1 回呼ばれる
+- 引数が `noteId === props.noteId, blockId === block.id` を満たす
 
 ---
 
@@ -203,7 +246,7 @@ coherence:
 
 **Acceptance Criteria**:
 - contenteditable 要素に対する `input` 発火 → mock adapter の `dispatchEditBlockContent` が呼ばれる
-- 渡される `content` 引数が `blockEl.textContent` と一致する
+- 渡される `content` 引数が control char strip 済みの `blockEl.textContent` と一致する（後述 NFR-BE-006）
 - `noteId` / `blockId` の値が props と一致する
 - `issuedAt` は呼び出し側 `() => string` の返却値そのもの
 
@@ -255,17 +298,20 @@ coherence:
 **Acceptance Criteria**:
 - input event で `classifyMarkdownPrefix` が non-null を返すと mock の `dispatchChangeBlockType` が `newType: classified.newType` で呼ばれる
 - input event で `classifyMarkdownPrefix(content) === null` のときは `dispatchChangeBlockType` が呼ばれない
-- `EditBlockContent` も同 input で呼ばれる（順序: `dispatchEditBlockContent` → `dispatchChangeBlockType`）
+- `EditBlockContent` も同 input で呼ばれる（順序: `dispatchEditBlockContent` → `dispatchChangeBlockType`、`vi.fn().mock.invocationCallOrder` で逐次性を厳密検証）（FIND-BE-1C-009 対応）
+- prefix 検出後も `block.content` 文字列を UI 側でトリミングしない（trim は domain 側 `changeBlockType` の責務）。`dispatchEditBlockContent` の content には prefix 込みの textContent が渡る
 
 ---
 
 #### REQ-BE-006: Enter キーによる `InsertBlock` または `SplitBlock`
 
-**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === 'Enter'` で発生する THEN コンポーネントは `event.preventDefault()` を呼んだ上で、`splitOrInsert(offset, contentLength)` の結果に応じて以下を発火しなければならない:
+**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === 'Enter'` で発生する AND `slashMenuOpen === false` THEN コンポーネントは `event.preventDefault()` を呼んだ上で、`splitOrInsert(offset, contentLength)` の結果に応じて以下を発火しなければならない:
 - 結果が `'insert'`: `adapter.dispatchInsertBlockAfter({ noteId, prevBlockId: block.id, type: 'paragraph', content: '', issuedAt })`
 - 結果が `'split'`: `adapter.dispatchSplitBlock({ noteId, blockId: block.id, offset, issuedAt })`
 
 ここで `offset` はキャレットの絶対オフセット、`contentLength` は `block.content` の長さである。
+
+**Exclusivity with SlashMenu** (FIND-BE-1C-001 対応): `slashMenuOpen === true` のときは BlockElement は Enter で Insert/Split を**発火してはならない**。SlashMenu 側 `handleKeyDown` が `event.preventDefault()` の上で `onSelect(type)` を呼び（REQ-BE-010 経由で `dispatchChangeBlockType` 発火）、BlockElement の `onkeydown` ハンドラは `slashMenuOpen` ガードで早期 return する。実装上、BlockElement が `slashMenuOpen` 自身を所有し SlashMenu に props で同期する一方、SlashMenu の `<svelte:window onkeydown>` は menu open 時のみアクティブ。BlockElement 側で `slashMenuOpen` 真のときは Enter / ArrowUp / ArrowDown / Escape を skip する。
 
 > **根拠**: `aggregates.md §1 splitBlock / insertBlockAfter`、`bounded-contexts.md §Block Split` — Enter at end は新規 paragraph 挿入、mid-block の Enter は分割。
 
@@ -276,33 +322,38 @@ coherence:
 - divider ブロック: `contenteditable=false` のため Enter キーが原則発火しない。ただし発火した場合は no-op として扱う（divider 自身は分割不能）
 
 **Acceptance Criteria**:
-- 末尾 Enter → mock の `dispatchInsertBlockAfter` が `prevBlockId === block.id, type === 'paragraph', content === ''` で呼ばれる
-- 中央 Enter → mock の `dispatchSplitBlock` が `blockId === block.id, offset === <キャレット位置>` で呼ばれる
+- `slashMenuOpen === false` で末尾 Enter → mock の `dispatchInsertBlockAfter` が `prevBlockId === block.id, type === 'paragraph', content === ''` で呼ばれる
+- `slashMenuOpen === false` で中央 Enter → mock の `dispatchSplitBlock` が `blockId === block.id, offset === <キャレット位置>` で呼ばれる
 - いずれの場合も `event.preventDefault()` により native の改行挿入が抑止される
+- `slashMenuOpen === true` で Enter → `dispatchInsertBlockAfter` も `dispatchSplitBlock` も呼ばれない（SlashMenu 経由で `dispatchChangeBlockType` のみが発火）
 
 ---
 
 #### REQ-BE-007: 空 Block の Backspace/Delete → `RemoveBlock`
 
-**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === 'Backspace'` または `key === 'Delete'` で発生する AND `block.content === ''` AND `totalBlocks > 1` THEN コンポーネントは `event.preventDefault()` を呼んだ上で `adapter.dispatchRemoveBlock({ noteId, blockId: block.id, issuedAt })` を発火しなければならない。
+**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === 'Backspace'` または `key === 'Delete'` で発生する AND `slashMenuOpen === false` AND `block.content === ''` AND `totalBlocks > 1` THEN コンポーネントは `event.preventDefault()` を呼んだ上で `adapter.dispatchRemoveBlock({ noteId, blockId: block.id, issuedAt })` を発火しなければならない。
 
 > **根拠**: `aggregates.md §1 removeBlock` — 「ブロック削除。最後の 1 ブロックは削除不可（空 paragraph に置換）」。UI は単純に `dispatchRemoveBlock` を発火し、最後の 1 ブロック保護はドメイン層で実現される（`note.removeBlock` が空 paragraph 置換を返す）。
 
+**REQ-BE-007 vs REQ-BE-008 優先順位**（FIND-BE-1C-003 対応）:
+両条件を満たすケース（空 content + offset === 0 + 第 2 ブロック以降）では **REQ-BE-007 が勝つ**。すなわち `block.content === ''` なら REQ-BE-008 の merge 判定をスキップして RemoveBlock を発火する。実装側 `handleKeyDown` は `Backspace` 分岐の最初に「空 + 非単独」を判定すること。
+
 **Edge Cases**:
-- `totalBlocks === 1`: UI 上は `dispatchRemoveBlock` を呼ばない。ドメイン側にも到達させない（不要な round-trip 抑止）
-- `block.content !== ''`: 通常の Backspace/Delete として扱う（preventDefault せず、ブラウザ default に委ねる）
+- `totalBlocks === 1` かつ `block.content === ''`: UI 上は `dispatchRemoveBlock` を呼ばない。ドメイン側にも到達させない（最後の 1 ブロック保護のため）。`event.preventDefault()` も呼ばない（FIND-BE-1C-003 / EC-BE-011 対応）
+- `block.content !== ''` かつ offset > 0: 通常の Backspace/Delete として扱う（`event.preventDefault()` 呼ばずブラウザ default に委ねる）
 - divider: `contenteditable=false` のためキー入力は原則発生しないが、発生した場合は no-op
 
 **Acceptance Criteria**:
-- 空 Block で Backspace 押下 → `dispatchRemoveBlock` が呼ばれる
-- 空 Block で Delete 押下 → `dispatchRemoveBlock` が呼ばれる
-- 唯一の Block（`totalBlocks === 1`）で Backspace 押下 → `dispatchRemoveBlock` は呼ばれない
+- 空 Block （`totalBlocks > 1`）で Backspace 押下 → `dispatchRemoveBlock` が 1 回呼ばれる
+- 空 Block （`totalBlocks > 1`）で Delete 押下 → `dispatchRemoveBlock` が 1 回呼ばれる
+- 唯一の Block（`totalBlocks === 1`）かつ空で Backspace 押下 → `dispatchRemoveBlock` は呼ばれない、`event.preventDefault()` も呼ばれない（FIND-BE-1C-003 対応・EC-BE-011 を AC 化）
+- `block.content !== ''` かつ offset > 0 で Backspace 押下 → `dispatchRemoveBlock` も `dispatchMergeBlocks` も呼ばれない、`event.preventDefault()` も呼ばれない（normal in-block edit 保護）
 
 ---
 
 #### REQ-BE-008: 行頭 Backspace → `MergeBlocks` または no-op
 
-**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === 'Backspace'` で発生する AND `block.content !== ''` AND キャレット offset が 0 THEN コンポーネントは `classifyBackspaceAtZero(blockIndex, totalBlocks)` の結果に応じて:
+**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === 'Backspace'` で発生する AND `slashMenuOpen === false` AND `block.content !== ''` AND キャレット offset が 0 THEN コンポーネントは `classifyBackspaceAtZero(blockIndex, totalBlocks)` の結果に応じて:
 - `'merge'`: `event.preventDefault()` の上で `adapter.dispatchMergeBlocks({ noteId, blockId: block.id, issuedAt })` を発火
 - `'first-block-noop'`: 何もしない（`event.preventDefault()` も呼ばず、ブラウザ default の挙動を許容）
 
@@ -322,7 +373,9 @@ coherence:
 
 #### REQ-BE-009: `/` キーによる SlashMenu 起動
 
-**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === '/'` で発生する THEN コンポーネントは内部 state `slashMenuOpen` を `true` に設定し、`SlashMenu` コンポーネントを描画しなければならない。さらに以降の `input` イベントで現在 content の先頭文字が `/` でない場合は `slashMenuOpen` を `false` にしなければならない。
+**EARS**: WHEN `BlockElement` で `keydown` イベントが `key === '/'` で発生する AND `slashMenuOpen === false` THEN コンポーネントは内部 state を `slashMenuOpen = true` および `slashQuery = ''` に設定し、`SlashMenu` コンポーネントを描画しなければならない。さらに以降の `input` イベントで現在 content の先頭文字が `/` であれば `slashQuery = content.slice(1)` で更新し、`/` で始まらない場合は `slashMenuOpen = false`、`slashQuery = ''` に戻さなければならない。
+
+**Invariant**（FIND-BE-1C-006 対応）: `'/'` は `classifyMarkdownPrefix` の prefix table に**含めない**。`/` 入力は `dispatchEditBlockContent` を発火する（content に `/` が含まれる）が、`dispatchChangeBlockType` は発火しない。SlashMenu の選択結果のみが `dispatchChangeBlockType` の発火源。
 
 > **根拠**: `bounded-contexts.md §Block Type Conversion` — `/ メニュー等でブロック種を切り替える操作`、`aggregates.md §1 changeBlockType`。
 
@@ -332,8 +385,10 @@ coherence:
 - divider Block: `contenteditable=false` のため `/` 入力は発生しない
 
 **Acceptance Criteria**:
-- `/` 押下 → DOM に `[data-testid="slash-menu"]` 要素が出現する
-- content から `/` を削除 → `[data-testid="slash-menu"]` 要素が消える
+- `/` 押下 → DOM に `[data-testid="slash-menu"]` 要素が出現する。同時に `slashQuery === ''`
+- content から `/` を削除（`/` で始まらなくなる） → `[data-testid="slash-menu"]` 要素が消える、`slashMenuOpen === false`、`slashQuery === ''`
+- content が `/heading` のとき: `[data-testid="slash-menu"]` が存在し、`slashQuery === 'heading'`（フィルタが反映）
+- `/` 入力時 `dispatchChangeBlockType` は呼ばれない（prefix-table conflict ガード）
 
 ---
 
@@ -413,7 +468,18 @@ coherence:
 **Acceptance Criteria**:
 - `dragend` 発火 → `class="dragging"` が解除される
 
-> **設計ノート**: `BlockDragHandle` 自身は drop 先の検出や `onMoveBlock` 発火を行わない。drop 受け側（FeedRow / 親ブロックリスト）が `ondragover` / `ondrop` を実装し、必要なら `onMoveBlock({ noteId, blockId, toIndex, issuedAt })` を呼ぶ。本 spec はその drop 側の責務までは範囲外（ui-feed-list-actions Sprint 5）。
+---
+
+#### REQ-BE-014b: `BlockDragHandle` の `onMoveBlock` prop 契約
+
+**EARS**: THE `BlockDragHandle` コンポーネントの `onMoveBlock` prop は **optional**（`onMoveBlock?: (...) => void`）である。本 feature の `BlockDragHandle` 実装からは呼ばれない（drop 受け側ロジックは `ui-feed-list-actions` Sprint 5 に移管）。
+
+> **根拠**: FIND-BE-1C-007 の指摘により、現状実装で `onMoveBlock` prop が必須でありながら呼び出されていない矛盾を解消する。Sprint 5 の drop receiver からは引き続き利用される予定だが、本 feature の primitive 層の責務範囲では呼び出されない。
+
+**Acceptance Criteria**:
+- `BlockDragHandle.svelte` の `Props` 定義で `onMoveBlock` が optional（`?:`）である
+- 本 feature 内のコンポーネント本体から `onMoveBlock(...)` 呼び出し箇所がゼロ
+- Alt+Shift+Up/Down キーボード並べ替えは本 feature の責務外（Sprint 5 持ち越し）
 
 ---
 
@@ -493,17 +559,17 @@ coherence:
 
 **EARS**: GIVEN `classifyMarkdownPrefix: (content: string) => { newType, trimmedContent } | null` THE 関数は以下の優先順位で照合し、最初にマッチした prefix の `newType` と `trimmedContent` を返す。マッチしない場合は `null` を返す:
 
-1. `content === '---'` → `divider`（完全一致のみ。`'----'` 等は null）
-2. `### ` → `heading-3`
-3. `## ` → `heading-2`
-4. `# ` → `heading-1`
-5. `- ` → `bullet`
-6. `* ` → `bullet`
-7. `1. ` → `numbered`
-8. ` ``` ` → `code`
-9. `> ` → `quote`
+1. `content === '---'`（完全一致のみ）→ `divider`、`trimmedContent: ''`
+2. `'### '`（末尾スペース付き）→ `heading-3`
+3. `'## '` → `heading-2`
+4. `'# '` → `heading-1`
+5. `'- '` → `bullet`
+6. `'* '` → `bullet`
+7. `'1. '` → `numbered`
+8. ` ``` ` （バックティック 3 つ、**末尾スペース不要**。例: `` ```js `` も該当）→ `code`
+9. `'> '` → `quote`
 
-`trimmedContent` は prefix を除いた残りの文字列（`divider` の場合は `''`）。
+`trimmedContent` は prefix を除いた残りの文字列（`divider` の場合は `''`）。FIND-BE-1C-006 の prefix-table conflict invariant に従い、**`'/'` は本テーブルに含めない**。
 
 > **根拠**: `bounded-contexts.md §Block Type Conversion`、UX 観察上の利便性。
 
@@ -514,6 +580,9 @@ coherence:
 - `classifyMarkdownPrefix('----') === null`
 - `classifyMarkdownPrefix('#') === null`（末尾スペースなし）
 - `classifyMarkdownPrefix('hello') === null`
+- `classifyMarkdownPrefix('` + '```' + `js') === { newType: 'code', trimmedContent: 'js' }`（FIND-BE-1C-010 対応）
+- `classifyMarkdownPrefix('` + '```' + `') === { newType: 'code', trimmedContent: '' }`
+- `classifyMarkdownPrefix('/menu') === null`（FIND-BE-1C-006 invariant）
 
 ---
 
@@ -559,7 +628,7 @@ coherence:
 
 **Acceptance Criteria**:
 - `IDLE_SAVE_DEBOUNCE_MS === 2000`
-- 他のモジュールで `2000` リテラルを直接使わず、必ずこの定数を import する
+- `src/lib/block-editor/` 配下で `2000` リテラルを使う場合は `debounceSchedule.ts` 自体に限る。他のモジュールでは `IDLE_SAVE_DEBOUNCE_MS` を import すること（FIND-BE-1C-012 対応 / Tier 5 PROP-BE-043 で CI 検証）
 
 ---
 
@@ -621,11 +690,18 @@ coherence:
 
 **EARS**: THE module `types.ts` は `BlockEditorAdapter` interface を export しなければならない。インターフェースは 16 個の `dispatchXxx` メソッドを持ち、それぞれは payload オブジェクトを受け取り `Promise<void>` を返す。
 
-**16 メソッド一覧**:
+**16 メソッドの内訳**（FIND-BE-1C-002 対応）:
 
-`dispatchFocusBlock`, `dispatchEditBlockContent`, `dispatchInsertBlockAfter`, `dispatchInsertBlockAtBeginning`, `dispatchRemoveBlock`, `dispatchMergeBlocks`, `dispatchSplitBlock`, `dispatchChangeBlockType`, `dispatchMoveBlock`, `dispatchTriggerIdleSave`, `dispatchTriggerBlurSave`, `dispatchRetrySave`, `dispatchDiscardCurrentSession`, `dispatchCancelSwitch`, `dispatchCopyNoteBody`, `dispatchRequestNewNote`
+| 分類 | 数 | メソッド |
+|------|---|---------|
+| Block 構造・内容操作系 | 9 | `dispatchFocusBlock`, `dispatchEditBlockContent`, `dispatchInsertBlockAfter`, `dispatchInsertBlockAtBeginning`, `dispatchRemoveBlock`, `dispatchMergeBlocks`, `dispatchSplitBlock`, `dispatchChangeBlockType`, `dispatchMoveBlock` |
+| Save / Session 制御系 | 5 | `dispatchTriggerIdleSave`, `dispatchTriggerBlurSave`, `dispatchRetrySave`, `dispatchDiscardCurrentSession`, `dispatchCancelSwitch` |
+| その他（Copy / 新規ノート） | 2 | `dispatchCopyNoteBody`, `dispatchRequestNewNote` |
+| **合計** | **16** | — |
 
-> **根拠**: `capture/commands.ts CaptureCommand` の Block 系 8 種 + Save/Session 系 8 種 = 16。旧 `EditorIpcAdapter` の `subscribeToState` は廃止（FeedRow 側 `feedStateChannel` に集約）。
+**Tag 系 dispatch の scope-out**: `CaptureCommand` には `InsertTagInline` / `RemoveTagInline` の 2 件もあるが、本 feature の `BlockEditorAdapter` には**含めない**。これらは `tag-chip-update` および `apply-filter-or-search` の責務（migration doc / scope-out 節を参照）。
+
+> **根拠**: `capture/commands.ts CaptureCommand` 全 17 variant のうち本 feature に関与するのは上記 16。旧 `EditorIpcAdapter` の `subscribeToState` は廃止（FeedRow 側 `feedStateChannel` に集約）。
 
 **Acceptance Criteria**:
 - `BlockEditorAdapter` 型に対する型レベルアサーションテストが pass する
@@ -641,7 +717,14 @@ coherence:
 
 **Acceptance Criteria**:
 - `types.ts` の grep で上記識別子が hit しない（コメント・migration note 内の説明的言及は除く）
-- 上記識別子を import している non-comment コードが存在しない（`grep -rn "EditorIpcAdapter\|EditorViewState\|EditorAction\b\|EditorCommand\b\|EditingSessionStateDto\|EditingSessionStatus"` がコメント以外で 0 件）
+- 上記識別子を import している non-comment コードが存在しない（FIND-BE-1C-019 対応で regex を強化）:
+  ```
+  grep -rnE "\b(EditorIpcAdapter|EditorViewState|EditorAction|EditorCommand|EditingSessionStateDto|EditingSessionStatus|subscribeToState)\b" \
+    src/lib/block-editor/ \
+    --include='*.ts' --include='*.svelte' \
+    | grep -vE '^\s*(//|\*|/\*)'
+  ```
+  上記コマンドの出力がゼロ行であること
 
 ---
 
@@ -804,7 +887,35 @@ coherence:
 
 ### NFR-BE-005: Tier 0 構造的アサーション
 
-`types.ts` には `_AssertXxxShape` 型レベルアサーションを定義し、`BlockEditorAdapter` のシグネチャ変化を compile time で検出する（旧 `_AssertEditBlockContentShape` 等の踏襲）。
+`types.ts` には `_AssertXxxShape` 型レベルアサーションを定義し、`BlockEditorAdapter` のシグネチャ変化を compile time で検出する。最小限以下を備える:
+
+- `_AssertEditBlockContentShape` — `dispatchEditBlockContent` payload 形状
+- `_AssertSplitBlockShape` — `dispatchSplitBlock` payload 形状
+- `_AssertCopyNoteBodyShape` — `dispatchCopyNoteBody` payload 形状
+
+### NFR-BE-006: textContent → BlockContent の制御文字 sanitisation（FIND-BE-1C-014 対応）
+
+`BlockElement` の `oninput` ハンドラは `blockEl.textContent` を取得した後、`adapter.dispatchEditBlockContent` に渡す前に **制御文字 strip** を行う。具体的には:
+
+- 通常 Block (`paragraph` / heading / list / quote / divider): 改行 (`\n`)・タブ (`\t`)、および `U+0000` 〜 `U+001F` 範囲（`\n`/`\t` を除く）と `U+007F` の制御文字を strip する
+- `code` Block: 改行 (`\n`) は許容する（複数行をサポート）。それ以外の `U+0000` 〜 `U+001F` （`\n`/`\t` を除く）と `U+007F` を strip
+
+> **根拠**: `aggregates.md §Block 不変条件 2` と `BlockContent` VO の Smart Constructor 制約。UI が strip しない場合 IPC 経由で domain VO 構築が失敗し、edit セッションが進まない。
+
+**Acceptance Criteria**（FIND-BE-1C-021 対応で strip 動作を観測する exact-match 例を含む）:
+- `paragraph` Block で `oninput` が `'ab'` を生成 → content 引数は `'ab'`（変更なし）
+- `paragraph` Block で `oninput` が `'ab'` を生成 → content 引数は `'ab'`（U+0001 strip）
+- `paragraph` Block で `oninput` が `'line1\nline2'` を生成 → content 引数は `'line1line2'`（`\n` strip）
+- `paragraph` Block で `oninput` が `'ab'` を生成 → content 引数は `'ab'`（U+007F strip）
+- `code` Block で `oninput` が `'ab'` を生成 → content 引数は `'ab'`（変更なし）
+- `code` Block で `oninput` が `'ab'` を生成 → content 引数は `'ab'`（`\n`/`\t` 以外の制御文字は code でも除去）
+- `code` Block で `oninput` が `'line1\nline2'` を生成 → content 引数は `'line1\nline2'`（`\n` 保持）
+- `code` Block で `oninput` が `'\tindented'` を生成 → content 引数は `'\tindented'`（`\t` 保持）
+- いずれの Block でも空入力 `''` は `''` のまま（strip 対象なし）
+
+### NFR-BE-007: Pure module 内のレガシー REQ ID（informative）
+
+`blockPredicates.ts` および `debounceSchedule.ts` の docstring に残る旧 `REQ-EDIT-NNN` / `PROP-EDIT-NNN` 識別子は、Phase 2c リファクタで `REQ-BE-NNN` / `PROP-BE-NNN` へ更新する。本 spec 確定時点では既存実装を破壊しない方針で残置するが、Phase 2c 完了後の grep でゼロヒットを期待する（FIND-BE-1C-016 対応）。
 
 ---
 
@@ -827,14 +938,19 @@ coherence:
 |--------|----------------|
 | REQ-BE-001 | aggregates.md §Block Type / §Block 不変条件 2 |
 | REQ-BE-002 | aggregates.md §EditingSessionState L356 |
+| REQ-BE-002b | aggregates.md §EditingSessionState L354-361 / capture/internal-events.ts BlockFocused |
 | REQ-BE-003 | capture/commands.ts EditBlockContent / capture/internal-events.ts BlockContentEdited |
+| REQ-BE-004 | UI 観察上の責務分割（FeedRow / SaveOrchestrator が idle timer リスケジュール）— FIND-BE-1C-022 対応 |
 | REQ-BE-005 | aggregates.md §1 changeBlockType / bounded-contexts.md §Block Type Conversion |
 | REQ-BE-006 | aggregates.md §1 splitBlock / insertBlockAfter |
 | REQ-BE-007 | aggregates.md §1 removeBlock / Block 不変条件 6 |
 | REQ-BE-008 | aggregates.md §1 mergeBlockWithPrevious |
 | REQ-BE-009..012 | bounded-contexts.md §Block Type Conversion / `/` メニュー UI 観察 |
 | REQ-BE-013..014 | aggregates.md §1 moveBlock |
+| REQ-BE-014b | FIND-BE-1C-007 — drop receiver 責務の Sprint 5 移管 |
 | REQ-BE-015..016 | aggregates.md §EditingSessionState save-failed / shared/errors.ts SaveError |
 | REQ-BE-017..021 | shared/errors.ts SaveError / aggregates.md §1 各 Block 操作 |
 | REQ-BE-022..025 | bounded-contexts.md §Idle Save |
 | REQ-BE-026..027 | capture/commands.ts CaptureCommand / 旧 EditorIpcAdapter からの差分 |
+| NFR-BE-006 | aggregates.md §Block 不変条件 2 / `BlockContent` VO Smart Constructor |
+| NFR-BE-007 | FIND-BE-1C-016 — Phase 2c リファクタの informative ガイダンス |
