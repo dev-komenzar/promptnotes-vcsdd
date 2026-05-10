@@ -1,0 +1,689 @@
+{
+  "version": 1,
+  "nodes": {
+    "req:ui-block-editor": {
+      "id": "req:ui-block-editor",
+      "type": "req",
+      "placeholder": false,
+      "path": "specs/behavioral-spec.md",
+      "name": "ui-block-editor 行動仕様"
+    },
+    "design:bounded-contexts": {
+      "id": "design:bounded-contexts",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:aggregates": {
+      "id": "design:aggregates",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:type-contracts": {
+      "id": "design:type-contracts",
+      "type": "design",
+      "placeholder": true
+    },
+    "governance:design-system": {
+      "id": "governance:design-system",
+      "type": "governance",
+      "placeholder": true
+    },
+    "task:block-based-ui-spec-migration": {
+      "id": "task:block-based-ui-spec-migration",
+      "type": "document",
+      "placeholder": true
+    },
+    "module:ui-block-editor": {
+      "id": "module:ui-block-editor",
+      "type": "module",
+      "placeholder": false,
+      "name": "ui-block-editor"
+    },
+    "file:promptnotes/src/lib/block-editor/BlockElement.svelte": {
+      "id": "file:promptnotes/src/lib/block-editor/BlockElement.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/BlockElement.svelte"
+    },
+    "file:promptnotes/src/lib/block-editor/SlashMenu.svelte": {
+      "id": "file:promptnotes/src/lib/block-editor/SlashMenu.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/SlashMenu.svelte"
+    },
+    "file:promptnotes/src/lib/block-editor/BlockDragHandle.svelte": {
+      "id": "file:promptnotes/src/lib/block-editor/BlockDragHandle.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/BlockDragHandle.svelte"
+    },
+    "file:promptnotes/src/lib/block-editor/SaveFailureBanner.svelte": {
+      "id": "file:promptnotes/src/lib/block-editor/SaveFailureBanner.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/SaveFailureBanner.svelte"
+    },
+    "file:promptnotes/src/lib/block-editor/blockPredicates.ts": {
+      "id": "file:promptnotes/src/lib/block-editor/blockPredicates.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/blockPredicates.ts"
+    },
+    "file:promptnotes/src/lib/block-editor/debounceSchedule.ts": {
+      "id": "file:promptnotes/src/lib/block-editor/debounceSchedule.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/debounceSchedule.ts"
+    },
+    "file:promptnotes/src/lib/block-editor/debounceTimer.ts": {
+      "id": "file:promptnotes/src/lib/block-editor/debounceTimer.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/debounceTimer.ts"
+    },
+    "file:promptnotes/src/lib/block-editor/timerModule.ts": {
+      "id": "file:promptnotes/src/lib/block-editor/timerModule.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/timerModule.ts"
+    },
+    "file:promptnotes/src/lib/block-editor/keyboardListener.ts": {
+      "id": "file:promptnotes/src/lib/block-editor/keyboardListener.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/keyboardListener.ts"
+    },
+    "file:promptnotes/src/lib/block-editor/clipboardAdapter.ts": {
+      "id": "file:promptnotes/src/lib/block-editor/clipboardAdapter.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/clipboardAdapter.ts"
+    },
+    "file:promptnotes/src/lib/block-editor/types.ts": {
+      "id": "file:promptnotes/src/lib/block-editor/types.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/types.ts"
+    },
+    "file:docs/domain/code/ts/src/shared/note.ts": {
+      "id": "file:docs/domain/code/ts/src/shared/note.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "docs/domain/code/ts/src/shared/note.ts"
+    },
+    "file:docs/domain/code/ts/src/shared/blocks.ts": {
+      "id": "file:docs/domain/code/ts/src/shared/blocks.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "docs/domain/code/ts/src/shared/blocks.ts"
+    },
+    "file:docs/domain/code/ts/src/shared/value-objects.ts": {
+      "id": "file:docs/domain/code/ts/src/shared/value-objects.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "docs/domain/code/ts/src/shared/value-objects.ts"
+    },
+    "file:docs/domain/code/ts/src/shared/errors.ts": {
+      "id": "file:docs/domain/code/ts/src/shared/errors.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "docs/domain/code/ts/src/shared/errors.ts"
+    },
+    "file:docs/domain/code/ts/src/capture/commands.ts": {
+      "id": "file:docs/domain/code/ts/src/capture/commands.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "docs/domain/code/ts/src/capture/commands.ts"
+    },
+    "file:docs/domain/code/ts/src/capture/internal-events.ts": {
+      "id": "file:docs/domain/code/ts/src/capture/internal-events.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "docs/domain/code/ts/src/capture/internal-events.ts"
+    },
+    "file:docs/domain/code/ts/src/capture/states.ts": {
+      "id": "file:docs/domain/code/ts/src/capture/states.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "docs/domain/code/ts/src/capture/states.ts"
+    },
+    "design:ui-block-editor-verification": {
+      "id": "design:ui-block-editor-verification",
+      "type": "design",
+      "placeholder": false,
+      "path": "specs/verification-architecture.md",
+      "name": "ui-block-editor 検証アーキテクチャ（純粋性境界・証明義務）"
+    },
+    "file:promptnotes/src/lib/block-editor/__tests__": {
+      "id": "file:promptnotes/src/lib/block-editor/__tests__",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/block-editor/__tests__"
+    }
+  },
+  "edges": [
+    {
+      "id": 1,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "design:bounded-contexts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "governance:design-system",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "task:block-based-ui-spec-migration",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "module:ui-block-editor",
+      "targetId": "req:ui-block-editor",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/BlockElement.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/SlashMenu.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/BlockDragHandle.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/SaveFailureBanner.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/blockPredicates.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/debounceSchedule.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/debounceTimer.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/timerModule.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/keyboardListener.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/clipboardAdapter.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:promptnotes/src/lib/block-editor/types.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:docs/domain/code/ts/src/shared/note.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:docs/domain/code/ts/src/shared/blocks.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:docs/domain/code/ts/src/shared/value-objects.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:docs/domain/code/ts/src/shared/errors.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:docs/domain/code/ts/src/capture/commands.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:docs/domain/code/ts/src/capture/internal-events.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "sourceId": "req:ui-block-editor",
+      "targetId": "file:docs/domain/code/ts/src/capture/states.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "sourceId": "design:ui-block-editor-verification",
+      "targetId": "req:ui-block-editor",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "sourceId": "design:ui-block-editor-verification",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "sourceId": "design:ui-block-editor-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "sourceId": "module:ui-block-editor",
+      "targetId": "design:ui-block-editor-verification",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "sourceId": "design:ui-block-editor-verification",
+      "targetId": "file:promptnotes/src/lib/block-editor/__tests__",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    }
+  ],
+  "lastScanAt": "2026-05-10T08:03:15.505Z"
+}
