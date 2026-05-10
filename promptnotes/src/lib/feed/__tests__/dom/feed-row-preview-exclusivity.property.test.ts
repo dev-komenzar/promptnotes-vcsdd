@@ -23,7 +23,7 @@
  * Synchronization: flushSync() called before DOM observation to ensure
  * REQ-FEED-031 fallback $effect has completed (FIND-S6-SPEC-iter2-003).
  *
- * Stratification: 5 cells × ≥50 cases = 250 numRuns, seed 0x56BABE
+ * Stratification: 5 cells × ≥50 cases (numRuns 500 で統計的 margin), seed 0x56BABE
  * (FIND-S6-SPEC-iter2-004 / FIND-S6-SPEC-iter3-004).
  *
  * RED phase invariant:
@@ -321,7 +321,7 @@ describe('PROP-FEED-S6-002: non-coexistence + non-emptiness (fast-check stratifi
 
     await fc.assert(prop, {
       seed: 0x56babe,
-      numRuns: 250,
+      numRuns: 500,
       examples: FIVE_EXAMPLES.map(([cellLabel, armStatus, serverBlocksLength, adapterIsNull]) =>
         [cellLabel, armStatus, serverBlocksLength, adapterIsNull] as [CellLabel, typeof armStatus, number, boolean]
       ),
@@ -383,7 +383,7 @@ describe('PROP-FEED-S6-002: non-coexistence + non-emptiness (fast-check stratifi
 
     await fc.assert(prop, {
       seed: 0x56babe,
-      numRuns: 250,
+      numRuns: 500,
       examples: FIVE_EXAMPLES.map(([cellLabel, armStatus, serverBlocksLength, adapterIsNull]) =>
         [cellLabel, armStatus, serverBlocksLength, adapterIsNull] as [CellLabel, typeof armStatus, number, boolean]
       ),

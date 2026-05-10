@@ -1,0 +1,88 @@
+{
+  "iteration": 3,
+  "sprintNumber": 6,
+  "feature": "ui-feed-list-actions",
+  "reviewType": "contract",
+  "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+  "findings": [
+    {
+      "findingId": "FIND-S6-CONTRACT-iter3-001",
+      "dimension": "structural_integrity",
+      "category": "spec_gap",
+      "severity": "low",
+      "blocking": false,
+      "description": "CRIT-301 description (line 28) still reads 'numRuns ≥ 250 (5 cells × ≥ 50 cases stratification)' while the passThreshold (line 30) correctly states 'numRuns ≥ 500'. The passThreshold is the binding grading gate, so this does not block grading (any run satisfying ≥500 trivially satisfies the looser ≥250), but the prose inconsistency could mislead a reader. Recommend the next contract revision sync the description text to '≥ 500'. Not blocking for Phase 3 entry because the operative gate is passThreshold.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "28-30",
+        "snippet": "description: ...numRuns ≥ 250 (5 cells × ≥ 50 cases stratification)... / passThreshold: ...numRuns ≥ 500..."
+      },
+      "routeToPhase": "1c-contract"
+    }
+  ],
+  "verifiedFixes": [
+    {
+      "fixId": "iter2-001",
+      "severity": "high",
+      "claim": "redLines line 19 distinguishes production code (1 file) from test/config files allowed by CRIT-304",
+      "verified": true,
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "19",
+        "note": "Line 19 explicitly says 'production code 変更は FeedRow.svelte 1 ファイルのみ' and enumerates test files / VCSDD artifacts / test infrastructure config (vitest.config.ts, bunfig.toml) / Sprint 5 既存 test supersession (feed-row-best-effort-dispatch.dom.vitest.ts, main-route-wiring.dom.vitest.ts) as CRIT-304-allowed. Production-file regression list is enumerated explicitly."
+      }
+    },
+    {
+      "fixId": "iter2-002",
+      "severity": "high",
+      "claim": "CRIT-303 passThreshold states bun output as '1901 pass + 4 skip + 4 todo + 0 fail = 1909 tests'",
+      "verified": true,
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "40",
+        "note": "Line 40 reads exactly '1901 pass + 4 skip + 4 todo + 0 fail (= 1909 tests total = Sprint 5 baseline と同一)'. No longer asserts ≥1909 PASS — the breakdown is precise and matches actual bun test runner emit semantics."
+      }
+    },
+    {
+      "fixId": "iter2-003",
+      "severity": "medium",
+      "claim": "CRIT-301 stratification verification uses expect.toBeGreaterThanOrEqual(50) per-key (not toMatchObject)",
+      "verified": true,
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "30",
+        "note": "Line 30 specifies 'per-cell run-count を test 終了時に counter object として export し、別 assertion で各 cell key について expect(strataCounts.cell1).toBeGreaterThanOrEqual(50) 等を 5 件個別 assert する' with explicit citation 'toMatchObject ではなく toBeGreaterThanOrEqual を per-key 5 件で記述する vitest 標準形式'. The 5 keys correspond to truth-table 5 rows declared in CRIT-300 description (cell 1, EC-FEED-024 row, cell 2, cell 3, cell 4)."
+      }
+    },
+    {
+      "fixId": "iter2-004",
+      "severity": "medium",
+      "claim": "numRuns increased 250 → 500 with statistical margin",
+      "verified": true,
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "30",
+        "note": "passThreshold (the binding gate) explicitly says 'numRuns ≥ 500' with rationale 'numRuns 250 の uniform stratification では 5 cells × ≥50 が確率的に保証されないため 500 に倍増し統計的に十分な margin を確保'. Description prose at line 28 still mentions 250 — flagged as iter3-001 LOW but non-blocking because the passThreshold governs grading."
+      }
+    },
+    {
+      "fixId": "iter2-005",
+      "severity": "low",
+      "claim": "CRIT-300 grep regex uses POSIX [[:space:]] instead of GNU \\s",
+      "verified": true,
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "25",
+        "note": "Line 25 uses POSIX character class: 'grep -E (display:[[:space:]]*none[[:space:]]*[;}]|visibility:[[:space:]]*hidden[[:space:]]*[;}]|opacity:[[:space:]]*0[[:space:]]*[;}])'. macOS BSD grep portable. opacity:0 anchored with [;}] correctly excludes 'opacity: 0.04' decimals (the literal . would need to be ; or }, which fails)."
+      }
+    }
+  ],
+  "summary": {
+    "highBlocking": 0,
+    "mediumBlocking": 0,
+    "lowBlocking": 0,
+    "lowNonBlocking": 1,
+    "verifiedFixes": 5,
+    "regressions": 0
+  }
+}

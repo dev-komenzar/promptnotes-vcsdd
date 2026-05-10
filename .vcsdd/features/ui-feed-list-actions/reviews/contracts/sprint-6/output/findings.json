@@ -1,0 +1,138 @@
+{
+  "feature": "ui-feed-list-actions",
+  "sprintNumber": 6,
+  "reviewType": "contract",
+  "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+  "findings": [
+    {
+      "findingId": "FIND-S6-CONTRACT-001",
+      "dimension": "structural_integrity",
+      "category": "spec_gap",
+      "severity": "high",
+      "description": "PROP double-counting: PROP-FEED-S6-001 is referenced by BOTH CRIT-300 (full truth table grading) AND CRIT-302 (cell 1 effectiveMount=true RED->GREEN evidence). The user-stated invariant `Are all referenced PROPs (S6-001..007) covered by exactly one CRIT` is violated. A failure of S6-001 cell 1 will cascade into TWO dimension FAILs (spec_fidelity AND implementation_correctness), which inflates the apparent badness of the same defect and prevents binary independence between dimensions. Recommendation: scope CRIT-302 to S6-004/005/006 only and rely on CRIT-300 to grade the cell-1 RED->GREEN transition; or split S6-001 into two named sub-properties (S6-001a structural truth table, S6-001b cell-1 RED->GREEN evidence) so each CRIT references a disjoint property.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "23-35",
+        "snippet": "CRIT-300 passThreshold: PROP-FEED-S6-001 (cell 1 + EC-FEED-024 row + cell 2/3/4 全 5 行 PASS) ... CRIT-302 passThreshold: PROP-FEED-S6-001 cell 1 (effectiveMount=true) RED->GREEN ... AND PROP-FEED-S6-004 ..."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-002",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "severity": "high",
+      "description": "Scope frontmatter (line 9) declares Sprint 6 covers `PROP-FEED-S6-001..006` (six PROPs), but verification-architecture.md §Sprint 6 Proof Obligations defines seven PROPs (S6-001 through S6-007), and the criteria block in this same contract references S6-007 (CRIT-301 passThreshold). A fresh-context Phase 3 reviewer reading scope will under-count the obligations and may miss enforcing S6-007 (adapter-null dispatch 0-calls observation). The scope line must say `PROP-FEED-S6-001..007`.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "8-9",
+        "snippet": "Sprint 6 covers: 新 REQ-FEED-030.1, 新 REQ-FEED-034, 新 EC-FEED-021..023, PROP-FEED-S6-001..006."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-003",
+      "dimension": "verification_readiness",
+      "category": "spec_gap",
+      "severity": "medium",
+      "description": "CRIT-304 passThreshold delegates the file-diff audit to `Phase 3 manual audit` without supplying a concrete shell command, while every other CRIT (300/301/303) supplies a precise grep/git-diff invocation. A fresh-context reviewer cannot deterministically reproduce the audit. Recommend providing the exact command, e.g. `git diff main..HEAD --name-only | grep -vE '^(promptnotes/src/lib/feed/FeedRow\\.svelte|\\.vcsdd/features/ui-feed-list-actions/(specs|contracts|reviews|evidence|verification|state\\.json)|promptnotes/src/lib/feed/__tests__/dom/(feed-row-preview-exclusivity\\.(dom\\.vitest|property\\.test)\\.ts|feed-row-click-routing\\.dom\\.vitest\\.ts|_helpers/FeedRowSprint6PropertyWrapper\\.svelte)|promptnotes/(vitest\\.config\\.ts|bunfig\\.toml))$'` returning exit code 1 (no unauthorized hits). Without this, CRIT-304 grading is non-binary.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "44-45",
+        "snippet": "passThreshold: `git diff main..HEAD --name-only` で許容ファイルセット (上記 a-d) 以外のヒットが無い (Phase 3 manual audit)。"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-004",
+      "dimension": "verification_readiness",
+      "category": "test_quality",
+      "severity": "medium",
+      "description": "CRIT-302 bundles four substantively different obligations into one binary PASS/FAIL grade with weight 0.27: (i) cell 1 RED->GREEN meta-evidence for the new mount predicate, (ii) cell 3 click -> dispatchSelectPastNote single call, (iii) cell 1 .feed-row direct click -> 0 dispatchSelectPastNote calls, (iv) cell 1 block-element click -> 0 onRowClick + 1 dispatchFocusBlock. The RED->GREEN evidence (i) is a process artifact requiring access to Phase 2a logs (no path provided in passThreshold), whereas (ii)(iii)(iv) are reproducible behavioral assertions. A fresh-context reviewer may PASS this CRIT on (ii)(iii)(iv) without ever locating the Phase 2a RED log, defeating the FIND-S6-SPEC-iter3-005 mitigation that motivated adding (i). Recommendation: either explicitly cite the evidence path (e.g. `.vcsdd/features/ui-feed-list-actions/evidence/sprint-6-red-phase.log`) or split CRIT-302 so the RED->GREEN obligation has its own subcriterion with a clearly-pointed evidence file.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "31-35",
+        "snippet": "passThreshold: PROP-FEED-S6-001 cell 1 (effectiveMount=true) RED→GREEN (new mount predicate の機能正当性) AND PROP-FEED-S6-004 ... AND PROP-FEED-S6-005 ... AND PROP-FEED-S6-006 ..."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-005",
+      "dimension": "structural_integrity",
+      "category": "spec_gap",
+      "severity": "medium",
+      "description": "EC-FEED-021 is enumerated in the Sprint 6 scope (line 9 `新 EC-FEED-021..023`) but verification-architecture.md §Sprint 6 Coverage Matrix (spec line 835) explicitly defers the MutationObserver mid-state observation test for EC-FEED-021 to a future sprint via `state.json openDeferrals` slot `S6-EC-FEED-021-mutation-observer`. The contract neither restates this deferral in scope nor adds a redLine prohibiting reviewers from FAILing on missing MutationObserver coverage. A fresh adversary unaware of the deferral may legitimately raise a finding against EC-FEED-021 incompleteness, leading to wasted FAIL/feedback iteration. Either move EC-FEED-021 to an explicit `partially-in-scope` clause or add a calibration note: `EC-FEED-021 mid-state MutationObserver test は意図的 deferral; flag しない`.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "8-11",
+        "snippet": "Sprint 6 covers: 新 REQ-FEED-030.1, 新 REQ-FEED-034, 新 EC-FEED-021..023, PROP-FEED-S6-001..006."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-006",
+      "dimension": "implementation_correctness",
+      "category": "test_quality",
+      "severity": "low",
+      "description": "CRIT-300 passThreshold inlines the regex `(display:\\s*none\\s*[;}]\\|visibility:\\s*hidden\\s*[;}]\\|opacity:\\s*0\\s*[;}])` with backslash-escaped pipes (`\\|`). In standard `grep -E` (POSIX ERE) the alternation operator is unescaped `|`; in `grep` (BRE) it is `\\|`. The contract does not specify which mode, and the spec line 803 uses `-E` with unescaped `|`. A fresh reviewer copying the threshold regex into `grep -E` will accidentally match the literal pipe character and report false negatives (the audit will appear to pass even if `display: none` is present). Either drop the backslashes (assuming `grep -E`) or specify `grep` (BRE) explicitly. Align with spec command `grep -nE '(display:\\s*none\\s*[;}]|visibility:\\s*hidden\\s*[;}]|opacity:\\s*0\\s*[;}])'`.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "25-25",
+        "snippet": "passThreshold: ... AND PROP-FEED-S6-003 (厳密 regex `(display:\\s*none\\s*[;}]\\|visibility:\\s*hidden\\s*[;}]\\|opacity:\\s*0\\s*[;}])` の grep exit hit count = 0)。"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-007",
+      "dimension": "verification_readiness",
+      "category": "test_coverage",
+      "severity": "low",
+      "description": "CRIT-303 passThreshold: `bun test ≥ 1909 PASS AND vitest run = 223 + Sprint 6 新規分 PASS`. The `=` operator on the vitest count is ambiguous: does it mean strictly equal to `223 + N`, or at least `223 + N`? Sprint 6 added 17 tests (per user prompt: 240 = 223 + 17), so the natural reading is `vitest run ≥ 240`. The contract should fix the count: either `vitest run = 240` (locked baseline) or `vitest run ≥ 223 + (count of new Sprint 6 vitest files PASS)`. Without disambiguation a reviewer cannot distinguish accidental test deletion (e.g. 222 + 17 = 239 still appears to pass `223 + Sprint 6` informally) from regression.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "40-40",
+        "snippet": "passThreshold: bun test ≥ 1909 PASS AND vitest run = 223 + Sprint 6 新規分 PASS (regression check) AND ..."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-008",
+      "dimension": "implementation_correctness",
+      "category": "test_quality",
+      "severity": "low",
+      "description": "CRIT-303 passThreshold expresses the Rust emit-ordering audit as `git diff vcsdd/ui-feed-list-actions/sprint-4-baseline..HEAD -- src-tauri/src/{editor,feed}.rs の grep ... が exit 1`. The path expression `src-tauri/src/{editor,feed}.rs` uses brace expansion which is shell-dependent (works in bash/zsh, fails in sh/dash) and the path is repository-root-relative — but the actual files live under `promptnotes/src-tauri/src/`. Spec line 717 (PROP-FEED-S5-013) uses the correct path `promptnotes/src-tauri/src/editor.rs promptnotes/src-tauri/src/feed.rs`. The contract command, if executed verbatim from repo root in non-brace-expanding shells, will produce no diff (vacuous PASS) and silently break the regression guard. Replace with explicit paths.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "40-40",
+        "snippet": "AND `git diff vcsdd/ui-feed-list-actions/sprint-4-baseline..HEAD -- src-tauri/src/{editor,feed}.rs` の grep ... が exit 1。"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-009",
+      "dimension": "edge_case_coverage",
+      "category": "test_coverage",
+      "severity": "low",
+      "description": "CRIT-301 passThreshold sets `numRuns ≥ 250` with `seed: 0x56BABE` and refers to `5 cells × ≥ 50 cases stratification`. The stratification mechanism (cell label arbitrary `fc.constantFrom('cell1','ec024','cell2','cell3','cell4')`) is described in spec line 802 but not echoed in the contract passThreshold. With fast-check's default sampling, 250 runs across 5 strata yields uneven coverage unless the cell label arbitrary is explicitly the first arbitrary in the tuple. A fresh-context reviewer cannot verify the per-stratum count from the contract alone (would need the spec). Recommend adding to passThreshold: `cell stratification verified by per-cell run-count assertion (≥ 50 per cell) emitted to evidence log` so the 5×50 minimum is grading-machine-checkable rather than only spec-documented.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "28-30",
+        "snippet": "passThreshold: PROP-FEED-S6-002 fast-check (`seed: 0x56BABE`, numRuns ≥ 250 — FIND-S6-SPEC-iter3-003 解消、5 cells × ≥50 cases stratification を契約レベルで担保, 0 counter-example) ..."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-010",
+      "dimension": "structural_integrity",
+      "category": "spec_gap",
+      "severity": "low",
+      "description": "Calibration block (lines 75-85) does not mention PROP-FEED-S6-007 nor explain why it exists alongside S6-001's EC-FEED-024 row. A fresh reviewer may flag S6-007 as redundant with S6-001 EC-FEED-024 row (both observe adapter-null state). Spec line 807 explicitly distinguishes them as orthogonal (static DOM vs dynamic dispatch counts), but the contract calibration omits this rationale. Add: `PROP-FEED-S6-007 は S6-001 EC-FEED-024 row の orthogonal observation (静的 DOM 不在 + 動的 dispatch 0-calls)。両者の冗長提案は reject する`.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "75-85",
+        "snippet": "## Adversary calibration notes for Phase 3 ... (no mention of S6-007 orthogonality vs S6-001 EC-FEED-024 row)"
+      },
+      "routeToPhase": "1c"
+    }
+  ]
+}

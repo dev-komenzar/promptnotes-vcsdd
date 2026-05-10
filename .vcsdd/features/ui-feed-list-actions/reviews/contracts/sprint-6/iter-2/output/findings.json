@@ -1,0 +1,69 @@
+{
+  "findings": [
+    {
+      "findingId": "FIND-S6-CONTRACT-iter2-001",
+      "dimension": "structural_integrity",
+      "category": "requirement_mismatch",
+      "severity": "high",
+      "description": "redLines line 19 ('Sprint 6 は `FeedRow.svelte` 1 ファイルの変更のみ。他のファイルの変更があれば red line 違反。') directly contradicts CRIT-304 (lines 41-45) which explicitly allows: 3 new test files, 1 new test fixture Svelte file (`_helpers/FeedRowSprint6PropertyWrapper.svelte`), 2 modifications to existing test files (`feed-row-best-effort-dispatch.dom.vitest.ts`, `main-route-wiring.dom.vitest.ts`), and 2 test config files (`vitest.config.ts`, `bunfig.toml`). A Phase 3 grader who reads the redLines absolutely will reject the test additions; a grader who reads CRIT-304 will allow them. The contract is internally inconsistent and not deterministically gradeable. Fix: redLines line 19 must be qualified, e.g., 'production code: FeedRow.svelte の 1 ファイルのみ。テスト・config・VCSDD artifact の変更は CRIT-304 allowlist に従う' to match CRIT-304 (c)/(c-extra)/(d).",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "19, 43-45",
+        "snippet": "redLines line 19: \"Sprint 6 は `FeedRow.svelte` 1 ファイルの変更のみ。他のファイルの変更があれば red line 違反。\"\nCRIT-304 description (line 43): \"(c) 新規テストファイル: ...; (c-extra) Sprint 5 baseline 維持のための既存テスト微修正: ...; (d) test infrastructure config: promptnotes/vitest.config.ts ... promptnotes/bunfig.toml ...\""
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-iter2-002",
+      "dimension": "structural_integrity",
+      "category": "requirement_mismatch",
+      "severity": "high",
+      "description": "CRIT-303 passThreshold conflates total test count (1909, which includes 4 skip + 4 todo) with PASS count (literal '1901 pass'), then asserts '≥ 1909 PASS, 0 FAIL'. The literal output line is `1909 tests across 160 files: 1901 pass + 4 skip + 4 todo + 0 fail` — only 1901 are passing. Asserting `≥ 1909 PASS` is mathematically wrong: 1901 < 1909, so a correct Sprint 6 build that matches Sprint 5 baseline would technically fail the literal grading. Either (a) the assertion must be `≥ 1901 PASS, ≥ 4 skip, ≥ 4 todo, 0 fail` (matching the breakdown), or (b) `≥ 1909 tests AND 0 fail` (counting tests as the union). The current wording is non-executable as a literal pass threshold. Fix: rewrite as 'output line matches /^\\d+ tests across \\d+ files: (?<pass>\\d+) pass \\+ \\d+ skip \\+ \\d+ todo \\+ 0 fail$/ AND pass ≥ 1901 AND fail = 0' or similar precise predicate.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "40",
+        "snippet": "passThreshold: `bun test src/` の出力が `1909 tests across 160 files: 1901 pass + 4 skip + 4 todo + 0 fail` (= ≥ 1909 PASS, 0 FAIL)"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-iter2-003",
+      "dimension": "edge_case_coverage",
+      "category": "test_quality",
+      "severity": "medium",
+      "description": "CRIT-301 passThreshold prescribes `expect(strataCounts).toMatchObject({ cell1: ≥50, ec024: ≥50, cell2: ≥50, cell3: ≥50, cell4: ≥50 })` as the stratification verification API. This is **not valid Jest/Vitest matcher syntax**: `toMatchObject` accepts literal values or `expect.<asymmetricMatcher>` objects, not bare comparison operators like `≥50`. The correct form is `toMatchObject({ cell1: expect.toBeGreaterThanOrEqual(50), ... })` (Jest >=29) or an explicit per-key assertion loop. As written, an implementer copying the contract verbatim produces a TypeScript compile error or matcher misuse. The contract is not directly executable. Fix: rewrite as `expect(strataCounts.cell1).toBeGreaterThanOrEqual(50)` (× 5 cells) or use a custom matcher with explicit pseudocode disambiguation.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "30",
+        "snippet": "test 末尾の `expect(strataCounts).toMatchObject({ cell1: ≥50, ec024: ≥50, cell2: ≥50, cell3: ≥50, cell4: ≥50 })` 形式で evidence log に出力すること"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-iter2-004",
+      "dimension": "edge_case_coverage",
+      "category": "test_quality",
+      "severity": "medium",
+      "description": "CRIT-301 (and PROP-FEED-S6-002 in verification-architecture.md) demand `numRuns ≥ 250` with `fc.constantFrom('cell1','ec024','cell2','cell3','cell4')` for stratification, plus a per-cell minimum of ≥50 runs. Uniform sampling of 5 categories at 250 trials does NOT guarantee ≥50 per stratum: under uniform multinomial, each cell has expected count 50 with variance ~40 (binomial approximation), so the probability that any single cell falls below 50 is non-trivial (≈ 0.5 per cell, and ≈ 1 - (1-p)^5 across 5 cells). With seed `0x56BABE` fixed the result is deterministic for that single seed, but the contract becomes brittle: any future seed change, fast-check version bump, or arbitrary-shape change can flip the per-cell counts below 50 without any production-code regression. Fix options: (a) increase `numRuns` to ≥500 (probability of any cell <50 drops to ≈0.001); (b) implement explicit rejection-sampling fixture that guarantees ≥50 per cell by retry; (c) drop the per-cell threshold and use only `numRuns ≥ 250` as evidence; (d) use `fc.frequency` with weights tuned per cell. Current spec is grading-fragile.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "28-30",
+        "snippet": "seed 固定 (`0x56BABE`) で **numRuns ≥ 250 (5 cells × ≥ 50 cases stratification)** で 0 反例 ... `expect(strataCounts).toMatchObject({ cell1: ≥50, ... })`"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-CONTRACT-iter2-005",
+      "dimension": "structural_integrity",
+      "category": "test_quality",
+      "severity": "low",
+      "description": "CRIT-300 passThreshold uses regex `'(display:\\s*none\\s*[;}]|visibility:\\s*hidden\\s*[;}]|opacity:\\s*0\\s*[;}])'` invoked via `grep -E`. The `\\s` metacharacter is a Perl/PCRE extension; POSIX ERE does not define `\\s`. GNU grep accepts `\\s` as a GNU extension under both BRE and ERE, but BSD grep (default on macOS) does NOT — `\\s` is treated as a literal `s`. The current Linux dev env (per session metadata) supports it, but if any developer runs the audit on macOS or under a non-GNU grep, the regex matches different text and the audit becomes non-portable. Fix: replace `\\s*` with the POSIX-portable `[[:space:]]*`, e.g., `'(display:[[:space:]]*none[[:space:]]*[;}]|visibility:[[:space:]]*hidden[[:space:]]*[;}]|opacity:[[:space:]]*0[[:space:]]*[;}])'`.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "25",
+        "snippet": "passThreshold: ... AND PROP-FEED-S6-003 (`grep -E '(display:\\s*none\\s*[;}]|visibility:\\s*hidden\\s*[;}]|opacity:\\s*0\\s*[;}])' promptnotes/src/lib/feed/FeedRow.svelte | wc -l` の出力が 0"
+      },
+      "routeToPhase": "1c"
+    }
+  ]
+}

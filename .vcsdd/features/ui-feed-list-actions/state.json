@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2c",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -613,6 +613,13 @@
       "to": "2c",
       "timestamp": "2026-05-10T10:41:25.000Z",
       "reason": "Sprint 6 Phase 2b Green complete — Sprint 6 PROP-S6-001..007 17 tests PASS; full vitest 240/240 + bun 1909/1909 regression PASS",
+      "sprint": 6
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-10T10:57:13.000Z",
+      "reason": "Sprint 6 contract review iter-3 PASS — 5 CRITs grading-ready, all behavioral assertions verifiable, 1-file constraint enforced via enumerated allowlist",
       "sprint": 6
     }
   ],
@@ -2529,9 +2536,22 @@
           "FIND-S6-SPEC-iter7-002 (LOW)"
         ]
       }
+    },
+    "contract-sprint-6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-10T10:57:13.000Z",
+      "iteration": 3,
+      "reviewedBy": "adversary",
+      "details": {
+        "findingHistory": "iter1=10 (2H/4M/4L) → iter2=5 (2H/2M/1L) → iter3=1 (0H/0M/1L non-blocking)",
+        "iteration": 3,
+        "remainingNonBlockingFindings": [
+          "FIND-S6-CONTRACT-iter3-001 (LOW, address by description text fix)"
+        ]
+      }
     }
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T10:41:25.000Z"
+  "updatedAt": "2026-05-10T10:57:13.000Z"
 }

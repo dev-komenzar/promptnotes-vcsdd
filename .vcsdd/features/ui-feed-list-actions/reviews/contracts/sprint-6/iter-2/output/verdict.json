@@ -1,0 +1,78 @@
+{
+  "sprintNumber": 6,
+  "feature": "ui-feed-list-actions",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-05-10T00:00:00Z",
+  "iteration": 2,
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+    "contractDigest": "iter-2"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "description": "CRIT-300 (lines 21-25) maps to REQ-FEED-030.1 in behavioral-spec.md:1305-1356 with the 5-row truth table (cell 1 effectiveMount=true / EC-FEED-024 row / cell 2 / cell 3 / cell 4). PROP-FEED-S6-001 in verification-architecture.md:801 enumerates the same 5 rows. Mapping verified. Iter-1 FIND-002 fix (scope frontmatter line 9 enumerates PROP-FEED-S6-001..007 + EC-FEED-021..024) verified. Iter-1 FIND-005 fix (EC-FEED-021 deferral note in scope and calibration line 87) verified."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "description": "REQ-FEED-030.1 (line 1305-1356) and REQ-FEED-034.1/2 (line 1358-1416) match CRIT-300/CRIT-302 references. PROP-FEED-S6-001..007 in verification-architecture.md:797-807 cover all listed REQs."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-CONTRACT-iter2-003", "FIND-S6-CONTRACT-iter2-004"],
+      "evidence": []
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "description": "CRIT-302 (lines 31-35) is now restricted to behavioral assertions (S6-004/005/006 click routing). Iter-1 FIND-001 (PROP-FEED-S6-001 double-counting) verified resolved: CRIT-300 owns structural truth table; CRIT-302 owns click-routing behavioral observations. Iter-1 FIND-004 (RED→GREEN process evidence relocated to evidence/sprint-6-{red,green}-phase.log) verified — line 35 explicitly delegates process evidence to log files outside the criterion grading."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-CONTRACT-iter2-001", "FIND-S6-CONTRACT-iter2-002", "FIND-S6-CONTRACT-iter2-005"],
+      "evidence": []
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "description": "Iter-1 FIND-008 (CRIT-303 git diff path) verified: line 40 uses explicit `promptnotes/src-tauri/src/editor.rs promptnotes/src-tauri/src/feed.rs` with no brace expansion. Iter-1 FIND-003 (CRIT-304 explicit grep allowlist) verified: line 45 contains a fully specified `git diff main..HEAD --name-only | grep -vE ...` shell command. The CRIT-304 allowlist enumerates production change (FeedRow.svelte), VCSDD artifacts, 3 new test files, 2 existing test edits, 2 config files. PROP-FEED-S5-013 baseline tag check is preserved via `vcsdd/ui-feed-list-actions/sprint-4-baseline`."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "description": "Iter-1 FIND-006 (CRIT-300 grep -E ERE) verified at line 25 (unescaped `|` ERE form). Iter-1 FIND-007 (CRIT-303 vitest count `≥ 240` disambiguation) verified at line 40. Iter-1 FIND-009 (CRIT-301 stratification per-cell counter) verified at line 30 — the counter mechanism is now described, although the matcher syntax used has a separate defect (FIND-S6-CONTRACT-iter2-003). Iter-1 FIND-010 (calibration S6-007 orthogonality) verified at line 86 of contract."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 5,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-300", "CRIT-301", "CRIT-302", "CRIT-303", "CRIT-304"],
+    "duplicateFindings": []
+  }
+}

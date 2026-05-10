@@ -1,0 +1,54 @@
+{
+  "verdict": "FAIL",
+  "feature": "ui-feed-list-actions",
+  "sprintNumber": 6,
+  "reviewType": "contract",
+  "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+  "iteration": 2,
+  "timestamp": "2026-05-10T00:00:00Z",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-CONTRACT-002"],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md", "description": "Scope frontmatter line 9 says PROP-FEED-S6-001..006 but spec defines S6-001..007 and CRIT-301 references S6-007"}
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-CONTRACT-009"],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md", "description": "CRIT-301 passThreshold mentions 5x50 stratification but does not encode it as a machine-checkable threshold — relies on spec narrative only"}
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-CONTRACT-006", "FIND-S6-CONTRACT-008"],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md", "description": "CRIT-300 grep regex uses BRE-style \\| escapes inconsistent with -E mode; CRIT-303 uses brace expansion + wrong path prefix relative to repo root"}
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-CONTRACT-001", "FIND-S6-CONTRACT-005", "FIND-S6-CONTRACT-010"],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md", "description": "PROP S6-001 double-counted across CRIT-300 + CRIT-302; EC-FEED-021 deferral not surfaced in contract; calibration block silent on S6-007 vs S6-001 EC-FEED-024 row orthogonality"}
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-CONTRACT-003", "FIND-S6-CONTRACT-004", "FIND-S6-CONTRACT-007"],
+      "evidence": [
+        {"type": "file", "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md", "description": "CRIT-304 lacks concrete shell command; CRIT-302 RED->GREEN evidence path unspecified; CRIT-303 vitest count uses ambiguous = operator"}
+      ]
+    }
+  ],
+  "totalFindings": 10,
+  "criticalFindings": 0,
+  "summary": "Contract is NOT grading-ready for fresh-context Phase 3 review. (1) PROP-FEED-S6-001 is double-counted across CRIT-300 and CRIT-302, violating one-CRIT-per-PROP coverage and inflating dimension correlation. (2) Scope frontmatter undercounts PROPs (S6-001..006 stated; S6-001..007 actual). (3) Three pass-threshold commands are not directly executable by a fresh reviewer: CRIT-300 regex uses BRE-escaped pipes inconsistent with -E mode, CRIT-303 git-diff path uses brace expansion + repo-root-relative path that does not match actual `promptnotes/src-tauri/src/` layout, CRIT-304 falls back to `Phase 3 manual audit` without a concrete command. (4) CRIT-302 bundles four heterogeneous obligations including a process-evidence requirement (RED->GREEN) without pointing to an evidence log path. (5) EC-FEED-021 MutationObserver coverage is deferred per spec but the deferral is not surfaced in the contract scope or calibration. (6) CRIT-303 vitest count uses ambiguous `= 223 + Sprint 6 新規分` instead of a locked numeric threshold. (7) CRIT-301 passThreshold mentions 5x50 stratification but does not turn it into a machine-checkable per-cell run-count assertion. (8) Calibration block omits S6-007 vs S6-001 EC-FEED-024 row orthogonality rationale, exposing the contract to redundant-PROP findings in Phase 3. Weights sum correctly (0.28+0.20+0.27+0.15+0.10=1.00) and red-lines are mostly actionable with concrete commit refs (commit d30ab13). All findings route to Phase 1c contract revision before Phase 3 entry."
+}
