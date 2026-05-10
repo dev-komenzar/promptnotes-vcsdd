@@ -815,7 +815,7 @@ Sprint 3 tests `test_select_past_note_editing_payload_contains_body` must be **r
 | `promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts` (新規) | vitest + jsdom + Svelte 5 mount | PROP-FEED-S6-001, S6-007 |
 | `promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts` (新規) | fast-check + jsdom + Svelte 5 mount | PROP-FEED-S6-002 |
 | `promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts` (新規) | vitest + jsdom + mock adapter | PROP-FEED-S6-004, S6-005, S6-006 |
-| `promptnotes/src/lib/feed/__tests__/dom/_helpers/FeedRowSprint6PropertyWrapper.svelte` (新規, test-only fixture) | Svelte 5 component (test fixture, 非 production) | PROP-FEED-S6-002 で property 駆動 mount を実現するため。Sprint 5 の `FeedRowSprint5Wrapper.svelte` をモデルとし、props を window 経由で setter API として露出させ fast-check の per-run prop mutation を可能にする。FIND-S6-SPEC-iter3-006 解消: Test Strategy table に明記し CRIT-304 allowlist と整合させる。 |
+| ~~`promptnotes/src/lib/feed/__tests__/dom/_helpers/FeedRowSprint6PropertyWrapper.svelte`~~ (Phase 3 で不要と判明、削除) | — | FIND-S6-PHASE3-002 解消: property test が `mount(FeedRow, { target, props })` 形式で per-run に props を切り替える方法で実装可能であることが判明し、wrapper component は dead code となったため Phase 3 後に削除。`feed-row-preview-exclusivity.property.test.ts` は FeedRow を直接 mount する。 |
 | CI grep audit script (Sprint 6 拡張) | grep | PROP-FEED-S6-003 |
 
 **実装変更対象**:

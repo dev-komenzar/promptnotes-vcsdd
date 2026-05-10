@@ -1,0 +1,34 @@
+{
+  "feature": "ui-feed-list-actions",
+  "sprintNumber": 6,
+  "iteration": 1,
+  "reviewType": "phase-3",
+  "findings": [
+    {
+      "findingId": "FIND-S6-PHASE3-001",
+      "dimension": "implementation_correctness",
+      "category": "test_quality",
+      "severity": "LOW",
+      "description": "PROP-FEED-S6-004 'cell 3 variant (saving, other row): feed-row-button click → dispatchSelectPastNote once' contains no behavioral assertion on dispatchSelectPastNote. The test mounts the row, queries the feed-row-button, asserts non-null, calls .click(), then unmounts — without any expect() on feedAdapter.dispatchSelectPastNote.toHaveBeenCalledTimes / not.toHaveBeenCalled. The body comment even concedes 'The actual call count depends on isFeedRowClickBlocked logic' but never pins the expected outcome. The test's name promises 'dispatchSelectPastNote once' but the body proves nothing. This is a tautological/no-op test that would pass even if the click routing were broken. The primary cell-3 test (lines 135-183) is solid, so CRIT-302 is still satisfied, but this variant should either pin an expected count (1 if not blocked by 'saving', 0 if isFeedRowClickBlocked.saving===true) or be deleted.",
+      "evidence": {
+        "filePath": "promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts",
+        "lineRange": "188-222",
+        "snippet": "feedRowButton!.click();\n    flushSync();\n\n    // saving state → isFeedRowClickBlocked checks editingStatus, but since\n    // ...\n    // The actual call count depends on isFeedRowClickBlocked logic.\n    // ...\n    unmount(component);"
+      },
+      "routeToPhase": "2a"
+    },
+    {
+      "findingId": "FIND-S6-PHASE3-002",
+      "dimension": "structural_integrity",
+      "category": "test_quality",
+      "severity": "LOW",
+      "description": "FeedRowSprint6PropertyWrapper.svelte exposes setViewState/setEditingSessionState/setBlockAdapter setters via window.__feedRowSprint6Test__<id>, but the actual PROP-FEED-S6-002 property test (feed-row-preview-exclusivity.property.test.ts:295-304) mounts FeedRow directly, never importing or instantiating FeedRowSprint6PropertyWrapper. The wrapper component is therefore dead test infrastructure — it's listed in CRIT-304's allowlist but not referenced by any test. This does not violate any CRIT pass-threshold (the property test still achieves the stratified 5×500 coverage by direct mount), but the wrapper file should either be removed or actually used. Auditors of the test suite will be misled into thinking the property test goes through the wrapper.",
+      "evidence": {
+        "filePath": "promptnotes/src/lib/feed/__tests__/dom/_helpers/FeedRowSprint6PropertyWrapper.svelte",
+        "lineRange": "1-95",
+        "snippet": "<div data-testid=\"sprint-6-wrapper\" data-setter-key={setterKey} data-instance-id={instanceId}>\n  <FeedRow ... /> — but no test imports this wrapper"
+      },
+      "routeToPhase": "2a"
+    }
+  ]
+}

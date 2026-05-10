@@ -1,0 +1,148 @@
+{
+  "verdict": "PASS",
+  "feature": "ui-feed-list-actions",
+  "sprintNumber": 6,
+  "iteration": 1,
+  "reviewType": "phase-3",
+  "timestamp": "2026-05-10T12:00:00Z",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "weight": 0.28,
+      "criterion": "CRIT-300",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts:178-372",
+          "description": "PROP-FEED-S6-001: 5 truth-table rows assert preview/feed-row-button DOM unmount in cell 1 (lines 178-233 — editing+saving variants), preview retention in EC-FEED-024 row (247-276), cell 2 (283-309), cell 3 (316-341), cell 4 (348-372). delete-button presence + disabled/enabled state asserted in each row. block-editor-surface presence asserted in cell 1 + EC-FEED-024 row. All 5 truth-table rows from REQ-FEED-030.1 covered."
+        },
+        {
+          "type": "source-file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:200-201",
+          "description": "effectiveMount = $derived(shouldMountBlocks && blockEditorAdapter !== null) introduced as the consolidated mount predicate, matching REQ-FEED-030.1 EARS exactly."
+        },
+        {
+          "type": "source-file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:330,453",
+          "description": "{#if !effectiveMount} wraps .row-button (line 330 wrapping the entire <button data-testid=\"feed-row-button\"> at lines 331-437); {#if effectiveMount} wraps .block-editor-surface (line 453 wrapping lines 454-476). The two #if branches are mutually exclusive on effectiveMount — preview and block-editor-surface can never coexist by construction."
+        },
+        {
+          "type": "source-file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:479-730",
+          "description": "<style> block reviewed end-to-end. No 'display: none', no 'visibility: hidden', no integer 'opacity: 0;'. The only opacity values are 0.4 (delete-button:disabled at line 717) and decimal alpha values 0.04/0.027/0.02/0.01/0.08/0.054 inside rgba(...) box-shadow declarations (lines 484, 489, 655) — all decimals, none would match the POSIX regex 'opacity:[[:space:]]*0[[:space:]]*[;}]' specified in the contract. PROP-FEED-S6-003 grep audit will return 0 hits."
+        }
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "PASS",
+      "weight": 0.20,
+      "criterion": "CRIT-301",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts:263-342",
+          "description": "PROP-FEED-S6-002 non-coexistence fast-check: seed 0x56babe (line 329), numRuns 500 (line 330), arbitraries cover 5 cells (cell1/ec024/cell2/cell3/cell4) × 6 armStatus values × serverBlocksLength 0..5 × adapterIsNull boolean. Counter-object strataCounts is incremented per run (line 282). Per-cell ≥50 assertion is exactly 5 individual expect().toBeGreaterThanOrEqual(50) calls (lines 337-341) — matches the FIND-S6-CONTRACT-iter2-003 mandated 'per-key 5 individual' form (not toMatchObject)."
+        },
+        {
+          "type": "test-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts:344-404",
+          "description": "PROP-FEED-S6-002 non-emptiness fast-check: same seed 0x56babe (line 398), numRuns 500 (line 399), same 4-tuple arbitraries. Property predicate (rbpExists || blockElExists) === true (line 393). 5 representative examples seeded as initial cases (lines 255-261, replayed via examples option lines 400-403)."
+        },
+        {
+          "type": "test-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts:394-494",
+          "description": "PROP-FEED-S6-007 dynamic dispatch 0-calls observation: adapter=null + editingStatus='editing' + editingNoteId===self.noteId + blocks=undefined (fallback path). Asserts feedAdapter.dispatchSelectPastNote not called (line 435), surface absent (line 439), block-element absent (line 440). Variant test (lines 450-494) verifies the not-injected mock adapter's dispatchInsertBlockAtBeginning + dispatchFocusBlock both have 0 calls (lines 486-487). Synchronization uses flushSync() + 3× await Promise.resolve() + flushSync() to drain the $effect microtask chain."
+        },
+        {
+          "type": "evidence-file",
+          "location": ".vcsdd/features/ui-feed-list-actions/evidence/sprint-6-red-phase.log:42-47",
+          "description": "Phase 2a baseline shows fast-check found counter-example ['cell1','idle',0,false] before implementation — confirming the property test is genuinely sensitive to the cell-1 coexistence regression. After Sprint 6 impl (green-phase log:24), 0 counter-examples."
+        }
+      ]
+    },
+    "implementation_correctness": {
+      "verdict": "PASS",
+      "weight": 0.27,
+      "criterion": "CRIT-302",
+      "findings": ["FIND-S6-PHASE3-001"],
+      "evidence": [
+        {
+          "type": "test-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts:135-183",
+          "description": "PROP-FEED-S6-004 cell 3 primary test: editingStatus='editing', editingNoteId='note-OTHER', self.noteId='note-001'. After feedRowButton.click(), asserts feedAdapter.dispatchSelectPastNote toHaveBeenCalledTimes(1) (line 171), called with (noteId='note-001', vaultPath: string, issuedAt matches ISO_8601_REGEX) (lines 174-177), and onRowClick spy not called (line 180)."
+        },
+        {
+          "type": "test-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts:287-325",
+          "description": "PROP-FEED-S6-005: cell 1 (effectiveMount=true) — directly dispatch click on .feed-row container (line 318) bypassing the unmounted feed-row-button. Asserts feedAdapter.dispatchSelectPastNote.toHaveBeenCalledTimes(0) (line 322). This is the behavioral observation orthogonal to S6-001's static DOM unmount, per spec FIND-S6-SPEC-009."
+        },
+        {
+          "type": "test-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts:386-494",
+          "description": "PROP-FEED-S6-006: cell 1 block-element focusin (line 420) → onRowClick.toHaveBeenCalledTimes(0) (line 424); blockAdapter.dispatchFocusBlock toHaveBeenCalled with payload {noteId: 'note-001', blockId: 'b1'} (lines 429-438). Plus a click-event variant (lines 448-493) confirming click bubbling from .block-editor-surface does not reach .row-button (which is unmounted) — onRowClick stays at 0 (line 486) and dispatchSelectPastNote stays at 0 (line 490)."
+        },
+        {
+          "type": "source-file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:325-477",
+          "description": "DOM hierarchy: <div class=\"feed-row\"> contains <div class=\"row-layout\"> (line 329) which contains the conditional .row-button (lines 331-437) + .delete-button (440-450); then sibling {#if effectiveMount} <div class=\"block-editor-surface\"> (lines 453-476). The .block-editor-surface is a sibling of .row-layout (not a descendant of .row-button), so click bubbling from BlockElement traverses .feed-row but never the .row-button onclick handler. handleRowClick (line 112) only calls adapter.dispatchSelectPastNote if onRowClick is unset, which the cell-3 primary test leverages by not passing onRowClick (line 161 comment)."
+        }
+      ]
+    },
+    "structural_integrity": {
+      "verdict": "PASS",
+      "weight": 0.15,
+      "criterion": "CRIT-303",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "evidence-file",
+          "location": ".vcsdd/features/ui-feed-list-actions/evidence/sprint-6-green-phase.log:32-42",
+          "description": "Sprint 5 baseline preserved: bun test 1909 tests = 1901 pass + 4 skip + 4 todo + 0 fail (line 41); vitest 22 test files / 240 tests / 0 fail (lines 33-34). Matches CRIT-303 passThreshold exactly (1909 = 1901+4+4 baseline + 0 sprint-6 added to bun; 240 = 223 sprint-5 baseline + 17 sprint-6 new). User's review-context summary independently confirms the same numbers."
+        },
+        {
+          "type": "scope-evidence",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte (sole production file modified)",
+          "description": "Sprint 6 production change is confined to FeedRow.svelte. promptnotes/src-tauri/src/editor.rs and promptnotes/src-tauri/src/feed.rs are untouched, so the Rust emit-order baseline (editing_session_state_changed → feed_state_changed) is preserved by construction (no diff in those files vs vcsdd/ui-feed-list-actions/sprint-4-baseline). PROP-FEED-S5-013 regression therefore continues to PASS."
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "weight": 0.10,
+      "criterion": "CRIT-304",
+      "findings": ["FIND-S6-PHASE3-002"],
+      "evidence": [
+        {
+          "type": "scope-evidence",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte (production); 4 new test files + 2 modified test files (allowlist)",
+          "description": "(a) Production: only FeedRow.svelte modified — verified by reading the file (effectiveMount $derived added, two {#if} blocks restructured). (c) New test files all present in expected paths: feed-row-preview-exclusivity.dom.vitest.ts, feed-row-preview-exclusivity.property.test.ts, feed-row-click-routing.dom.vitest.ts, _helpers/FeedRowSprint6PropertyWrapper.svelte. (c-extra) Modified existing tests: feed-row-best-effort-dispatch.dom.vitest.ts PROP-FEED-S5-022 (d) flipped to assert rowButton===null in cell 1 (lines 201-234) — explicitly framed as Sprint 6 supersession; main-route-wiring.dom.vitest.ts updated mount-gate regex to match effectiveMount $derived + {#if effectiveMount} + {#if !effectiveMount} (lines 70-79). Both allowed under CRIT-304 (c-extra)."
+        },
+        {
+          "type": "source-file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-best-effort-dispatch.dom.vitest.ts:201-234",
+          "description": "PROP-FEED-S5-022 (d) Sprint 5→Sprint 6 supersession: assertion flipped from 'rowButton not null' to expect(rowButton).toBeNull() AND expect(blockEl).not.toBeNull(). Comment block (lines 220-228) explicitly cites REQ-FEED-030.1 as the supersession source and explains the flip. Matches the calibration note allowance."
+        },
+        {
+          "type": "source-file",
+          "location": "promptnotes/src/routes/__tests__/main-route-wiring.dom.vitest.ts:70-79",
+          "description": "FeedRow.svelte mount-gate test updated to assert the new effectiveMount $derived expression and both {#if effectiveMount} / {#if !effectiveMount} patterns. Comment cites Sprint 6 REQ-FEED-030.1."
+        }
+      ]
+    }
+  },
+  "totalFindings": 2,
+  "criticalFindings": 0,
+  "highFindings": 0,
+  "mediumFindings": 0,
+  "lowFindings": 2,
+  "weightedScore": 1.00,
+  "convergenceSignals": {
+    "findingCount": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-300", "CRIT-301", "CRIT-302", "CRIT-303", "CRIT-304"],
+    "duplicateFindings": []
+  },
+  "summary": "Sprint 6 implementation satisfies all 5 CRITs in contracts/sprint-6.md. CRIT-300: REQ-FEED-030.1 implemented as effectiveMount $derived (FeedRow.svelte:201) plus mutually-exclusive {#if} branches at lines 330 and 453; the 5-row truth table is fully asserted in feed-row-preview-exclusivity.dom.vitest.ts; the <style> block contains no display:none / visibility:hidden / opacity:0 hide patterns. CRIT-301: PROP-FEED-S6-002 fast-check uses seed 0x56babe + numRuns 500 with per-cell strataCounts and 5 individual toBeGreaterThanOrEqual(50) assertions (lines 337-341); both non-coexistence and non-emptiness predicates are property-tested; PROP-FEED-S6-007 covers adapter-null dispatch 0-calls. CRIT-302: PROP-FEED-S6-004/005/006 each pin a behavioral assertion with the exact mock-call counts the contract requires. CRIT-303: green-phase log records 1909 bun (1901+4+4) and 240 vitest tests passing; Rust files untouched so emit-order baseline is preserved by construction. CRIT-304: production diff confined to FeedRow.svelte; new and modified test files all sit within the allowlist. Two LOW findings filed: a no-assertion variant test in PROP-FEED-S6-004 cell-3 saving variant (FIND-S6-PHASE3-001) and dead test infrastructure in FeedRowSprint6PropertyWrapper.svelte that no test imports (FIND-S6-PHASE3-002). Neither blocks any CRIT pass-threshold; both are routed to Phase 2a for follow-up cleanup."
+}

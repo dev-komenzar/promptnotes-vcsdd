@@ -268,12 +268,18 @@ describe('PROP-FEED-S6-002: non-coexistence + non-emptiness (fast-check stratifi
     const serverBlocksLengthArb = fc.integer({ min: 0, max: 5 });
     const adapterNullArb = fc.boolean();
 
+    // Stratification counter (CRIT-301 passThreshold: per-cell ≥50 cases)
+    const strataCounts: Record<CellLabel, number> = {
+      cell1: 0, ec024: 0, cell2: 0, cell3: 0, cell4: 0,
+    };
+
     const prop = fc.asyncProperty(
       cellArb,
       armStatusArb,
       serverBlocksLengthArb,
       adapterNullArb,
       async (cellLabel, armStatus, serverBlocksLength, adapterIsNull) => {
+        strataCounts[cellLabel]++;
         // Reset shared adapter mocks between runs
         vi.clearAllMocks();
 
@@ -326,6 +332,13 @@ describe('PROP-FEED-S6-002: non-coexistence + non-emptiness (fast-check stratifi
         [cellLabel, armStatus, serverBlocksLength, adapterIsNull] as [CellLabel, typeof armStatus, number, boolean]
       ),
     });
+
+    // Stratification verification (CRIT-301 passThreshold per-cell ≥50)
+    expect(strataCounts.cell1).toBeGreaterThanOrEqual(50);
+    expect(strataCounts.ec024).toBeGreaterThanOrEqual(50);
+    expect(strataCounts.cell2).toBeGreaterThanOrEqual(50);
+    expect(strataCounts.cell3).toBeGreaterThanOrEqual(50);
+    expect(strataCounts.cell4).toBeGreaterThanOrEqual(50);
   });
 
   test('non-emptiness: at least one of row-body-preview or block-element is present', async () => {

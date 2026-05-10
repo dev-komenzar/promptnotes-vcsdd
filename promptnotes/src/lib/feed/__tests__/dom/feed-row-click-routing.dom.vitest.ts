@@ -185,7 +185,7 @@ describe('PROP-FEED-S6-004: cell 3 — feed-row-button click → dispatchSelectP
   /**
    * Variant: editingStatus='saving' (another note)
    */
-  test('cell 3 variant (saving, other row): feed-row-button click → dispatchSelectPastNote once', () => {
+  test('cell 3 variant (saving, other row): click blocked by isFeedRowClickBlocked → dispatchSelectPastNote 0 calls (REQ-FEED-006 regression)', () => {
     const feedAdapter = makeFeedAdapter();
     const viewState = makeViewState({
       editingStatus: 'saving',
@@ -207,16 +207,12 @@ describe('PROP-FEED-S6-004: cell 3 — feed-row-button click → dispatchSelectP
     feedRowButton!.click();
     flushSync();
 
-    // saving state → isFeedRowClickBlocked checks editingStatus, but since
-    // THIS row is not saving (it's another row), the rowDisabled derived is based
-    // on overall editingStatus.  Per feedRowPredicates.isFeedRowClickBlocked,
-    // 'saving' blocks click even on non-editing rows.
-    // NOTE: this tests the existing behavior as regression guard.
-    // The actual call count depends on isFeedRowClickBlocked logic.
-    // Per PROP-FEED-S6-004 spec: editingStatus ∈ {editing,saving,switching,save-failed}
-    // AND editingNoteId !== self.noteId — BUT isFeedRowClickBlocked may block saving.
-    // The spec focuses on the routing: dispatchSelectPastNote not called when blocked.
-    // This test verifies that the routing works (or is blocked by the existing predicate).
+    // FIND-S6-PHASE3-001 解消: pin the assertion. Per feedRowPredicates.isFeedRowClickBlocked
+    // ('saving' or 'switching' or loadingStatus 'loading' → true), the click is blocked
+    // even when this row's noteId differs from editingNoteId. The handler returns early
+    // (handleRowClick: `if (rowDisabled) return;`) so dispatchSelectPastNote is NOT called.
+    // This is REQ-FEED-006 click-suppression regression behavior, preserved by Sprint 6.
+    expect(feedAdapter.dispatchSelectPastNote).toHaveBeenCalledTimes(0);
 
     unmount(component);
   });
