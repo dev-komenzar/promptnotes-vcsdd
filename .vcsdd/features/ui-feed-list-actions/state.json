@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "1c",
+  "currentPhase": "2a",
   "phaseHistory": [
     {
       "from": "init",
@@ -413,6 +413,72 @@
       "to": "1c",
       "timestamp": "2026-05-10T00:05:00.000Z",
       "reason": "Sprint 5 Phase 1b complete: verification-architecture \u00a714 added with PROP-FEED-S5-001..015",
+      "sprint": 5
+    },
+    {
+      "from": "1c",
+      "to": "4",
+      "timestamp": "2026-05-10T01:00:00.000Z",
+      "reason": "Sprint 5 Phase 1c iter-1 FAIL: 16 findings (1 critical, 5 high, 8 medium, 2 low) \u2014 routing to Phase 4",
+      "sprint": 5,
+      "iteration": "1c-sprint-5-iter-1"
+    },
+    {
+      "from": "4",
+      "to": "1a",
+      "timestamp": "2026-05-10T01:00:00.000Z",
+      "reason": "Phase 4 routing: 8 spec_fidelity findings \u2192 1a (FIND-S5-SPEC-001..008), 8 verification_readiness findings \u2192 1b (FIND-S5-SPEC-009..016). Earliest affected phase = 1a.",
+      "sprint": 5
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-10T01:30:00.000Z",
+      "reason": "Sprint 5 iter-2 Phase 1a fixes complete (FIND-S5-SPEC-001..008 resolved): 5-arm DTO table, state source-of-truth + 2x2 truth table, fallback ownership + insert\u2192focus dispatch chain, REQ-FEED-029 single-subscription mandate, REQ-FEED-033 delegation note, EC-FEED-016 Sprint 4 amendment neutralized.",
+      "sprint": 5,
+      "iteration": "1c-sprint-5-iter-2"
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-10T01:30:00.000Z",
+      "reason": "Sprint 5 iter-2 Phase 1b fixes complete (FIND-S5-SPEC-009..016 resolved): jsdom layout assertion replaced with grep, executable grep commands, mock-emit protocol pinned, Sprint 4 baseline preservation as positive evidence, PROP-FEED-S5-016/017 for createBlockEditorAdapter, PROP-FEED-S5-018/019/020 for EC-FEED-018/019/020, PROP-FEED-S5-021 boundary audit for editingSessionChannel.ts, PROP-FEED-S5-009 single canonical test path.",
+      "sprint": 5
+    },
+    {
+      "from": "1c",
+      "to": "4",
+      "timestamp": "2026-05-10T02:30:00.000Z",
+      "reason": "Sprint 5 Phase 1c iter-2 FAIL: 7 new findings introduced (1 critical, 1 high, 3 medium, 2 low) \u2014 routing to Phase 4",
+      "sprint": 5,
+      "iteration": "1c-sprint-5-iter-2"
+    },
+    {
+      "from": "4",
+      "to": "1a",
+      "timestamp": "2026-05-10T02:30:00.000Z",
+      "reason": "Phase 4 routing iter-2: 4 spec_fidelity findings \u2192 1a (FIND-S5-SPEC-iter2-001/003/005/007), 3 verification_readiness findings \u2192 1b (FIND-S5-SPEC-iter2-002/004/006). Earliest = 1a.",
+      "sprint": 5
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-10T03:00:00.000Z",
+      "reason": "Sprint 5 iter-3 Phase 1a fixes: REQ-FEED-031 dispatch made best-effort (Group B Rust handlers Sprint 5 scope-out), REQ-FEED-030 Adapter command-mapping split into Group A (existing) + Group B (deferred) with issuedAt added, fallback restart condition (iii) for undefined\u2192non-empty\u2192undefined, truth table row 2 parenthetical removed, sprint-4-baseline tag created (commit d30ab13).",
+      "sprint": 5
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-10T03:00:00.000Z",
+      "reason": "Sprint 5 iter-3 Phase 1b fixes: PROP-FEED-S5-005 spy mechanism (vi.spyOn(feedReducer)), PROP-FEED-S5-011 expanded to 5 scenarios (best-effort + restart on undefined\u2192non\u2192undefined), PROP-FEED-S5-013 baseline tag pinned, PROP-FEED-S5-017 issuedAt grep + Group A/B split, PROP-FEED-S5-022 added (Group B reject acceptance), orphan dangling row deleted.",
+      "sprint": 5
+    },
+    {
+      "from": "1c",
+      "to": "2a",
+      "timestamp": "2026-05-10T03:30:00.000Z",
+      "reason": "spec gate PASS (adversary iter-3 PASS + human approval)",
       "sprint": 5
     }
   ],
@@ -1994,9 +2060,26 @@
           ]
         }
       }
+    },
+    "1c-sprint-5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-10T03:30:00.000Z",
+      "reviewedBy": "adversary+human",
+      "details": {
+        "sprint": 5,
+        "iteration": 3,
+        "iter1FindingsResolved": "16/16",
+        "iter2FindingsResolved": "7/7",
+        "iter3NewFindings": 0,
+        "humanApproval": {
+          "approver": "user",
+          "approvedAt": "2026-05-10T03:30:00.000Z",
+          "scopeAcknowledgement": "Group B Rust handler deferral approved; Sprint 5 ships UI-only with best-effort dispatch and known persistence constraint per REQ-FEED-031"
+        }
+      }
     }
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T00:05:00.000Z"
+  "updatedAt": "2026-05-10T03:30:00.000Z"
 }

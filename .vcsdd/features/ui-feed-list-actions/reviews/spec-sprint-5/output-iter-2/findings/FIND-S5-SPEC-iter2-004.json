@@ -1,0 +1,19 @@
+{
+  "id": "FIND-S5-SPEC-iter2-004",
+  "severity": "low",
+  "dimension": "verification_readiness",
+  "category": "spec_gap",
+  "requirement": "verification-architecture.md §14",
+  "summary": "verification-architecture.md ends with an orphan dangling table row at line 784 (`| REQ-FEED-024 (S4) | PROP-FEED-S4-012, PROP-FEED-S4-013, PROP-FEED-S4-014 | 1 | cargo test (unit, AppHandle-free) |`) appearing AFTER the §14 'Sprint 5 Phase 2 / Phase 5 Gates' subsection. This row belongs to the §13 Sprint 4 Coverage Matrix Additions (which legitimately ends at line 678).",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "773-784",
+    "snippet": "L773: ### Sprint 5 Phase 2 / Phase 5 Gates\nL774-783: (Phase 2/5 gate bullets)\nL784: | REQ-FEED-024 (S4) | PROP-FEED-S4-012, PROP-FEED-S4-013, PROP-FEED-S4-014 | 1 | cargo test (unit, AppHandle-free) |"
+  },
+  "context": "(1) The Sprint 4 Coverage Matrix Additions table at lines 674-678 ends with REQ-FEED-027 row, not REQ-FEED-024. (2) Line 784 is detached from any preceding table (the Sprint 5 Phase Gates section at 773-783 contains only bullet lists). (3) Markdown renderers will display this as a single-row table, confusing readers about what section it belongs to. (4) Phase 5 verifiers running their checklist may inadvertently treat this orphan row as a Sprint 5 obligation and look for a Sprint 4 PROP set under Sprint 5 gates. (5) This is a structural integrity issue most likely introduced by an iter-2 edit that copy-pasted material; the iter-1 review evidence at verdict.json line 46 stated reviewer read 'lines 682-772' — line 784 may have been added during iter-2 corrections.",
+  "evidence": {
+    "primary": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:784"
+  },
+  "recommendedFix": "Delete line 784 entirely — it is an orphan from the §13 Sprint 4 section and has no semantic role in §14. If it is intended as cross-Sprint inheritance/regression baseline, it should be moved into a clearly-labeled subsection (e.g., 'Sprint 4 PROPs inherited as regression baseline').",
+  "routeToPhase": "1c"
+}

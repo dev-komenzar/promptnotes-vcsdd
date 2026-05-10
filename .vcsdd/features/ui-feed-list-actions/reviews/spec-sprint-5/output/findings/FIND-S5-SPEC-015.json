@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-015",
+  "severity": "high",
+  "dimension": "verification_readiness",
+  "category": "purity_boundary",
+  "requirement": "editingSessionChannel.ts (Sprint 5 新規)",
+  "summary": "`editingSessionChannel.ts` is added to §14 Purity Boundary Map as 'Effectful (INBOUND only)' but no PROP-FEED-S5-XXX enforces the boundary. The existing PROP-FEED-032 covers `feedStateChannel.ts` invoke-zero-hit and `tauriFeedAdapter.ts` listen-zero-hit; the new module needs the analogous gate.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "697, 188-190",
+    "snippet": "L697 (Sprint 5 Purity Boundary Map): editingSessionChannel.ts (Sprint 5 新規) または feedStateChannel.ts 拡張 | subscribeEditingSessionState(handler): () => void | Effectful (INBOUND only) | Tauri listen ラッパー. dispatch しない (PROP-FEED-S5-007 で boundary audit).\n\nL190 (PROP-FEED-032): IPC boundary audit: grep \"listen\" src/lib/feed/tauriFeedAdapter.ts ゼロヒット; grep \"invoke\" src/lib/feed/feedStateChannel.ts ゼロヒット | 0 | grep audit | true | boundary"
+  },
+  "context": "(1) Line 697 cross-references PROP-FEED-S5-007 as the boundary audit. PROP-FEED-S5-007 (line 710) is actually about SaveFailureBanner DOM presence, not IPC boundary. This is a wrong cross-reference. (2) The new INBOUND-only constraint on editingSessionChannel.ts has no grep audit equivalent to PROP-FEED-032. Without it, a developer can add `invoke(...)` to editingSessionChannel.ts (e.g., for an ad-hoc 'fetch current state' call) and break the OUTBOUND/INBOUND separation that the Tier 0 architecture relies on. (3) The Phase 5 hardening gate (line 770) inherits Required PROPs but PROP-FEED-S5-007 wouldn't catch invoke leakage.",
+  "recommendedFix": "Add: PROP-FEED-S5-021 (or extend PROP-FEED-032): `grep -nE 'invoke\\(' promptnotes/src/lib/feed/editingSessionChannel.ts` — 0 hits; `grep -nE '@tauri-apps/api/core' promptnotes/src/lib/feed/editingSessionChannel.ts` — 0 hits. Mark Required: true, Tier 0, grep audit. Also fix the cross-reference at line 697 from 'PROP-FEED-S5-007' to the new boundary PROP."
+}

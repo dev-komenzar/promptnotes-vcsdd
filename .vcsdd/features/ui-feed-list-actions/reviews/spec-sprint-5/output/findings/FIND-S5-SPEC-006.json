@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-006",
+  "severity": "critical",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "requirement": "REQ-FEED-031, cross-feature contract with ui-block-editor REQ-BE-002b and Rust capture state",
+  "summary": "REQ-FEED-031 mandates `dispatchFocusBlock({ noteId, blockId: <client-generated UUID> })` but this UUID is invented client-side and is NOT present in Rust's note state. The behaviour of Rust's capture handler when `dispatchFocusBlock` arrives with a known noteId but unknown blockId is not specified by either feature.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1029, 1034-1042, 1048, 1053",
+    "snippet": "L1029: FeedRow は **クライアント側で UUID v4 を発番した空 paragraph block 1 件** を blocks として採用し, focusedBlockId を当該 block の id に設定して BlockElement を mount しなければならない\n\nL1048: fallback で生成された block の id は UUID v4 形式 ... fallback 適用後, BlockEditorAdapter::dispatchFocusBlock({ noteId, blockId }) がただちに呼ばれ, Rust 側 capture state が当該 block id を focusedBlockId として保持する (integration test, mock adapter)\n\nL1053: dispatchFocusBlock が race で発火していても Rust 側は currentNoteId mismatch で no-op 扱い"
+  },
+  "context": "(1) The note exists in the vault but is empty. (2) Rust's `parse_markdown_to_blocks` non-empty contract guarantees Rust would always have at least 1 block — so wire shape case (1) (blocks absent) at line 751 only happens when note is NOT in note_metadata or parse error. In those cases, Rust has no concept of the note's blocks at all. (3) UI generates a UUID and dispatches focusBlock with it. (4) Per ui-block-editor REQ-BE-026 the dispatch is `Promise<void>` and reaches Rust. (5) Rust's capture state cannot legally store a focusedBlockId for a block that does not exist in any note. (6) Spec line 1053's claim 'currentNoteId mismatch で no-op' is wrong — `currentNoteId` matches; only `blockId` is unknown. (7) AC line 1048 asserts 'Rust 側 capture state が当該 block id を focusedBlockId として保持する' — this requires Rust to accept and store an unknown block id, which violates Note Aggregate invariants documented in `docs/domain/aggregates.md`.",
+  "recommendedFix": "Either (a) extend REQ-FEED-031 to also dispatch `dispatchInsertBlockAtBeginning` (one of the 16 BlockEditorAdapter methods) before `dispatchFocusBlock` so Rust learns about the block first; or (b) document the cross-feature contract that Rust accepts a UUID-only `dispatchFocusBlock` and creates the block lazily as a side-effect; or (c) move fallback responsibility to Rust (have Rust auto-create the empty paragraph during `select_past_note` for the empty-note case) and remove client-side UUID generation entirely. Whichever resolution, also fix line 1053 ('currentNoteId mismatch' → 'blockId mismatch') and add a cross-feature note in `ui-block-editor` REQ-BE-002b about the unknown-blockId contract."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-005",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "requirement": "EC-FEED-016 (Sprint 4 amendment vs Sprint 5 amendment)",
+  "summary": "EC-FEED-016 has live, contradictory text in two places. Sprint 4 amendment (line 695) still says 'EditorPane receives focusedBlockId: null and generates a default empty paragraph block on its own initiative'. Sprint 5 supersedes this in REQ-FEED-031 (line 1027) and the catalog at line 1115, but the original prose was never neutralized.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "695 vs 1115-1123",
+    "snippet": "L695 (Sprint 4 EC-FEED-016): EditorPane receives `focusedBlockId: null` and generates a default empty paragraph block on its own initiative.\n\nL1115 (Sprint 5 EC-FEED-016 amendment): FeedRow 側で UUID v4 発番の空 paragraph 1 件を fallback として採用し dispatchFocusBlock を発火 (REQ-FEED-031)\n\nL1120-1123: Sprint 4 amendment では「EditorPane 側が空 paragraph fallback を担当」と記述していた. Sprint 5 amendment は EditorPane 廃止に伴い同責務を `FeedRow` に移管する. 旧定義は **superseded by REQ-FEED-031** とし..."
+  },
+  "context": "Per the supersession table at line 917 ('EC-FEED-016 (Sprint 4 amendment) superseded by EC-FEED-016 Sprint 5 amendment') the Sprint 4 prose at line 695 is meant to be obsolete. But it remains in-place as the AC of REQ-FEED-024, which is itself only 'amended' by REQ-FEED-029 (subscriber rerouted, emit unchanged). A reader of REQ-FEED-024's edge-case section would still learn that 'EditorPane generates the fallback' which is no longer true. EditorPane no longer exists per REQ-FEED-028.",
+  "recommendedFix": "Either (a) edit line 695 in-place to replace 'EditorPane receives focusedBlockId: null and generates a default empty paragraph block on its own initiative' with 'See EC-FEED-016 (Sprint 5 amendment) at line 1115 — FeedRow generates the fallback'; or (b) wrap line 695 in a strikethrough/superseded marker similar to how REQ-FEED-024 'Sprint 3 original payload shape (now superseded by Sprint 4)' is wrapped at line 643."
+}

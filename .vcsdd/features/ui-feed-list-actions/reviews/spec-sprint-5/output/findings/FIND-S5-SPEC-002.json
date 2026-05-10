@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-002",
+  "severity": "high",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "requirement": "REQ-FEED-030, REQ-FEED-029",
+  "summary": "REQ-FEED-030 gates BlockElement mounting on `viewState.editingStatus`, but `viewState` is mirrored from `feed_state_changed` (per existing PROP-FEED-007a/PROP-FEED-S4-006) while the new `editingSessionState` (from `editing_session_state_changed`) is a separate state slice. The relationship between `viewState.editingStatus` and `editingSessionState.kind` is never specified, and the source-of-truth for FeedRow mount decisions is ambiguous.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "994, 963, 982",
+    "snippet": "L994 (REQ-FEED-030 EARS): WHEN `viewState.editingStatus ∈ {'editing','saving','switching','save-failed'}` AND `viewState.editingNoteId === self.noteId` THEN `FeedRow` は ... blocks を ... レンダリングし ... | L963 (REQ-FEED-029): editingSessionState: EditingSessionStateDto を `$state` に保持する | L982: feedReducer が `DomainSnapshotReceived` を処理する時点で常に最新の `editingSessionState` がローカルに到達済みである"
+  },
+  "context": "Two state sources now exist: (1) `viewState` (from feedReducer mirror of `feed_state_changed`) which holds `editingStatus`/`editingNoteId`, and (2) `editingSessionState` (from new editingSessionChannel.ts subscriber) which holds `blocks`/`focusedBlockId`/`lastSaveResult`. REQ-FEED-030 EARS guards on (1) but the data being rendered (blocks) lives in (2). Spec never says: (a) which state is authoritative when they disagree, (b) what FeedRow does if `viewState.editingNoteId === self.noteId` but `editingSessionState.currentNoteId !== self.noteId` (transient mismatch during transitions), (c) what happens if `editingSessionState` has not yet arrived (initial mount before first event).",
+  "recommendedFix": "Add an explicit 'State source-of-truth' subsection to REQ-FEED-030 that: (1) declares `viewState.editingStatus`/`viewState.editingNoteId` as authoritative for mount/unmount decisions; (2) declares `editingSessionState.{blocks, focusedBlockId, lastSaveResult}` as the data displayed when (1) authorizes mounting; (3) specifies the behaviour when `editingSessionState.currentNoteId !== viewState.editingNoteId` (e.g., 'render the last consistent snapshot' or 'hold render until next event'); (4) specifies behaviour when `editingSessionState` has not yet been received (initial render path)."
+}

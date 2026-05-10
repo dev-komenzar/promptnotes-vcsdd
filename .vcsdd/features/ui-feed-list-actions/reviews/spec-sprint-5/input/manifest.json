@@ -1,0 +1,41 @@
+{
+  "reviewType": "spec",
+  "feature": "ui-feed-list-actions",
+  "sprint": 5,
+  "iteration": 1,
+  "phase": "1c",
+  "mode": "strict",
+  "artifactsToReview": [
+    ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md"
+  ],
+  "scopeFilter": "Sprint 5 Extensions only (REQ-FEED-028..033, EC-FEED-016 S5 amendment, EC-FEED-018..020) and §14 Sprint 5 Verification Extensions (PROP-FEED-S5-001..015). Sprint 1-4 sections may be referenced for cross-impact but should not be re-reviewed.",
+  "reviewDimensions": [
+    "spec_fidelity",
+    "verification_readiness"
+  ],
+  "outputDir": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/output/",
+  "context": {
+    "migrationDoc": "docs/tasks/block-based-ui-spec-migration.md",
+    "supersededRequirements": [
+      "REQ-FEED-023 (Sprint 2) by REQ-FEED-028",
+      "REQ-FEED-024 (Sprint 3) amended by REQ-FEED-029 (subscriber rerouted, emit unchanged)",
+      "EC-FEED-016 (Sprint 4 amendment) by REQ-FEED-031 (FeedRow side fallback)"
+    ],
+    "preservedRequirements": [
+      "EC-FEED-017 emit ordering (Rust-side invariant unchanged)"
+    ],
+    "newRequirements": [
+      "REQ-FEED-028 (single-column layout)",
+      "REQ-FEED-029 (editing_session_state_changed subscriber rerouting)",
+      "REQ-FEED-030 (FeedRow embeds BlockElement[] for editing note)",
+      "REQ-FEED-031 (FeedRow-side empty paragraph fallback)",
+      "REQ-FEED-032 (emit ordering preservation - UI obligation)",
+      "REQ-FEED-033 (regression-prevention grep gates)"
+    ],
+    "newProofObligations": "PROP-FEED-S5-001 through PROP-FEED-S5-015 (15 obligations)",
+    "crossFeatureContract": [
+      ".vcsdd/features/ui-block-editor/specs/behavioral-spec.md REQ-BE-001..027 (BlockElement, SlashMenu, BlockDragHandle, SaveFailureBanner, BlockEditorAdapter primitive contracts)"
+    ]
+  }
+}

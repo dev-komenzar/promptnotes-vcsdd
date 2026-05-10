@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-007",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "requirement": "REQ-FEED-029 option (b) vs REQ-FEED-032 AC",
+  "summary": "REQ-FEED-029 admits two implementation choices (a centralized subscription, b per-row subscription) and declares both 'spec 準拠'. But REQ-FEED-032 AC L1073 requires that, by the time `feedReducer.DomainSnapshotReceived` runs, the editingSessionState has reached its destination. Option (b) makes editingSessionState a per-row local store that the centralized `feedReducer` cannot read.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "961-966, 982, 1071-1073",
+    "snippet": "L962-964: (a) 集中購読: ...editingSessionState を $state に保持... | (b) 行ごと購読: 各 FeedRow が listen を持ち, payload の currentNoteId === self.noteId のときのみ自身の editingSessionState を更新する.\n\nL965-966: 実装注: (a) は subscriber が 1 つで済み GC に優しいため推奨. (b) は ... 非推奨だが, spec 上は禁止しない.\n\nL982: feedReducer が DomainSnapshotReceived を処理する時点で常に最新の editingSessionState がローカルに到達済みである.\n\nL1073: mock emitter で editing_session_state_changed → feed_state_changed の順に emit したとき, feedReducer.DomainSnapshotReceived 処理時点で editingSessionState が新しい値を持つこと."
+  },
+  "context": "feedReducer is pure and total; it has no access to per-row Svelte $state. The 'editingSessionState がローカルに到達済み' invariant only holds when there is a single shared editingSessionState that feedReducer (or its caller) can observe. Option (b) makes that invariant unobservable from feedReducer's perspective. Therefore option (b) cannot pass PROP-FEED-S5-005 as currently described.",
+  "recommendedFix": "Either (1) tighten REQ-FEED-029 to allow only option (a) (single centralized subscription in +page.svelte or FeedList), and remove the option (b) prose; OR (2) reformulate REQ-FEED-032 AC L1073 to be option-agnostic (e.g., 'each FeedRow that needs editingSessionState has it available before its rendering pass that follows DomainSnapshotReceived') and update PROP-FEED-S5-005 to test both arrangements separately."
+}

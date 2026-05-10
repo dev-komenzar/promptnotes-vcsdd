@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-004",
+  "severity": "high",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "requirement": "REQ-FEED-031",
+  "summary": "REQ-FEED-031 AC L1049 / PROP-FEED-S5-011 require fallback idempotency ('同一 editingNoteId への切り替えで fallback が 2 回連続発火しない') but no state-ownership mechanism is specified. The conditions distinguishing 'first mount' from 'second mount' are not pinned, so implementations may pass the test trivially.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1044-1054",
+    "snippet": "AC L1049: 同一 editingNoteId への切り替えで fallback が **2 回連続で発火しない**（最初の fallback で生成した block id を保持）"
+  },
+  "context": "Where is the generated block id 'held'? In FeedRow.svelte's $state? Across re-mounts (when FeedRow unmounts/remounts because of filter changes)? Across separate `editing_session_state_changed` events with the same `currentNoteId` but blocks still absent? The spec says 'block id を保持' but does not require: (a) a per-FeedRow $state slot, (b) lifetime semantics tied to `editingNoteId` change vs FeedRow lifecycle, (c) a pure helper that decides 'should I generate a new UUID this time?'. Phase 2a will write a test that mounts FeedRow once, waits, observes 1 dispatch — this passes trivially without proving idempotency under the realistic case (two events with absent blocks while FeedRow stays mounted).",
+  "recommendedFix": "Add to REQ-FEED-031 a 'Fallback state ownership' subsection that mandates: (1) the generated block id is held in FeedRow.svelte $state keyed by editingNoteId; (2) the fallback only fires if `editingNoteId` differs from the last fallback's editingNoteId OR no prior fallback exists; (3) PROP-FEED-S5-011 must include a regression case where two `editing_session_state_changed` events arrive in sequence with `blocks` undefined and the same `currentNoteId`, and `dispatchFocusBlock` is called exactly once, AND the same UUID is reused both times (no new UUID generated)."
+}

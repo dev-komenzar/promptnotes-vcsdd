@@ -1,0 +1,20 @@
+{
+  "id": "FIND-S5-SPEC-iter2-006",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "requirement": "PROP-FEED-S5-005",
+  "summary": "PROP-FEED-S5-005's iter-2 fix prescribes asserting `expect($state.editingSessionState.currentNoteId).toBe(...)` 'inside' the feed_state_changed handler (= where feedReducer.DomainSnapshotReceived runs), but the architectural mechanism for triggering `expect(...)` from inside a synchronous handler call is unspecified. Phase 2a writers may interpret 'inside' as 'after the dispatch returns', which is exactly the weak observability the iter-1 finding warned against.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "709",
+    "snippet": "S5-005 ... (b) `feed_state_changed` ハンドラ (= `feedReducer.DomainSnapshotReceived` を呼ぶ箇所) 内で `expect($state.editingSessionState.currentNoteId).toBe(editingPayload.state.currentNoteId)` を assert する (= subscriber が同期 `$state` 更新済みであることを `feedReducer` 呼び出し中に観測); (c) `editingSessionChannel` ハンドラ内に `await` を含まないことは PROP-FEED-S5-012 で別途 grep 監査. 両条件 PASS で本 PROP PASS"
+  },
+  "context": "(1) feedReducer is pure (per existing §1-§13 architecture). The reducer's argument is `(state, action) => state`, not a closure over `$state.editingSessionState`. (2) To assert 'inside' the reducer call, the test must instrument either (a) the reducer with vi.spyOn that runs `expect` in a side-effect spy callback before delegating, OR (b) the dispatcher/wrapper that calls feedReducer with a similar spy. (3) The PROP description does not specify which mechanism is required. A naive Phase 2a writer reading 'inside' may simply do `mockEmit('feed_state_changed', ...); expect(...)` after the second emit — which observes state AFTER the synchronous dispatch returns, not DURING. (4) If the editingSessionChannel handler defers via queueMicrotask, the after-dispatch read would still observe the updated state (because flushSync happens during the test's next tick). The PROP would pass even with a buggy async handler. (5) The supplementary check (c) (PROP-FEED-S5-012 grep for await/Promise.then/setTimeout/queueMicrotask in handler) does provide a defense-in-depth guard, but PROP-FEED-S5-005 alone is meant to be the behavioral correctness check and currently is not strong enough.",
+  "evidence": {
+    "primary": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:709",
+    "crossReference": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:716 (PROP-FEED-S5-012 grep audit)"
+  },
+  "recommendedFix": "Tighten PROP-FEED-S5-005 by specifying the spy mechanism: 'The test SHALL wrap feedReducer with vi.spyOn that runs `expect($state.editingSessionState.currentNoteId).toBe(editingPayload.state.currentNoteId)` inside the spy callback BEFORE delegating to the original reducer. The spy MUST be invoked exactly once during the synchronous emit pair, and the assert must run before the delegated reducer call.' Alternatively, restructure the test as: emit editing_session_state_changed without flushing; verify $state.editingSessionState is updated synchronously by reading it on the same call stack (e.g., wrap mockEmit so its return value reflects post-handler state). Either way, remove ambiguity about WHERE on the call stack the assert runs.",
+  "routeToPhase": "1c"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "FIND-S5-SPEC-iter2-002",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "requirement": "PROP-FEED-S5-013",
+  "summary": "PROP-FEED-S5-013 was rewritten to use a `git diff <sprint-4-baseline-tag>..HEAD` positive evidence check, but the example tag `vcsdd/ui-feed-list-actions/sprint-4-complete` is unverified to exist, and the alternative `<sprint-4-baseline-tag-or-rev>` placeholder leaves Phase 5 free to choose any rev — undermining the 'positive evidence' framing.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "717",
+    "snippet": "PROP-FEED-S5-013 ... Sprint 4 完了時タグ `vcsdd/ui-feed-list-actions/sprint-4-complete` (= sprint-4 phase 6 完了 commit) からの `git diff` ... 実行コマンド: `git diff <sprint-4-baseline-tag-or-rev>..HEAD -- promptnotes/src-tauri/src/editor.rs promptnotes/src-tauri/src/feed.rs | grep -E '^[+-].*emit\\(.(editing_session_state_changed|feed_state_changed).' | grep -vE '^(\\+\\+\\+|---)'` exit code 1"
+  },
+  "context": "(1) The recent git log shows `vcsdd(N,...)` commits for ui-block-editor convergence and ui-feed-list-actions sprint-4 (commit cfb3194 `vcsdd(2): ui-feed-list-actions sprint-4 — Tier 0 + Tier 5 gates + REQ-EDIT rename`). However that commit is NOT a tag, and there is no documented git tag scheme `vcsdd/<feature>/sprint-N-complete` in the repository. (2) The PROP allows the verifier to substitute any `<sprint-4-baseline-tag-or-rev>` — a Phase 5 verifier could trivially pick `HEAD~1` and the diff would be vacuously empty. (3) The grep pattern `^[+-].*emit\\(.(editing_session_state_changed|feed_state_changed).` looks for emit lines but does not anchor on Rust function context — a refactor that moves the emit out of `make_editing_state_changed_payload` into a helper but preserves the literal call would pass the audit while changing semantics. (4) The 'or-rev' escape hatch + missing tag means there is no deterministic baseline that Phase 5 can mechanically resolve.",
+  "evidence": {
+    "primary": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:717",
+    "crossReference": "git log output in environment context (no `vcsdd/ui-feed-list-actions/sprint-4-complete` tag visible)"
+  },
+  "recommendedFix": "Resolve baseline ambiguity by one of: (a) inline the exact 40-char commit SHA (or named tag that Phase 6 of Sprint 4 actually created) into PROP-FEED-S5-013 so verifier has zero degrees of freedom; (b) add a Phase 2a obligation to create the tag `vcsdd/ui-feed-list-actions/sprint-4-baseline` pointing at commit cfb3194 (or whichever commit represents Sprint 4 phase 6 PASS), and require this as a precondition for Sprint 5 Phase 5; (c) replace the diff approach with a function-level snapshot: copy the current `make_editing_state_changed_payload` and `select_past_note` source bytes into `tests/fixtures/sprint-4-baseline/` and assert byte-equality against current source. Whichever option, remove the `<...-or-rev>` placeholder so the PROP is self-contained.",
+  "routeToPhase": "1c"
+}

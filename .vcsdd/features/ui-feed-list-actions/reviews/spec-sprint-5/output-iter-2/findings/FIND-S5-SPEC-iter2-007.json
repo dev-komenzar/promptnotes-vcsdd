@@ -1,0 +1,20 @@
+{
+  "id": "FIND-S5-SPEC-iter2-007",
+  "severity": "low",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "requirement": "REQ-FEED-030 §Mount/unmount 2x2 truth table",
+  "summary": "REQ-FEED-030 row 2 of the 2x2 truth table contains a parenthetical clarification ('(`editingNoteId` が null でも row は描画される)') that contradicts the row's predicate (`editingNoteId === self.noteId`). Combined with note L1038 ('表 row 2 ... は実質到達不能だが'), the documentation is internally confusing.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1029-1038",
+    "snippet": "L1034: | `'idle'` | `true` (`editingNoteId` が null でも row は描画される) | 0 | 表示 |\nL1038: > **注**: `editingStatus === 'idle'` のとき `viewState.editingNoteId === null` がほぼ常に成立するため (`feedReducer` の mirror 規約)、表 row 2 (`editingStatus === 'idle' AND editingNoteId === self.noteId`) は実質到達不能だが、AC では防御的に「0 個」を assert する."
+  },
+  "context": "(1) The truth table column header is `editingNoteId === self.noteId`. Row 2 evaluates this column as `true`, which by definition requires `editingNoteId === self.noteId` AND therefore `editingNoteId !== null` (assuming self.noteId is non-null). The parenthetical 'editingNoteId が null でも row は描画される' is logically incompatible with the column's `true` value. (2) The note at L1038 then states the row is 'practically unreachable' because idle implies editingNoteId === null. This makes the AC for cell 2 (PROP-FEED-S5-006 cell 2 at line 710) test an architecturally impossible state — defensible as 'paranoid coverage', but the parenthetical confuses what the test is actually exercising. (3) PROP-FEED-S5-006 cell 2 says 'editingStatus === idle AND editingNoteId === self.noteId' — to instantiate this in a vitest+jsdom test, the test must construct a viewState that violates the feedReducer mirror invariant. The test setup is non-trivial and the spec does not say how to legitimately reach this state. (4) Risk: Phase 2a writer may either (i) skip cell 2 because it is unreachable, or (ii) construct an invalid viewState to pass the AC, which constitutes test-of-non-real-state.",
+  "evidence": {
+    "primary": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1034, :1038",
+    "crossReference": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:710"
+  },
+  "recommendedFix": "Either (a) remove the parenthetical from row 2 ('editingNoteId が null でも row は描画される' is a comment about a different scenario where editingNoteId is null and the row still renders — not about cell 2's column predicate); OR (b) explicitly mark cell 2 as a 'defensive test' with a note in PROP-FEED-S5-006 stating: 'cell 2 is constructed by injecting a synthetic viewState that is impossible under feedReducer invariants — its purpose is to ensure FeedRow does not crash if a future bug allows this state'. Add a positive AC at the predicates layer (an existing PROP-FEED-XXX) confirming feedReducer never produces (editingStatus=idle AND editingNoteId !== null), making cell 2 a true defensive boundary check.",
+  "routeToPhase": "1c"
+}

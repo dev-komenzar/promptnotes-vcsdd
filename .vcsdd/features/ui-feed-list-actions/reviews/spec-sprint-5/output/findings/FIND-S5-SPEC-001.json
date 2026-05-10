@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-001",
+  "severity": "high",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "requirement": "REQ-FEED-029",
+  "summary": "REQ-FEED-029 references the '5-arm EditingSessionStateDto' wire shape but only the Editing arm is pinned in this spec. The four other arms (Idle, Saving, Switching, SaveFailed) have no enumerated wire shape that the new subscriber must rehydrate.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "968-972",
+    "snippet": "ペイロード契約: event.payload.state の形状は **REQ-FEED-024 Sprint 4 amendment と同一** (`EditingSessionStateDto` 5-arm). ... TS 受信側は `EditingSessionStateDto` 5-arm の rehydration ロジックで処理する（既存 `ui-editor` Sprint 8 の rehydration 知識を `feed/` 側へ移管）"
+  },
+  "context": "REQ-FEED-024 Sprint 4 amendment (lines 644-666) explicitly defines only the Editing arm's wire shape. The Idle/Saving/Switching/SaveFailed arms have no field-level contract in this spec. Migration doc explicitly forbids reading from `.vcsdd/features/ui-editor/` for Sprint 5 work, so 'old ui-editor Sprint 8 rehydration knowledge' is not safely usable. Sprint 5 must either (a) inline the 5-arm definitions into REQ-FEED-029, or (b) cite a still-authoritative source (e.g., docs/domain/code/ts/src/capture/states.ts EditingState) and pin the JSON wire shape explicitly.",
+  "recommendedFix": "Add a Sprint 5 'Wire shape table for EditingSessionStateDto 5-arm' section under REQ-FEED-029 enumerating each arm's TypeScript type and serialized JSON shape (Idle, Editing, Saving, Switching, SaveFailed). Cite `docs/domain/code/ts/src/capture/states.ts` and `editor.rs` as the source of truth. Without this the Sprint 5 subscriber cannot deterministically dispatch on `payload.state.kind` (or whatever discriminator)."
+}

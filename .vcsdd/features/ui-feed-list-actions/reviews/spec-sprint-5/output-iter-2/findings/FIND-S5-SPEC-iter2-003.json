@@ -1,0 +1,20 @@
+{
+  "id": "FIND-S5-SPEC-iter2-003",
+  "severity": "critical",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "requirement": "REQ-FEED-031 (FeedRow fallback) vs Rust handler existence",
+  "summary": "REQ-FEED-031 (resolving FIND-S5-SPEC-006) now mandates `dispatchInsertBlockAtBeginning` to pre-register the synthetic block with Rust BEFORE `dispatchFocusBlock`. But REQ-FEED-030 line 1078 explicitly disclaims Rust-side implementation, and there is NO PROP-FEED-S5-XXX that verifies the Tauri command `editor_insert_block_at_beginning` exists or behaves correctly on the Rust side. The fallback (the entire purpose of REQ-FEED-031) silently degrades to preview if the Rust command is absent or rejects.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1078, 1101-1108, 1152",
+    "snippet": "L1078: 'Sprint 5 では Rust 側 handler の実装は **既存または別 feature の責務**で、本 REQ-FEED-030 は factory が「上記 command name へ正しく invoke する」ことのみを規定する (Rust handler 側の挙動は本 spec の対象外)'\n\nL1101: 'まず `BlockEditorAdapter::dispatchInsertBlockAtBeginning({ noteId, newBlock })` を呼び Rust に当該 block を pre-register し'\n\nL1108: 'Rust 側 handler の挙動契約は ui-block-editor REQ-BE-001..026 のスコープ外 (Rust 側別 feature) であり、本 REQ-FEED-031 は dispatch 順序 (insert → focus) のみを規定する'\n\nL1152: 'dispatchInsertBlockAtBeginning が reject (Rust 側エラー): fallback 中断、fallbackAppliedFor は 設定しない (次回再試行可能にする)。console.warn を残し、preview 表示にデグレード'"
+  },
+  "context": "(1) The whole reason FIND-S5-SPEC-006 was rated critical was that client-generated UUIDs cannot legally be focused without Rust knowing about them. The iter-2 fix introduces an `insert` dispatch to make the block known to Rust. (2) But the fix is hollow if the Rust command does not exist. The Tauri runtime would return an error like 'command editor_insert_block_at_beginning not found' to the invoke promise, the `try/catch` at L1152 would catch it, and the user sees a preview row instead of an editable empty paragraph. (3) The user-visible failure mode is identical to the pre-iter-2 bug (broken empty-note editing) — only the failure path differs. (4) Reading the verification architecture, no PROP-FEED-S5-XXX (S5-001..S5-021) checks Rust-side existence of the 16 `editor_*` commands. PROP-FEED-S5-017 only verifies the TS factory invokes them by name. (5) REQ-FEED-031 makes degradation an Edge Case (L1152) rather than failing loudly — this normalizes the bug. (6) Cross-feature: ui-block-editor REQ-BE-026 also does not pin Rust handler existence; it only specifies the TS adapter shape.",
+  "evidence": {
+    "primary": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1101-1108, :1152",
+    "crossReference": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:701-725 (no PROP for Rust handler existence)"
+  },
+  "recommendedFix": "Either (a) add an explicit cross-feature contract: name a feature/spec that owns the Rust `editor_insert_block_at_beginning` (and the other 15) handlers, and add a Sprint 5 PROP that verifies the Rust handler set exists at compile time (e.g., `cargo check` against a binding crate that enumerates all 16 commands; or a `cargo test` that calls each handler with a minimal payload and asserts non-error response); OR (b) downgrade REQ-FEED-031's dispatch chain to be best-effort and add a positive AC that fallback rendering DOES still produce a usable empty paragraph in the absence of Rust support (i.e., FeedRow renders a local-only BlockElement with the UUID, and only attempts dispatch as a soft sync); OR (c) move the synthetic block creation to Rust (have Rust auto-create empty paragraph during select_past_note for empty-note case) — same as iter-1 FIND-S5-SPEC-006 option (c) — and remove client-side UUID generation entirely. Without one of these, the iter-2 fix to FIND-S5-SPEC-006 is illusory.",
+  "routeToPhase": "1c"
+}

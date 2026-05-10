@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-012",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "requirement": "PROP-FEED-S5-013",
+  "summary": "PROP-FEED-S5-013 is purely a Sprint 4 regression check (re-run wire_audit.sh and PROP-FEED-S4-008). It does not generate any new evidence for Sprint 5. If Sprint 5 doesn't touch editor.rs / feed.rs::select_past_note then this PROP contributes zero verification of Sprint 5 work.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "716",
+    "snippet": "S5-013 | REQ-FEED-032 | 既存 PROP-FEED-S4-008 (Sprint 4 で確立した emit 順序検証) の **継承確認** — Sprint 5 で editor.rs::make_editing_state_changed_payload および feed.rs::select_past_note の emit 順序が変更されていないこと. 実行コマンド: bash promptnotes/src-tauri/tests/wire_audit.sh および対応する cargo test が PASS."
+  },
+  "context": "REQ-FEED-032 declares 'Sprint 5 で UI 側に課す追加義務' (line 1067) — the Sprint 5 obligation is on the UI subscriber (synchronous handler). The Rust-side invariant is inherited from Sprint 4 and shouldn't change. But PROP-FEED-S5-013 verifies the Rust side, not the UI side. The UI synchronous-handler obligation is covered by S5-012 (which has its own issue per FIND-S5-SPEC-010). PROP-FEED-S5-013 provides no positive Sprint 5 evidence beyond running an existing Sprint 4 script.",
+  "recommendedFix": "Either (1) replace PROP-FEED-S5-013 with a positive 'Rust files unchanged' check: e.g., `git diff --quiet vcsdd/ui-feed-list-actions/phase-3-iter2 -- promptnotes/src-tauri/src/editor.rs promptnotes/src-tauri/src/feed.rs` from the Sprint 4 baseline tag, asserting zero diff in those specific functions; OR (2) recast PROP-FEED-S5-013 as a cross-feature regression gate that explicitly invokes Sprint 4's PROP-FEED-S4-008 and is tracked separately in the convergence signals as 'no Sprint 5 work introduced an emit-order change'. Currently it reads as a duplicated obligation with no Sprint 5 surface."
+}

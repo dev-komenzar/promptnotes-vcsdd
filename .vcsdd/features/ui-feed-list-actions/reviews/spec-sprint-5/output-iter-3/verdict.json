@@ -1,0 +1,117 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "1c",
+  "sprint": 5,
+  "iteration": 3,
+  "iterationLimit": 3,
+  "timestamp": "2026-05-10T02:30:00Z",
+  "reviewer": "adversary",
+  "freshContext": true,
+  "iter1FindingsResolved": "16/16",
+  "iter2FindingsResolved": "7/7",
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "iter1Resolved": [
+        "FIND-S5-SPEC-001",
+        "FIND-S5-SPEC-002",
+        "FIND-S5-SPEC-003",
+        "FIND-S5-SPEC-004",
+        "FIND-S5-SPEC-005",
+        "FIND-S5-SPEC-006",
+        "FIND-S5-SPEC-007",
+        "FIND-S5-SPEC-008"
+      ],
+      "iter2Resolved": [
+        "FIND-S5-SPEC-iter2-001",
+        "FIND-S5-SPEC-iter2-003",
+        "FIND-S5-SPEC-iter2-005",
+        "FIND-S5-SPEC-iter2-007"
+      ],
+      "iter1Unresolved": [],
+      "iter2Unresolved": [],
+      "iter3NewFindings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "902-1273",
+          "description": "Sprint 5 Extensions セクション全体を再々読了。検証項目: (1) REQ-FEED-030 §Adapter command-mapping table (1071-1090) の全 16 行に `issuedAt` フィールドが含まれることを確認 (iter2-001 解消)。(2) REQ-FEED-030 §Sprint 5 Rust handler scope split (1058-1094) で Group A 7 + Group B 9 の split が明示され、REQ-FEED-031 が best-effort dispatch + try/catch を mandate (1117, 1123-1127) し、Sprint 5 の既知制約 (block edit が Rust に persist しない) が L1127/L1179 で明文化されている (iter2-003 解消)。(3) REQ-FEED-031 fallback restart 条件 (iii) (1149) と非空到達時の `fallbackAppliedFor=null` リセット (1153) により undefined→non-empty→undefined sequence で新 UUID 発番が保証される (iter2-005 解消)。(4) 2x2 truth table row 2 から問題の括弧表記が削除され (1034)、defensive-test 注記 (1038) が追加された (iter2-007 解消)。(5) Group A/B split は migration doc 'Rust バックエンドの変更 → UI spec 確定後に別タスクで扱う' と整合。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-block-editor/specs/behavioral-spec.md",
+          "lineRange": "217-237, 689-727",
+          "description": "REQ-BE-002b/003 の `issuedAt` 引数要求と REQ-FEED-030 §Adapter command-mapping table の `issuedAt` 含有が end-to-end で整合することを cross-check 済み。REQ-BE-026 16 メソッド list と REQ-FEED-030 Group A/B split の合計 16 が一致。"
+        },
+        {
+          "type": "file",
+          "location": "docs/tasks/block-based-ui-spec-migration.md",
+          "lineRange": "15-19, 22-37",
+          "description": "migration doc の scope-out 宣言 (`Rust バックエンドの変更 → UI spec 確定後に別タスクで扱う`) を確認。Sprint 5 の Group B Rust handler 不在許容は migration doc Step 2 のスコープと整合。"
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "iter1Resolved": [
+        "FIND-S5-SPEC-009",
+        "FIND-S5-SPEC-010",
+        "FIND-S5-SPEC-011",
+        "FIND-S5-SPEC-012",
+        "FIND-S5-SPEC-013",
+        "FIND-S5-SPEC-014",
+        "FIND-S5-SPEC-015",
+        "FIND-S5-SPEC-016"
+      ],
+      "iter2Resolved": [
+        "FIND-S5-SPEC-iter2-002",
+        "FIND-S5-SPEC-iter2-004",
+        "FIND-S5-SPEC-iter2-006"
+      ],
+      "iter1Unresolved": [],
+      "iter2Unresolved": [],
+      "iter3NewFindings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "682-787",
+          "description": "§14 Sprint 5 Verification Extensions 全体 (PROP-FEED-S5-001..S5-022, Test Strategy, Coverage Matrix, Phase 2/5 Gates) を再々読了。検証項目: (1) PROP-FEED-S5-013 (line 717) は baseline タグ `vcsdd/ui-feed-list-actions/sprint-4-baseline` の存在を Phase 1c 完了の precondition として明記し、`<...-or-rev>` placeholder は除去された (iter2-002 解消)。(2) §14 末尾 (785-787) の orphan dangling table row が削除され、注記で §13 の正規参照が示された (iter2-004 解消)。(3) PROP-FEED-S5-005 (line 709) は spy mechanism を `vi.spyOn(feedReducerModule, 'feedReducer')` で具体化し、spy callback 内 delegate 前の assert 位置を明記した (iter2-006 解消)。(4) PROP-FEED-S5-022 (line 726) が Group B reject acceptance を best-effort 動作の positive evidence として網羅し、`feed-row-best-effort-dispatch.dom.vitest.ts` が新規 test path として登録された (iter2-003 verification 側カバレッジ)。(5) PROP-FEED-S5-011 (line 715) は 5 シナリオ ((a) 基本順序+reject, (b) 連続 undefined, (c) note 切替, (d) undefined→non-empty→undefined, (e) only non-empty) を網羅し iter2-005 の restart 条件 (iii) を test (d) で明示的に検証する。Coverage Matrix (line 767/768) も S5-022 を REQ-FEED-030/031 に紐付け済み。"
+        },
+        {
+          "type": "git-ref",
+          "location": ".git/refs/tags/vcsdd/ui-feed-list-actions/sprint-4-baseline",
+          "description": "baseline タグの存在を loose ref ファイルから確認: commit `d30ab135d5dba9faff00a9bab49c97c6b705ae24` (PROP-FEED-S5-013 で言及される `d30ab13` と一致)。Phase 5 verifier が `git rev-parse vcsdd/ui-feed-list-actions/sprint-4-baseline` を実行すれば成功する。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "742-746",
+          "description": "Test Strategy table (738-746) で全 PROP-FEED-S5-XXX が test path に紐付けられており、PROP-FEED-S5-022 用の `feed-row-best-effort-dispatch.dom.vitest.ts` も追加されている。Phase 2a で test files を作成する根拠が揃っている。"
+        }
+      ]
+    }
+  },
+  "overallVerdict": "PASS",
+  "convergenceSignals": {
+    "findingCount": 0,
+    "newFindings": 0,
+    "iter1Carryover": 0,
+    "iter2Carryover": 0,
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "spec",
+    "manifestPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/input/manifest.json",
+    "scopeFilter": "Sprint 5 Extensions only (REQ-FEED-028..033, EC-FEED-016 S5 amendment, EC-FEED-018..020) and §14 Sprint 5 Verification Extensions (PROP-FEED-S5-001..022)"
+  },
+  "calibrationNotes": {
+    "scopeAlignmentJustification": "iter-2 finding 003 (cross-feature Rust handler contract gap) は Sprint 5 で resolution option (b) 'best-effort dispatch + Rust handler 不在許容' を採用した。これは migration doc が明示的に 'Rust バックエンドの変更 → UI spec 確定後に別タスクで扱う' と宣言しているため scope-aligned. spec は (i) Group A/B split table で 16 メソッドの handler 存在状態を明示、(ii) REQ-FEED-031 で best-effort/try-catch/UI 継続を mandate、(iii) Sprint 5 既知制約 (block edits が Rust に persist しない) を L1127/L1179 で明文化、(iv) PROP-FEED-S5-022 で Group B reject acceptance の DOM-level 検証を追加、と complete に対応している。Sprint 5 中の user-visible regression (past note edit が一時的に Rust persist されない) は product 判断であり spec adversarial concern ではない。",
+    "minorObservations": [
+      "AC L1172 'Idempotency 強化テスト 4 シナリオ (a)/(b)/(c)/(d)' と PROP-FEED-S5-011 '5 シナリオ (a)/(b)/(c)/(d)/(e)' で letter labeling が offset するが、合計シナリオ数 (1+4 vs 5) は等価で実装上の混乱はない。",
+      "`lastBlocksWasNonEmpty` $state の per-note vs per-row lifecycle は明示されていないが、L1160 で `fallbackAppliedFor` と並列管理が示唆され、PROP-FEED-S5-011 シナリオ (b)(c) の AC で挙動が一意に決定するため Phase 2a での実装迷子は実害なし。",
+      "PROP-FEED-S5-005 の `window.__editingSessionStateForTest` fixture は test setup で wrap する解釈と production code に hook を埋める解釈の二通りあり得るが、'production code には影響しない' の明示により前者解釈が妥当であり、Phase 2a で実装可能。"
+    ]
+  }
+}

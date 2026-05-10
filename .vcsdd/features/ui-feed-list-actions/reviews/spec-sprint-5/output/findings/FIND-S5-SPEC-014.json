@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-014",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "requirement": "EC-FEED-018, EC-FEED-019, EC-FEED-020",
+  "summary": "Three new Sprint 5 edge cases (EC-FEED-018 filter excludes editingNoteId, EC-FEED-019 double-click race, EC-FEED-020 handler-late mount) are added in the Edge Case Catalog but no PROP-FEED-S5-XXX covers them. Strict mode requires each documented edge case to have a verification path.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1116-1118",
+    "snippet": "L1116 EC-FEED-018: editingNoteId が visibleNoteIds から filter で除外された → 対応する FeedRow が unmount し block primitive も破棄. ...\n\nL1117 EC-FEED-019: 同一 note への二重クリック (race) → ... feedReducer の REQ-FEED-006 ガードで no-op\n\nL1118 EC-FEED-020: editing_session_state_changed ハンドラが mount 直後に到達 → ... payload は loss する. 許容. 次の emit で復旧する"
+  },
+  "context": "Comparing with the Sprint 1-4 Coverage Matrix (verification-architecture.md §6 lines 304-317), every EC-FEED-XXX has at least one PROP. Sprint 5 introduces 3 new ECs and the §14 Coverage Matrix (lines 753-760) only maps PROPs to REQs, not to ECs. EC-FEED-018 has obvious test paths (FeedRow unmount on filter change → block primitive disposal). EC-FEED-019 is a regression check on the existing REQ-FEED-006 guard but no Sprint 5 PROP confirms the new editing surface honors that guard. EC-FEED-020 has a 'permitted loss' semantic that is testable (mount within a window where Rust has already emitted; assert no crash and recovery on next emit).",
+  "recommendedFix": "Add: (1) PROP-FEED-S5-018 EC-FEED-018: integration test — apply filter that excludes the editing note; assert `data-testid=\"block-element\"` count drops to 0 in the (now hidden) row; assert no spurious dispatch is fired; clear filter; assert blocks reappear from the last received editingSessionState. (2) PROP-FEED-S5-019 EC-FEED-019: integration test — double-click same row in saving/switching state; assert dispatchSelectPastNote count = 1. (3) PROP-FEED-S5-020 EC-FEED-020: integration test — pre-emit a synthetic event before subscribe completes; assert handler does not throw; assert subsequent emit produces correct local state. Update §14 Coverage Matrix to map ECs explicitly."
+}

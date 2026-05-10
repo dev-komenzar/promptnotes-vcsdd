@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-008",
+  "severity": "low",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "requirement": "REQ-FEED-033 vs ui-block-editor REQ-BE-027",
+  "summary": "REQ-FEED-033 forbidden-identifier grep covers `src/lib/block-editor/`, but ui-block-editor REQ-BE-027 already owns `src/lib/block-editor/` and uses a different identifier set. Two parallel, non-identical regex audits over the same directory will drift over time without an explicit ownership/delegation contract.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1080-1101",
+    "snippet": "L1095-1101 (REQ-FEED-033): grep -rnE \"\\b(EditorPanel|editorStateChannel|tauriEditorAdapter|editorReducer|editorPredicates|EditorViewState|EditorAction|EditorCommand|EditorIpcAdapter)\\b\" promptnotes/src/lib/feed/ promptnotes/src/routes/+page.svelte promptnotes/src/lib/block-editor/ ..."
+  },
+  "context": "ui-block-editor REQ-BE-027 (lines 720-727 of `.vcsdd/features/ui-block-editor/specs/behavioral-spec.md`) audits `src/lib/block-editor/` for `EditorIpcAdapter|EditorViewState|EditorAction|EditorCommand|EditingSessionStateDto|EditingSessionStatus|subscribeToState`. REQ-FEED-033 audits the same directory for `EditorPanel|editorStateChannel|tauriEditorAdapter|editorReducer|editorPredicates|EditorViewState|EditorAction|EditorCommand|EditorIpcAdapter`. The intersection is `EditorViewState`, `EditorAction`, `EditorCommand`, `EditorIpcAdapter` (4 identifiers). REQ-FEED-033 adds `EditorPanel/editorStateChannel/tauriEditorAdapter/editorReducer/editorPredicates`. REQ-BE-027 adds `EditingSessionStateDto/EditingSessionStatus/subscribeToState`. There is no statement of which feature is authoritative for the union, so a future drift (e.g., ui-block-editor adds a new forbidden identifier) will not propagate.",
+  "recommendedFix": "Add to REQ-FEED-033 an explicit delegation note: 'For src/lib/block-editor/ identifiers, the authoritative forbidden-list is maintained by ui-block-editor REQ-BE-027. REQ-FEED-033 only adds the EditorPane-specific identifiers (EditorPanel, editorStateChannel, tauriEditorAdapter, editorReducer, editorPredicates) which are not part of REQ-BE-027 because they were never moved into block-editor.' Or restrict REQ-FEED-033 grep to `src/lib/feed/` and `src/routes/+page.svelte` only and let REQ-BE-027 handle `src/lib/block-editor/`."
+}

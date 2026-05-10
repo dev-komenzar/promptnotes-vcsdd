@@ -1,0 +1,87 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "1c",
+  "sprint": 5,
+  "iteration": 2,
+  "iterationLimit": 3,
+  "timestamp": "2026-05-10T01:30:00Z",
+  "reviewer": "adversary",
+  "freshContext": true,
+  "iter1FindingsResolved": "16/16",
+  "iter1FindingsUnresolved": [],
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "FAIL",
+      "iter1Resolved": [
+        "FIND-S5-SPEC-001",
+        "FIND-S5-SPEC-002",
+        "FIND-S5-SPEC-003",
+        "FIND-S5-SPEC-004",
+        "FIND-S5-SPEC-005",
+        "FIND-S5-SPEC-006",
+        "FIND-S5-SPEC-007",
+        "FIND-S5-SPEC-008"
+      ],
+      "iter1Unresolved": [],
+      "iter2NewFindings": [
+        "FIND-S5-SPEC-iter2-001",
+        "FIND-S5-SPEC-iter2-003",
+        "FIND-S5-SPEC-iter2-005",
+        "FIND-S5-SPEC-iter2-007"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "902-1244",
+          "description": "Sprint 5 Extensions セクション全体を再読了。REQ-FEED-028..033、Adapter command-mapping table (1057-1077)、Fallback state ownership (1117-1130)、State source-of-truth (1009-1027)、2x2 truth table (1029-1038)、EC-FEED-016 strikethrough at line 695、Cross-feature delegation note (1190-1195) 確認済み。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-block-editor/specs/behavioral-spec.md",
+          "lineRange": "217-237, 689-727",
+          "description": "REQ-BE-002b dispatchFocusBlock 引数 (issuedAt 含む)、REQ-BE-026 16 dispatch メソッド、REQ-BE-027 forbidden 識別子セットを cross-check。"
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "FAIL",
+      "iter1Resolved": [
+        "FIND-S5-SPEC-009",
+        "FIND-S5-SPEC-010",
+        "FIND-S5-SPEC-011",
+        "FIND-S5-SPEC-012",
+        "FIND-S5-SPEC-013",
+        "FIND-S5-SPEC-014",
+        "FIND-S5-SPEC-015",
+        "FIND-S5-SPEC-016"
+      ],
+      "iter1Unresolved": [],
+      "iter2NewFindings": [
+        "FIND-S5-SPEC-iter2-002",
+        "FIND-S5-SPEC-iter2-004",
+        "FIND-S5-SPEC-iter2-006"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "682-784",
+          "description": "§14 Sprint 5 Verification Extensions 全体 (PROP-FEED-S5-001..S5-021, Test Strategy, Coverage Matrix, Phase Gates) を再読了。PROP-FEED-S5-005/012/013/016/017/018/019/020/021 の executable command 修正を逐行確認。"
+        }
+      ]
+    }
+  },
+  "overallVerdict": "FAIL",
+  "convergenceSignals": {
+    "findingCount": 7,
+    "newFindings": 7,
+    "iter1Carryover": 0,
+    "duplicateFindings": []
+  },
+  "reviewContext": {
+    "reviewType": "spec",
+    "manifestPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/input/manifest.json",
+    "scopeFilter": "Sprint 5 Extensions only (REQ-FEED-028..033, EC-FEED-016 S5 amendment, EC-FEED-018..020) and §14 Sprint 5 Verification Extensions (PROP-FEED-S5-001..021)"
+  }
+}

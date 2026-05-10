@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-009",
+  "severity": "high",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "requirement": "PROP-FEED-S5-002 / REQ-FEED-028",
+  "summary": "PROP-FEED-S5-002 asserts `feed-main` の `getBoundingClientRect().height` が viewport の `100vh` に一致する via vitest+jsdom. jsdom does not implement layout; getBoundingClientRect returns 0 (or hardcoded default) for unstyled elements. The assertion is not executable in the chosen tooling.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "705",
+    "snippet": "PROP-FEED-S5-002 | REQ-FEED-028 | DOM integration: +page.svelte mount 後, <main class=\"feed-main\"> の子要素に <FeedList> が存在し, EditorPanel/editor-main は存在しない. `feed-main` の `getBoundingClientRect().height` が viewport の `100vh` に一致する. | Integration | vitest + jsdom + Svelte 5 mount | false | shell — main-route.dom.vitest.ts"
+  },
+  "context": "jsdom by design does not run a CSS layout engine. `element.getBoundingClientRect()` returns a DOMRect with all-zero values for elements without explicit width/height bounding boxes set by tests. `getComputedStyle` returns empty strings for layout-affecting properties. The PROP would either pass trivially (0 === 0 if viewport=0 is also 0) or fail unconditionally. Phase 5 hardening would have to either fake the layout (which proves nothing) or skip the assertion (which leaves REQ-FEED-028's height claim unverified).",
+  "recommendedFix": "Replace the layout assertion with one of: (1) a grep on `+page.svelte` source that asserts `height: 100vh` literal exists in the `.feed-main` style block (Tier 0); (2) an inline-style attribute check on the mounted `<main>` element after Svelte applies styles (still requires that the test sets up the style tag, but is observable); (3) a Playwright/real-browser smoke test (deferred to a future sprint with explicit deferral note). Whichever option, the PROP description must match what jsdom can actually verify."
+}

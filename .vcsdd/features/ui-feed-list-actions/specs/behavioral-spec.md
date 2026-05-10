@@ -692,7 +692,7 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 - EditorPane can rehydrate correctly from the emitted payload using the existing 5-arm dispatch (cross-reference: `ui-editor` REQ-EDIT-019..023).
 
 **Edge Cases**:
-- EC-FEED-016 (Sprint 4 amendment): `note_id` not found in `note_metadata` (e.g., file deleted between scan and emit): `compose_state_for_select_past_note(note_id, None)` is called; returns `EditingSessionStateDto::Editing` with `blocks: None` (field omitted by `skip_serializing_if = "Option::is_none"`), `focused_block_id: None` (serialized as `null`), `is_note_empty: true`. EditorPane receives `focusedBlockId: null` and generates a default empty paragraph block on its own initiative.
+- EC-FEED-016 (Sprint 4 amendment — **superseded by Sprint 5 amendment, see "Sprint 5 Edge Case Catalog 追補" below**): `note_id` not found in `note_metadata` (e.g., file deleted between scan and emit): `compose_state_for_select_past_note(note_id, None)` is called; returns `EditingSessionStateDto::Editing` with `blocks: None` (field omitted by `skip_serializing_if = "Option::is_none"`), `focused_block_id: None` (serialized as `null`), `is_note_empty: true`. ~~EditorPane receives `focusedBlockId: null` and generates a default empty paragraph block on its own initiative.~~ **Sprint 5 supersedes this clause: EditorPane is abolished; FeedRow now generates the fallback (display-only synthetic block) per REQ-FEED-031.**
 - EC-FEED-017 (unchanged): `editing_session_state_changed` is always emitted before `feed_state_changed` to ensure EditorPane receives state before the feed list re-renders. This ordering is maintained in Sprint 8 Rust implementation.
 
 ---
@@ -954,44 +954,88 @@ Sprint 5 (`tag-chip-update` block migration) で実施し、その際に本 spec
 
 ### REQ-FEED-029: `editing_session_state_changed` の購読再配線 (REQ-FEED-024 amendment)
 
-**EARS**: WHEN Rust が `editing_session_state_changed` を emit する THEN UI 側では `FeedList`（または `FeedList` が委譲する FeedRow）が当該イベントを購読し、自身の `editingSessionState` 状態を更新しなければならない。`EditorPanel` / `editorStateChannel.ts` を経由した配送経路は使用してはならない。
+**EARS**: WHEN Rust が `editing_session_state_changed` を emit する THEN `+page.svelte` または `FeedList.svelte` は **唯一の集中購読** (`listen('editing_session_state_changed', ...)`) で当該イベントを受信し、結果を `editingSessionState: EditingSessionStateDto` として `$state` に保持しなければならない。`EditorPanel` / `editorStateChannel.ts` を経由した配送経路は使用してはならない。各 `FeedRow` 自身が `listen()` を呼ぶ実装は **禁止** (FIND-S5-SPEC-007 解消: 単一購読義務化)。
 
 > **Sprint 4 の REQ-FEED-024 は emit 側の契約**（Rust handler が `editing_session_state_changed` を `feed_state_changed` の前に emit する）であり、これは **Sprint 5 でも変更しない**。Sprint 5 は **subscribe 側の経路** のみを変更する。
 
-**購読経路の選択肢**（実装は (a) を推奨、(b) も spec 準拠とする）:
+**集中購読の根拠**:
+- 単一 `listen()` 購読により、subscriber lifecycle が `+page.svelte` (または `FeedList`) の mount/unmount に閉じる（GC に優しい）。
+- 行ごと購読は同時 N 行表示で listener が N 個になり、また個別行の購読タイミング差異により REQ-FEED-032 の同期更新義務 (`feedReducer.DomainSnapshotReceived` 処理時点で最新の `editingSessionState` がローカルに到達済み) を全行で保証することが困難。よって **禁止**。
 
-- (a) **集中購読**: `+page.svelte` または `FeedList.svelte` が単一の `listen('editing_session_state_changed', ...)` 購読を持ち、結果を `editingSessionState: EditingSessionStateDto` として `$state` に保持する。`editingNoteId === noteId` の `FeedRow` にのみ `blocks` / `focusedBlockId` / `lastSaveResult` などの編集スライスを props で伝播する。
-- (b) **行ごと購読**: 各 `FeedRow` が `listen('editing_session_state_changed', ...)` を持ち、payload の `currentNoteId === self.noteId` のときのみ自身の `editingSessionState` を更新する（unmount 時に unlisten）。
+**5-arm `EditingSessionStateDto` wire shape table** (FIND-S5-SPEC-001 解消):
 
-> 実装注: (a) は subscriber が 1 つで済み GC に優しいため推奨。(b) は同時に 100 行表示するシナリオで listener が 100 個になるため非推奨だが、spec 上は禁止しない。
+`event.payload.state` は以下 5 arm のいずれか（`status` フィールドが discriminator）。Source of truth: `docs/domain/code/ts/src/capture/states.ts` (`EditingState` / `IdleState` / `SwitchingState` / `SaveFailedState`) と Rust 側 `promptnotes/src-tauri/src/editor.rs` の `EditingSessionStateDto` 定義。
+
+| arm | `status` 値 | 必須フィールド | optional / 該当 arm のみ |
+|-----|-----------|--------------|------------------------|
+| (1) Idle | `'idle'` | なし (status のみ) | — |
+| (2) Editing | `'editing'` | `currentNoteId: string`、`focusedBlockId: string \| null`、`isDirty: false`、`isNoteEmpty: boolean`、`lastSaveResult: null` | `blocks?: ReadonlyArray<DtoBlock>` (Sprint 4 で追加。`Some(Vec<DtoBlock>)` のときのみ JSON 出力。`None` のときは `skip_serializing_if` でフィールド absent) |
+| (3) Saving | `'saving'` | `currentNoteId: string`、`focusedBlockId: string \| null`、`isNoteEmpty: boolean`、`isDirty: true` | — |
+| (4) Switching | `'switching'` | `currentNoteId: string`、`focusedBlockId: string \| null`、`pendingNextFocus: { noteId: string; blockId: string }`、`isNoteEmpty: boolean` | — |
+| (5) SaveFailed | `'save-failed'` | `currentNoteId: string`、`priorFocusedBlockId: string \| null`、`isNoteEmpty: boolean`、`lastSaveResult: { kind: 'failure'; reason: string; detail?: string }` | `pendingNextFocus?: { noteId: string; blockId: string } \| null` |
+
+> **TS rehydration 規約**: subscriber は `payload.state.status` で `switch` 分岐し、上表に従って各 arm の必須フィールドを取り出す。未知の `status` 値（将来の Rust 拡張）は `console.warn(...)` を残しつつ subscriber 側で no-op (UI を壊さない)。本 spec で 5-arm を spec-fiat として固定するため `ui-editor` 旧 spec を参照する必要はない（migration doc の参照禁止に整合）。
 
 **ペイロード契約**:
-- `event.payload.state` の形状は **REQ-FEED-024 Sprint 4 amendment と同一** (`EditingSessionStateDto` 5-arm)。
-- ラッパー `{ state: ... }` は Rust `editor::make_editing_state_changed_payload` が生成（変更なし）。
-- TS 受信側は `EditingSessionStateDto` 5-arm の rehydration ロジックで処理する（既存 `ui-editor` Sprint 8 の rehydration 知識を `feed/` 側へ移管）。
+- `event.payload.state` の形状は **上表の 5 arm に厳密に従う**。
+- ラッパー `{ state: ... }` は Rust `editor::make_editing_state_changed_payload` が生成（Sprint 4 変更なし）。
+- 5-arm rehydration ロジックは `editingSessionChannel.ts` (新規 module) 内に閉じる。本 module の export `subscribeEditingSessionState(handler: (state: EditingSessionStateDto) => void): () => void` は raw payload を 5-arm 型として handler に渡す。pure rehydration helper を共有する場合は `feedRowPredicates.ts` 配下ではなく `src/lib/feed/editingSessionPredicates.ts` (新規想定) に切り出す。
 
 **Subscriber 契約 (Pure / Effectful 区分)**:
-- 新規 effectful module `editingSessionChannel.ts` (または既存 `feedStateChannel.ts` 拡張) を `src/lib/feed/` に配置する。**INBOUND only**（dispatch しない、PROP-FEED-032 同様）。
-- `subscribe(handler: (state: EditingSessionStateDto) => void): () => void` を export する。
+- 新規 effectful module `src/lib/feed/editingSessionChannel.ts` を配置する。**INBOUND only**（dispatch しない、PROP-FEED-S5-021 で boundary audit）。
+- `subscribeEditingSessionState(handler: (state: EditingSessionStateDto) => void): () => void` を export する（`unsubscribe` を返す）。
 - `editorStateChannel.ts` の再活用は禁止（旧 ui-editor feature の名前空間に依存させない）。
 
 **Acceptance Criteria**:
-- `src/lib/feed/` 以下に `editing_session_state_changed` を購読する module (`editingSessionChannel.ts` または `feedStateChannel.ts` 内追加 export) が存在する (grep)。
-- `+page.svelte` または `FeedList.svelte` が当該購読を 1 回 mount し、unmount 時に unlisten する (DOM lifecycle test)。
+- `src/lib/feed/editingSessionChannel.ts` が存在し、唯一の `listen('editing_session_state_changed', ...)` 呼び出しを含む (grep)。
+- `+page.svelte` または `FeedList.svelte` が `subscribeEditingSessionState(...)` を 1 回 mount し、unmount 時に unsubscribe する (DOM lifecycle test)。
+- `src/lib/feed/FeedRow.svelte` 内に `listen('editing_session_state_changed', ...)` 呼び出しが存在しない (grep ゼロヒット — 集中購読義務 FIND-S5-SPEC-007 解消)。
 - 購読モジュールの import 元が **`src/lib/editor/` を含まない** (`editorStateChannel`/`tauriEditorAdapter` の参照ゼロ — Sprint 5 では `src/lib/editor/` 自体が物理削除済み、回帰防止 grep)。
-- イベント emit 順序 (`editing_session_state_changed` → `feed_state_changed`) が UI 受信側で守られる結果として、`feedReducer` が `DomainSnapshotReceived` を処理する時点で常に最新の `editingSessionState` がローカルに到達済みである (integration test, mock emitter)。
+- イベント emit 順序 (`editing_session_state_changed` → `feed_state_changed`) が UI 受信側で守られる結果として、`feedReducer` が `DomainSnapshotReceived` を処理する時点で常に最新の `editingSessionState` がローカルに到達済みである (integration test, mock emitter; PROP-FEED-S5-005 / REQ-FEED-032)。
 - 旧 `editorStateChannel` の subscriber registration が `src/lib/feed/` または `src/routes/` に存在しない (grep ゼロヒット)。
+- 受信ハンドラは 5-arm wire shape table の `status` discriminator で switch 分岐し、5 arm すべてを網羅する (Tier 0 tsc exhaustive check + integration tests for arms (1), (2), (4), (5))。
 
 **Edge Cases**:
 - `editing_session_state_changed` が emit されたが対応する note が `feed_state_changed` 到着前に削除された: subscriber は受信した state をいったん保持し、続く `feed_state_changed` 受信で `editingNoteId` が `null` または別 note に切り替わったら local state を破棄する。
-- 多重購読: implementation (a) を選ぶ場合は `+page.svelte` または `FeedList` の `$effect(() => onMount; return onUnmount)` で唯一性を担保する。implementation (b) を選ぶ場合は各 FeedRow の lifecycle に責任を持つ。
-- TS 側で 5-arm payload の `kind` が想定外の文字列 (将来の Rust 拡張): subscriber は warning ログを残しつつ無視する (UI を壊さない)。
+- TS 側で 5-arm payload の `status` が wire shape table の値以外 (将来の Rust 拡張): subscriber は `console.warn(...)` を残しつつ payload を無視する (UI を壊さない)。
+- 集中購読 mount 前に Rust が emit したケース (EC-FEED-020): Tauri の listen 登録が `await` 解決前であれば payload は loss する。許容 (Tauri の標準仕様)、次の emit で復旧する。
 
 ---
 
 ### REQ-FEED-030: `FeedRow` — in-place 編集サーフェスの埋め込み
 
-**EARS**: WHEN `viewState.editingStatus ∈ {'editing', 'saving', 'switching', 'save-failed'}` AND `viewState.editingNoteId === self.noteId` THEN `FeedRow` は当該行に対応する `EditingSessionStateDto` の `blocks` を順序通りにレンダリングし、各 block を `BlockElement` (ui-block-editor REQ-BE-001) として表示しなければならない。
+**EARS**: WHEN `viewState.editingStatus ∈ {'editing', 'saving', 'switching', 'save-failed'}` AND `viewState.editingNoteId === self.noteId` THEN `FeedRow` は対応する `EditingSessionStateDto` (REQ-FEED-029 で集中購読・状態保持) の `blocks` を順序通りにレンダリングし、各 block を `BlockElement` (ui-block-editor REQ-BE-001) として表示しなければならない。
+
+**State source-of-truth** (FIND-S5-SPEC-002 解消):
+
+Sprint 5 で UI には 2 つの state slice が共存する。両者の責務分担を以下に固定する:
+
+| state slice | 由来 | mount 判定 (mount/unmount) | データソース (mount 時の表示内容) |
+|------------|------|--------------------------|------------------------------|
+| `viewState: FeedViewState` | `feedReducer` mirror of `feed_state_changed` (REQ-FEED-026/027) | **authoritative** for whether `BlockElement` should mount in this row | n/a (mount gate のみ) |
+| `editingSessionState: EditingSessionStateDto` | `subscribeEditingSessionState` (REQ-FEED-029 集中購読) | n/a | **authoritative** for `blocks` / `focusedBlockId` / `lastSaveResult` data displayed once mount is authorized |
+
+**矛盾時の解決規約** (`viewState.editingNoteId !== editingSessionState.currentNoteId` または `editingSessionState` 未到達):
+
+| 条件 | 挙動 |
+|------|------|
+| `viewState.editingNoteId === self.noteId` AND `editingSessionState` が **未到達** (`null`) | REQ-FEED-031 の fallback (空 paragraph) を適用 |
+| `viewState.editingNoteId === self.noteId` AND `editingSessionState.currentNoteId === self.noteId` | `editingSessionState.blocks` をそのまま表示 |
+| `viewState.editingNoteId === self.noteId` AND `editingSessionState.currentNoteId !== self.noteId` (transient mismatch) | **「最後に self.noteId と一致した `editingSessionState`」のキャッシュ** を表示し続ける。キャッシュが無い場合は REQ-FEED-031 の fallback を適用 |
+| `viewState.editingNoteId !== self.noteId` | `BlockElement` を mount しない (preview 表示維持) |
+
+> **設計意図**: `feed_state_changed` は emit 順序の不変条件 (REQ-FEED-032) により常に対応する `editing_session_state_changed` の後に到達する。よって正常系では `viewState.editingNoteId === editingSessionState.currentNoteId` が成立する。transient mismatch は (a) 古い `editingSessionState` を保持中に `feed_state_changed` だけが先に Rust から再 emit された (e.g., FilterApplied)、または (b) 集中購読 mount 直後でまだ payload を受け取っていないケース。いずれもキャッシュ or fallback で「読めない瞬間」を作らない方針。
+
+**Mount/unmount 2x2 truth table** (FIND-S5-SPEC-003 解消, AC 用 — `editingStatus` × `editingNoteId === self.noteId` の 2 軸 4 セル):
+
+| `editingStatus` | `editingNoteId === self.noteId` | `BlockElement` 表示数 | preview 表示 |
+|-----------------|------------------------------|---------------------|------------|
+| `∈ {editing, saving, switching, save-failed}` | `true` | `blocks.length` (>= 1; fallback 適用時 = 1) | 非表示 |
+| `'idle'` | `true` | 0 | 表示 |
+| `∈ {editing, saving, switching, save-failed}` | `false` | 0 | 表示 |
+| `'idle'` | `false` | 0 | 表示 |
+
+> **注 (FIND-S5-SPEC-iter2-007 解消)**: `editingStatus === 'idle'` のとき `viewState.editingNoteId === null` が `feedReducer` の mirror 規約 (REQ-FEED-009, idle 状態は `currentNoteId: null`) により常に成立する。よって表 row 2 (`editingStatus === 'idle' AND editingNoteId === self.noteId`) は **architecturally 到達不能**である。AC ではこの行を **defensive test** として 0 個 assert を要求するが、テストは「synthetic な viewState を直接注入」して FeedRow が crash しないことを検証する目的に限定する (PROP-FEED-S5-006 cell 2 注記参照)。`feedReducer` がこの不変条件を保つことは既存 PROP-FEED-007a (Sprint 4: PROP-FEED-S4-006) で別途保証済みであり、本 PROP では mirror 不変条件を再検証しない。
 
 **埋め込み詳細**:
 - `BlockElement` の props は ui-block-editor REQ-BE-001..010 の契約に従う:
@@ -1006,51 +1050,136 @@ Sprint 5 (`tag-chip-update` block migration) で実施し、その際に本 spec
 - `viewState.editingNoteId !== self.noteId` の `FeedRow` は **既存の preview 表示** (`row-body-preview` / タグチップ / pending-switch indicator など) を維持する。`BlockElement` を mount してはならない。
 
 **Adapter 注入経路**:
-- `BlockEditorAdapter` の生成は `+page.svelte` または `FeedList` で 1 回行い、`FeedRow` に props として渡す（`createBlockEditorAdapter()` のような factory を `src/lib/block-editor/` で公開する想定）。
-- 各 dispatch は最終的に `@tauri-apps/api/core::invoke(...)` を呼ぶ effectful shell の責務（PROP-FEED-032 同様、purity boundary 維持）。
-- Sprint 5 spec 上は adapter factory のシグネチャ細部までは規定しない（`ui-block-editor` の REQ-BE-026 が型を、本 REQ-FEED-030 は注入経路を規定）。
+- `BlockEditorAdapter` の生成は `+page.svelte` または `FeedList` で 1 回行い、`FeedRow` に props として渡す。factory: `createBlockEditorAdapter(): BlockEditorAdapter` を `src/lib/block-editor/createBlockEditorAdapter.ts` で公開する。
+- factory は ui-block-editor REQ-BE-026 の 16 dispatch メソッドそれぞれを `@tauri-apps/api/core::invoke('<command_name>', payload)` でラップする。command name 一覧は §Adapter command-mapping (本 REQ-FEED-030 末尾の table) に固定する。
+- 各 dispatch は最終的に effectful shell の責務（PROP-FEED-032 / PROP-FEED-S5-021 同様、purity boundary 維持）。
+- すべての dispatch payload には `issuedAt: string` (ISO 8601, `nowIso()` から取得) を含める (FIND-S5-SPEC-iter2-001 解消)。Rust handler は当該フィールドを受け取り (ignore 可) ordering trace に使う。tauriFeedAdapter の既存 `issuedAt` 規約と整合。
 
-**Acceptance Criteria**:
-- `viewState.editingNoteId === self.noteId` のとき、`FeedRow` の DOM ツリーに `data-testid="block-element"`（ui-block-editor 命名）の要素が `blocks.length` 個存在する (DOM integration test)。
-- `viewState.editingNoteId !== self.noteId` のとき、当該 `FeedRow` の DOM ツリーに `block-element` が 0 個 (DOM integration test)。
-- `editingStatus === 'save-failed'` かつ `editingNoteId === self.noteId` のとき、当該行内に `data-testid="save-failure-banner"` が存在する (DOM integration test)。他行には存在しない。
+**Sprint 5 Rust handler scope split** (FIND-S5-SPEC-iter2-003 解消):
+
+ui-block-editor REQ-BE-026 の 16 メソッドのうち、Rust 側 `#[tauri::command]` handler が **既に存在する** ものと **存在しない** ものに分かれる。Sprint 5 では `createBlockEditorAdapter` factory は **16 メソッドすべてを invoke wrap**するが、handler 不在のメソッド呼び出しは Tauri runtime が `command not found` エラーを返す (Promise reject)。FeedRow / BlockElement 側は **すべての dispatch を try/catch で best-effort 扱い**し、reject を無視して UI を継続表示する。
+
+| group | dispatch メソッド | Tauri handler 状態 | Sprint 5 動作 |
+|-------|------------------|------------------|------------|
+| **A: 既存実装あり** (7 method) | `dispatchTriggerIdleSave`, `dispatchTriggerBlurSave`, `dispatchRetrySave`, `dispatchDiscardCurrentSession`, `dispatchCancelSwitch`, `dispatchCopyNoteBody`, `dispatchRequestNewNote` | ✅ `editor.rs` に既存 (Sprint 2 実装) | invoke 成功、Rust handler が動作 |
+| **B: Sprint 5 では未実装** (9 method) | `dispatchFocusBlock`, `dispatchEditBlockContent`, `dispatchInsertBlockAfter`, `dispatchInsertBlockAtBeginning`, `dispatchRemoveBlock`, `dispatchMergeBlocks`, `dispatchSplitBlock`, `dispatchChangeBlockType`, `dispatchMoveBlock` | ❌ Rust handler 不在 (Sprint 5 スコープ外) | invoke 試行 → reject (`command not found`)、UI は try/catch で best-effort 継続 |
+
+> **Group B handler は別 feature の Sprint で実装される予定**。Sprint 5 のゴールは「UI 側で BlockElement を mount できること」であり、block-structure mutation の Rust 側 round-trip は **Sprint 5 では検証しない**。これは migration doc Step 2 のスコープ "FeedRow へのブロック組み込み" に整合 (Rust 変更は別タスク)。
+>
+> Sprint 5 で **Group B 用 Rust handler を実装する別作業を開始するときに**、本 spec の Sprint 5 Rust handler scope split table を更新し、各 method を Group A に移行する。
+
+**Adapter command-mapping** (FIND-S5-SPEC-013 解消 — factory 出力の正規 mapping; payload に `issuedAt` を含む):
+
+| dispatch メソッド | Tauri command name | payload 主要フィールド | group |
+|------------------|-------------------|---------------------|-------|
+| `dispatchFocusBlock` | `editor_focus_block` | `{ noteId, blockId, issuedAt }` | B |
+| `dispatchEditBlockContent` | `editor_edit_block_content` | `{ noteId, blockId, content, issuedAt }` | B |
+| `dispatchInsertBlockAfter` | `editor_insert_block_after` | `{ noteId, anchorBlockId, newBlock, issuedAt }` | B |
+| `dispatchInsertBlockAtBeginning` | `editor_insert_block_at_beginning` | `{ noteId, newBlock, issuedAt }` | B |
+| `dispatchRemoveBlock` | `editor_remove_block` | `{ noteId, blockId, issuedAt }` | B |
+| `dispatchMergeBlocks` | `editor_merge_blocks` | `{ noteId, targetBlockId, mergeFromBlockId, issuedAt }` | B |
+| `dispatchSplitBlock` | `editor_split_block` | `{ noteId, blockId, splitAt, issuedAt }` | B |
+| `dispatchChangeBlockType` | `editor_change_block_type` | `{ noteId, blockId, newType, issuedAt }` | B |
+| `dispatchMoveBlock` | `editor_move_block` | `{ noteId, blockId, targetIndex, issuedAt }` | B |
+| `dispatchTriggerIdleSave` | `trigger_idle_save` | `{ noteId, issuedAt }` | A (既存) |
+| `dispatchTriggerBlurSave` | `trigger_blur_save` | `{ noteId, issuedAt }` | A (既存) |
+| `dispatchRetrySave` | `retry_save` | `{ noteId, issuedAt }` | A (既存) |
+| `dispatchDiscardCurrentSession` | `discard_current_session` | `{ noteId, issuedAt }` | A (既存) |
+| `dispatchCancelSwitch` | `cancel_switch` | `{ noteId, issuedAt }` | A (既存) |
+| `dispatchCopyNoteBody` | `copy_note_body` | `{ noteId, issuedAt }` | A (既存) |
+| `dispatchRequestNewNote` | `request_new_note` | `{ issuedAt }` | A (既存) |
+
+> **注**: Group A の command name は **既存 Rust 実装に合わせて prefix なし** (例: `trigger_idle_save`)、Group B の command name は **`editor_` prefix 付き** (例: `editor_focus_block`)。後者は将来 Rust 実装される予定の命名予約。両 group とも `payload.issuedAt` を含む。
+>
+> Rust 側 handler の挙動契約は本 REQ-FEED-030 のスコープ外。Sprint 5 では factory が「上記 command name へ正しく invoke する」こと、および Group B の reject が UI を壊さないこと (try/catch 経由の best-effort) のみを規定する。
+
+**Acceptance Criteria** (2x2 truth table 全セル):
+- (cell 1) `editingStatus ∈ {editing, saving, switching, save-failed}` AND `editingNoteId === self.noteId`: `FeedRow` の DOM ツリーに `data-testid="block-element"` が `blocks.length` 個存在 (DOM integration test, fallback 適用時は 1 個)。
+- (cell 2) `editingStatus === 'idle'` AND `editingNoteId === self.noteId`: `block-element` 0 個 (防御的 DOM test)。
+- (cell 3) `editingStatus ∈ {editing, saving, switching, save-failed}` AND `editingNoteId !== self.noteId`: `block-element` 0 個 (DOM test)。
+- (cell 4) `editingStatus === 'idle'` AND `editingNoteId !== self.noteId`: `block-element` 0 個 (DOM test)。
+- `editingStatus === 'save-failed'` かつ `editingNoteId === self.noteId` のとき、当該行内に `data-testid="save-failure-banner"` が存在する。他行には存在しない。
 - `BlockEditorAdapter` 経由の dispatch が、ユーザー操作（block content への文字入力 / Enter / `/` メニュー選択など）に対して **ui-block-editor の REQ-BE-003..010 の AC を満たす形** で発火する（FeedRow 経由でも primitive の振る舞いが維持される）。
 - 埋め込み state は `FeedViewState` に含めない（block 編集 state は `editingSessionState` 経由で行に伝播し、`feedReducer` の責務外）。
+- `createBlockEditorAdapter()` の return value が `BlockEditorAdapter` 型に **型レベルで assignable** である (Tier 0 tsc test, PROP-FEED-S5-016)。
+- `createBlockEditorAdapter.ts` ソース内の `invoke('command_name', ...)` 呼び出しが **正確に 16 個** あり、command name set が上記 mapping と一致する (Tier 0 grep audit, PROP-FEED-S5-017)。
 
 **Edge Cases**:
-- `editingSessionState.kind === 'switching'` または `'save-failed'`: `FeedRow` は最後の有効な `blocks` を表示し続ける（既存 ui-block-editor の振る舞い）。`focusedBlockId` は `priorFocusedBlockId` を採用（ui-block-editor §フォーカス保持規約）。
-- `editingNoteId` が **フィードの可視 note ID リストに存在しない** (filter 適用で隠れた): 対応する `FeedRow` 自体が DOM に存在しないため、`BlockElement` も描画されない。`feed_state_changed` が当該 note を再可視化したタイミングで blocks が表示される。
+- `editingSessionState.status === 'switching'` または `'save-failed'`: `FeedRow` は最後の有効な `blocks` を表示し続ける（既存 ui-block-editor の振る舞い）。`focusedBlockId` は `priorFocusedBlockId` を採用（`save-failed` arm のフィールド）。
+- `editingNoteId` が **フィードの可視 note ID リストに存在しない** (filter 適用で隠れた): 対応する `FeedRow` 自体が DOM に存在しないため、`BlockElement` も描画されない。`feed_state_changed` が当該 note を再可視化したタイミングで blocks が表示される (EC-FEED-018)。
 - `blocks` フィールドが `undefined` または empty: REQ-FEED-031 (EC-FEED-016 Sprint 5 amendment) の fallback を適用する。
+- `viewState.editingNoteId === self.noteId` AND `editingSessionState` 未到達 (subscriber が emit を受信前): REQ-FEED-031 の fallback を適用 (state source-of-truth table の row 1)。
 
 ---
 
 ### REQ-FEED-031: `FeedRow` 側 empty paragraph fallback (EC-FEED-016 Sprint 5 amendment)
 
-**EARS**: WHEN `viewState.editingNoteId === self.noteId` AND 受信した `editingSessionState.blocks` が `undefined`、`null`、または空配列である THEN `FeedRow` は **クライアント側で UUID v4 を発番した空 paragraph block 1 件** を `blocks` として採用し、`focusedBlockId` を当該 block の id に設定して `BlockElement` を mount しなければならない。
+**EARS**: WHEN `viewState.editingNoteId === self.noteId` AND 受信した `editingSessionState.blocks` が `undefined`、`null`、または空配列である AND **fallback restart 条件 (下記) を満たす** THEN `FeedRow` は (1) クライアント側で UUID v4 を発番した空 paragraph block を 1 件構築し、(2) **`blocks` として採用して `BlockElement` を mount** し、(3) **best-effort で** `BlockEditorAdapter::dispatchInsertBlockAtBeginning(payload)` (Group B, REQ-FEED-030 の Sprint 5 Rust handler scope split table 参照) → `dispatchFocusBlock(payload)` の順に await dispatch を試行し、(4) どちらの dispatch が reject しても fallback BlockElement の表示は維持しなければならない。
 
 > **Sprint 4 までの責務**: EditorPane 側が空 paragraph fallback を担当（EC-FEED-016 旧定義）。
 > **Sprint 5 の責務**: EditorPane 廃止により `FeedRow` 側に責務が移管される。
+
+> **FIND-S5-SPEC-006 / FIND-S5-SPEC-iter2-003 解消** (cross-feature contract scope):
+> 旧版では client-generated UUID で直接 `dispatchFocusBlock` を呼んでいたが、これは Rust 側 capture state が知らない block id への focus 要求となり aggregates.md §Note 不変条件を侵犯する。Sprint 5 修正版では **`dispatchInsertBlockAtBeginning` を先に試行**して Rust に block を pre-register することを試みるが、**Sprint 5 では Group B の Rust handler が未実装**のため両 dispatch とも reject されることを許容する (REQ-FEED-030 Sprint 5 Rust handler scope split table 参照)。
+>
+> 重要設計判断: **fallback BlockElement の表示は dispatch 成否に依存しない**。display は client-only state、dispatch は将来 Rust handler 実装時に意味を持つ best-effort 通知。Sprint 5 ユーザー視点では「クリックで note 選択 → 空行が表示される → 文字が入力できる (BlockElement contenteditable は client-side で動作)」が成立すればよく、Rust 側保存は別 sprint の責務。
+>
+> Sprint 5 では `dispatchEditBlockContent` (Group B) も reject されるため、ユーザーが入力した文字は **client-side の BlockElement state にしか保持されない** (Rust に永続化されない)。これは Sprint 5 の既知制約として spec に固定する。本 REQ-FEED-031 のゴールは「BlockElement のレンダリング経路を確立すること」であり、「block 編集の永続化」は別 sprint の責務。
 
 **fallback 生成手順**:
 1. `id`: UUID v4 (`crypto.randomUUID()`)。Effectful shell 内（`FeedRow.svelte` の `$effect` 内）でのみ生成する。pure helper には UUID 生成を含めない。
 2. `block_type`: `BlockTypeDto::Paragraph` (`'paragraph'`)。
 3. `content`: 空文字列 `""`。
 4. `focusedBlockId`: 上記で生成した `id` を採用。
+5. dispatch 順序: **`dispatchInsertBlockAtBeginning` (try/await/catch) → `dispatchFocusBlock` (try/await/catch)**。両 dispatch とも `try { await dispatch(...) } catch (e) { console.warn(...) }` で wrap する (best-effort)。
+
+**Fallback state ownership** (FIND-S5-SPEC-004 / FIND-S5-SPEC-iter2-005 解消):
+
+`FeedRow.svelte` 内で以下の per-row state を保持する:
+
+```ts
+// FeedRow.svelte 内 $state
+let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null);
+```
+
+- **fallback 起動条件 (restart 条件)**:
+  以下のいずれかを満たすとき fallback を起動する:
+  - (i) `fallbackAppliedFor === null` (まだ一度も適用していない)
+  - (ii) `fallbackAppliedFor.noteId !== viewState.editingNoteId` (note 切り替えで cache 無効)
+  - (iii) **直前のレンダリング cycle で `editingSessionState.blocks` が non-empty だった** (= Rust 側で block 状態が evolve した) かつ **現サイクルで再び absent/empty に戻った** (FIND-S5-SPEC-iter2-005 解消, undefined→non-empty→undefined sequence)
+- **起動後**: `fallbackAppliedFor = { noteId: viewState.editingNoteId, blockId: <generated UUID> }` をセット。
+- **同一 `editingNoteId` への 2 回目以降の `editing_session_state_changed` 受信** (`blocks` 依然 absent、かつ条件 (iii) 不成立、かつ条件 (ii) 不成立): 起動条件不成立 → no-op。前回の `fallbackAppliedFor.blockId` を再利用して `BlockElement` を mount し続ける (新 UUID 生成しない)。
+- **`viewState.editingNoteId` 変化時**: `fallbackAppliedFor = null` にリセット。
+- **`editingSessionState.blocks` が non-empty で到達**: fallback ロジックは適用されず、サーバ提供の `blocks` がそのまま表示される。**`fallbackAppliedFor` を `null` にリセット** (FIND-S5-SPEC-iter2-005 解消: 次に再び absent が来たら restart 条件 (iii) で新 UUID を発番できるよう invalidate)。
+- **再 mount (FeedRow が unmount→remount)**: `fallbackAppliedFor` も destroy → 次回 mount で `null` から開始。
 
 **Pure / Effectful 区分**:
-- fallback 適用判定 (`blocks` が undefined/null/empty かどうか) は pure helper として `feedRowPredicates.ts` に追加可能 (例: `needsEmptyParagraphFallback(blocks: ReadonlyArray<DtoBlock> | null | undefined): boolean`)。
+- fallback 適用判定 (`blocks` が undefined/null/empty かどうか) は pure helper として `feedRowPredicates.ts` に追加する: `needsEmptyParagraphFallback(blocks: ReadonlyArray<DtoBlock> | null | undefined): boolean`。
+- restart 条件 (iii) の "前サイクル non-empty → 現サイクル absent" の判定は per-row `lastBlocksWasNonEmpty: boolean` $state を使う effectful 判定 (履歴依存のため pure helper の対象外)。
 - UUID 生成は **必ず effectful shell** で行う（pure core への持ち込み禁止）。
+- `fallbackAppliedFor` / `lastBlocksWasNonEmpty` 状態管理および 2 つの dispatch は `FeedRow.svelte` の `$effect` 内に閉じる。
 
 **Acceptance Criteria**:
-- `editingSessionState.blocks === undefined` （ケース 1: REQ-FEED-025 で `blocks` フィールド absent）のとき、対応する `FeedRow` の DOM に `data-testid="block-element"` が 1 個存在し、その `data-block-type === 'paragraph'`、`textContent === ''` である (DOM integration test)。
+- `needsEmptyParagraphFallback(undefined) === true`、`needsEmptyParagraphFallback(null) === true`、`needsEmptyParagraphFallback([]) === true`、`needsEmptyParagraphFallback([{...}]) === false` (pure unit test, PROP-FEED-S5-009)。
+- `editingSessionState.blocks === undefined` （ケース 1: REQ-FEED-025 で `blocks` フィールド absent）のとき、対応する `FeedRow` の DOM に `data-testid="block-element"` が 1 個存在し、その `data-block-type === 'paragraph'`、`textContent === ''` である (DOM integration test, PROP-FEED-S5-010)。
 - `editingSessionState.blocks === []` （契約上到達不能だが防御的に）のとき、上記同様の挙動 (DOM integration test)。
 - fallback で生成された block の `id` は UUID v4 形式 (`/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i`) (DOM test)。
-- fallback 適用後、`BlockEditorAdapter::dispatchFocusBlock({ noteId, blockId })` がただちに呼ばれ、Rust 側 capture state が当該 block id を `focusedBlockId` として保持する (integration test, mock adapter)。
-- 同一 `editingNoteId` への切り替えで fallback が **2 回連続で発火しない**（最初の fallback で生成した block id を保持）。
+- fallback 適用時、mock adapter で **以下の dispatch 順序が試行される** (両 dispatch とも reject 想定; PROP-FEED-S5-011):
+  1. `dispatchInsertBlockAtBeginning({ noteId, newBlock: { id: <UUID>, block_type: 'paragraph', content: '' }, issuedAt: <ISO> })` が **1 回 attempted** (mock の reject も成否を問わずカウント)
+  2. `dispatchFocusBlock({ noteId, blockId: <同 UUID>, issuedAt: <ISO> })` が **1 回 attempted**
+  3. 試行順序: (1) call が時系列的に (2) call より早い (mock の `mock.invocationCallOrder` 比較)
+  4. **両 dispatch reject のもとでも** fallback BlockElement (`data-testid="block-element"` 1 個) が DOM に表示され続ける (best-effort 表示確認)
+- **Idempotency 強化テスト** (FIND-S5-SPEC-iter2-005 解消): 以下 4 シナリオ全 PASS (PROP-FEED-S5-011):
+  - (a) 同一 `editingNoteId` で `blocks=undefined` を 2 回受信: dispatch attempts = 各 1 回ずつ、UUID 同一
+  - (b) `editingNoteId` を `noteA → noteB → noteA` 切り替え後 `noteA` で `blocks=undefined`: 新 UUID で再起動 (UUID 不一致)
+  - (c) `blocks=undefined → blocks=[{...}] → blocks=undefined` (同一 noteId): **2 回目の undefined で新 UUID** が発番される (FIND-S5-SPEC-iter2-005, restart 条件 (iii) を発火)
+  - (d) `blocks=[{...}]` のみ受信: fallback dispatch attempts = 0 (BlockElement はサーバ提供 blocks で表示)
 
 **Edge Cases**:
-- ユーザーが空 paragraph に文字を入力: `BlockElement` の `EditBlockContent` dispatch が発火（ui-block-editor REQ-BE-003）し、Rust が `blocks` を持つ次の `editing_session_state_changed` を emit。FeedRow は次回 mount からはサーバ提供の `blocks` を採用し、fallback ロジックは無効化される。
-- ユーザーがすぐに別 note を選択: fallback で発番した block id は破棄される（次の `editingNoteId` に伴い state がリセットされる）。`dispatchFocusBlock` が race で発火していても Rust 側は `currentNoteId` mismatch で no-op 扱い（`ui-block-editor` の guard を信頼）。
+- ユーザーが空 paragraph に文字を入力: `BlockElement` の `EditBlockContent` dispatch が発火（ui-block-editor REQ-BE-003、Group B のため Sprint 5 では reject）。**Sprint 5 既知制約**: 文字は client-only の BlockElement state にとどまり Rust 永続化はされない。Sprint 6 以降で Rust handler が実装されると Rust が `blocks` 付き次の `editing_session_state_changed` を emit するようになり、サーバ提供 `blocks` で表示が同期される。
+- ユーザーがすぐに別 note を選択: `editingNoteId` 変化により `fallbackAppliedFor` がリセットされ、race で発火中の dispatch Promise は待つだけ。新しい note 選択先で REQ-FEED-029 の `editing_session_state_changed` が arrive 後に必要なら新規 fallback が発火する。
+- `dispatchInsertBlockAtBeginning` reject (Group B 未実装、または Rust 側エラー): try/catch で吸収、`fallbackAppliedFor` は **設定する** (block-element は表示されているため idempotent state は維持)、続く `dispatchFocusBlock` も attempt する。
+- `dispatchFocusBlock` reject: 同様に try/catch で吸収。BlockElement の visual focus は client-side `isFocused` prop で制御されるため、Rust dispatch 失敗でも UI 上は focus 表示が成立する。
 
 ---
 
@@ -1087,7 +1216,14 @@ Sprint 5 (`tag-chip-update` block migration) で実施し、その際に本 spec
 - `editorReducer` / `editorPredicates` （旧 ui-editor の pure core）
 - `EditorViewState` / `EditorAction` / `EditorCommand` / `EditorIpcAdapter` （旧 ui-editor の型）
 
-> **根拠**: `block-based-ui-spec-migration.md` の「削除対象」テーブル。`src/lib/editor/` 配下は物理削除済み。本 REQ は **回帰防止** の grep 検査として spec に固定する。`ui-block-editor` REQ-BE-027 と整合。
+> **Cross-feature delegation note** (FIND-S5-SPEC-008 解消):
+> `src/lib/block-editor/` 配下の forbidden-identifier 監査は **2 つの REQ がオーバーラップ**するが、対象識別子は **完全に互いに素**:
+> - **ui-block-editor REQ-BE-027** (authoritative for `src/lib/block-editor/`): `subscribeToState`、`EditorIpcAdapter`、`EditorViewState`、`EditorAction`、`EditorCommand`、`EditingSessionStateDto`、`EditingSessionStatus` — block-editor primitive 内に旧 ui-editor 型契約を持ち込まないことを保証
+> - **REQ-FEED-033** (本 REQ, additionally covers `src/lib/block-editor/`): `EditorPanel`、`editorStateChannel`、`tauriEditorAdapter`、`editorReducer`、`editorPredicates` — EditorPane component + outbound/inbound adapter + reducer/predicates の参照を禁止
+>
+> 両セットの **重複は `EditorIpcAdapter` のみ**であり (REQ-BE-027 のリストに含まれ REQ-FEED-033 のリストには含まれない)、grep regex の和集合を実行することで監査が完結する。Sprint 5 では本 REQ-FEED-033 を pre-merge gate とし、REQ-BE-027 の監査は ui-block-editor 側の責任で並行実行する (両 REQ の監査結果は独立して PASS が必要)。
+
+> **根拠**: `block-based-ui-spec-migration.md` の「削除対象」テーブル。`src/lib/editor/` 配下は物理削除済み。本 REQ は **回帰防止** の grep 検査として spec に固定する。
 
 **Acceptance Criteria**:
 - 以下の grep 出力がゼロ行 (production code only):

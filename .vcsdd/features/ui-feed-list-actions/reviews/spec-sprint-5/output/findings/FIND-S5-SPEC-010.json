@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-010",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "requirement": "PROP-FEED-S5-003, PROP-FEED-S5-012",
+  "summary": "PROP-FEED-S5-003 and PROP-FEED-S5-012 are Tier 0 grep audits but do not provide self-contained executable grep commands. Compare with PROP-FEED-S5-001/S5-004/S5-014 which ship full commands. S5-003 also cannot distinguish single vs multiple subscriber registrations (REQ-FEED-029 prefers option (a) singularity).",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "706, 715",
+    "snippet": "S5-003: ... 実行コマンド: grep -nrE \"listen\\(['\\\"]editing_session_state_changed['\\\"]\" promptnotes/src/lib/feed/ promptnotes/src/routes/ — **1 行以上** を assertion とする.\n\nS5-012: ... grep audit: editing_session_state_changed ハンドラ (上記 PROP-FEED-S5-003 で識別された箇所) の同期実行確認 — ハンドラ関数 body 内に await / Promise.then / setTimeout / queueMicrotask を含まない."
+  },
+  "context": "(1) S5-012 has no executable grep command. The audit needs to inspect 'the handler body identified by S5-003' which is a non-trivial multi-line lexical scope — not a regex match. A grep cannot scope to 'inside the handler body of listen(...)'. (2) S5-003 asserts 'one or more' hits but REQ-FEED-029 implementation (a) requires exactly ONE subscription site (line 980: '+page.svelte または FeedList.svelte が当該購読を 1 回 mount'). The current grep would pass even if 100 FeedRows each register their own listener, which is implementation (b) — explicitly non-recommended.",
+  "recommendedFix": "(1) Replace S5-012 with a Tier 0 audit that asserts the handler is a `function` or arrow with a synchronous body — practically: provide a grep that asserts the file containing the listener registration does NOT use `await` within ±10 lines of the `listen('editing_session_state_changed'` call. Or: test a synthetic event under integration tier and assert the $state reads the new value within the same microtask. (2) Tighten S5-003 to assert exactly ONE registration site when option (a) is selected (or wc -l = 1)."
+}

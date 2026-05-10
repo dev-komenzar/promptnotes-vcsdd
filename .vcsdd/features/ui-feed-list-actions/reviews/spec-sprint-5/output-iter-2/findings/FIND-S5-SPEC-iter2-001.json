@@ -1,0 +1,20 @@
+{
+  "id": "FIND-S5-SPEC-iter2-001",
+  "severity": "high",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "requirement": "REQ-FEED-030 §Adapter command-mapping vs ui-block-editor REQ-BE-002b/REQ-BE-003 et al.",
+  "summary": "The new Adapter command-mapping table introduced to resolve FIND-S5-SPEC-013 omits the `issuedAt` field that ui-block-editor REQ-BE-002b/REQ-BE-003 mandate as part of every dispatch payload. The factory specified by REQ-FEED-030 therefore cannot satisfy both the Tauri wire shape (`{ noteId, blockId }`) AND the BlockEditorAdapter type contract (`{ noteId, blockId, issuedAt }`) simultaneously.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1057-1077",
+    "snippet": "L1061: | `dispatchFocusBlock` | `editor_focus_block` | `{ noteId, blockId }` |\nL1062: | `dispatchEditBlockContent` | `editor_edit_block_content` | `{ noteId, blockId, content }` |\n... (16 行とも `issuedAt` を含まない)"
+  },
+  "context": "(1) ui-block-editor REQ-BE-002b line 219: `adapter.dispatchFocusBlock({ noteId, blockId: block.id, issuedAt: issuedAt() })` — caller passes `issuedAt`. (2) ui-block-editor REQ-BE-003 line 237: `adapter.dispatchEditBlockContent({ noteId, blockId, content, issuedAt: issuedAt() })`. (3) REQ-BE-026 line 691 declares 16 methods with payload type `(payload: { ... }) => Promise<void>` (under-specified payload). (4) REQ-FEED-030 §Adapter command-mapping payload column lists ONLY (`noteId`/`blockId`/...) — `issuedAt` is missing in all 16 rows. (5) PROP-FEED-S5-016 (tsc assignability) would catch this: if BlockEditorAdapter's TypeScript signature requires `issuedAt`, then `createBlockEditorAdapter()` returning a method that accepts `{ noteId, blockId }` only would fail tsc strict — UNLESS the Adapter wraps the call with extraction (drop `issuedAt` before invoke). (6) PROP-FEED-S5-017 (16 invoke calls with command name set) does NOT verify the payload field set, so silent drop of `issuedAt` would slip past the audit. (7) If `issuedAt` is dropped silently, the Rust side (or other features) lose the ordering info that REQ-BE-002b's design intent encodes (`internal-events.ts BlockFocused` ordering). If `issuedAt` is forwarded via invoke, the wire payload deviates from the table.",
+  "evidence": {
+    "primary": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1061",
+    "crossReference": ".vcsdd/features/ui-block-editor/specs/behavioral-spec.md:219, :237"
+  },
+  "recommendedFix": "Either (a) extend every row of REQ-FEED-030 §Adapter command-mapping payload column to include `issuedAt: string` so the wire shape matches the BlockEditorAdapter contract end-to-end, with a note that the Rust handler is expected to accept (and may ignore) `issuedAt`; OR (b) document explicitly that `createBlockEditorAdapter` strips `issuedAt` before invoke, justify the loss of ordering information at the Rust boundary, and add a PROP that asserts the dropped-field shape AND that downstream Rust handlers do not need `issuedAt`. Without one of these, PROP-FEED-S5-016 and PROP-FEED-S5-017 collectively under-specify the Adapter and Phase 2b implementers will guess.",
+  "routeToPhase": "1c"
+}

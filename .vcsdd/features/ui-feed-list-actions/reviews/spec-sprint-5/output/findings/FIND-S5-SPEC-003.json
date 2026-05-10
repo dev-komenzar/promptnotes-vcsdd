@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-003",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "requirement": "REQ-FEED-030",
+  "summary": "REQ-FEED-030 EARS guards on both `editingStatus ∈ {editing,saving,switching,save-failed}` AND `editingNoteId === self.noteId`, but the Acceptance Criteria only check one variable at a time. The case `editingNoteId === self.noteId AND editingStatus === 'idle'` has no AC.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "994, 1014-1016",
+    "snippet": "EARS L994: WHEN viewState.editingStatus ∈ {'editing','saving','switching','save-failed'} AND viewState.editingNoteId === self.noteId THEN ... mount BlockElement.\n\nAC L1014: viewState.editingNoteId === self.noteId のとき, FeedRow の DOM ツリーに ... が blocks.length 個存在する.\nAC L1015: viewState.editingNoteId !== self.noteId のとき ... 0 個."
+  },
+  "context": "AC L1014 omits the `editingStatus` half of the guard. If `editingNoteId === self.noteId` AND `editingStatus === 'idle'` (semantically possible for the brief moment after `select_past_note` and before `editing_session_state_changed` arrives, or after a DomainSnapshotReceived that resets the editing slice), the EARS says BlockElement should NOT mount, but the AC says it SHOULD. Implementation could legitimately interpret the AC and produce a spec-violating BlockElement mount.",
+  "recommendedFix": "Rewrite AC L1014/1015 as a 2x2 truth table over (editingStatus, editingNoteId): (1) editingStatus ∈ {editing,saving,switching,save-failed} AND editingNoteId === self.noteId → BlockElement count = blocks.length; (2) editingStatus === 'idle' AND editingNoteId === self.noteId → 0; (3) editingStatus !== 'idle' AND editingNoteId !== self.noteId → 0; (4) editingStatus === 'idle' AND editingNoteId !== self.noteId → 0. Add a corresponding integration test case for (2)."
+}

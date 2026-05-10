@@ -1,0 +1,20 @@
+{
+  "id": "FIND-S5-SPEC-iter2-005",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "requirement": "REQ-FEED-031 §Fallback state ownership",
+  "summary": "REQ-FEED-031's iter-2 'Fallback state ownership' rule (resolving FIND-S5-SPEC-004) is too aggressive about UUID reuse: if Rust's blocks state for the editing note transitions through (undefined → non-empty → undefined again) while the FeedRow stays mounted, the spec mandates reusing the original UUID even though Rust no longer knows about it.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1126-1130",
+    "snippet": "L1126: '**fallback 起動条件**: `fallbackAppliedFor === null` OR `fallbackAppliedFor.noteId !== viewState.editingNoteId`'\nL1128: '**同一 `editingNoteId` への 2 回目以降の `editing_session_state_changed` 受信** (`blocks` 依然 absent): `fallbackAppliedFor.noteId === viewState.editingNoteId` のため起動条件不成立 → no-op。前回の `fallbackAppliedFor.blockId` を再利用して `BlockElement` を mount し続ける (新 UUID 生成しない)'\nL1130: '`editingSessionState.blocks` が non-empty で到達: fallback ロジックは適用されず、サーバ提供の `blocks` がそのまま表示される。`fallbackAppliedFor` は保持して構わない'"
+  },
+  "context": "(1) Trace: (a) note A: blocks=undefined → fallback fires, fallbackAppliedFor = { A, UUID1 }, dispatchInsertBlockAtBeginning + dispatchFocusBlock; (b) Server emits editing_session_state_changed with blocks=[serverBlockS1] — UUID1 is now stale (replaced by S1, or simply not the first block anymore); (c) FeedRow renders S1; fallbackAppliedFor still { A, UUID1 } per L1130; (d) Server emits editing_session_state_changed with blocks=undefined again (e.g., a concurrent operation removed all blocks) — per L1126 the start condition fails (`fallbackAppliedFor.noteId === A`), so per L1128 the spec says 'reuse UUID1 to mount BlockElement, do not re-fire dispatch'. (2) But UUID1 is NOT in Rust state anymore. The mounted BlockElement with id=UUID1 cannot legally receive focus or edits — Rust will reject those dispatches as unknown blockId. (3) The spec's idempotency rule was designed for the simple case (two consecutive blocks=undefined emits during initial mount) but does not consider Rust state evolution between the two emits. (4) PROP-FEED-S5-011 case (b) tests 'two consecutive blocks=undefined' but does NOT test the (undefined → non-empty → undefined) interleaving.",
+  "evidence": {
+    "primary": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1126-1130",
+    "crossReference": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:715 (PROP-FEED-S5-011)"
+  },
+  "recommendedFix": "Tighten the fallback restart condition to also fire on transition: change L1126 to 'fallback 起動条件: fallbackAppliedFor === null OR fallbackAppliedFor.noteId !== viewState.editingNoteId OR <previous editingSessionState.blocks was non-empty AND current blocks is undefined/null/empty>'. Document that any blocks=non-empty emit invalidates the cached UUID by setting fallbackAppliedFor=null on receive. Add a regression PROP-FEED-S5-XXX (or extend S5-011) that tests the (undefined → non-empty → undefined) sequence and asserts a NEW UUID is generated for the second fallback.",
+  "routeToPhase": "1c"
+}

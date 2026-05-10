@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-016",
+  "severity": "low",
+  "dimension": "verification_readiness",
+  "category": "spec_gap",
+  "requirement": "PROP-FEED-S5-009",
+  "summary": "PROP-FEED-S5-009 is listed under Tier 2 (fast-check) in the Coverage Matrix but Test Strategy lists two test files for it: feedRowPredicates.property.test.ts (fast-check) AND feedRowPredicates.test.ts (vitest example). The canonical test path is ambiguous and the fast-check coverage on a 1-arg 3-case predicate is over-engineered.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "712, 729-730, 758",
+    "snippet": "L712 PROP-FEED-S5-009: needsEmptyParagraphFallback(blocks) 純粋関数 totality — null, undefined, [] で true, [block, ...] で false. fast-check で全 ReadonlyArray<DtoBlock> | null | undefined を網羅.\n\nL729-730 (Test Strategy):\n  feedRowPredicates.property.test.ts (Sprint 5 追加) | fast-check | PROP-FEED-S5-009\n  feedRowPredicates.test.ts (Sprint 5 追加) | vitest unit | PROP-FEED-S5-009 (example-based)\n\nL758 (Coverage Matrix): REQ-FEED-031 | PROP-FEED-S5-009, PROP-FEED-S5-010, PROP-FEED-S5-011 | 2 + Integration | feedRowPredicates.property.test.ts, feed-row-empty-fallback.dom.vitest.ts"
+  },
+  "context": "(1) The convention established in Sprint 1-4 (verification-architecture.md §5 line 203-216) is one PROP-ID → one canonical test file (with example tests in *.test.ts being separate cross-references). Listing the same PROP-ID against two files violates this convention. (2) `needsEmptyParagraphFallback(blocks: ReadonlyArray<DtoBlock> | null | undefined): boolean` is a 1-input boolean classifier with effectively 3 equivalence classes (null, undefined, empty array → true; non-empty array → false). fast-check arbitrary generation here adds little signal beyond a 4-line example test. The over-investment in property testing for this predicate is mismatched with its complexity.",
+  "recommendedFix": "Either (1) keep PROP-FEED-S5-009 as fast-check and remove the duplicate test path from Test Strategy (only feedRowPredicates.property.test.ts is canonical; feedRowPredicates.test.ts can include 'examples cross-referenced from PROP-FEED-S5-009 but not the obligation owner'); or (2) downgrade PROP-FEED-S5-009 to Tier 1 example-based with 4 specific assertions (null→true, undefined→true, []→true, [{...}]→false) and remove the fast-check requirement. The current dual-listing risks Phase 2a confusion about which file is the gating artifact."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-SPEC-013",
+  "severity": "high",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "requirement": "REQ-FEED-030 (BlockEditorAdapter 注入経路) / createBlockEditorAdapter.ts",
+  "summary": "Test Strategy line 746 introduces a new effectful module `createBlockEditorAdapter.ts` that 'implements the 16 dispatch methods via Tauri invoke', but no PROP-FEED-S5-XXX verifies that the factory output conforms to the BlockEditorAdapter type or that each method targets the right Tauri channel.",
+  "detail": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "746-749, 700-718",
+    "snippet": "Test Strategy L746: src/lib/block-editor/createBlockEditorAdapter.ts (新規 想定) | Effectful shell | 16 dispatch メソッドを Tauri invoke で実装\n\nL749: 注: createBlockEditorAdapter のシグネチャは ui-block-editor REQ-BE-026 の BlockEditorAdapter 型に準拠する. 本 Sprint 5 spec は経路のみを規定し, factory の細部は Phase 2b 実装で確定する."
+  },
+  "context": "PROP-FEED-S5-008 only verifies that `dispatchEditBlockContent` is called via a MOCK adapter — it does not verify the production `createBlockEditorAdapter` output. There is no Sprint 5 PROP that: (a) asserts the factory's return value satisfies the `BlockEditorAdapter` type at compile time (a Tier 0 type-level test); (b) asserts each of the 16 dispatch methods invokes a distinct Tauri command name; (c) asserts no method is missing or duplicated. Without these, Phase 5 hardening could pass while shipping an adapter that silently misroutes (e.g., dispatchSplitBlock invokes the wrong Tauri command).",
+  "recommendedFix": "Add at least: (1) PROP-FEED-S5-016: Tier 0 type-level assertion that `ReturnType<typeof createBlockEditorAdapter>` is assignable to `BlockEditorAdapter` (uses tsc); (2) PROP-FEED-S5-017: Tier 0 grep that asserts `createBlockEditorAdapter.ts` contains exactly 16 `invoke('command_name', ...)` calls and the command names match a canonical allow-list mirroring REQ-BE-026's 16 methods; (3) optionally: an integration test that mounts a FeedRow with the real factory and a mocked Tauri invoke, then triggers user actions and asserts each invoke fires."
+}
