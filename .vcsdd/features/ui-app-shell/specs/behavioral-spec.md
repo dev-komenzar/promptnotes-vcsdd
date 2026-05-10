@@ -39,8 +39,9 @@ coherence:
 - `.vcsdd/features/configure-vault/specs/behavioral-spec.md` (参照のみ)
 
 > **注意**: `docs/domain/code/ts/src/capture/states.ts` (`EditingSessionState`) は本 feature の対象外。
-> `InitialUIState.editingSessionState` は editor feature へのパススルーであり、
-> `ui-app-shell` はその内容を参照・レンダリングしない（NEG-REQ-001 参照）。(FIND-016 解消)
+> `InitialUIState.editingSessionState` は Capture Context が公開する編集セッション状態であり、
+> `ui-block-editor` および `ui-feed-list-actions` feature が `FeedRow` スコープで消費する。
+> `ui-app-shell` はその内容を参照・レンダリングしない（NEG-REQ-001 参照）。(FIND-016 解消, block-ui-migration で旧 EditorPane 言及を除去)
 
 **Scope**: UI シェル層のみ。ドメインパイプライン (`app-startup`, `configure-vault`) の再実装は一切行わない。それらのパイプラインを Svelte UI および Tauri コマンドへ結線し、グローバルレイアウトフレームを描画することが本 feature の責務。
 
@@ -68,6 +69,7 @@ coherence:
 | 3 | FIND-021 (MAJOR) + FIND-012 partial | REQ-011 AC, NFR-07 | スペーシング許可リストを `[2, 3, 4, 5, 5.6, 6, 6.4, 7, 8, 11, 12, 14, 16, 24, 32]` (DESIGN.md §5 line 184+185) に統一。PROP-006 と同一リストに揃え。 |
 | 3 | FIND-022 (MINOR) | DESIGN.md §4 | §4 Distinctive Components に "Modal & Overlay" サブセクションを追加し `rgba(0,0,0,0.5)` の定義を提供。§10 の出典引用が正当化される。 |
 | 3 | FIND-023 (MINOR) + FIND-007 partial | (verification-architecture.md PROP-013) | PROP-013 タイトルを "in-process 再マウント" に改名し PROP-012 へのクロスリファレンスを追加。(behavioral-spec 変更なし) |
+| patch (block-ui-migration) | — | §Source of truth 注意書き, NEG-REQ-001 | 旧 EditorPane アーキテクチャ廃止に伴うパッチ。`InitialUIState.editingSessionState` のパススルー説明から EditorPane 言及を除去し `ui-block-editor` / `ui-feed-list-actions` に書き換え。NEG-REQ-001 を「ブロック編集コンポーネントを直接知らない」フレームに再定義 (本質的な除外意図 = AppShell はレイアウトシェルのみ は変えない)。詳細は `docs/tasks/block-based-ui-spec-migration.md` Step 3 参照。Sprint は追加せず `state.json` の `blockUiMigrationAcknowledged` で確認済みフラグを立てる。 |
 
 ---
 
@@ -573,12 +575,15 @@ rgba(0,0,0,0.01)   — Card Shadow layer 4 / Deep Shadow layer 1
 
 ## NEG-REQ: 対象外の明示的排除
 
-### NEG-REQ-001: エディタ UI の排除
+### NEG-REQ-001: エディタ UI の排除 (block-ui-migration により再定義)
 
-**EARS**: WHILE `ui-app-shell` feature is being implemented, THE SYSTEM SHALL NOT implement the note editor textarea, inline YAML frontmatter editor, copy button (`CopyNoteBody`), or new note button (`RequestNewNote`).
+**EARS**: WHILE `ui-app-shell` feature is being implemented, THE SYSTEM SHALL NOT directly mount or import block editor components (e.g. `BlockElement`, `SlashMenu`, `BlockDragHandle`, `SaveFailureBanner`); ブロック編集は `FeedRow` スコープに閉じ、AppShell 自体はブロック編集コンポーネントを直接知らない。さらに、コピー (`CopyNoteBody`) や新規ノート作成 (`RequestNewNote`) コマンドを dispatch するコードも AppShell には実装しない。
+
+> **背景 (block-ui-migration)**: 旧 EditorPane (`src/lib/editor/EditorPanel.svelte`) は廃止され、編集サーフェスは `FeedRow` 内に埋め込まれる block コンポーネント群へ移行した。AppShell は「ブロック編集コンポーネントを知らないレイアウトシェル」という除外の本質は維持しつつ、旧 NEG-REQ-001 の「note editor textarea / inline YAML frontmatter editor」表現を block-based モデルに置き換える。
 
 **Acceptance Criteria**:
-- エディタ textarea を含む Svelte コンポーネントが本 feature のファイルに存在しない
+- `src/lib/ui/app-shell/` 配下のファイルから `src/lib/block-editor/` の任意コンポーネントを import するコードが存在しない
+- `BlockElement` / `SlashMenu` / `BlockDragHandle` / `SaveFailureBanner` を mount する Svelte コードが本 feature に存在しない
 - `EditNoteBody` / `CopyNoteBody` / `RequestNewNote` コマンドを dispatch するコードが存在しない
 
 ---

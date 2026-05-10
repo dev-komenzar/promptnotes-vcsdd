@@ -1440,6 +1440,19 @@
         "createdAt": "2026-05-03T15:11:07.024Z",
         "createdInPhase": "3",
         "externalId": "FIND-604"
+      },
+      {
+        "beadId": "BEAD-101",
+        "type": "spec-revision",
+        "artifactPath": ".vcsdd/features/ui-app-shell/specs/behavioral-spec.md",
+        "status": "active",
+        "linkedBeads": [
+          "BEAD-020"
+        ],
+        "createdAt": "2026-05-10T07:59:31.000Z",
+        "createdInPhase": "complete",
+        "externalId": "BLOCK-UI-MIG-ACK",
+        "note": "block-ui-migration acknowledgment patch — NEG-REQ-001 reframed for block-based UI; InitialUIState.editingSessionState passthrough description rewritten to drop EditorPane reference (delegates to ui-block-editor / ui-feed-list-actions). Source: docs/tasks/block-based-ui-spec-migration.md Step 3. No new sprint added (per task instructions); patch-only documentation update."
       }
     ]
   },
@@ -1526,5 +1539,8 @@
   },
   "sprintCount": 4,
   "createdAt": "2026-05-03T06:47:50.684Z",
-  "updatedAt": "2026-05-03T15:51:03.312Z"
+  "updatedAt": "2026-05-10T07:59:31.000Z",
+  "blockUiMigrationAcknowledged": true,
+  "blockUiMigrationAcknowledgedAt": "2026-05-10T07:59:31.000Z",
+  "blockUiMigrationNote": "Acknowledged in spec patch BEAD-101 (BLOCK-UI-MIG-ACK). Source: docs/tasks/block-based-ui-spec-migration.md Step 3. NEG-REQ-001 and InitialUIState.editingSessionState passthrough description updated to remove EditorPane references; no Sprint added per task instructions."
 }
