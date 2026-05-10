@@ -1,3 +1,34 @@
+---
+coherence:
+  node_id: "req:app-startup"
+  type: req
+  name: "app-startup 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "governance:glossary"
+      relation: specifies
+    - id: "governance:domain-events"
+      relation: depends_on
+  modules:
+    - "app-startup"
+  source_files:
+    - "promptnotes/src/lib/domain/app-startup/pipeline.ts"
+    - "promptnotes/src/lib/domain/app-startup/load-vault-config.ts"
+    - "promptnotes/src/lib/domain/app-startup/scan-vault.ts"
+    - "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts"
+    - "promptnotes/src/lib/domain/app-startup/hydrate-note.ts"
+    - "promptnotes/src/lib/domain/app-startup/initialize-capture.ts"
+    - "promptnotes/src/lib/domain/app-startup/stages.ts"
+    - "promptnotes/src/lib/domain/app-startup/errors.ts"
+    - "promptnotes/src-tauri/src/domain/vault"
+    - "promptnotes/src-tauri/src/lib.rs"
+---
+
 # Behavioral Specification: AppStartup
 
 **Feature**: `app-startup`

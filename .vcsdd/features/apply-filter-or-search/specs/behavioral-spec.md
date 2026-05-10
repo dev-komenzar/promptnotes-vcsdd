@@ -1,3 +1,28 @@
+---
+coherence:
+  node_id: "req:apply-filter-or-search"
+  type: req
+  name: "apply-filter-or-search 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "governance:glossary"
+      relation: specifies
+  modules:
+    - "apply-filter-or-search"
+  source_files:
+    - "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts"
+    - "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
+    - "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
+    - "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
+---
+
 # Behavioral Specification: ApplyFilterOrSearch
 
 **Feature**: `apply-filter-or-search`

@@ -1,12 +1,12 @@
 {
   "version": 1,
   "nodes": {
-    "req:apply-filter-or-search": {
-      "id": "req:apply-filter-or-search",
+    "req:edit-past-note-start": {
+      "id": "req:edit-past-note-start",
       "type": "req",
       "placeholder": false,
       "path": "specs/behavioral-spec.md",
-      "name": "apply-filter-or-search 行動仕様"
+      "name": "edit-past-note-start 行動仕様"
     },
     "design:workflows": {
       "id": "design:workflows",
@@ -23,64 +23,65 @@
       "type": "design",
       "placeholder": true
     },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:glossary": {
-      "id": "governance:glossary",
+    "governance:domain-events": {
+      "id": "governance:domain-events",
       "type": "governance",
       "placeholder": true
     },
-    "module:apply-filter-or-search": {
-      "id": "module:apply-filter-or-search",
+    "module:edit-past-note-start": {
+      "id": "module:edit-past-note-start",
       "type": "module",
       "placeholder": false,
-      "name": "apply-filter-or-search"
+      "name": "edit-past-note-start"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+    "file:promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts": {
+      "id": "file:promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts"
+      "path": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+    "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts": {
+      "id": "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
+      "path": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+    "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts": {
+      "id": "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
+      "path": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+    "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts": {
+      "id": "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
+      "path": "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts"
     },
-    "design:apply-filter-or-search-verification": {
-      "id": "design:apply-filter-or-search-verification",
+    "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts": {
+      "id": "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts"
+    },
+    "design:edit-past-note-start-verification": {
+      "id": "design:edit-past-note-start-verification",
       "type": "design",
       "placeholder": false,
       "path": "specs/verification-architecture.md",
-      "name": "apply-filter-or-search 検証アーキテクチャ（純粋性境界・証明義務）"
+      "name": "edit-past-note-start 検証アーキテクチャ（純粋性境界・証明義務）"
     },
-    "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search": {
-      "id": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+    "file:promptnotes/src/lib/domain/__tests__/edit-past-note-start": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/edit-past-note-start",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
+      "path": "promptnotes/src/lib/domain/__tests__/edit-past-note-start"
     }
   },
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:edit-past-note-start",
       "targetId": "design:workflows",
       "relation": "derives_from",
       "semantic": "governance",
@@ -98,7 +99,7 @@
     },
     {
       "id": 2,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:edit-past-note-start",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -116,7 +117,7 @@
     },
     {
       "id": 3,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:edit-past-note-start",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
       "semantic": "governance",
@@ -134,9 +135,9 @@
     },
     {
       "id": 4,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "governance:domain-events",
+      "relation": "depends_on",
       "semantic": "governance",
       "confidence": 0.9,
       "isActive": true,
@@ -152,26 +153,8 @@
     },
     {
       "id": 5,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "req:apply-filter-or-search",
+      "sourceId": "module:edit-past-note-start",
+      "targetId": "req:edit-past-note-start",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -187,9 +170,27 @@
       ]
     },
     {
+      "id": 6,
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
       "id": 7,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -206,8 +207,8 @@
     },
     {
       "id": 8,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -224,8 +225,8 @@
     },
     {
       "id": 9,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -242,8 +243,8 @@
     },
     {
       "id": 10,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -260,8 +261,8 @@
     },
     {
       "id": 11,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "req:apply-filter-or-search",
+      "sourceId": "design:edit-past-note-start-verification",
+      "targetId": "req:edit-past-note-start",
       "relation": "derives_from",
       "semantic": "governance",
       "confidence": 0.9,
@@ -278,7 +279,7 @@
     },
     {
       "id": 12,
-      "sourceId": "design:apply-filter-or-search-verification",
+      "sourceId": "design:edit-past-note-start-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -296,7 +297,7 @@
     },
     {
       "id": 13,
-      "sourceId": "design:apply-filter-or-search-verification",
+      "sourceId": "design:edit-past-note-start-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
       "semantic": "governance",
@@ -314,8 +315,8 @@
     },
     {
       "id": 14,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "design:apply-filter-or-search-verification",
+      "sourceId": "module:edit-past-note-start",
+      "targetId": "design:edit-past-note-start-verification",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -332,8 +333,8 @@
     },
     {
       "id": 15,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+      "sourceId": "design:edit-past-note-start-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/edit-past-note-start",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -349,5 +350,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:10:19.174Z"
+  "lastScanAt": "2026-05-10T04:18:22.943Z"
 }

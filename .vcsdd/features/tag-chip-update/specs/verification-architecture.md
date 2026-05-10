@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:tag-chip-update-verification"
+  type: design
+  name: "tag-chip-update 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:tag-chip-update"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "tag-chip-update"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/tag-chip-update"
+---
+
 # Verification Architecture: TagChipUpdate
 
 **Feature**: `tag-chip-update`

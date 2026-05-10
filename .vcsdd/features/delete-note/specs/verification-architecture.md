@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:delete-note-verification"
+  type: design
+  name: "delete-note 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:delete-note"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "delete-note"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/delete-note"
+---
+
 # Verification Architecture: DeleteNote
 
 **Feature**: `delete-note`

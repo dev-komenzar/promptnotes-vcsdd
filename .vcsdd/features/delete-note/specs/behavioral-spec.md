@@ -1,3 +1,30 @@
+---
+coherence:
+  node_id: "req:delete-note"
+  type: req
+  name: "delete-note 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "governance:domain-events"
+      relation: depends_on
+  modules:
+    - "delete-note"
+  source_files:
+    - "promptnotes/src/lib/domain/delete-note/pipeline.ts"
+    - "promptnotes/src/lib/domain/delete-note/authorize-deletion.ts"
+    - "promptnotes/src/lib/domain/delete-note/authorize-deletion-pure.ts"
+    - "promptnotes/src/lib/domain/delete-note/build-delete-request.ts"
+    - "promptnotes/src/lib/domain/delete-note/update-projections.ts"
+    - "promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts"
+    - "promptnotes/src/lib/domain/delete-note/index.ts"
+    - "promptnotes/src-tauri/src/feed.rs"
+---
+
 # Behavioral Specification: DeleteNote
 
 **Feature**: `delete-note`

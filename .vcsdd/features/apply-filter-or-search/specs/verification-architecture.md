@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:apply-filter-or-search-verification"
+  type: design
+  name: "apply-filter-or-search 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:apply-filter-or-search"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "apply-filter-or-search"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
+---
+
 # Verification Architecture: ApplyFilterOrSearch
 
 **Feature**: `apply-filter-or-search`

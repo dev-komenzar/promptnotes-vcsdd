@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:copy-body-verification"
+  type: design
+  name: "copy-body 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:copy-body"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "copy-body"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/copy-body"
+---
+
 # Verification Architecture: CopyBody
 
 **Feature**: `copy-body`

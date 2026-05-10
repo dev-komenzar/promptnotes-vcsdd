@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:edit-past-note-start-verification"
+  type: design
+  name: "edit-past-note-start 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:edit-past-note-start"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "edit-past-note-start"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/edit-past-note-start"
+---
+
 # Verification Architecture: EditPastNoteStart
 
 **Feature**: `edit-past-note-start`

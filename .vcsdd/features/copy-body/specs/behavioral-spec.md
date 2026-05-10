@@ -1,3 +1,24 @@
+---
+coherence:
+  node_id: "req:copy-body"
+  type: req
+  name: "copy-body 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "governance:domain-events"
+      relation: depends_on
+  modules:
+    - "copy-body"
+  source_files:
+    - "promptnotes/src/lib/domain/copy-body/pipeline.ts"
+    - "promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts"
+---
+
 # Behavioral Specification: CopyBody
 
 **Feature**: `copy-body`

@@ -1,0 +1,473 @@
+{
+  "version": 1,
+  "nodes": {
+    "req:capture-auto-save": {
+      "id": "req:capture-auto-save",
+      "type": "req",
+      "placeholder": false,
+      "path": "specs/behavioral-spec.md",
+      "name": "capture-auto-save 行動仕様"
+    },
+    "design:workflows": {
+      "id": "design:workflows",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:aggregates": {
+      "id": "design:aggregates",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:type-contracts": {
+      "id": "design:type-contracts",
+      "type": "design",
+      "placeholder": true
+    },
+    "governance:domain-events": {
+      "id": "governance:domain-events",
+      "type": "governance",
+      "placeholder": true
+    },
+    "governance:glossary": {
+      "id": "governance:glossary",
+      "type": "governance",
+      "placeholder": true
+    },
+    "module:capture-auto-save": {
+      "id": "module:capture-auto-save",
+      "type": "module",
+      "placeholder": false,
+      "name": "capture-auto-save"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/pipeline.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/update-projections.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/update-projections.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/update-projections.ts"
+    },
+    "file:promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts": {
+      "id": "file:promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts"
+    },
+    "design:capture-auto-save-verification": {
+      "id": "design:capture-auto-save-verification",
+      "type": "design",
+      "placeholder": false,
+      "path": "specs/verification-architecture.md",
+      "name": "capture-auto-save 検証アーキテクチャ（純粋性境界・証明義務）"
+    },
+    "file:promptnotes/src/lib/domain/__tests__/capture-auto-save": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/capture-auto-save",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/__tests__/capture-auto-save"
+    }
+  },
+  "edges": [
+    {
+      "id": 1,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "design:workflows",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "governance:domain-events",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "governance:glossary",
+      "relation": "specifies",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "module:capture-auto-save",
+      "targetId": "req:capture-auto-save",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/update-projections.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "design:capture-auto-save-verification",
+      "targetId": "req:capture-auto-save",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "design:capture-auto-save-verification",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "design:capture-auto-save-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "sourceId": "module:capture-auto-save",
+      "targetId": "design:capture-auto-save-verification",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "sourceId": "design:capture-auto-save-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/capture-auto-save",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    }
+  ],
+  "lastScanAt": "2026-05-10T04:11:36.011Z"
+}

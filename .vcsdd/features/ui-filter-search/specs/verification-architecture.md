@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:ui-filter-search-verification"
+  type: design
+  name: "ui-filter-search 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:ui-filter-search"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "ui-filter-search"
+  source_files:
+    - "promptnotes/src/lib/feed/__tests__"
+---
+
 # Verification Architecture — ui-filter-search
 
 Feature: `ui-filter-search`

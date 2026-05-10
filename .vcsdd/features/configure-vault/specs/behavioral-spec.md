@@ -1,3 +1,29 @@
+---
+coherence:
+  node_id: "req:configure-vault"
+  type: req
+  name: "configure-vault 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "governance:domain-events"
+      relation: depends_on
+  modules:
+    - "configure-vault"
+  source_files:
+    - "promptnotes/src/lib/domain/configure-vault/pipeline.ts"
+    - "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts"
+    - "promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts"
+    - "promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts"
+    - "promptnotes/src-tauri/src/lib.rs"
+---
+
 # Behavioral Specification: ConfigureVault
 
 **Feature**: `configure-vault`

@@ -1,0 +1,500 @@
+{
+  "version": 1,
+  "nodes": {
+    "req:ui-filter-search": {
+      "id": "req:ui-filter-search",
+      "type": "req",
+      "placeholder": false,
+      "path": "specs/behavioral-spec.md",
+      "name": "ui-filter-search 行動仕様"
+    },
+    "governance:implement-mapping": {
+      "id": "governance:implement-mapping",
+      "type": "governance",
+      "placeholder": true
+    },
+    "design:ui-fields": {
+      "id": "design:ui-fields",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:workflows": {
+      "id": "design:workflows",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:aggregates": {
+      "id": "design:aggregates",
+      "type": "design",
+      "placeholder": true
+    },
+    "governance:design-system": {
+      "id": "governance:design-system",
+      "type": "governance",
+      "placeholder": true
+    },
+    "req:apply-filter-or-search": {
+      "id": "req:apply-filter-or-search",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "req:ui-tag-chip": {
+      "id": "req:ui-tag-chip",
+      "type": "requirement",
+      "placeholder": true
+    },
+    "module:ui-filter-search": {
+      "id": "module:ui-filter-search",
+      "type": "module",
+      "placeholder": false,
+      "name": "ui-filter-search"
+    },
+    "file:promptnotes/src/lib/feed/SearchInput.svelte": {
+      "id": "file:promptnotes/src/lib/feed/SearchInput.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/SearchInput.svelte"
+    },
+    "file:promptnotes/src/lib/feed/SortToggle.svelte": {
+      "id": "file:promptnotes/src/lib/feed/SortToggle.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/SortToggle.svelte"
+    },
+    "file:promptnotes/src/lib/feed/feedReducer.ts": {
+      "id": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/feedReducer.ts"
+    },
+    "file:promptnotes/src/lib/feed/computeVisible.ts": {
+      "id": "file:promptnotes/src/lib/feed/computeVisible.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/computeVisible.ts"
+    },
+    "file:promptnotes/src/lib/feed/searchPredicate.ts": {
+      "id": "file:promptnotes/src/lib/feed/searchPredicate.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/searchPredicate.ts"
+    },
+    "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts": {
+      "id": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/sortByUpdatedAt.ts"
+    },
+    "file:promptnotes/src/lib/feed/types.ts": {
+      "id": "file:promptnotes/src/lib/feed/types.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/types.ts"
+    },
+    "file:promptnotes/src/lib/feed/FeedList.svelte": {
+      "id": "file:promptnotes/src/lib/feed/FeedList.svelte",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/FeedList.svelte"
+    },
+    "design:ui-filter-search-verification": {
+      "id": "design:ui-filter-search-verification",
+      "type": "design",
+      "placeholder": false,
+      "path": "specs/verification-architecture.md",
+      "name": "ui-filter-search 検証アーキテクチャ（純粋性境界・証明義務）"
+    },
+    "design:type-contracts": {
+      "id": "design:type-contracts",
+      "type": "design",
+      "placeholder": true
+    },
+    "file:promptnotes/src/lib/feed/__tests__": {
+      "id": "file:promptnotes/src/lib/feed/__tests__",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/feed/__tests__"
+    }
+  },
+  "edges": [
+    {
+      "id": 1,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "governance:implement-mapping",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "design:ui-fields",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "design:workflows",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "governance:design-system",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "req:apply-filter-or-search",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "req:ui-tag-chip",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "module:ui-filter-search",
+      "targetId": "req:ui-filter-search",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/SearchInput.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/SortToggle.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/computeVisible.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/searchPredicate.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/types.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "design:ui-filter-search-verification",
+      "targetId": "req:ui-filter-search",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "design:ui-filter-search-verification",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "sourceId": "design:ui-filter-search-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "sourceId": "module:ui-filter-search",
+      "targetId": "design:ui-filter-search-verification",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "sourceId": "design:ui-filter-search-verification",
+      "targetId": "file:promptnotes/src/lib/feed/__tests__",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    }
+  ],
+  "lastScanAt": "2026-05-10T04:19:45.430Z"
+}

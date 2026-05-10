@@ -1,3 +1,27 @@
+---
+coherence:
+  node_id: "req:edit-past-note-start"
+  type: req
+  name: "edit-past-note-start 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "governance:domain-events"
+      relation: depends_on
+  modules:
+    - "edit-past-note-start"
+  source_files:
+    - "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts"
+    - "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts"
+    - "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts"
+    - "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts"
+    - "promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts"
+---
+
 # Behavioral Specification: EditPastNoteStart
 
 **Feature**: `edit-past-note-start`

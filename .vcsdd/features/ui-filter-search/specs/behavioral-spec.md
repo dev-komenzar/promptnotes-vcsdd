@@ -1,3 +1,36 @@
+---
+coherence:
+  node_id: "req:ui-filter-search"
+  type: req
+  name: "ui-filter-search 行動仕様"
+  depends_on:
+    - id: "governance:implement-mapping"
+      relation: derives_from
+    - id: "design:ui-fields"
+      relation: derives_from
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "governance:design-system"
+      relation: depends_on
+    - id: "req:apply-filter-or-search"
+      relation: depends_on
+    - id: "req:ui-tag-chip"
+      relation: depends_on
+  modules:
+    - "ui-filter-search"
+  source_files:
+    - "promptnotes/src/lib/feed/SearchInput.svelte"
+    - "promptnotes/src/lib/feed/SortToggle.svelte"
+    - "promptnotes/src/lib/feed/feedReducer.ts"
+    - "promptnotes/src/lib/feed/computeVisible.ts"
+    - "promptnotes/src/lib/feed/searchPredicate.ts"
+    - "promptnotes/src/lib/feed/sortByUpdatedAt.ts"
+    - "promptnotes/src/lib/feed/types.ts"
+    - "promptnotes/src/lib/feed/FeedList.svelte"
+---
+
 # Behavioral Specification — ui-filter-search
 
 Feature: `ui-filter-search`

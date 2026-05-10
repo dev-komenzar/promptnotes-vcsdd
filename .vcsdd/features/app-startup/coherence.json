@@ -1,0 +1,515 @@
+{
+  "version": 1,
+  "nodes": {
+    "req:app-startup": {
+      "id": "req:app-startup",
+      "type": "req",
+      "placeholder": false,
+      "path": "specs/behavioral-spec.md",
+      "name": "app-startup 行動仕様"
+    },
+    "design:workflows": {
+      "id": "design:workflows",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:aggregates": {
+      "id": "design:aggregates",
+      "type": "design",
+      "placeholder": true
+    },
+    "design:type-contracts": {
+      "id": "design:type-contracts",
+      "type": "design",
+      "placeholder": true
+    },
+    "governance:glossary": {
+      "id": "governance:glossary",
+      "type": "governance",
+      "placeholder": true
+    },
+    "governance:domain-events": {
+      "id": "governance:domain-events",
+      "type": "governance",
+      "placeholder": true
+    },
+    "module:app-startup": {
+      "id": "module:app-startup",
+      "type": "module",
+      "placeholder": false,
+      "name": "app-startup"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/pipeline.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/pipeline.ts"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/load-vault-config.ts"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/scan-vault.ts"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/hydrate-note.ts"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/initialize-capture.ts"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/stages.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/stages.ts"
+    },
+    "file:promptnotes/src/lib/domain/app-startup/errors.ts": {
+      "id": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/app-startup/errors.ts"
+    },
+    "file:promptnotes/src-tauri/src/domain/vault": {
+      "id": "file:promptnotes/src-tauri/src/domain/vault",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src-tauri/src/domain/vault"
+    },
+    "file:promptnotes/src-tauri/src/lib.rs": {
+      "id": "file:promptnotes/src-tauri/src/lib.rs",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src-tauri/src/lib.rs"
+    },
+    "design:app-startup-verification": {
+      "id": "design:app-startup-verification",
+      "type": "design",
+      "placeholder": false,
+      "path": "specs/verification-architecture.md",
+      "name": "app-startup 検証アーキテクチャ（純粋性境界・証明義務）"
+    },
+    "file:promptnotes/src/lib/domain/__tests__/app-startup": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/app-startup",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/__tests__/app-startup"
+    }
+  },
+  "edges": [
+    {
+      "id": 1,
+      "sourceId": "req:app-startup",
+      "targetId": "design:workflows",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "sourceId": "req:app-startup",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:app-startup",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:app-startup",
+      "targetId": "governance:glossary",
+      "relation": "specifies",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:app-startup",
+      "targetId": "governance:domain-events",
+      "relation": "depends_on",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "module:app-startup",
+      "targetId": "req:app-startup",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src-tauri/src/domain/vault",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src-tauri/src/lib.rs",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "design:app-startup-verification",
+      "targetId": "req:app-startup",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "design:app-startup-verification",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "sourceId": "design:app-startup-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "sourceId": "module:app-startup",
+      "targetId": "design:app-startup-verification",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "sourceId": "design:app-startup-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/app-startup",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "sourceId": "design:app-startup-verification",
+      "targetId": "file:promptnotes/src-tauri/src/domain/vault",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/verification-architecture.md",
+          "isNegative": false
+        }
+      ]
+    }
+  ],
+  "lastScanAt": "2026-05-10T04:09:12.783Z"
+}
