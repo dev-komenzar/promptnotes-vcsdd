@@ -785,3 +785,64 @@ Sprint 3 tests `test_select_past_note_editing_payload_contains_body` must be **r
 - `wire_audit.sh` PASS および PROP-FEED-S5-013 の `git diff` baseline check exit 0 (Sprint 4 emit 順序が変更されていないことの確認)。
 
 > **FIND-S5-SPEC-iter2-004 解消**: 旧版に存在した orphan dangling table row (`| REQ-FEED-024 (S4) | PROP-FEED-S4-012... |`) は §13 Sprint 4 の coverage matrix に既出のため、§14 末尾からは削除した。Sprint 4 の coverage は §13 を正規参照とする。
+
+---
+
+### Sprint 6 Purity Boundary Notes
+
+§1 / §2 の purity-audit grep pattern は **変更なし**。Sprint 6 は `FeedRow.svelte` 内の **既存** preview 系 DOM 要素を `{#if !shouldMountBlocks}` で囲む purely structural な変更であり、新規 pure helper を追加しない。`shouldMountBlocks` の derivation 自体は Sprint 5 で既に `$derived` で書かれており、本 Sprint で論理は **変更しない** (REQ-FEED-030 の mount predicate を再利用する)。
+
+§2 Purity Boundary Map に新規行は追加しない (`FeedRow.svelte` は既に Effectful Shell に分類済み)。
+
+### Sprint 6 Proof Obligations
+
+| PROP-ID | REQ-ID | Description | Tier | Tool | Required | Pure/Shell |
+|---------|--------|-------------|------|------|----------|-----------|
+| PROP-FEED-S6-001 | REQ-FEED-030.1 | DOM integration — preview/feed-row-button unmount per truth table cell. (cell 1) `editingStatus ∈ {editing,saving,switching,save-failed}` AND `editingNoteId === self.noteId` のとき、`querySelector('[data-testid="row-body-preview"]') === null` AND `querySelector('[data-testid="feed-row-button"]') === null` AND `querySelector('[data-testid="block-element"]') !== null`。(cell 3) `editingStatus ∈ {editing,...}` AND `editingNoteId !== self.noteId`: `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null`。(cell 4) `editingStatus === 'idle'` AND `editingNoteId !== self.noteId`: `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null`。(cell 2) `editingStatus === 'idle'` AND `editingNoteId === self.noteId` (architecturally unreachable, defensive): `row-body-preview !== null` AND `block-element === null` (Sprint 5 cell 2 既存挙動継承)。 | Integration | vitest + jsdom + Svelte 5 mount | true | shell — `feed-row-preview-exclusivity.dom.vitest.ts` (新規) |
+| PROP-FEED-S6-002 | REQ-FEED-030.1 | **Non-coexistence property** (fast-check): 任意の `viewState` × `editingSessionState` × `serverBlocksLength ∈ {0,1,2,3,4,5}` の組合せで、同一 FeedRow の subtree 内で `[data-testid="row-body-preview"]` と `[data-testid="block-element"]` が **同時に存在することはない**。不変条件: `(row-body-preview 存在) AND (block-element 存在) === false` を全 cell で assert する。100 ケース以上ランダム生成。 | 2 (Property) | fast-check + jsdom + Svelte 5 mount | true | shell — `feed-row-preview-exclusivity.property.test.ts` (新規) |
+| PROP-FEED-S6-003 | REQ-FEED-030.1 | grep audit: `display:\s*none` / `visibility:\s*hidden` / `opacity:\s*0` を `FeedRow.svelte` `<style>` ブロック内に追加していない (回帰防止)。実行コマンド: `grep -nE '(display:\s*none\|visibility:\s*hidden\|opacity:\s*0)' promptnotes/src/lib/feed/FeedRow.svelte \| wc -l` の出力が **Sprint 5 baseline 同数 = 0**。 | 0 | grep audit | true | boundary |
+| PROP-FEED-S6-004 | REQ-FEED-034 | DOM integration — cell 3 (`editingStatus ∈ {editing,saving,switching,save-failed}` AND `editingNoteId !== self.noteId`) で `feed-row-button` クリックが mock `tauriFeedAdapter.dispatchSelectPastNote` を 1 回呼ぶ。引数 `(noteId, vaultPath, issuedAt)` の 3 引数で、`noteId === self.noteId`、`issuedAt` は ISO 8601 文字列。 | Integration | vitest + jsdom + mock adapter | true | shell — `feed-row-click-routing.dom.vitest.ts` (新規) |
+| PROP-FEED-S6-005 | REQ-FEED-034 | DOM integration — cell 1 (`shouldMountBlocks === true`) で `querySelector('[data-testid="feed-row-button"]') === null`。よって `feed-row-button` クリックは **物理的に発火不能** (defensive existence check)。 | Integration | vitest + jsdom + mock adapter | true | shell — `feed-row-click-routing.dom.vitest.ts` |
+| PROP-FEED-S6-006 | REQ-FEED-034 | DOM integration — cell 1 で `block-element` クリックが (a) `onRowClick` callback を **発火しない** (`vi.fn()` の call count = 0); (b) ui-block-editor REQ-BE-002b に従って `mock blockEditorAdapter.dispatchFocusBlock` を 1 回発火する (引数 `{ noteId, blockId, issuedAt }`)。 | Integration | vitest + jsdom + Svelte 5 mount + mock adapter | true | shell — `feed-row-click-routing.dom.vitest.ts` |
+
+### Sprint 6 Test Strategy
+
+**TS Files affected (新規 + 変更)**:
+
+| ファイル | 種別 | PROP |
+|---------|------|------|
+| `promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts` (新規) | vitest + jsdom + Svelte 5 mount | PROP-FEED-S6-001 |
+| `promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts` (新規) | fast-check + jsdom + Svelte 5 mount | PROP-FEED-S6-002 |
+| `promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts` (新規) | vitest + jsdom + mock adapter | PROP-FEED-S6-004, S6-005, S6-006 |
+| CI grep audit script (Sprint 6 拡張) | grep | PROP-FEED-S6-003 |
+
+**実装変更対象**:
+
+| モジュール | 種別 | 主たる責務変更 |
+|-----------|------|--------------|
+| `src/lib/feed/FeedRow.svelte` (拡張) | Component | `.row-button` (timestamp + body-preview + tags + tag-add + pending-switch-indicator) を `{#if !shouldMountBlocks}` で囲み、cell 1 で **DOM unmount** する。CSS `display:none` 等は使用しない。`block-editor-surface` のマウント条件は Sprint 5 から変更なし (`shouldMountBlocks && blockEditorAdapter`)。 |
+
+> 注: 本 Sprint 6 では `FeedList.svelte`、`+page.svelte`、`feedReducer.ts`、`tauriFeedAdapter.ts`、`editingSessionChannel.ts`、`createBlockEditorAdapter.ts`、`src-tauri/src/*.rs` の **いずれも変更しない**。Sprint 6 は FeedRow.svelte の DOM 構造変更のみで完結する。
+
+### Sprint 6 Coverage Matrix Additions
+
+| ID | PROP-FEED-S6-XXX | Tier | Test path |
+|----|-----------------|------|-----------|
+| REQ-FEED-030.1 | PROP-FEED-S6-001, PROP-FEED-S6-002, PROP-FEED-S6-003 | Integration + Property + 0 | `feed-row-preview-exclusivity.dom.vitest.ts`, `feed-row-preview-exclusivity.property.test.ts`, grep |
+| REQ-FEED-034 | PROP-FEED-S6-004, PROP-FEED-S6-005, PROP-FEED-S6-006 | Integration | `feed-row-click-routing.dom.vitest.ts` |
+| EC-FEED-021 | (covered by PROP-FEED-S6-001 cell 1/3 transition + PROP-FEED-S5-005 emit ordering) | Integration | 既存テスト inheritance |
+| EC-FEED-022 | (covered by PROP-FEED-S6-001 cell 4 + PROP-FEED-S5-011 fallback restart) | Integration | 既存テスト inheritance |
+| EC-FEED-023 | PROP-FEED-S6-002 | Property | `feed-row-preview-exclusivity.property.test.ts` |
+
+### Sprint 6 Phase 2 / Phase 5 Gates
+
+**Phase 2 gate (Red phase entry)**:
+- `Required: true` の全 PROP-FEED-S6-001..006 に対応する failing test が存在する。grep gate (S6-003) は Sprint 5 baseline で既に 0 ヒットのため、Sprint 6 では **回帰防止 gate** として実装後 PASS 扱い (実装で `display:none` 等を導入しないことを保証)。
+- regression baseline (Sprint 1〜5 の全テスト 1909 bun + 223 vitest) が green。
+
+**Phase 5 gate (formal hardening)**:
+- pure modules の branch coverage ≥ 95% (Sprint 6 で pure helper を追加しないため Sprint 5 のカバレッジを維持)。
+- `Required: true` の全 PROP-FEED-S6-001..006 が PASS。
+- 既存 PROP-FEED-S5-001..022 の **regression PASS** (Sprint 5 ベースラインを破壊しないこと)。
+- `PROP-FEED-S5-013` `git diff vcsdd/ui-feed-list-actions/sprint-4-baseline..HEAD -- src-tauri/src/{editor,feed}.rs` exit 0 (Rust emit 順序を Sprint 6 で変更していないことの再確認)。
+- fast-check property test (PROP-FEED-S6-002) の seed 固定実行で **100 ケース以上を 0 反例**で通過。

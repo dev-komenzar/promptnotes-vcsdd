@@ -94,8 +94,8 @@
       "createdAt": "2026-05-04T09:45:13.224Z",
       "mode": "strict",
       "language": "typescript",
-      "currentPhase": "complete",
-      "updatedAt": "2026-05-10T08:30:00.000Z"
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-10T09:34:30.000Z"
     },
     "ui-tag-chip": {
       "status": "active",
@@ -122,5 +122,5 @@
       "updatedAt": "2026-05-09T13:27:30.078Z"
     }
   },
-  "activeFeature": "ui-block-editor"
+  "activeFeature": "ui-feed-list-actions"
 }

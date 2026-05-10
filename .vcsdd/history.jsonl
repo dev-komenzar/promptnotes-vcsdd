@@ -680,3 +680,5 @@
 {"timestamp":"2026-05-09T10:32:25.474Z","event":"feature_created","featureName":"ui-block-editor","mode":"strict","language":"typescript"}
 {"timestamp":"2026-05-10T07:59:31.000Z","event":"bead_created","featureName":"ui-app-shell","beadId":"BEAD-101","type":"spec-revision","phase":"complete","externalId":"BLOCK-UI-MIG-ACK","note":"block-ui-migration acknowledgment patch — NEG-REQ-001 reframed; editingSessionState passthrough rewritten. Source: docs/tasks/block-based-ui-spec-migration.md Step 3."}
 {"timestamp":"2026-05-10T07:59:31.000Z","event":"spec_patch","featureName":"ui-app-shell","artifactPath":".vcsdd/features/ui-app-shell/specs/behavioral-spec.md","reason":"block-ui-migration Step 3: NEG-REQ-001 reframed for block-based UI, EditorPane references removed, blockUiMigrationAcknowledged flag set in state.json","beadIds":["BEAD-101"],"linkedBeads":["BEAD-020"]}
+{"feature": "ui-feed-list-actions", "from": "complete", "to": "1a", "timestamp": "2026-05-10T09:30:06.000Z", "sprint": 5, "nextSprintHint": 6, "reason": "Sprint 6 begin"}
+{"feature": "ui-feed-list-actions", "from": "1a", "to": "1b", "timestamp": "2026-05-10T09:34:30.000Z", "sprint": 6}

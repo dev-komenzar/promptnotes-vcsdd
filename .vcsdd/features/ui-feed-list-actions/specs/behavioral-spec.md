@@ -1275,3 +1275,122 @@ let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null
 | REQ-FEED-031 | `block-based-ui-spec-migration.md` Step 2 (3項目), `docs/domain/aggregates.md` §Note 不変条件 (最低 1 ブロック保持), `ui-block-editor` REQ-BE-001 |
 | REQ-FEED-032 | `block-based-ui-spec-migration.md` Step 2 (4項目), 既存 EC-FEED-017 / REQ-FEED-024 Sprint 4 amendment |
 | REQ-FEED-033 | `block-based-ui-spec-migration.md` §削除対象, `ui-block-editor` REQ-BE-027 |
+
+---
+
+## Sprint 6 Extensions
+
+> **背景**: Sprint 5 完了 (Phase 6 PASS at 2026-05-10T08:30:00Z) 後の動作検証で、
+> in-place 編集が成立していない問題が発覚した。`FeedRow.svelte` は
+> `editingNoteId === self.noteId` のときに `.row-button` (timestamp + body-preview +
+> tags + tag-add) を **常時マウントしたまま** `.block-editor-surface` を**追加**で
+> マウントするため、preview と editor が縦に重なって表示されていた。
+> `behavioral-spec.md` REQ-FEED-030 cell 1 の truth table は preview を**「非表示」**と
+> 規定していたが、Sprint 5 Phase 3 の AC は「`block-element` が DOM に存在する」のみを
+> 検証し、「preview が消えている」を検証しなかったため見逃された。
+>
+> Sprint 6 ではこの不整合を解消するため:
+> 1. REQ-FEED-030 cell 1 の AC を強化し preview の **DOM unmount** を要求する
+>    (新 EARS REQ-FEED-030.1 として明示)
+> 2. 行外クリック (preview / timestamp 領域) と行内 BlockElement クリックの責任分担を
+>    新 REQ-FEED-034 として明文化する
+>
+> 根拠: `docs/tasks/block-based-ui-spec-migration.md` §Step 4 (lines 205-271),
+> `docs/domain/discovery.md` §エディタ実装方針 (line 49), `docs/domain/workflows.md`
+> Workflow 3 (lines 311-321), `behavioral-spec.md:1031-1036` REQ-FEED-030 truth table
+> cell 1 (Sprint 5 で確立した「非表示」規定を AC レベルに昇格)。
+
+---
+
+### REQ-FEED-030.1: cell 1 — preview / row-button の DOM unmount (REQ-FEED-030 cell 1 AC 強化)
+
+**EARS**: WHEN `viewState.editingStatus ∈ {'editing', 'saving', 'switching', 'save-failed'}` AND `viewState.editingNoteId === self.noteId` THEN `FeedRow` は `data-testid="row-body-preview"`、`data-testid="row-created-at"`、`data-testid="feed-row-button"` および `.row-button` 配下に置かれる **すべての preview 系要素 (`row-timestamp`, `row-body-preview`, `tag-list`, `tag-actions`, `pending-switch-indicator`)** を **DOM から完全に unmount** しなければならない (`{#if !shouldMountBlocks}` による条件付きレンダリング、`display:none` や `visibility:hidden` を用いた視覚的隠蔽は不可)。
+
+> **設計意図 (FIND-S6-PREVIEW-EXCLUSIVITY)**:
+> Notion / Logseq 風 in-place 編集は「フォーカスがあるブロック = 編集中、それ以外 = 表示中」(`docs/domain/discovery.md` §エディタ実装方針) という原則に立脚する。preview と editor が同時に DOM 上に並ぶと、ユーザーには「2 つの異なる表示」が同時に見えることになり、原則に反する。Sprint 5 では `block-editor-surface` が `.row-button` の**下**に置かれていたため preview と editor が縦に重なって表示されていたが、これは「DOM 上に preview が残っている」ことに起因する。よって Sprint 6 では preview を `{#if}` で**実 unmount** することにより、DOM レベルで `row-body-preview` (および兄弟 preview 要素) と `block-element` が**同時刻に共存しない**ことを保証する。
+
+**Mount/unmount truth table** (REQ-FEED-030 §truth table の AC 強化版):
+
+| `editingStatus` | `editingNoteId === self.noteId` | `BlockElement` 表示数 | `row-body-preview` DOM | `feed-row-button` DOM | `delete-button` DOM |
+|-----------------|------------------------------|---------------------|----------------------|----------------------|---------------------|
+| `∈ {editing, saving, switching, save-failed}` | `true` | `blocks.length` (>= 1; fallback 適用時 = 1) | **不在** (unmount) | **不在** (unmount) | 存在 (disabled, `isDeleteButtonDisabled` で disabled=true) |
+| `'idle'` | `true` (architecturally unreachable) | 0 | 存在 | 存在 | 存在 (disabled) |
+| `∈ {editing, saving, switching, save-failed}` | `false` | 0 | 存在 | 存在 | 存在 |
+| `'idle'` | `false` | 0 | 存在 | 存在 | 存在 |
+
+> **`delete-button` を維持する理由**: `.row-button` 内部の preview とは責務が異なる兄弟要素。`isDeleteButtonDisabled(noteId, editingStatus, editingNoteId)` (既存 pure helper) により編集中 note の delete ボタンは `disabled` 属性で抑制されるため、UI 上はクリック不能。レイアウト崩壊を避けるため DOM には残す (Sprint 1 から維持されている既存挙動)。
+
+**Acceptance Criteria** (Sprint 6 PROP-FEED-S6-001..003):
+- (PROP-FEED-S6-001) cell 1 (`editingStatus ∈ {editing, saving, switching, save-failed}` AND `editingNoteId === self.noteId`) のとき、`querySelector('[data-testid="row-body-preview"]')` が **`null`** を返す。同 cell で `querySelector('[data-testid="feed-row-button"]')` も `null` を返す。同 cell で `querySelector('[data-testid="block-element"]')` は **`null` でない**要素を返す。
+- (PROP-FEED-S6-001) cell 3 (`editingStatus ∈ {editing,...}` AND `editingNoteId !== self.noteId`) では `querySelector('[data-testid="row-body-preview"]')` が `null` でない (他行は preview 維持)。
+- (PROP-FEED-S6-001) cell 4 (`editingStatus === 'idle'` AND `editingNoteId !== self.noteId`) では preview / feed-row-button が DOM に存在する。
+- (PROP-FEED-S6-002) **non-coexistence property**: 任意の `viewState` × `editingSessionState` の組合せに対し、同一 `FeedRow` の subtree 内で `[data-testid="row-body-preview"]` と `[data-testid="block-element"]` が **同時に存在することはない** (fast-check property test, 4 cell × random `blocks` count 0..5)。
+- (PROP-FEED-S6-003) `display:none` / `visibility:hidden` / `opacity:0` 等の **視覚的隠蔽方式が CSS source に追加されていない** こと: `grep -nE '(display:\s*none|visibility:\s*hidden|opacity:\s*0)' promptnotes/src/lib/feed/FeedRow.svelte` の hit 数が **Sprint 5 baseline と同数以下** (回帰防止)。
+- 既存 PROP-FEED-S5-006 (cell 1 の `block-element` count assertion) は維持される。
+
+**Edge Cases**:
+- `viewState.editingStatus === 'idle'` AND `viewState.editingNoteId === self.noteId`: architecturally unreachable (REQ-FEED-009 mirror 不変条件)。defensive test では preview を表示する (cell 2)。
+- `pending-switch-indicator` (REQ-FEED-026 由来): cell 3 (`editingNoteId !== self.noteId` で `pendingNextFocus.noteId === self.noteId`) で表示される要素。cell 1 の対象行では preview と一緒に unmount される (preview unmount に伴う副次的影響、REQ-FEED-026 の AC は cell 3 でのみ assert)。
+- タグ削除中 (`onTagRemove` 実行中) に row が cell 1 に遷移: 既存 onTagRemove handler は `e.stopPropagation()` 済みのため再エントランシーは発生しない。preview unmount により tag-chip も同時 unmount され、ユーザー視点では「即座に編集モードに入る」遷移として整合する。
+
+**根拠**:
+- `docs/tasks/block-based-ui-spec-migration.md:236-244` Step 4 第 1 項目 (preview 非マウントの AC 強化)
+- `docs/domain/discovery.md:38-49` §エディタ実装方針 (in-place 編集原則)
+- `behavioral-spec.md:1031-1036` REQ-FEED-030 truth table cell 1 (Sprint 5 で「非表示」と規定済み、本 REQ で AC 強化)
+
+---
+
+### REQ-FEED-034: 行外クリック vs 行内 BlockElement クリックの責任分担
+
+**EARS**: THE FeedRow は **2 種類のクリック導線** を以下の責任分担で受け持たなければならない:
+
+1. **行外 (`.delete-button` の外側で `feed-row-button` を含むエリア)** が cell 3/cell 4 (preview 表示状態) でクリックされたとき, FeedRow は `onRowClick(noteId)` callback を発火する。callback は `feed.dispatchSelectPastNote(noteId, vaultPath, issuedAt)` 経由で Rust 側 `select_past_note` handler を呼び出し、`editing_session_state_changed` (REQ-FEED-024) と `feed_state_changed` (REQ-FEED-021) を順に emit する。受信後 cell 1 へ遷移する。
+2. **行内 BlockElement (`data-testid="block-element"`)** が cell 1 (block-editor-surface マウント中) でクリックされたとき, BlockElement は **ui-block-editor REQ-BE-002b** に従って `adapter.dispatchFocusBlock({ noteId, blockId, issuedAt })` を 1 回発火する。FeedRow 側は当該 click を `onRowClick` に **再ルーティングしない** (`block-editor-surface` は `.row-button` の sibling であり click event は冒泡しても `onRowClick` を起動しない)。
+
+> **二段階クリック (`select-past-note` → `editing_session_state_changed` → 再 click → `dispatchFocusBlock`) の不要性**:
+> 行外クリック (行 1) で cell 3 → cell 1 へ遷移したとき、(a) BlockElement は `editingSessionState.focusedBlockId` (REQ-FEED-029) を `isFocused` prop として受け取り、(b) ui-block-editor REQ-BE-002 に従ってマウント時に自動的に `block.focus()` を呼ぶ。よって Rust ラウンドトリップ完了後の自動フォーカスにより、ユーザーは cell 1 の BlockElement に対して**追加クリック不要で即座に文字入力**できる。これが `docs/domain/discovery.md:49` の「『Note Selection で編集対象を切替えてから入力』という二段階操作は不要」原則の UI レイヤ実装である。
+
+> **Cross-feature contract** (FIND-S6-CLICK-DELEGATION):
+> 本 REQ は **行外クリックの責任** (FeedRow scope) と **ブロッククリックの責任** (ui-block-editor REQ-BE-002b scope) の境界を明文化するに留まり、新規実装を導入しない。両 REQ は以下の関係を持つ:
+> - REQ-FEED-034 (本 REQ): 行外クリック → `onRowClick` → `dispatchSelectPastNote`
+> - ui-block-editor REQ-BE-002b: BlockElement の click/focusin → `dispatchFocusBlock`
+>
+> 両者は**疎結合**で、cell 3 → cell 1 遷移は Rust の `editing_session_state_changed` emit を介する。Sprint 6 では FeedRow 側で**追加の dispatch 連鎖を導入しない** (`dispatchSelectPastNote` + `dispatchFocusBlock` を行外 click で**まとめて**発火する案は、cell 1 で `block-element` が未だマウントされていない瞬間に `dispatchFocusBlock` の `blockId` が確定できないため不採用)。
+
+**Acceptance Criteria**:
+- (PROP-FEED-S6-004) cell 3 のとき `feed-row-button` クリックで `tauriFeedAdapter.dispatchSelectPastNote` が `noteId` 引数で 1 回呼ばれる (Sprint 1 PROP-FEED-001 既存契約を Sprint 6 でも維持; Sprint 6 では preview 表示状態でのクリック挙動として再 assert)。
+- (PROP-FEED-S6-005) cell 1 (`shouldMountBlocks === true`) では `feed-row-button` 要素が DOM に存在しないため、`feed-row-button` 経由の `dispatchSelectPastNote` 発火は **不能** (REQ-FEED-030.1 unmount により担保)。よって REQ-FEED-006 の「`editingStatus ∈ {'saving','switching'}` クリック抑止ガード」は cell 1 では DOM 不在により**自明に成立**する (defensive test として残す)。
+- (PROP-FEED-S6-006) cell 1 で `block-element` (BlockElement) クリックが `onRowClick` を **発火しない** (FeedRow の click event listener は `.row-button` 上にのみ登録され、`.block-editor-surface` には register されない)。
+- (PROP-FEED-S6-006) cell 1 で `block-element` クリックが ui-block-editor REQ-BE-002b に従って `adapter.dispatchFocusBlock` を 1 回発火する (cross-feature integration test, mock adapter で観測)。
+- 既存 PROP-FEED-S5-019 (REQ-FEED-006 click suppression for `switching`) は cell 3 → cell 1 遷移途中の race として維持。
+
+**Edge Cases**:
+- cell 4 → cell 1 遷移途中 (`feed-row-button` クリック直後、Rust ACK 前): `feed-row-button` は依然マウントされた状態で連続クリック可能。`feedReducer` REQ-FEED-006 ガードが `editingStatus === 'switching'` で no-op に抑止する (Sprint 1 既存挙動)。
+- cell 1 で `block-editor-surface` の余白部分 (BlockElement の外側、surface 内) クリック: BlockElement の click handler は発火しないが、`.row-button` も unmount されているため `onRowClick` も発火しない。**no-op** が期待挙動。Sprint 6 の AC では surface 余白の click を assert しない (対象外、Sprint 7 以降の design issue)。
+- delete-button クリック: cell 1 で `delete-button` は disabled になるため click event は発火しない (`<button disabled>`)。cell 3/4 では `onDeleteClick` が `onRowClick` とは独立に発火する (Sprint 1 既存挙動)。
+
+**根拠**:
+- `docs/tasks/block-based-ui-spec-migration.md:245-251` Step 4 第 2 項目 (クリック導線の再設計)
+- `docs/domain/discovery.md:49` (二段階クリック不要原則)
+- `docs/domain/workflows.md:311-321` Workflow 3 (Block Focus による発動契機)
+- `.vcsdd/features/ui-block-editor/specs/behavioral-spec.md:217-235` REQ-BE-002b (BlockElement の click → dispatchFocusBlock)
+
+---
+
+## Sprint 6 Edge Case Catalog 追補
+
+| EC-ID | 条件 | 期待動作 |
+|-------|------|----------|
+| EC-FEED-021 | cell 3 → cell 1 遷移時の preview unmount race | `editing_session_state_changed` 受信で `editingSessionState` 更新 → `feed_state_changed` 受信で `viewState.editingNoteId` 更新 → `shouldMountBlocks` が `true` に評価 → preview unmount + block-editor-surface mount。Svelte 5 の reactivity 一巡で同一 microtask 内に完了 (REQ-FEED-032 emit 順序保証済み)。中間状態で preview と block-element が同時 DOM 存在することはない (PROP-FEED-S6-002 で property 化) |
+| EC-FEED-022 | cell 1 で `editingSessionState` を保ったまま `viewState.editingNoteId` のみ別 note に変化 (REQ-FEED-030 §State source-of-truth row 4) | `shouldMountBlocks` が `false` に評価され preview が再 mount される。fallback state は `viewState.editingNoteId` 変更で reset (Sprint 5 既存挙動) |
+| EC-FEED-023 | random click sequence (fast-check) | preview と block-element の同時存在は生じない (PROP-FEED-S6-002) |
+
+---
+
+## Sprint 6 Traceability 追補
+
+| REQ-ID | 参照ドキュメント |
+|--------|----------------|
+| REQ-FEED-030.1 | `docs/tasks/block-based-ui-spec-migration.md` §Step 4 (1項目), `docs/domain/discovery.md` §エディタ実装方針 (line 49), 旧 REQ-FEED-030 cell 1 truth table |
+| REQ-FEED-034 | `docs/tasks/block-based-ui-spec-migration.md` §Step 4 (2項目), `docs/domain/workflows.md` Workflow 3, `ui-block-editor` REQ-BE-002b |
+
