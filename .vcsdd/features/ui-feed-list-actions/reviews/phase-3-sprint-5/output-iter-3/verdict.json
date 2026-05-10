@@ -1,0 +1,153 @@
+{
+  "sprintNumber": 5,
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "iteration": 3,
+  "iterationLimit": 5,
+  "timestamp": "2026-05-10T00:00:00Z",
+  "overallVerdict": "PASS",
+  "reviewContext": {
+    "reviewType": "sprint",
+    "scope": "phase-3-sprint-5",
+    "manifestPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-5/input/manifest.json",
+    "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/+page.svelte",
+          "description": "Lines 17-25 import subscribeEditingSessionState (line 21) and createBlockEditorAdapter (line 23); line 31 instantiates blockEditorAdapter; line 32 holds editingSessionState in $state; lines 58-65 wire subscribeEditingSessionState in $effect with cleanup return; lines 116-123 pass both as props to FeedList. End-to-end production wiring is present. Resolves iter-1 FIND-S5-PHASE3-001."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedList.svelte",
+          "description": "Lines 23-24 import EditingSessionStateDto and BlockEditorAdapter; lines 42-45 declare props; lines 53-54 destructure with default null; lines 403-404 forward both to each FeedRow."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte",
+          "description": "Lines 30-31 import BlockEditorAdapter / EditingSessionStateDto types; lines 49-52 declare props; lines 58-59 destructure with default null; line 448 mount gate `{#if shouldMountBlocks && blockEditorAdapter}` now reachable in production."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "description": "Lines 1119 (EARS), 1121-1122 (clarification), 1173 (AC step 1), 1174 (AC step 2) all consistently describe payload shape `{ noteId, type: 'paragraph', content: '', issuedAt }` for dispatchInsertBlockAtBeginning and `{ noteId, blockId: <client-generated UUID>, issuedAt }` for dispatchFocusBlock. Verified consistent with verification-architecture.md:715 (PROP-FEED-S5-011) and implementation at FeedRow.svelte:290-295,300-305. Iter-2 FIND-S5-PHASE3-iter2-001 RESOLVED."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+          "description": "Lines 842-881 PROP-FEED-S5-019 performs 3 clicks: (1) idle→click 1 dispatches (line 854-856), (2) remount in switching state, click 2 NOT dispatched (line 872-874), (3) click 3 NOT dispatched (line 876-878). Both halves of the race-suppression invariant exercised. Iter-1 FIND-S5-PHASE3-003 RESOLVED."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+          "description": "Reviewed lines 1-359. PROP-FEED-S5-011 idempotency scenarios (a)-(e) exercise the FeedRow $effect via FeedRowSprint5Wrapper for cases (b)/(d) and direct mount for (a)/(c)/(e). Scenario (d) at lines 215-250 verifies undefined→non-empty→undefined produces a fresh UUID via restart condition (iii). Test assertions at lines 207, 210 use the new payload shape (`insertCall.type === 'paragraph'`, `focusCall.blockId === renderedId`)."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/+page.svelte",
+          "description": "Lines 58-65: subscribeEditingSessionState wired in $effect; cleanup returns unsubscribe(). No reactive deps inside the effect, runs once on mount and cleans up on unmount. Correct."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte",
+          "description": "Lines 250-310 $effect logic: blocksPresent path resets fallbackAppliedFor (line 272) and sets lastBlocksWasNonEmpty=true (line 270); absent path checks (i) null state, (ii) noteId switch, (iii) prior non-empty cycle (lines 277-278); guards null adapter at line 287; both await calls in try/catch at lines 289-308. Dispatch payload at lines 290-295 sends `{ noteId: noteIdNow, type: 'paragraph', content: '', issuedAt: at }` matching EARS at behavioral-spec.md:1119 and AC at line 1173. Dispatch at lines 301-305 sends `{ noteId: noteIdNow, blockId: newId, issuedAt: nowIso() }` matching AC at line 1174. Logic correct."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/block-editor/createBlockEditorAdapter.ts",
+          "description": "Lines 27-64: 16 dispatch methods with documented Tauri command names; each payload includes issuedAt. Now actually instantiated in +page.svelte (line 31)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/editingSessionChannel.ts",
+          "description": "Lines 34-54: synchronous handler (no await/then/setTimeout/queueMicrotask inside listen callback); INBOUND only (no invoke import, only listen from @tauri-apps/api/event at line 15). Now actually consumed by +page.svelte (line 59)."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/scripts/sprint-5-grep-audit.sh",
+          "description": "Audit script unchanged; PROP-FEED-S5-001/002/003/004/012/014/015/017/021 still enforced. Listener count (PROP-FEED-S5-003) still equals 1 because +page.svelte uses subscribeEditingSessionState() not listen() directly."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/+page.svelte:115-149",
+          "description": "Single-column layout (REQ-FEED-028) preserved; .feed-main wrapper at line 115, no grid-template-columns, height: 100vh present at line 147."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "description": "REQ-FEED-031 now internally consistent: EARS (line 1119), clarification block (1121-1122), AC step 1 (line 1173: `dispatchInsertBlockAtBeginning({ noteId, type: 'paragraph', content: '', issuedAt: <ISO> })`), AND AC step 2 (line 1174: `dispatchFocusBlock({ noteId, blockId: <client-generated UUID>, issuedAt: <ISO> })`) all use the SAME payload shape. The `<UUID>` reference correctly lives only on dispatchFocusBlock.blockId. Spec also matches verification-architecture.md:715. Iter-2 FIND-S5-PHASE3-iter2-001 RESOLVED."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/__tests__/main-route-wiring.dom.vitest.ts",
+          "description": "8-test suite asserts the wiring chain via source grep: +page.svelte imports + subscribe call (with $effect cleanup regex at line 38) + adapter instantiation (line 43) + FeedList prop pass (lines 48-49); FeedList declares props (lines 54-55) + forwards to FeedRow (lines 60-61); FeedRow declares props (lines 66-67) + uses {#if shouldMountBlocks && blockEditorAdapter} mount gate (line 73). Provides positive evidence that production code calls the helper functions, not just that the helpers exist."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts:842-881",
+          "description": "PROP-FEED-S5-019 verified to exercise REQ-FEED-006 click suppression invariant: real first click on idle (line 854) followed by suppressed clicks on switching state (lines 872, 876)."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 0,
+    "criticalFindingCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-200",
+      "CRIT-201",
+      "CRIT-202",
+      "CRIT-203",
+      "CRIT-204",
+      "CRIT-205",
+      "CRIT-206",
+      "CRIT-207"
+    ],
+    "criteriaResults": [
+      { "id": "CRIT-200", "verdict": "PASS", "rationale": "+page.svelte single-column layout, height:100vh at line 147, no forbidden identifiers; main-route.dom.vitest.ts source-structure assertions pass. No regression from iter-2." },
+      { "id": "CRIT-201", "verdict": "PASS", "rationale": "Listener exists exactly once in editingSessionChannel.ts (line 39) and is async-free. +page.svelte invokes subscribeEditingSessionState in $effect (lines 58-65) with cleanup. main-route-wiring.dom.vitest.ts asserts the call presence + cleanup regex." },
+      { "id": "CRIT-202", "verdict": "PASS", "rationale": "+page.svelte instantiates blockEditorAdapter via createBlockEditorAdapter() (line 31) and passes it through FeedList (line 122) → FeedRow (FeedList line 404). The mount gate `shouldMountBlocks && blockEditorAdapter` (FeedRow line 448) fires in production." },
+      { "id": "CRIT-203", "verdict": "PASS", "rationale": "Fallback dispatch chain reachable in production. Implementation at FeedRow.svelte:290-295 sends `{ noteId, type, content, issuedAt }` matching EARS (behavioral-spec.md:1119), AC step 1 (line 1173), and verification-architecture.md PROP-FEED-S5-011 (line 715). The previous spec/AC inconsistency that drove iter-1 FIND-S5-PHASE3-004 and iter-2 FIND-S5-PHASE3-iter2-001 is fully resolved — REQ-FEED-031 EARS, clarification block, and AC enumeration now agree." },
+      { "id": "CRIT-204", "verdict": "PASS", "rationale": "Sprint-4 emit-order baseline preserved; editingSessionChannel handler at editingSessionChannel.ts:39-45 is synchronous. REQ-FEED-032 invariant intact." },
+      { "id": "CRIT-205", "verdict": "PASS", "rationale": "Forbidden-identifier audit (PROP-FEED-S5-014) and src/lib/editor/ filesystem absence (PROP-FEED-S5-015) both clean. The wiring imports introduced no forbidden identifiers." },
+      { "id": "CRIT-206", "verdict": "PASS", "rationale": "Sub-assertions a/b/c/d operate against direct-mounted FeedRow with hand-injected blockEditorAdapter; production blockEditorAdapter is now wired so the same surface is reachable in production." },
+      { "id": "CRIT-207", "verdict": "PASS", "rationale": "PROP-FEED-S5-019 performs real first click on idle followed by suppressed clicks on switching state (FeedRow.dom.vitest.ts:842-881). PROP-FEED-S5-018 row-level remount continuity verified. PROP-FEED-S5-020 imports the channel module directly (acceptable for EC-FEED-020 timing-edge proof)." }
+    ],
+    "duplicateFindings": []
+  }
+}

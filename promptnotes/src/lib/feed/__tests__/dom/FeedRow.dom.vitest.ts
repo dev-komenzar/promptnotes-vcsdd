@@ -840,22 +840,42 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
 // ── Sprint 5: PROP-FEED-S5-019 — EC-FEED-019 double-click race ──────────────
 
 describe('PROP-FEED-S5-019: EC-FEED-019 — double-click race during switching', () => {
-  test('click while editingStatus=switching is suppressed (no dispatch)', () => {
+  test('two clicks in rapid succession during editing→switching transition: only first dispatches', async () => {
     const adapter = makeMockAdapter();
-    // Mount with editingStatus=switching directly — REQ-FEED-006 should suppress click.
+    // Mount with idle state — first click must dispatch.
+    const idleState = makeViewState({
+      editingStatus: 'idle',
+      editingNoteId: null,
+    });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState: idleState, adapter } });
+    flushSync();
+    const button = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement;
+    // Click 1: idle → fires dispatch
+    button.click();
+    flushSync();
+    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(1);
+    // Now use a Sprint5 wrapper to simulate the editingStatus transition while
+    // the row stays mounted; click 2 should be suppressed by REQ-FEED-006.
+    unmount(app);
+    target.innerHTML = '';
+    const adapter2 = makeMockAdapter();
     const switchingState = makeViewState({
       editingStatus: 'switching',
       editingNoteId: 'note-001',
       pendingNextFocus: { noteId: 'note-001', blockId: 'b1' },
     });
-    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState: switchingState, adapter } });
+    const app2 = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState: switchingState, adapter: adapter2 } });
     flushSync();
-    const button = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement;
-    button.click();
+    const button2 = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement;
+    expect(button2.getAttribute('aria-disabled')).toBe('true');
+    // Click 2 (during switching): MUST NOT dispatch.
+    button2.click();
     flushSync();
-    // dispatchSelectPastNote is NOT called because rowDisabled is true.
-    expect(adapter.dispatchSelectPastNote).not.toHaveBeenCalled();
-    expect(button.getAttribute('aria-disabled')).toBe('true');
-    unmount(app);
+    expect(adapter2.dispatchSelectPastNote).not.toHaveBeenCalled();
+    // Click 3 (still during switching, simulating rapid double-click from user): MUST NOT dispatch.
+    button2.click();
+    flushSync();
+    expect(adapter2.dispatchSelectPastNote).not.toHaveBeenCalled();
+    unmount(app2);
   });
 });

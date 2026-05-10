@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-S5-PHASE3-004",
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 5,
+  "iteration": 1,
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "medium",
+  "title": "Spec REQ-FEED-031 step 5 dispatches `dispatchInsertBlockAtBeginning` with `newBlock: { id, block_type, content }` but the implemented and adapter-typed payload is `{ type, content }` (no client UUID propagated)",
+  "description": "REQ-FEED-031 step 5 explicitly states: 'dispatchInsertBlockAtBeginning({ noteId, newBlock: { id: <UUID>, block_type: \\'paragraph\\', content: \\'\\' }, issuedAt: <ISO> })' (with the client-generated UUID inside `newBlock`). REQ-FEED-030's Adapter command-mapping table contradicts this with `{ noteId: string; type: BlockType; content: string; issuedAt: string }` (no `id`). The BlockEditorAdapter type in src/lib/block-editor/types.ts:124 uses the latter shape, and FeedRow.svelte:290-295 dispatches the latter shape.\n\nConsequence: the client-generated UUID for the fallback block is NEVER transmitted to Rust. When the Group B handler is eventually implemented in a future sprint, the Rust side will allocate its own block id and the next `editing_session_state_changed` will carry a different block id than the one the FeedRow rendered. Any client-side state keyed on the local UUID (focus, selection, undo) will desynchronize on the very first server emit. This is a latent design defect that will appear when Group B handlers are wired up.\n\nThis is a SPEC inconsistency the implementation could not resolve unilaterally: REQ-FEED-031 step 5 disagrees with REQ-FEED-030's authoritative command-mapping table. The implementation went with REQ-FEED-030 (and the type contract), which is defensible, but the spec must be amended to remove the conflicting `newBlock: { id, block_type, content }` text in REQ-FEED-031 OR the BlockEditorAdapter type and command-mapping table must be amended to carry `newBlock.id`.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1119, 1170-1171",
+    "snippet": "REQ-FEED-031: '... dispatchInsertBlockAtBeginning({ noteId, newBlock: { id: <UUID>, block_type: \\'paragraph\\', content: \\'\\' }, issuedAt: <ISO> }) ...'\n\nvs.\n\nREQ-FEED-030 Adapter command-mapping: 'dispatchInsertBlockAtBeginning | editor_insert_block_at_beginning | { noteId: string; type: BlockType; content: string; issuedAt: string }'",
+    "additionalEvidence": [
+      "promptnotes/src/lib/block-editor/types.ts:124 (BlockEditorAdapter.dispatchInsertBlockAtBeginning payload shape: no `id` field)",
+      "promptnotes/src/lib/feed/FeedRow.svelte:290-295 (implementation passes only `type`/`content`; the `newId` UUID is held client-side only)",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts:204-211 (test asserts only `insertCall.type === 'paragraph'`; intentionally avoids the `id` divergence)"
+    ]
+  },
+  "expectedBehavior": "Either (a) extend the BlockEditorAdapter and Tauri command-mapping to accept `newBlock.id` so the client UUID is transmitted to Rust, OR (b) amend REQ-FEED-031 step 5 to drop the `newBlock: { id, ... }` shape and document that Rust will allocate the canonical id once Group B handlers exist.",
+  "actualBehavior": "Implementation follows REQ-FEED-030 (no `id`); REQ-FEED-031 step 5 contradicts it but is unenforceable; the spec is internally inconsistent.",
+  "routeToPhase": "1c",
+  "blocksConvergence": false
+}

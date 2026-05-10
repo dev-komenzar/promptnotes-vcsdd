@@ -1116,7 +1116,10 @@ ui-block-editor REQ-BE-026 の 16 メソッドのうち、Rust 側 `#[tauri::com
 
 ### REQ-FEED-031: `FeedRow` 側 empty paragraph fallback (EC-FEED-016 Sprint 5 amendment)
 
-**EARS**: WHEN `viewState.editingNoteId === self.noteId` AND 受信した `editingSessionState.blocks` が `undefined`、`null`、または空配列である AND **fallback restart 条件 (下記) を満たす** THEN `FeedRow` は (1) クライアント側で UUID v4 を発番した空 paragraph block を 1 件構築し、(2) **`blocks` として採用して `BlockElement` を mount** し、(3) **best-effort で** `BlockEditorAdapter::dispatchInsertBlockAtBeginning({ noteId, type: 'paragraph', content: '', issuedAt })` (Group B, REQ-FEED-030 の Sprint 5 Rust handler scope split table 参照) → `dispatchFocusBlock({ noteId, blockId: <生成した UUID>, issuedAt })` の順に await dispatch を試行し、(4) どちらの dispatch が reject しても fallback BlockElement の表示は維持しなければならない。
+**EARS**: WHEN `viewState.editingNoteId === self.noteId` AND 受信した `editingSessionState.blocks` が `undefined`、`null`、または空配列である AND **fallback restart 条件 (下記) を満たす** THEN `FeedRow` は (1) クライアント側で UUID v4 を発番した空 paragraph block を 1 件 client-side render state として構築し、(2) **`blocks` として採用して `BlockElement` を mount** し、(3) **best-effort で** `BlockEditorAdapter::dispatchInsertBlockAtBeginning({ noteId, type: 'paragraph', content: '', issuedAt })` → `dispatchFocusBlock({ noteId, blockId: <生成した UUID>, issuedAt })` の順に await dispatch を試行し、(4) どちらの dispatch が reject しても fallback BlockElement の表示は維持しなければならない。
+
+> **Sprint 5 spec/code 整合 (FIND-S5-PHASE3-004 解消)**:
+> `dispatchInsertBlockAtBeginning` の payload は `BlockEditorAdapter` 型 (`src/lib/block-editor/types.ts`) に厳密準拠し `{ noteId, type, content, issuedAt }` のみ含む。クライアント生成 UUID は **`dispatchInsertBlockAtBeginning` payload に含めず**、続く `dispatchFocusBlock` の `blockId` フィールドにのみ載せる。これは Sprint 5 既知制約 — Group B Rust handler が未実装なため両 dispatch とも実際は reject され、block id の Rust 同期は別 Sprint まで延期される。Sprint 5 段階の wire 整合性は本 EARS の (1)〜(4) 順序のみで保証する。
 
 > **Sprint 4 までの責務**: EditorPane 側が空 paragraph fallback を担当（EC-FEED-016 旧定義）。
 > **Sprint 5 の責務**: EditorPane 廃止により `FeedRow` 側に責務が移管される。
@@ -1167,8 +1170,8 @@ let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null
 - `editingSessionState.blocks === []` （契約上到達不能だが防御的に）のとき、上記同様の挙動 (DOM integration test)。
 - fallback で生成された block の `id` は UUID v4 形式 (`/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i`) (DOM test)。
 - fallback 適用時、mock adapter で **以下の dispatch 順序が試行される** (両 dispatch とも reject 想定; PROP-FEED-S5-011):
-  1. `dispatchInsertBlockAtBeginning({ noteId, newBlock: { id: <UUID>, block_type: 'paragraph', content: '' }, issuedAt: <ISO> })` が **1 回 attempted** (mock の reject も成否を問わずカウント)
-  2. `dispatchFocusBlock({ noteId, blockId: <同 UUID>, issuedAt: <ISO> })` が **1 回 attempted**
+  1. `dispatchInsertBlockAtBeginning({ noteId, type: 'paragraph', content: '', issuedAt: <ISO> })` が **1 回 attempted** (mock の reject も成否を問わずカウント; 注: payload には `id` フィールドを含めない — `BlockEditorAdapter` 型に厳密準拠)
+  2. `dispatchFocusBlock({ noteId, blockId: <client-generated UUID>, issuedAt: <ISO> })` が **1 回 attempted** (UUID は FeedRow が `crypto.randomUUID()` で生成し、本 dispatch の `blockId` フィールドにのみ載る)
   3. 試行順序: (1) call が時系列的に (2) call より早い (mock の `mock.invocationCallOrder` 比較)
   4. **両 dispatch reject のもとでも** fallback BlockElement (`data-testid="block-element"` 1 個) が DOM に表示され続ける (best-effort 表示確認)
 - **Idempotency 強化テスト** (FIND-S5-SPEC-iter2-005 解消): 以下 4 シナリオ全 PASS (PROP-FEED-S5-011):

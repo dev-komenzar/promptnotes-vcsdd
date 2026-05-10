@@ -18,12 +18,18 @@
   import FeedList from "$lib/feed/FeedList.svelte";
   import { createTauriFeedAdapter } from "$lib/feed/tauriFeedAdapter.js";
   import { createFeedStateChannel } from "$lib/feed/feedStateChannel.js";
+  import { subscribeEditingSessionState } from "$lib/feed/editingSessionChannel.js";
+  import type { EditingSessionStateDto } from "$lib/feed/editingSessionChannel.js";
+  import { createBlockEditorAdapter } from "$lib/block-editor/createBlockEditorAdapter.js";
   import type { FeedViewState } from "$lib/feed/types.js";
   import { invoke } from "@tauri-apps/api/core";
 
   // ── Feed adapters (Sprint 2, ui-feed-list-actions feature) ──────────────
   const feedAdapter = createTauriFeedAdapter();
   const feedStateChannel = createFeedStateChannel();
+  // Sprint 5 (REQ-FEED-029, REQ-FEED-030): editing session channel + block adapter wiring.
+  const blockEditorAdapter = createBlockEditorAdapter();
+  let editingSessionState = $state<EditingSessionStateDto | null>(null);
 
   // Initial feed view state — loading until feed_initial_state resolves.
   let feedViewState = $state<FeedViewState>({
@@ -46,6 +52,17 @@
   // FIND-S2-01/05/06: Current vault path, resolved once on mount and passed to
   // FeedList so it can forward it to Rust commands that need to emit feed snapshots.
   let currentVaultPath = $state<string>('');
+
+  // Sprint 5 (REQ-FEED-029): single centralized editing_session_state_changed
+  // subscriber. Synchronous handler (REQ-FEED-032) writes to $state.
+  $effect(() => {
+    const unsubscribe = subscribeEditingSessionState((state) => {
+      editingSessionState = state;
+    });
+    return () => {
+      unsubscribe();
+    };
+  });
 
   // REQ-FEED-022: Load initial state from Rust after mount.
   // We use $effect to trigger after the component is attached to the DOM.
@@ -101,6 +118,8 @@
       adapter={feedAdapter}
       stateChannel={feedStateChannel}
       vaultPath={currentVaultPath}
+      editingSessionState={editingSessionState}
+      blockEditorAdapter={blockEditorAdapter}
     />
   </main>
 </AppShell>

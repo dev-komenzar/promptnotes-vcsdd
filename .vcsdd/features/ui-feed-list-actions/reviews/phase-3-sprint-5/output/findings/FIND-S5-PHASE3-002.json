@@ -1,0 +1,27 @@
+{
+  "findingId": "FIND-S5-PHASE3-002",
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 5,
+  "iteration": 1,
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "critical",
+  "title": "Sprint 5 DOM integration tests bypass the production wiring layer entirely and would still pass against a non-functional build",
+  "description": "Every Sprint 5 DOM test that purports to verify the in-place editing surface mounts FeedRow.svelte directly with hand-crafted `editingSessionState` and `blockEditorAdapter` props (PROP-FEED-S5-006/007/008/010/011/018/022). None of these tests render the actual production composition (+page.svelte → FeedList → FeedRow). The PROP-FEED-S5-005 channel test imports `editingSessionChannel.ts` directly and asserts the bare module's behavior, not its integration with any consumer.\n\nBecause of this, the suite passes (and reports CRIT-201/202/203/206 'PASS') even though FeedList does not subscribe to the channel and +page.svelte does not instantiate the BlockEditorAdapter (see FIND-S5-PHASE3-001). The 'PROP-FEED-S5-018: mount→unmount→remount preserves block-element rendering' test is particularly misleading because the cache continuity it verifies depends on an upstream subscriber that does not exist.\n\nThis is a textbook case of integration-blind tests — they validate component-local behavior of FeedRow but say nothing about whether the system as a whole works. The Sprint 5 contract claims this layer is sound; the tests cannot back that claim.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts",
+    "lineRange": "110-205",
+    "snippet": "function mountRow(props: Record<string, unknown>) {\n  return mount(FeedRow as never, { target, props: props as never });\n}\n... mountRow({ ...BASE_PROPS, viewState, adapter, editingSessionState, blockEditorAdapter: makeBlockAdapter() });",
+    "additionalEvidence": [
+      "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts:117-119 (mountRow → FeedRow direct, no FeedList layer)",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-row-best-effort-dispatch.dom.vitest.ts:104-106 (same pattern)",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts:65-100 (imports subscribeEditingSessionState directly; never asserts that any production component invokes it)",
+      "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts:181-227 (only checks +page.svelte for absence of forbidden classes; no positive assertion that subscribeEditingSessionState or createBlockEditorAdapter is called)"
+    ]
+  },
+  "expectedBehavior": "At least one integration test should mount +page.svelte (or FeedList.svelte at minimum), drive a Tauri-event mock that emits `editing_session_state_changed`, and assert that a `data-testid=\"block-element\"` appears inside the row corresponding to the editing noteId. Equivalently, the source-grep gate should assert presence of `subscribeEditingSessionState(` and `createBlockEditorAdapter(` in production source.",
+  "actualBehavior": "All 'integration' tests bypass the wiring layer; no test fails when FeedList omits the editingSessionChannel subscription or BlockEditorAdapter creation.",
+  "routeToPhase": "2a",
+  "blocksConvergence": true
+}

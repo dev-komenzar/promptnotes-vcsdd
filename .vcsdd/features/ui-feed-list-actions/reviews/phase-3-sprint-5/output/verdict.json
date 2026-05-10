@@ -1,0 +1,163 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 5,
+  "iteration": 1,
+  "iterationLimit": 5,
+  "timestamp": "2026-05-10T00:00:00Z",
+  "overallVerdict": "FAIL",
+  "reviewContext": {
+    "reviewType": "sprint",
+    "scope": "phase-3-sprint-5",
+    "manifestPath": ".vcsdd/features/ui-feed-list-actions/reviews/phase-3-sprint-5/input/manifest.json",
+    "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md"
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S5-PHASE3-001", "FIND-S5-PHASE3-004"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/+page.svelte",
+          "description": "Reviewed lines 1-132. No import of editingSessionChannel; no call to subscribeEditingSessionState; no import of createBlockEditorAdapter; no editingSessionState/blockEditorAdapter prop passed to FeedList. Required by REQ-FEED-029 / REQ-FEED-030 and verification-architecture §14 line 757."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedList.svelte",
+          "description": "Reviewed lines 1-50, 373-391. Props interface omits editingSessionState/blockEditorAdapter; FeedRow mount block does not forward them. Required by verification-architecture §14 line 754."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte",
+          "description": "Reviewed lines 1-315, 448-471. `{#if shouldMountBlocks && blockEditorAdapter}` mount gate cannot fire when blockEditorAdapter is null in production; defaults to null when no caller provides it (line 59)."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-S5-PHASE3-003"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts:840-861",
+          "description": "PROP-FEED-S5-019 implementation does not actually exercise the EC-FEED-019 double-click race; it pre-sets switching state and dispatches a single click (regression coverage for REQ-FEED-006 only)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts:297-362",
+          "description": "PROP-FEED-S5-009 needsEmptyParagraphFallback equivalence-class coverage (null/undefined/[]/non-empty) is solid; pure-helper edge cases are well covered."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts:215-337",
+          "description": "PROP-FEED-S5-011 (a)/(b)/(c)/(d)/(e) idempotency scenarios appear to drive the FeedRow $effect correctly via FeedRowSprint5Wrapper, but only at the FeedRow-instance level — the EC-FEED-018 (filter exclusion + cache restore) test only models unmount/remount continuity at the row level, not the upstream-cache continuity required when FeedList controls the editingSessionState slice (which it does not — see FIND-S5-PHASE3-001)."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S5-PHASE3-001"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/feedRowPredicates.ts:79-83",
+          "description": "needsEmptyParagraphFallback is correct, total, side-effect-free; matches PROP-FEED-S5-009 contract."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/editingSessionChannel.ts:1-54",
+          "description": "subscribeEditingSessionState handler is synchronous (no await/.then/setTimeout/queueMicrotask inside the listen callback); INBOUND only (no invoke import). Implementation correct — but the wiring layer never calls it, so its correctness is academic in production (see FIND-S5-PHASE3-001)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/block-editor/createBlockEditorAdapter.ts:27-64",
+          "description": "Factory implements all 16 methods with the documented Tauri command names and includes issuedAt in every payload. Matches REQ-FEED-030 command-mapping table. Implementation correct in isolation — but no caller instantiates it (see FIND-S5-PHASE3-001)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:189-310",
+          "description": "$effect logic for fallback restart conditions appears correct: blocksPresent path resets fallbackAppliedFor and sets lastBlocksWasNonEmpty=true; absent-path restart honors (i) null state, (ii) noteId switch, (iii) prior non-empty cycle. Best-effort dispatch chain wraps both await calls in try/catch. Note: the dispatch payload omits the client-generated UUID (FIND-S5-PHASE3-004 — spec inconsistency the implementation cannot resolve unilaterally)."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S5-PHASE3-001", "FIND-S5-PHASE3-004"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/scripts/sprint-5-grep-audit.sh",
+          "description": "Audit script enforces PROP-FEED-S5-001/002/003/004/012/014/015/017/021 correctly: forbidden identifiers, single listener location, INBOUND-only channel, 16 invokes with matching command set, src/lib/editor/ absence."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/+page.svelte:98-105",
+          "description": "Single-column layout implemented (REQ-FEED-028); .feed-main wrapper, no grid-template-columns, height: 100vh present. CRIT-200 grep portion satisfied."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "description": "Spec internally inconsistent: REQ-FEED-031 step 5 dispatches `{ noteId, newBlock: { id, block_type, content }, issuedAt }` while REQ-FEED-030 command-mapping requires `{ noteId, type, content, issuedAt }`. Implementation chose the type-conforming shape; spec should be reconciled (FIND-S5-PHASE3-004)."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S5-PHASE3-002", "FIND-S5-PHASE3-003"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts",
+          "description": "All cells of PROP-FEED-S5-006/007/008/018 mount FeedRow.svelte directly with hand-supplied props, bypassing FeedList and +page.svelte; integration with the wiring layer is not verified."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+          "description": "PROP-FEED-S5-010/011 sub-scenarios (a)-(e) verify FeedRow's local $effect logic via FeedRowSprint5Wrapper but do not exercise the upstream subscriber path."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+          "description": "PROP-FEED-S5-005 directly imports subscribeEditingSessionState and asserts its behavior; never asserts that FeedList or +page.svelte invokes it. PROP-FEED-S5-020 has the same gap."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts:181-227",
+          "description": "Source-grep portion of CRIT-200 confirms forbidden-identifier absence; no positive-presence assertion that subscribeEditingSessionState or createBlockEditorAdapter is called."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 4,
+    "criticalFindingCount": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-200",
+      "CRIT-201",
+      "CRIT-202",
+      "CRIT-203",
+      "CRIT-204",
+      "CRIT-205",
+      "CRIT-206",
+      "CRIT-207"
+    ],
+    "criteriaResults": [
+      { "id": "CRIT-200", "verdict": "PASS", "rationale": "+page.svelte single-column layout, height:100vh, no forbidden identifiers; main-route.dom.vitest.ts source structure assertions pass." },
+      { "id": "CRIT-201", "verdict": "FAIL", "rationale": "Listener exists exactly once in editingSessionChannel.ts and is async-free, but no production caller invokes subscribeEditingSessionState — REQ-FEED-029 'production listener mounted in +page.svelte or FeedList' is not satisfied." },
+      { "id": "CRIT-202", "verdict": "FAIL", "rationale": "FeedRow embeds BlockElement when given the props, but production wiring never supplies blockEditorAdapter; the mount gate `shouldMountBlocks && blockEditorAdapter` never fires in production. REQ-FEED-030 unmet." },
+      { "id": "CRIT-203", "verdict": "FAIL", "rationale": "needsEmptyParagraphFallback pure helper is correct and the FeedRow $effect logic models REQ-FEED-031, but the fallback is unreachable in production for the same wiring reason." },
+      { "id": "CRIT-204", "verdict": "PASS", "rationale": "Sprint-4 emit-order baseline preserved; editingSessionChannel handler is synchronous (PROP-FEED-S5-012 + S5-013 audit). REQ-FEED-032 emit ordering invariant intact." },
+      { "id": "CRIT-205", "verdict": "PASS", "rationale": "Forbidden-identifier audit (PROP-FEED-S5-014) and src/lib/editor/ filesystem absence (PROP-FEED-S5-015) both clean per audit script." },
+      { "id": "CRIT-206", "verdict": "FAIL", "rationale": "Sub-assertions a/b/c/d operate against direct-mounted FeedRow with hand-injected blockEditorAdapter; none model production reality where blockEditorAdapter is null. The 'UI continues to function' guarantee is inapplicable when the surface never mounts in production." },
+      { "id": "CRIT-207", "verdict": "FAIL", "rationale": "PROP-FEED-S5-018 only checks row-level remount continuity, not the upstream cache the spec describes; PROP-FEED-S5-019 does not exercise an actual race; PROP-FEED-S5-020 imports the channel module directly. EC-FEED-018/019/020 coverage is shallow." }
+    ],
+    "duplicateFindings": []
+  }
+}

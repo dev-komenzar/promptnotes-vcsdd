@@ -1,0 +1,27 @@
+{
+  "findingId": "FIND-S5-PHASE3-iter2-001",
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 5,
+  "iteration": 2,
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "medium",
+  "title": "REQ-FEED-031 amendment is incomplete — EARS narrative was fixed but the Acceptance Criteria enumeration still carries the old `newBlock: { id, block_type, content }` payload shape",
+  "description": "FIND-S5-PHASE3-004 (iter-1) flagged that REQ-FEED-031 step 5 dispatched `dispatchInsertBlockAtBeginning({ noteId, newBlock: { id: <UUID>, block_type: 'paragraph', content: '' }, issuedAt: <ISO> })` while the BlockEditorAdapter type and REQ-FEED-030 command-mapping required `{ noteId, type, content, issuedAt }`. The iter-2 fix amended the EARS sentence (behavioral-spec.md line 1119) and added a clarification block (lines 1121-1122) explicitly noting that the payload follows `{ noteId, type, content, issuedAt }` and that the client UUID rides only on `dispatchFocusBlock.blockId`. THIS IS GOOD.\n\nHOWEVER, the same REQ-FEED-031 contains an Acceptance Criteria enumeration starting at line 1172 that STILL reads:\n\n  '1. dispatchInsertBlockAtBeginning({ noteId, newBlock: { id: <UUID>, block_type: \\'paragraph\\', content: \\'\\' }, issuedAt: <ISO> }) が 1 回 attempted ...'\n\nThis is the EXACT old shape that FIND-S5-PHASE3-004 was supposed to eliminate. The same requirement now contradicts itself — the EARS clause says one shape, the AC enumeration says another. Any future reader (developer, reviewer, or AI agent) cannot tell which is authoritative. PROP-FEED-S5-011 traces to this AC (per the spec test traceability at verification-architecture.md line 715), and PROP-FEED-S5-011 in verification-architecture.md line 715 itself uses the NEW shape, so the AC enumeration in behavioral-spec.md:1173 is also inconsistent with verification-architecture.md.\n\nThis is a documentation defect (not a runtime bug — the implementation correctly follows the EARS / adapter type), but it leaves the spec internally inconsistent and undermines the review-loop premise that the spec is authoritative.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1119, 1121-1122, 1172-1175",
+    "snippet": "Line 1119 (EARS, FIXED): '... dispatchInsertBlockAtBeginning({ noteId, type: 'paragraph', content: '', issuedAt }) ...'\n\nLine 1121-1122 (clarification block, ADDED): 'dispatchInsertBlockAtBeginning の payload は BlockEditorAdapter 型に厳密準拠し { noteId, type, content, issuedAt } のみ含む。'\n\nLine 1173 (Acceptance Criteria step 1, NOT FIXED): '1. dispatchInsertBlockAtBeginning({ noteId, newBlock: { id: <UUID>, block_type: \\'paragraph\\', content: \\'\\' }, issuedAt: <ISO> }) が 1 回 attempted (mock の reject も成否を問わずカウント)'",
+    "additionalEvidence": [
+      ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:715 (PROP-FEED-S5-011 description uses the NEW shape: 'dispatchInsertBlockAtBeginning({ noteId, type: \\'paragraph\\', content: \\'\\', issuedAt })' — so behavioral-spec.md:1173 disagrees with the verification arch as well)",
+      "promptnotes/src/lib/feed/FeedRow.svelte:290-295 (implementation sends the NEW shape)",
+      "promptnotes/src/lib/block-editor/types.ts (BlockEditorAdapter.dispatchInsertBlockAtBeginning payload shape: NEW shape)",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts:204-211 (test asserts insertCall.type === 'paragraph' against the NEW shape)"
+    ]
+  },
+  "expectedBehavior": "Edit behavioral-spec.md line 1173 to read: '1. dispatchInsertBlockAtBeginning({ noteId, type: \\'paragraph\\', content: \\'\\', issuedAt: <ISO> }) が 1 回 attempted ...' so that the AC enumeration matches the EARS at line 1119 and the verification-architecture PROP-FEED-S5-011 at line 715. Optionally also drop or update the now-stale `<UUID>` reference in step 1 since the UUID only travels via dispatchFocusBlock (step 2).",
+  "actualBehavior": "EARS narrative says new shape; AC enumeration step 1 still says old shape. Spec self-contradicts within REQ-FEED-031.",
+  "routeToPhase": "1c",
+  "blocksConvergence": false
+}

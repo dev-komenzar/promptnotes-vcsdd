@@ -1,0 +1,27 @@
+{
+  "findingId": "FIND-S5-PHASE3-001",
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 5,
+  "iteration": 1,
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "title": "Production wiring missing: subscribeEditingSessionState() is never called and createBlockEditorAdapter() is never instantiated outside of tests",
+  "description": "REQ-FEED-029 mandates that '+page.svelte または FeedList.svelte が subscribeEditingSessionState(...) を 1 回 mount し, unmount 時に unsubscribe する'. REQ-FEED-030 mandates that 'BlockEditorAdapter の生成は +page.svelte または FeedList で 1 回行い、FeedRow に props として渡す'. Verification architecture §14 (line 757) explicitly assigns this responsibility to +page.svelte. None of these calls exist in production code.\n\n+page.svelte (lines 1-132) imports neither editingSessionChannel nor createBlockEditorAdapter; it never calls subscribeEditingSessionState; it does not pass editingSessionState or blockEditorAdapter to FeedList.\n\nFeedList.svelte (lines 1-50, 373-391) does not declare editingSessionState or blockEditorAdapter as Props; it never calls subscribeEditingSessionState; the <FeedRow ...> mount block does not forward those props.\n\nConsequence: in production, FeedRow.svelte ALWAYS receives editingSessionState=null and blockEditorAdapter=null (their default values). The mount predicate `shouldMountBlocks && blockEditorAdapter` (FeedRow.svelte line 448) is therefore ALWAYS false. No BlockElement will ever render in the running application, no fallback dispatch chain will ever fire, and the entire Sprint 5 in-place editing surface is non-functional. The user 'click past note → empty paragraph appears → can type' scenario described in REQ-FEED-031 cannot occur.\n\nThis is a complete failure to deliver the user-facing behavior the sprint promised.",
+  "evidence": {
+    "filePath": "promptnotes/src/routes/+page.svelte",
+    "lineRange": "17-22, 95-106",
+    "snippet": "import AppShell from \"$lib/ui/app-shell/AppShell.svelte\";\nimport FeedList from \"$lib/feed/FeedList.svelte\";\nimport { createTauriFeedAdapter } from \"$lib/feed/tauriFeedAdapter.js\";\nimport { createFeedStateChannel } from \"$lib/feed/feedStateChannel.js\";\n... (no editingSessionChannel, no createBlockEditorAdapter import)\n... <FeedList viewState={feedViewState} adapter={feedAdapter} stateChannel={feedStateChannel} vaultPath={currentVaultPath} /> (no editingSessionState/blockEditorAdapter props)",
+    "additionalEvidence": [
+      "promptnotes/src/lib/feed/FeedList.svelte:34-40 (Props interface declares only viewState/adapter/stateChannel/vaultPath)",
+      "promptnotes/src/lib/feed/FeedList.svelte:373-391 (FeedRow mount block does not forward editingSessionState or blockEditorAdapter)",
+      "promptnotes/src/lib/feed/FeedRow.svelte:448 (mount predicate `{#if shouldMountBlocks && blockEditorAdapter}` requires non-null adapter)",
+      ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:754-757 (assigns wiring responsibility to FeedList.svelte and +page.svelte)"
+    ]
+  },
+  "expectedBehavior": "+page.svelte (or FeedList.svelte) calls `const adapter = createBlockEditorAdapter()` once at module init or in $effect, calls `subscribeEditingSessionState(handler)` once in $effect with cleanup, holds the latest payload in $state, and threads both values down to FeedList → FeedRow as props.",
+  "actualBehavior": "Both wiring sites are absent. Production FeedRow always sees editingSessionState=null and blockEditorAdapter=null. Block editing surface never mounts.",
+  "routeToPhase": "2b",
+  "blocksConvergence": true
+}

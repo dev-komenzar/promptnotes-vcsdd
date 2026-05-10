@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "3",
+  "currentPhase": "5",
   "phaseHistory": [
     {
       "from": "init",
@@ -500,6 +500,64 @@
       "to": "3",
       "timestamp": "2026-05-10T05:00:00.000Z",
       "reason": "Sprint 5 Phase 2c complete (Refactor): no structural refactor needed beyond Phase 2b implementation. Adapter command-mapping aligned with BlockEditorAdapter type contract. FeedRow surface kept minimal.",
+      "sprint": 5
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-05-10T06:30:00.000Z",
+      "reason": "Sprint 5 Phase 3 iter-1 FAIL: 4 findings. Critical FIND-S5-PHASE3-001 (production wiring missing in +page.svelte/FeedList).",
+      "sprint": 5,
+      "iteration": "3-sprint-5-iter-1"
+    },
+    {
+      "from": "4",
+      "to": "2b",
+      "timestamp": "2026-05-10T06:30:00.000Z",
+      "reason": "Phase 4 routing iter-1: FIND-001 (critical) \u2192 2b production wiring fix; FIND-002 (critical) \u2192 2a wiring test added; FIND-003 (high) \u2192 2a real double-click test; FIND-004 (medium) \u2192 1a spec wording adjustment. Earliest = 1a; routing through 2b after 1a edit.",
+      "sprint": 5
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-10T07:00:00.000Z",
+      "reason": "Sprint 5 iter-2 fixes complete: +page.svelte wiring (subscribeEditingSessionState + createBlockEditorAdapter), FeedList.svelte forwards editingSessionState/blockEditorAdapter to FeedRow, main-route-wiring.dom.vitest.ts added (8 wiring grep tests), PROP-FEED-S5-019 expanded to 2-click test, REQ-FEED-031 EARS clarified (no UUID in dispatchInsertBlockAtBeginning payload).",
+      "sprint": 5
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-10T07:00:00.000Z",
+      "reason": "Sprint 5 iter-2 refactor: no additional structural changes; ready for Phase 3 iter-2 review.",
+      "sprint": 5
+    },
+    {
+      "from": "3",
+      "to": "4",
+      "timestamp": "2026-05-10T07:30:00.000Z",
+      "reason": "Sprint 5 Phase 3 iter-2 FAIL: 1 new finding (FIND-S5-PHASE3-iter2-001 medium spec inconsistency).",
+      "sprint": 5,
+      "iteration": "3-sprint-5-iter-2"
+    },
+    {
+      "from": "4",
+      "to": "1a",
+      "timestamp": "2026-05-10T07:30:00.000Z",
+      "reason": "Phase 4 routing iter-2: single spec wording fix (REQ-FEED-031 AC step 1 \u2192 align with new shape).",
+      "sprint": 5
+    },
+    {
+      "from": "1a",
+      "to": "3",
+      "timestamp": "2026-05-10T07:35:00.000Z",
+      "reason": "Sprint 5 iter-3 spec fix complete: REQ-FEED-031 AC step 1+2 updated. Ready for Phase 3 iter-3 review.",
+      "sprint": 5
+    },
+    {
+      "from": "3",
+      "to": "5",
+      "timestamp": "2026-05-10T08:00:00.000Z",
+      "reason": "Sprint 5 Phase 3 iter-3 PASS \u2014 all 5 dimensions PASS, 0 findings. Production wiring verified, double-click test made real, spec/code/test consistency reached.",
       "sprint": 5
     }
   ],
@@ -2132,9 +2190,23 @@
         "newFindings": 0,
         "contractDigest": "e70b64601a0213c82254ea1e5be6d1f25451f0d6a003e101afe0051710b021bc"
       }
+    },
+    "3-sprint-5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-10T08:00:00.000Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 5,
+        "iteration": 3,
+        "iter1FindingsResolved": "4/4",
+        "iter2FindingsResolved": "1/1",
+        "iter3NewFindings": 0,
+        "criticalFindingCount": 0,
+        "allCRITsPassed": true
+      }
     }
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T05:50:00.000Z"
+  "updatedAt": "2026-05-10T08:00:00.000Z"
 }

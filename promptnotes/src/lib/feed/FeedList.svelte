@@ -20,6 +20,8 @@
   import type { TauriFeedAdapter } from './tauriFeedAdapter.js';
   import type { FeedStateChannel } from './feedStateChannel.js';
   import type { FeedViewState, NoteRowMetadata } from './types.js';
+  import type { EditingSessionStateDto } from './editingSessionChannel.js';
+  import type { BlockEditorAdapter } from '$lib/block-editor/types.js';
   import { feedReducer } from './feedReducer.js';
   import FeedRow from './FeedRow.svelte';
   import DeleteConfirmModal from './DeleteConfirmModal.svelte';
@@ -37,9 +39,20 @@
     stateChannel: FeedStateChannel;
     /** FIND-S2-01/05/06: vault directory path, forwarded to Rust commands. */
     vaultPath?: string;
+    /** Sprint 5 (REQ-FEED-029): editing session state from editingSessionChannel. */
+    editingSessionState?: EditingSessionStateDto | null;
+    /** Sprint 5 (REQ-FEED-030): BlockEditorAdapter for FeedRow's embedded BlockElement[]. */
+    blockEditorAdapter?: BlockEditorAdapter | null;
   }
 
-  const { viewState: initialViewState, adapter, stateChannel, vaultPath = '' }: Props = $props();
+  const {
+    viewState: initialViewState,
+    adapter,
+    stateChannel,
+    vaultPath = '',
+    editingSessionState = null,
+    blockEditorAdapter = null,
+  }: Props = $props();
 
   const _initial = untrack(() => initialViewState);
   let currentViewState = $state<FeedViewState>({ ..._initial });
@@ -387,6 +400,8 @@
         onTagAddClick={handleTagAddClick}
         onTagInputCommit={handleTagInputCommit}
         onTagInputCancel={handleTagInputCancel}
+        editingSessionState={editingSessionState}
+        blockEditorAdapter={blockEditorAdapter}
       />
     {/each}
   {/if}

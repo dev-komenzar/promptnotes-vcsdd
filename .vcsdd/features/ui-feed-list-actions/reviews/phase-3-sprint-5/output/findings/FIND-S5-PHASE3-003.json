@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-S5-PHASE3-003",
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 5,
+  "iteration": 1,
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "high",
+  "title": "PROP-FEED-S5-019 (EC-FEED-019 double-click race) does not actually exercise a race; it asserts a Sprint-1 invariant that was already covered",
+  "description": "Verification arch §14 PROP-FEED-S5-019 specifies: '1 回目クリックで editingStatus === \"switching\" に遷移、pendingNextFocus が設定された状態で 2 回目クリックを発火。… mock adapter の dispatchSelectPastNote が 2 回目はカウントされない (call count = 1)'.\n\nThe implemented test (FeedRow.dom.vitest.ts lines 842-861) does NOT perform the first click. It synthesizes a switching-state viewState directly, dispatches one click, and asserts dispatchSelectPastNote was not called. There is no transition from idle/editing → switching driven by a real first click. The test therefore cannot detect a regression where (a) the first click is incorrectly debounced, (b) the second click happens during the synchronous re-render after the first click but before the state update commits, or (c) feedReducer accidentally permits the second click during the brief 'editing' → 'switching' transition.\n\nThe test as written is functionally equivalent to existing Sprint 1 PROP-FEED-013 (which already verifies REQ-FEED-006 click suppression) and provides no new coverage for the EC-FEED-019 race scenario the spec defined.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+    "lineRange": "840-861",
+    "snippet": "describe('PROP-FEED-S5-019: EC-FEED-019 — double-click race during switching', () => {\n  test('click while editingStatus=switching is suppressed (no dispatch)', () => {\n    ...\n    const switchingState = makeViewState({\n      editingStatus: 'switching',  // pre-set, no first click\n      ...\n    });\n    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState: switchingState, adapter } });\n    ...\n    button.click();  // only one click\n    expect(adapter.dispatchSelectPastNote).not.toHaveBeenCalled();"
+  },
+  "expectedBehavior": "A test that mounts in `editing` state, clicks once (asserts dispatchSelectPastNote called once), simulates the reducer transitioning to `switching` (or asserts the channel-driven transition), then clicks again on the same row and asserts dispatchSelectPastNote.mock.calls.length === 1.",
+  "actualBehavior": "Single-click test against pre-set switching state; no race condition exercised.",
+  "routeToPhase": "2a",
+  "blocksConvergence": false
+}
