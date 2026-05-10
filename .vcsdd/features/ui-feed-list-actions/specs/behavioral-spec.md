@@ -1035,7 +1035,7 @@ Sprint 5 で UI には 2 つの state slice が共存する。両者の責務分
 | `∈ {editing, saving, switching, save-failed}` | `false` | 0 | 表示 |
 | `'idle'` | `false` | 0 | 表示 |
 
-> **注 (FIND-S5-SPEC-iter2-007 解消)**: `editingStatus === 'idle'` のとき `viewState.editingNoteId === null` が `feedReducer` の mirror 規約 (REQ-FEED-009, idle 状態は `currentNoteId: null`) により常に成立する。よって表 row 2 (`editingStatus === 'idle' AND editingNoteId === self.noteId`) は **architecturally 到達不能**である。AC ではこの行を **defensive test** として 0 個 assert を要求するが、テストは「synthetic な viewState を直接注入」して FeedRow が crash しないことを検証する目的に限定する (PROP-FEED-S5-006 cell 2 注記参照)。`feedReducer` がこの不変条件を保つことは既存 PROP-FEED-007a (Sprint 4: PROP-FEED-S4-006) で別途保証済みであり、本 PROP では mirror 不変条件を再検証しない。
+> **注 (FIND-S5-SPEC-iter2-007 解消; FIND-S6-SPEC-iter2-008 cross-ref 修正)**: `editingStatus === 'idle'` のとき `viewState.editingNoteId === null` が `feedReducer` の mirror 規約により常に成立する。これは 5-arm `EditingSessionStateDto` 定義 (REQ-FEED-029 wire shape table の Idle arm が `currentNoteId` フィールドを持たない、`docs/domain/aggregates.md §EditingSessionState` 5-arm 定義に整合) と、`feedReducer.DomainSnapshotReceived` 処理が Idle arm 受信時に `editingNoteId` を `null` にミラーする実装によって保たれる。よって表 row 2 (`editingStatus === 'idle' AND editingNoteId === self.noteId`) は **architecturally 到達不能**である。AC ではこの行を **defensive test** として 0 個 assert を要求するが、テストは「synthetic な viewState を直接注入」して FeedRow が crash しないことを検証する目的に限定する (PROP-FEED-S5-006 cell 2 注記参照)。`feedReducer` がこの不変条件を保つことは既存 PROP-FEED-007a (Sprint 4: PROP-FEED-S4-006) で別途保証済みであり、本 PROP では mirror 不変条件を再検証しない。
 
 **埋め込み詳細**:
 - `BlockElement` の props は ui-block-editor REQ-BE-001..010 の契約に従う:
@@ -1304,32 +1304,47 @@ let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null
 
 ### REQ-FEED-030.1: cell 1 — preview / row-button の DOM unmount (REQ-FEED-030 cell 1 AC 強化)
 
-**EARS**: WHEN `viewState.editingStatus ∈ {'editing', 'saving', 'switching', 'save-failed'}` AND `viewState.editingNoteId === self.noteId` THEN `FeedRow` は `data-testid="row-body-preview"`、`data-testid="row-created-at"`、`data-testid="feed-row-button"` および `.row-button` 配下に置かれる **すべての preview 系要素 (`row-timestamp`, `row-body-preview`, `tag-list`, `tag-actions`, `pending-switch-indicator`)** を **DOM から完全に unmount** しなければならない (`{#if !shouldMountBlocks}` による条件付きレンダリング、`display:none` や `visibility:hidden` を用いた視覚的隠蔽は不可)。
+**EARS**: WHEN `viewState.editingStatus ∈ {'editing', 'saving', 'switching', 'save-failed'}` AND `viewState.editingNoteId === self.noteId` AND `blockEditorAdapter !== null` (= `effectiveMount === true`) THEN `FeedRow` は **`<button class="row-button" data-testid="feed-row-button">` 要素自体およびその全子要素 (timestamp 行 = `<div class="row-timestamp" data-testid="row-created-at">`、preview 行 = `<div class="row-body-preview" data-testid="row-body-preview">`、`<div class="tag-list">` 配下の `tag-chip` / `tag-remove`、`<div class="tag-actions">` 配下の `tag-add` または `tag-input-wrapper`、`<span class="pending-indicator" data-testid="pending-switch-indicator">`)** を **DOM から完全に unmount** しなければならない (`{#if !(shouldMountBlocks && blockEditorAdapter)}` すなわち `{#if !effectiveMount}` による条件付きレンダリング; `display:none` / `visibility:hidden` / `opacity:0` 等の CSS による視覚的隠蔽は不可)。
+
+> **mount 述語の正確な記述** (FIND-S6-SPEC-iter3-001 解消):
+> 実装で preview を囲む `{#if}` 述語は **`!shouldMountBlocks` ではなく `!(shouldMountBlocks && blockEditorAdapter)`** とする。`shouldMountBlocks` 単独では `editingNoteId === self.noteId AND editingStatus ∈ {editing,...}` を満たすケースで真になるが、`blockEditorAdapter === null` の race (EC-FEED-024) で preview を残すため、adapter 注入を mount 述語に組み込む必要がある。`effectiveMount := shouldMountBlocks && blockEditorAdapter !== null` を $derived で定義し、preview wrap を `{#if !effectiveMount}`、block-editor-surface wrap を `{#if effectiveMount}` とすることで両者が **完全排他**になる。
+
+> **要素列挙の正規化** (FIND-S6-SPEC-002 解消):
+> 上記 EARS では「testid 持ち要素」と「class セレクタのみの要素」を混在せず階層的に列挙する。重複の解消: `class="row-timestamp"` と `data-testid="row-created-at"` は **同一 `<div>` 要素** (`FeedRow.svelte:333-336`) を指す。`tag-list` / `tag-actions` には `data-testid` が無いため `.tag-list` / `.tag-actions` の class セレクタで参照する。`pending-switch-indicator` は `data-testid` 持ち (`FeedRow.svelte:429`)。
 
 > **設計意図 (FIND-S6-PREVIEW-EXCLUSIVITY)**:
 > Notion / Logseq 風 in-place 編集は「フォーカスがあるブロック = 編集中、それ以外 = 表示中」(`docs/domain/discovery.md` §エディタ実装方針) という原則に立脚する。preview と editor が同時に DOM 上に並ぶと、ユーザーには「2 つの異なる表示」が同時に見えることになり、原則に反する。Sprint 5 では `block-editor-surface` が `.row-button` の**下**に置かれていたため preview と editor が縦に重なって表示されていたが、これは「DOM 上に preview が残っている」ことに起因する。よって Sprint 6 では preview を `{#if}` で**実 unmount** することにより、DOM レベルで `row-body-preview` (および兄弟 preview 要素) と `block-element` が**同時刻に共存しない**ことを保証する。
 
-**Mount/unmount truth table** (REQ-FEED-030 §truth table の AC 強化版):
+> **adapter 未注入 race の扱い** (FIND-S6-SPEC-003 / EC-FEED-024):
+> Sprint 5 既存実装 (`FeedRow.svelte:448`) は `{#if shouldMountBlocks && blockEditorAdapter}` で block-editor-surface を mount する。`blockEditorAdapter === null` のとき (例: `+page.svelte` の adapter 初期化前または初期化失敗時に `editingSessionState` が先に到達) は block-editor-surface が mount されない。Sprint 6 では preview unmount 条件にも **`blockEditorAdapter !== null`** を含めることで、adapter null のとき preview を残し空白行を防ぐ (EC-FEED-024)。
 
-| `editingStatus` | `editingNoteId === self.noteId` | `BlockElement` 表示数 | `row-body-preview` DOM | `feed-row-button` DOM | `delete-button` DOM |
-|-----------------|------------------------------|---------------------|----------------------|----------------------|---------------------|
-| `∈ {editing, saving, switching, save-failed}` | `true` | `blocks.length` (>= 1; fallback 適用時 = 1) | **不在** (unmount) | **不在** (unmount) | 存在 (disabled, `isDeleteButtonDisabled` で disabled=true) |
-| `'idle'` | `true` (architecturally unreachable) | 0 | 存在 | 存在 | 存在 (disabled) |
-| `∈ {editing, saving, switching, save-failed}` | `false` | 0 | 存在 | 存在 | 存在 |
-| `'idle'` | `false` | 0 | 存在 | 存在 | 存在 |
+**Mount/unmount truth table** (REQ-FEED-030 §truth table の AC 強化版; `effectiveMount := shouldMountBlocks && blockEditorAdapter !== null`):
 
-> **`delete-button` を維持する理由**: `.row-button` 内部の preview とは責務が異なる兄弟要素。`isDeleteButtonDisabled(noteId, editingStatus, editingNoteId)` (既存 pure helper) により編集中 note の delete ボタンは `disabled` 属性で抑制されるため、UI 上はクリック不能。レイアウト崩壊を避けるため DOM には残す (Sprint 1 から維持されている既存挙動)。
+| `editingStatus` | `editingNoteId === self.noteId` | `effectiveMount` | `BlockElement` 表示数 | `row-body-preview` DOM | `feed-row-button` DOM | `delete-button` DOM |
+|-----------------|------------------------------|------------------|---------------------|----------------------|----------------------|---------------------|
+| `∈ {editing, saving, switching, save-failed}` | `true` | `true` (adapter 注入済み) | `blocks.length` (>= 1; fallback 適用時 = 1; サーバ blocks 0 件 ⇒ REQ-FEED-031 fallback で 1 件追加) | **不在** (unmount) | **不在** (unmount) | 存在 (disabled, `isDeleteButtonDisabled` で disabled=true) |
+| `∈ {editing, saving, switching, save-failed}` | `true` | `false` (adapter null, EC-FEED-024) | 0 (block-editor-surface も非マウント) | 存在 (preview fallback) | 存在 | 存在 (disabled) |
+| `'idle'` | `true` (architecturally unreachable) | `false` (idle のため shouldMountBlocks=false) | 0 | 存在 | 存在 | 存在 (disabled) |
+| `∈ {editing, saving, switching, save-failed}` | `false` | `false` (他行) | 0 | 存在 | 存在 | 存在 |
+| `'idle'` | `false` | `false` | 0 | 存在 | 存在 | 存在 |
 
-**Acceptance Criteria** (Sprint 6 PROP-FEED-S6-001..003):
-- (PROP-FEED-S6-001) cell 1 (`editingStatus ∈ {editing, saving, switching, save-failed}` AND `editingNoteId === self.noteId`) のとき、`querySelector('[data-testid="row-body-preview"]')` が **`null`** を返す。同 cell で `querySelector('[data-testid="feed-row-button"]')` も `null` を返す。同 cell で `querySelector('[data-testid="block-element"]')` は **`null` でない**要素を返す。
-- (PROP-FEED-S6-001) cell 3 (`editingStatus ∈ {editing,...}` AND `editingNoteId !== self.noteId`) では `querySelector('[data-testid="row-body-preview"]')` が `null` でない (他行は preview 維持)。
-- (PROP-FEED-S6-001) cell 4 (`editingStatus === 'idle'` AND `editingNoteId !== self.noteId`) では preview / feed-row-button が DOM に存在する。
-- (PROP-FEED-S6-002) **non-coexistence property**: 任意の `viewState` × `editingSessionState` の組合せに対し、同一 `FeedRow` の subtree 内で `[data-testid="row-body-preview"]` と `[data-testid="block-element"]` が **同時に存在することはない** (fast-check property test, 4 cell × random `blocks` count 0..5)。
-- (PROP-FEED-S6-003) `display:none` / `visibility:hidden` / `opacity:0` 等の **視覚的隠蔽方式が CSS source に追加されていない** こと: `grep -nE '(display:\s*none|visibility:\s*hidden|opacity:\s*0)' promptnotes/src/lib/feed/FeedRow.svelte` の hit 数が **Sprint 5 baseline と同数以下** (回帰防止)。
+> **`delete-button` を維持する理由**: `.row-button` とは別の sibling 要素 (`.row-layout` の直下 2 番目の `<button>`)。`isDeleteButtonDisabled(noteId, editingStatus, editingNoteId)` (既存 pure helper) により編集中 note の delete ボタンは `disabled` 属性で抑制されるため、UI 上はクリック不能。レイアウト崩壊を避けるため DOM には残す (Sprint 1 から維持されている既存挙動)。
+
+> **Cell 1 で blocks 数 0 件のフロー** (FIND-S6-SPEC-012 解消):
+> サーバから `editingSessionState.blocks === [] | undefined | null` が到達した cell 1 では、REQ-FEED-031 fallback により synthetic paragraph 1 件が `fallbackAppliedFor.blockId` を伴って生成され、最終的な `BlockElement` 数 = 1 になる (本 truth table 1 行目 `effectiveMount=true` 行)。よって preview unmount 条件成立時には少なくとも 1 個の `block-element` が必ず DOM に存在する。
+
+**Acceptance Criteria** (Sprint 6 PROP-FEED-S6-001..003, S6-007):
+- (PROP-FEED-S6-001) cell 1 (`editingStatus ∈ {editing, saving, switching, save-failed}` AND `editingNoteId === self.noteId` AND `blockEditorAdapter !== null`) のとき、`querySelector('[data-testid="row-body-preview"]')` が **`null`** を返す。同 cell で `querySelector('[data-testid="feed-row-button"]')` も `null` を返す。`querySelector('[data-testid="block-element"]')` は **`null` でない**要素を返す。`querySelector('[data-testid="delete-button"]')` は `null` でない要素を返し `disabled` 属性が `true` (= `delete-button` は cell 1 でも DOM に残り disabled 状態)。
+- (PROP-FEED-S6-001) cell 3 (`editingStatus ∈ {editing,...}` AND `editingNoteId !== self.noteId`) では `querySelector('[data-testid="row-body-preview"]') !== null` AND `querySelector('[data-testid="feed-row-button"]') !== null` AND `querySelector('[data-testid="block-element"]') === null` AND `querySelector('[data-testid="delete-button"]') !== null` (FIND-S6-SPEC-iter5-004 解消)。
+- (PROP-FEED-S6-001) cell 4 (`editingStatus === 'idle'` AND `editingNoteId !== self.noteId`) では `querySelector('[data-testid="row-body-preview"]') !== null` AND `querySelector('[data-testid="feed-row-button"]') !== null` AND `querySelector('[data-testid="block-element"]') === null` AND `querySelector('[data-testid="delete-button"]') !== null` (FIND-S6-SPEC-iter5-004 解消)。
+- (PROP-FEED-S6-001) **EC-FEED-024 row** (`editingStatus ∈ {editing,...}` AND `editingNoteId === self.noteId` AND `blockEditorAdapter === null`): `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null` AND `block-editor-surface === null` AND `delete-button !== null` AND `delete-button.disabled === true` (FIND-S6-SPEC-iter5-003 / iter6-001 / iter6-003 解消、5 行全てで delete-button + block-editor-surface 含む 5 testid を要求)。空白行を作らない (= preview と block-element の **少なくとも一方は必ず存在**する)。
+- (PROP-FEED-S6-001) **cell 2** (`editingStatus === 'idle'` AND `editingNoteId === self.noteId`, architecturally unreachable, defensive synthetic injection): `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null` AND `block-editor-surface === null` AND `delete-button !== null` (FIND-S6-SPEC-iter6-002 解消、cell 2 を AC リストに明示追加)。Sprint 5 cell 2 既存挙動を継承し、テストは synthetic な viewState 注入のみで FeedRow が crash しないことを確認。
+- (PROP-FEED-S6-002) **non-coexistence + non-emptiness property**: 任意の `viewState: { editingStatus, editingNoteId }` × `editingSessionState: 5-arm DTO \| null` × `serverBlocksLength ∈ {0..5}` × `blockEditorAdapter ∈ {Mock, null}` の組合せに対し、同一 `FeedRow` の subtree 内で `[data-testid="row-body-preview"]` と `[data-testid="block-element"]` が **同時に存在することはない** AND **両方とも不在ということもない (= 排他かつ網羅)** (fast-check property test, **`seed: 0x56BABE`、numRuns ≥ 250 (5 cells × ≥ 50 cases stratification)**、verification-architecture.md PROP-FEED-S6-002 の正規定義に整合 — FIND-S6-SPEC-iter4-003 解消)。
+- (PROP-FEED-S6-003) **二次防御 (defense-in-depth)** の grep audit (FIND-S6-SPEC-iter2-006 解消): `display: none` / `visibility: hidden` / `opacity: 0` (整数 0、空白あり/なし) の **視覚的隠蔽方式が CSS source に追加されていない** こと: 厳密 regex `(display:\s*none\s*[;}]|visibility:\s*hidden\s*[;}]|opacity:\s*0\s*[;}])` で `promptnotes/src/lib/feed/FeedRow.svelte` を grep し hit 数が **0**。`opacity: 0.04` などの小数 opacity (box-shadow 等の既存 rgba) は誤マッチしない。**注**: 本 grep は **二次防御**であり、preview unmount の **一次防御は PROP-FEED-S6-001 の `querySelector('[data-testid="feed-row-button"]') === null`** (DOM unmount evidence) である。本 regex は 3 つの代表的隠蔽方式 (`display:none` / `visibility:hidden` / `opacity:0`) のみ enumerate しており、`clip-path` / `position:absolute; left:-9999px` / `transform:scale(0)` / `content-visibility:hidden` 等の他 bypass は捕捉しない。これらは PROP-FEED-S6-001 の DOM 直接観測で必ず検出される (cell 1 で `<button class="row-button">` 要素自体が DOM tree から欠落していることを assert する設計)。Sprint 5 baseline = 0 hit を Sprint 6 でも維持 (回帰防止)。
 - 既存 PROP-FEED-S5-006 (cell 1 の `block-element` count assertion) は維持される。
 
 **Edge Cases**:
-- `viewState.editingStatus === 'idle'` AND `viewState.editingNoteId === self.noteId`: architecturally unreachable (REQ-FEED-009 mirror 不変条件)。defensive test では preview を表示する (cell 2)。
+- `viewState.editingStatus === 'idle'` AND `viewState.editingNoteId === self.noteId`: architecturally unreachable (FIND-S6-SPEC-iter3-002 解消の citation 修正: `EditingSessionStateDto` 5-arm 定義の Idle arm が `currentNoteId` フィールドを持たないこと、および REQ-FEED-029 wire shape table row 1 で feedReducer.DomainSnapshotReceived が Idle arm 受信時に `editingNoteId` を `null` にミラーする invariant に立脚する。`docs/domain/aggregates.md §EditingSessionState` 5-arm 定義に整合。**REQ-FEED-009 (pending-switch indicator) ではない**)。defensive test では preview を表示する (cell 2)。
 - `pending-switch-indicator` (REQ-FEED-026 由来): cell 3 (`editingNoteId !== self.noteId` で `pendingNextFocus.noteId === self.noteId`) で表示される要素。cell 1 の対象行では preview と一緒に unmount される (preview unmount に伴う副次的影響、REQ-FEED-026 の AC は cell 3 でのみ assert)。
 - タグ削除中 (`onTagRemove` 実行中) に row が cell 1 に遷移: 既存 onTagRemove handler は `e.stopPropagation()` 済みのため再エントランシーは発生しない。preview unmount により tag-chip も同時 unmount され、ユーザー視点では「即座に編集モードに入る」遷移として整合する。
 
@@ -1342,10 +1357,34 @@ let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null
 
 ### REQ-FEED-034: 行外クリック vs 行内 BlockElement クリックの責任分担
 
-**EARS**: THE FeedRow は **2 種類のクリック導線** を以下の責任分担で受け持たなければならない:
+> **EARS 形式の整理** (FIND-S6-SPEC-iter2-007 解消): 本 REQ は 2 種類のクリック導線の責任分担を扱うため、event-driven EARS sentence を 2 件に分割する (REQ-FEED-034.1 / REQ-FEED-034.2)。
 
-1. **行外 (`.delete-button` の外側で `feed-row-button` を含むエリア)** が cell 3/cell 4 (preview 表示状態) でクリックされたとき, FeedRow は `onRowClick(noteId)` callback を発火する。callback は `feed.dispatchSelectPastNote(noteId, vaultPath, issuedAt)` 経由で Rust 側 `select_past_note` handler を呼び出し、`editing_session_state_changed` (REQ-FEED-024) と `feed_state_changed` (REQ-FEED-021) を順に emit する。受信後 cell 1 へ遷移する。
-2. **行内 BlockElement (`data-testid="block-element"`)** が cell 1 (block-editor-surface マウント中) でクリックされたとき, BlockElement は **ui-block-editor REQ-BE-002b** に従って `adapter.dispatchFocusBlock({ noteId, blockId, issuedAt })` を 1 回発火する。FeedRow 側は当該 click を `onRowClick` に **再ルーティングしない** (`block-editor-surface` は `.row-button` の sibling であり click event は冒泡しても `onRowClick` を起動しない)。
+#### REQ-FEED-034.1: 行外クリック → onRowClick (cell 3 / cell 4)
+
+**EARS**: WHEN ユーザーが `data-testid="feed-row-button"` 要素 (`.row-button`) をクリックする AND `viewState` が cell 3 (`editingStatus ∈ {editing, saving, switching, save-failed}` AND `editingNoteId !== self.noteId`) または cell 4 (`editingStatus === 'idle'` AND `editingNoteId !== self.noteId`) を満たす THEN `FeedRow` は `onRowClick(noteId)` callback を 1 回発火しなければならない。callback は `feed.dispatchSelectPastNote(noteId, vaultPath, issuedAt)` 経由で Rust 側 `select_past_note` handler を呼び出し、`editing_session_state_changed` (REQ-FEED-024) と `feed_state_changed` (REQ-FEED-021) が順に emit され、受信後 cell 1 へ遷移する。
+
+#### REQ-FEED-034.2: 行内 BlockElement クリック → dispatchFocusBlock (cell 1)
+
+**EARS**: WHEN ユーザーが `data-testid="block-element"` 要素をクリックする AND `viewState` が cell 1 (`editingStatus ∈ {editing, saving, switching, save-failed}` AND `editingNoteId === self.noteId` AND `effectiveMount === true`) を満たす THEN `BlockElement` は ui-block-editor REQ-BE-002b に従って `adapter.dispatchFocusBlock({ noteId, blockId, issuedAt })` を 1 回発火しなければならない AND `FeedRow.onRowClick` は **発火されてはならない** (`.block-editor-surface` は `.row-button` の subtree 外にあるため click event は `.row-button` の onclick に届かない)。
+
+> **DOM 階層の正確な記述** (FIND-S6-SPEC-001 解消):
+> 現行 `FeedRow.svelte:322-471` の DOM ツリーは以下の通り:
+> ```
+> <div class="feed-row" data-row-note-id={noteId}>
+>   <div class="row-layout">                              ← display: flex
+>     <button class="row-button" data-testid="feed-row-button" onclick={handleRowClick}>
+>       ...timestamp / preview / tags / pending-switch...
+>     </button>
+>     <button class="delete-button" data-testid="delete-button" onclick={handleDeleteClick}>×</button>
+>   </div>
+>   {#if effectiveMount}  ← Sprint 6 で `effectiveMount := shouldMountBlocks && blockEditorAdapter !== null` に統一
+>     <div class="block-editor-surface" data-testid="block-editor-surface">
+>       ...BlockElement 群...
+>     </div>
+>   {/if}
+> </div>
+> ```
+> つまり `.row-layout` と `.block-editor-surface` が `.feed-row` 直下の **siblings** であり、`.row-button` は `.row-layout` の中に閉じている。`.block-editor-surface` 内で発生した click event は DOM tree を `.block-editor-surface` → `.feed-row` → `body` と冒泡するが、**`.row-button` の subtree を経由しないため `.row-button` の `onclick={handleRowClick}` ハンドラは起動しない**。これは Sprint 5 既存実装で既に成立している不変条件であり、Sprint 6 の `.row-button` を `{#if !effectiveMount}` (= `{#if !(shouldMountBlocks && blockEditorAdapter)}`) で囲む変更でも維持される (`.row-button` の親は `.row-layout` のままで、`.block-editor-surface` が `.row-button` の親 chain に入ることはない)。
 
 > **二段階クリック (`select-past-note` → `editing_session_state_changed` → 再 click → `dispatchFocusBlock`) の不要性**:
 > 行外クリック (行 1) で cell 3 → cell 1 へ遷移したとき、(a) BlockElement は `editingSessionState.focusedBlockId` (REQ-FEED-029) を `isFocused` prop として受け取り、(b) ui-block-editor REQ-BE-002 に従ってマウント時に自動的に `block.focus()` を呼ぶ。よって Rust ラウンドトリップ完了後の自動フォーカスにより、ユーザーは cell 1 の BlockElement に対して**追加クリック不要で即座に文字入力**できる。これが `docs/domain/discovery.md:49` の「『Note Selection で編集対象を切替えてから入力』という二段階操作は不要」原則の UI レイヤ実装である。
@@ -1359,8 +1398,8 @@ let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null
 
 **Acceptance Criteria**:
 - (PROP-FEED-S6-004) cell 3 のとき `feed-row-button` クリックで `tauriFeedAdapter.dispatchSelectPastNote` が `noteId` 引数で 1 回呼ばれる (Sprint 1 PROP-FEED-001 既存契約を Sprint 6 でも維持; Sprint 6 では preview 表示状態でのクリック挙動として再 assert)。
-- (PROP-FEED-S6-005) cell 1 (`shouldMountBlocks === true`) では `feed-row-button` 要素が DOM に存在しないため、`feed-row-button` 経由の `dispatchSelectPastNote` 発火は **不能** (REQ-FEED-030.1 unmount により担保)。よって REQ-FEED-006 の「`editingStatus ∈ {'saving','switching'}` クリック抑止ガード」は cell 1 では DOM 不在により**自明に成立**する (defensive test として残す)。
-- (PROP-FEED-S6-006) cell 1 で `block-element` (BlockElement) クリックが `onRowClick` を **発火しない** (FeedRow の click event listener は `.row-button` 上にのみ登録され、`.block-editor-surface` には register されない)。
+- (PROP-FEED-S6-005) **行為観点の検証** — cell 1 (`shouldMountBlocks === true` AND `blockEditorAdapter !== null`) で `dispatchEvent(new MouseEvent('click', { bubbles: true }))` を `.feed-row` 要素上で直接発火しても、`tauriFeedAdapter.dispatchSelectPastNote` mock の call count が **0 のまま**であること (= `.row-button` の DOM 不在により click 経路が遮断されている挙動の直接観測)。これは PROP-FEED-S6-001 の `feed-row-button === null` (静的 DOM 状態) と独立した behavioral 観測であり、`feed-row-button` 経由ではない他の click 経路 (例: `.feed-row` への直接 click) でも `dispatchSelectPastNote` が呼ばれないことを保証する (FIND-S6-SPEC-009 解消)。
+- (PROP-FEED-S6-006) cell 1 で `block-element` (BlockElement) クリックが `onRowClick` callback を **発火しない** (`onRowClick` mock の call count = 0)。これは `.block-editor-surface` が `.row-button` の subtree 外にあること (REQ-FEED-034 §DOM 階層の正確な記述) から Sprint 5 既存実装で既に成立している不変条件であり、Sprint 6 では `.row-button` を `{#if !effectiveMount}` で囲む変更でも維持される regression guard として位置づける (FIND-S6-SPEC-006 解消)。
 - (PROP-FEED-S6-006) cell 1 で `block-element` クリックが ui-block-editor REQ-BE-002b に従って `adapter.dispatchFocusBlock` を 1 回発火する (cross-feature integration test, mock adapter で観測)。
 - 既存 PROP-FEED-S5-019 (REQ-FEED-006 click suppression for `switching`) は cell 3 → cell 1 遷移途中の race として維持。
 
@@ -1381,9 +1420,10 @@ let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null
 
 | EC-ID | 条件 | 期待動作 |
 |-------|------|----------|
-| EC-FEED-021 | cell 3 → cell 1 遷移時の preview unmount race | `editing_session_state_changed` 受信で `editingSessionState` 更新 → `feed_state_changed` 受信で `viewState.editingNoteId` 更新 → `shouldMountBlocks` が `true` に評価 → preview unmount + block-editor-surface mount。Svelte 5 の reactivity 一巡で同一 microtask 内に完了 (REQ-FEED-032 emit 順序保証済み)。中間状態で preview と block-element が同時 DOM 存在することはない (PROP-FEED-S6-002 で property 化) |
+| EC-FEED-021 | cell 3 → cell 1 遷移時の preview unmount race | `editing_session_state_changed` 受信で `editingSessionState` 更新 → `feed_state_changed` 受信で `viewState.editingNoteId` 更新 → `shouldMountBlocks` が `true` に評価 → preview unmount + block-editor-surface mount。Svelte 5 の reactivity 一巡で同一 microtask 内に完了 (REQ-FEED-032 emit 順序保証済み)。中間状態で preview と block-element が同時 DOM 存在することはない (PROP-FEED-S6-002 で snapshot 単位で property 化; 中間 microtask の MutationObserver 観測は Sprint 6 では deferred として state.json `openDeferrals` に記録、FIND-S6-SPEC-008 参照) |
 | EC-FEED-022 | cell 1 で `editingSessionState` を保ったまま `viewState.editingNoteId` のみ別 note に変化 (REQ-FEED-030 §State source-of-truth row 4) | `shouldMountBlocks` が `false` に評価され preview が再 mount される。fallback state は `viewState.editingNoteId` 変更で reset (Sprint 5 既存挙動) |
 | EC-FEED-023 | random click sequence (fast-check) | preview と block-element の同時存在は生じない (PROP-FEED-S6-002) |
+| EC-FEED-024 | `viewState.editingNoteId === self.noteId` AND `editingStatus ∈ {editing,saving,switching,save-failed}` AND `blockEditorAdapter === null` (adapter 未注入 race) | `effectiveMount := shouldMountBlocks && blockEditorAdapter !== null` が `false` のため block-editor-surface は mount されない。preview は引き続き mount される (空白行を作らない)。`+page.svelte` での adapter 初期化完了後に再評価され cell 1 row 1 の状態に遷移する (PROP-FEED-S6-001 EC-FEED-024 row でカバー) |
 
 ---
 

@@ -1,0 +1,43 @@
+{
+  "findings": [
+    {
+      "findingId": "FIND-S6-SPEC-iter4-001",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "severity": "HIGH",
+      "description": "iter-3 finding iter3-001 was only partially fixed. The EARS sentence at behavioral-spec.md:1307 was correctly updated to `{#if !(shouldMountBlocks && blockEditorAdapter)}` (= `{#if !effectiveMount}`), but the matching predicate in the AUTHORITATIVE STRICT-MODE CONTRACT itself remains incorrect in two load-bearing locations: (a) contracts/sprint-6.md:8 (scope frontmatter): `... を `{#if !shouldMountBlocks}` で **DOM unmount** する (新 REQ-FEED-030.1)`, (b) contracts/sprint-6.md:16 (redLines list): `preview 隠蔽は `{#if !shouldMountBlocks}` による **DOM unmount** で行うこと`. The calibration note at sprint-6.md:78 correctly says `{#if !(shouldMountBlocks && blockEditorAdapter)}`, so the contract is internally inconsistent. In strict VCSDD mode the contract `scope` and `redLines` are normative grading inputs for Phase 6 and cannot be overridden by the calibration note. A Phase 2a implementer reading scope/redLines literally writes `{#if !shouldMountBlocks}`, which unmounts preview whenever `editingNoteId === self.noteId AND editingStatus ∈ {editing,...}` regardless of `blockEditorAdapter`, breaking EC-FEED-024 (adapter-null race produces empty row). This is the same defect class iter3-001 was supposed to eliminate, escaped to a different document. Required fix: replace both `{#if !shouldMountBlocks}` occurrences in sprint-6.md scope (line 8) and redLines (line 16) with `{#if !(shouldMountBlocks && blockEditorAdapter)}` (or `{#if !effectiveMount}` with `effectiveMount := shouldMountBlocks && blockEditorAdapter !== null`).",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "6-19",
+        "snippet": "scope: |\n  Sprint 6 — preview ↔ editor 排他化 + クリック導線是正。\n  REQ-FEED-030 cell 1 の AC を強化し、... `.row-button` (timestamp + body-preview + tags + tag-add + pending-switch-indicator) を `{#if !shouldMountBlocks}` で **DOM unmount** する (新 REQ-FEED-030.1)。...\nredLines:\n  ...\n  - \"preview 隠蔽は `{#if !shouldMountBlocks}` による **DOM unmount** で行うこと。`display:none` / `visibility:hidden` / `opacity:0` 等の CSS 隠蔽は禁止 (PROP-FEED-S6-003)。\""
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter4-002",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "severity": "HIGH",
+      "description": "iter-3 finding iter3-001 was only partially fixed in the verification-architecture.md as well. The EARS in behavioral-spec.md:1307 was updated to `{#if !(shouldMountBlocks && blockEditorAdapter)}`, but verification-architecture.md retains the obsolete `{#if !shouldMountBlocks}` in two load-bearing places: (a) line 793 (Sprint 6 Purity Boundary Notes): `Sprint 6 は `FeedRow.svelte` 内の **既存** preview 系 DOM 要素を `{#if !shouldMountBlocks}` で囲む purely structural な変更`, (b) line 825 (実装変更対象 table, FeedRow.svelte row): ``.row-button` (...) を `{#if !shouldMountBlocks}` で囲み、cell 1 で **DOM unmount** する`. verification-architecture.md is a Phase 1b artifact that Phase 2a implementers consult for module-level responsibility allocation. The 実装変更対象 table at line 821-825 is the canonical instruction sheet for which file changes how. Telling the implementer to wrap with `{#if !shouldMountBlocks}` here, while the EARS says otherwise, recreates the exact contradiction iter3-001 was supposed to eliminate. The truth table at the same file (PROP-FEED-S6-001 description, line 801) does correctly enumerate `effectiveMount=true` rows, but the structural responsibility statement at line 825 dominates implementer reading order. Required fix: replace both occurrences with `{#if !(shouldMountBlocks && blockEditorAdapter)}` (or define `effectiveMount` $derived in the same paragraph and use `{#if !effectiveMount}`), and add an explicit cross-reference to the EARS at behavioral-spec.md:1307 to lock the predicate.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+        "lineRange": "789-827",
+        "snippet": "### Sprint 6 Purity Boundary Notes\n\n§1 / §2 の purity-audit grep pattern は **変更なし**。Sprint 6 は `FeedRow.svelte` 内の **既存** preview 系 DOM 要素を `{#if !shouldMountBlocks}` で囲む purely structural な変更であり、新規 pure helper を追加しない。...\n\n**実装変更対象**:\n\n| モジュール | 種別 | 主たる責務変更 |\n|-----------|------|--------------|\n| `src/lib/feed/FeedRow.svelte` (拡張) | Component | `.row-button` (timestamp + body-preview + tags + tag-add + pending-switch-indicator) を `{#if !shouldMountBlocks}` で囲み、cell 1 で **DOM unmount** する。CSS `display:none` 等は使用しない。`block-editor-surface` のマウント条件は Sprint 5 から変更なし (`shouldMountBlocks && blockEditorAdapter`)。 |"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter4-003",
+      "dimension": "edge_case_coverage",
+      "category": "test_quality",
+      "severity": "MEDIUM",
+      "description": "Three-way disagreement on PROP-FEED-S6-002 minimum run count remains. iter-3 finding iter3-003 fixed contract CRIT-301 from `numRuns ≥ 200` to `numRuns ≥ 250` (sprint-6.md:30 verified). verification-architecture.md:802 says `numRuns: 250` (verified). However, behavioral-spec.md:1341 (REQ-FEED-030.1 Acceptance Criteria) for PROP-FEED-S6-002 still reads `(fast-check property test, 100 ケース以上、seed 固定)`. The spec text remains at 100 while the verification architecture and contract require 250. Phase 6 grading uses the contract passThreshold so this is not a contract-level FAIL, but the behavioral-spec is the AC source-of-truth that Phase 2a/2b implementers test against, and 100 < 250 means a Phase 2a-written test that uses `numRuns: 100` literally satisfies the AC text but fails the contract gate. Since iter2-004 raised the stratification floor explicitly to 5 cells × ≥50 cases = ≥250, the AC should reflect the same floor. Required fix: behavioral-spec.md:1341 update `100 ケース以上` to `seed 固定 (`0x56BABE`), numRuns ≥ 250, 5 cells × ≥ 50 cases stratification` to align with verification-architecture.md:802 and contracts/sprint-6.md:30.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+        "lineRange": "1341",
+        "snippet": "- (PROP-FEED-S6-002) **non-coexistence property**: 任意の `viewState: { editingStatus, editingNoteId }` × `editingSessionState: 5-arm DTO \\| null` × `serverBlocksLength ∈ {0..5}` × `blockEditorAdapter ∈ {Mock, null}` の組合せに対し、同一 `FeedRow` の subtree 内で `[data-testid=\"row-body-preview\"]` と `[data-testid=\"block-element\"]` が **同時に存在することはない** AND **両方とも不在ということもない (= 排他かつ網羅)** (fast-check property test, 100 ケース以上、seed 固定)。"
+      },
+      "routeToPhase": "1c"
+    }
+  ]
+}

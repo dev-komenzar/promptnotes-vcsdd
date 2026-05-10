@@ -1,0 +1,49 @@
+{
+  "verdict": "FAIL",
+  "iteration": 4,
+  "feature": "ui-feed-list-actions",
+  "sprintNumber": 6,
+  "timestamp": "2026-05-10T00:00:00Z",
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "edge_case_coverage": "PASS",
+    "implementation_correctness": "PASS",
+    "structural_integrity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "totalFindings": 3,
+  "criticalFindings": 2,
+  "summary": "Iter-4 verification of Sprint 6 spec gates fails on spec_fidelity. The iter-3 fix for the mount-predicate (iter3-001) was applied to the EARS at behavioral-spec.md:1307 but did NOT propagate to (a) the contract scope/redLines at contracts/sprint-6.md:8 and sprint-6.md:16, nor to (b) the verification-architecture.md Sprint 6 Purity Boundary Notes (line 793) and 実装変更対象 table (line 825). All four locations still read `{#if !shouldMountBlocks}` which contradicts the corrected EARS and breaks EC-FEED-024 (adapter-null race). In strict mode the contract scope and redLines are normative grading inputs, and the 実装変更対象 table is the canonical Phase 2a implementer instruction sheet; an implementer reading these literally would write the wrong predicate, regenerating the original empty-row regression that Sprint 6 was created to fix. This is the same defect class as iter3-001, escaped to four other documents. The iter-3 fixes for cell-2 citation (iter3-002), contract numRuns ≥ 250 (iter3-003), examples list 5-strata symmetry (iter3-004), CRIT-302 effectiveMount evidence (iter3-005), and Test Strategy wrapper enumeration (iter3-006) are all verified intact. A MEDIUM finding (FIND-S6-SPEC-iter4-003) records that behavioral-spec.md:1341 still says `100 ケース以上` for PROP-FEED-S6-002 even though verification-architecture.md and contract require 250 — three-way internal disagreement on the same PROP. Spec is NOT ready for Phase 2a TDD red phase.",
+  "iter3FixVerification": {
+    "iter3-001-EARS-effectiveMount-predicate": "PARTIAL — EARS fixed at behavioral-spec.md:1307 (`{#if !(shouldMountBlocks && blockEditorAdapter)}`), but the same-class defect persists at (a) contracts/sprint-6.md:8 (scope), (b) contracts/sprint-6.md:16 (redLines), (c) verification-architecture.md:793 (Purity Boundary Notes), (d) verification-architecture.md:825 (実装変更対象 table). See FIND-S6-SPEC-iter4-001 (contract) and FIND-S6-SPEC-iter4-002 (verification-architecture)",
+    "iter3-002-cell2-citation-fix": "PASS — confirmed at behavioral-spec.md:1346 (`EditingSessionStateDto 5-arm 定義の Idle arm が currentNoteId フィールドを持たないこと、および REQ-FEED-029 wire shape table row 1`) AND contracts/sprint-6.md:80 (`EditingSessionStateDto 5-arm 定義 ... REQ-FEED-029 wire shape table row 1 ... REQ-FEED-009 — pending-switch indicator — ではない`)",
+    "iter3-003-contract-numRuns-250": "PASS — confirmed at contracts/sprint-6.md:30 (`numRuns ≥ 250 — FIND-S6-SPEC-iter3-003 解消、5 cells × ≥50 cases stratification を契約レベルで担保`)",
+    "iter3-004-cell2-representative-examples": "PASS — confirmed at verification-architecture.md:802 examples list now contains 5 entries: `[<cell1 representative>, <ec024 representative>, <cell2 representative>, <cell3 rep>, <cell4 rep>]` (FIND-S6-SPEC-iter3-004 解消 noted in-line)",
+    "iter3-005-CRIT-302-effectiveMount-RED-GREEN": "PASS — confirmed at contracts/sprint-6.md:33-35 CRIT-302 description includes `**新 Sprint 6 mount predicate (`{#if !effectiveMount}`) の機能正当性**として PROP-FEED-S6-001 cell 1 (effectiveMount=true) が new code を実行する RED→GREEN evidence` and passThreshold lists `PROP-FEED-S6-001 cell 1 (effectiveMount=true) RED→GREEN (new mount predicate の機能正当性)` as the first conjunct",
+    "iter3-006-test-strategy-wrapper-enumerated": "PASS — confirmed at verification-architecture.md:818 wrapper file `FeedRowSprint6PropertyWrapper.svelte` is now enumerated in TS Files affected table with explicit annotation `(新規, test-only fixture)` and `Svelte 5 component (test fixture, 非 production)`, satisfying CRIT-304 allowlist alignment"
+  },
+  "newFindings": {
+    "FIND-S6-SPEC-iter4-001": {
+      "severity": "HIGH",
+      "dimension": "spec_fidelity",
+      "summary": "contracts/sprint-6.md scope (line 8) and redLines (line 16) still say `{#if !shouldMountBlocks}`; only the calibration note at line 78 carries the corrected predicate. The contract is internally inconsistent and the Phase 6 grading inputs (scope/redLines) are wrong."
+    },
+    "FIND-S6-SPEC-iter4-002": {
+      "severity": "HIGH",
+      "dimension": "spec_fidelity",
+      "summary": "verification-architecture.md:793 (Sprint 6 Purity Boundary Notes) and line 825 (実装変更対象 table FeedRow.svelte responsibility) still say `{#if !shouldMountBlocks}` despite the corrected EARS at behavioral-spec.md:1307."
+    },
+    "FIND-S6-SPEC-iter4-003": {
+      "severity": "MEDIUM",
+      "dimension": "edge_case_coverage",
+      "summary": "behavioral-spec.md:1341 PROP-FEED-S6-002 AC says `100 ケース以上` while verification-architecture.md:802 and contracts/sprint-6.md:30 both require `numRuns ≥ 250`. The behavioral-spec AC text was not updated when iter3-003 raised the contract floor to 250."
+    }
+  },
+  "convergenceSignals": {
+    "findingCount": 3,
+    "highSeverityCount": 2,
+    "evaluatedCriteria": ["CRIT-300", "CRIT-301", "CRIT-302", "CRIT-303", "CRIT-304"],
+    "duplicateFindings": []
+  },
+  "nextStep": "Route to Phase 1c (spec correction) for iter-5. Required corrections: (1) replace `{#if !shouldMountBlocks}` with `{#if !(shouldMountBlocks && blockEditorAdapter)}` (or define + use `effectiveMount`) at contracts/sprint-6.md:8, contracts/sprint-6.md:16, verification-architecture.md:793, verification-architecture.md:825. (2) Update behavioral-spec.md:1341 PROP-FEED-S6-002 AC text from `100 ケース以上、seed 固定` to `seed 固定 (0x56BABE)、numRuns ≥ 250、5 cells × ≥ 50 cases stratification`. After these corrections, iter-5 should re-verify all four predicate locations + the spec AC count. Until corrected, the spec is NOT ready for Phase 2a TDD red phase."
+}

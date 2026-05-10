@@ -1,0 +1,17 @@
+{
+  "findingId": "FIND-S6-SPEC-iter7-002",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "low",
+  "description": "behavioral-spec.md PROP-FEED-S6-001 cell 3 (line 1338) and cell 4 (line 1339) omit `delete-button.disabled === false` clause, while verification-architecture.md:801 PROP-FEED-S6-001 explicitly asserts `delete-button.disabled === false (他行のため delete 可能)` for cell 3 and cell 4. Asymmetry between the two artifacts on the disabled-state assertion. Not blocking because verification-architecture is canonical and the property is inferred from REQ-FEED-010 / `isDeleteButtonDisabled` (Sprint 1 既存 pure helper) which returns false when rowNoteId !== editingNoteId. Phase 2a implementer can derive the assertion from the canonical PROP definition.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1338-1339",
+    "snippet": "cell 3: `... AND querySelector('[data-testid=\"delete-button\"]') !== null` (no disabled clause)\ncell 4: same shape (no disabled clause)"
+  },
+  "crossReference": {
+    "verificationArchitecture": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:801 — PROP-FEED-S6-001 cell 3 / cell 4 assert `delete-button.disabled === false (他行のため delete 可能)`"
+  },
+  "routeToPhase": "1c",
+  "blocking": false
+}

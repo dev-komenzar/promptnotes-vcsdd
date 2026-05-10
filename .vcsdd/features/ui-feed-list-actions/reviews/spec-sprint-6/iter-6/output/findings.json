@@ -1,0 +1,74 @@
+{
+  "feature": "ui-feed-list-actions",
+  "sprintNumber": 6,
+  "reviewType": "spec-sprint-6",
+  "iteration": 6,
+  "findings": [
+    {
+      "findingId": "FIND-S6-SPEC-iter6-001",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "severity": "HIGH",
+      "description": "iter5-003 (HIGH) の修正が3-artifact間で完結していない。behavioral-spec.md の AC は cell 3 / cell 4 / EC-FEED-024 row に `delete-button !== null` assertion を追加した (lines 1338-1340) が、verification-architecture.md の PROP-FEED-S6-001 description (line 801) は cell 1 のみ delete-button assertion を含み、EC-FEED-024 row / cell 3 / cell 4 / cell 2 では delete-button assertion を欠く。contract sprint-6.md (line 23) は 'truth table 全 5 行 ... で preview / feed-row-button / block-element / delete-button の DOM 存在状態を assert する' と全 5 行 delete-button 必須を明記。iter5-003 の annotation 'FIND-S6-SPEC-iter5-003 解消、5 行全てで delete-button assertion を要求' は behavioral-spec のみで完結したように見え、verification-architecture.md PROP-FEED-S6-001 が同期更新されていないため、Phase 2a TDD red phase 実装者が verification-architecture.md を正規参照した場合 cell 3/4/EC-FEED-024 行で delete-button DOM 状態を assert しない test が書かれる risk が残る。3-artifact 整合 (behavioral-spec ↔ verification-architecture ↔ contract) が破綻している。",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+        "lineRange": "801-801",
+        "snippet": "PROP-FEED-S6-001 ... **(EC-FEED-024 row, effectiveMount=false due to adapter null)** ... `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null` (preview fallback で空白行を防ぐ)。**(cell 3)** ... `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null`。**(cell 4)** ... `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null`。**(cell 2, ...)** ... `row-body-preview !== null` AND `block-element === null`"
+      },
+      "crossReference": [
+        {
+          "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "1338-1340",
+          "note": "behavioral-spec.md AC は cell 3/4/EC-FEED-024 row で delete-button !== null を要求。verification-architecture.md PROP-FEED-S6-001 の同セルからは欠落。"
+        },
+        {
+          "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "lineRange": "23-25",
+          "note": "CRIT-300 description は全 5 行で delete-button 状態 assert を要求。verification-architecture.md と不整合。"
+        }
+      ],
+      "remediation": "verification-architecture.md PROP-FEED-S6-001 の description (line 801) を更新し、EC-FEED-024 row / cell 3 / cell 4 の3 セルで `delete-button !== null` を、cell 2 で `delete-button !== null` を含めること (cell 2 では disabled 属性は対象外、unreachable defensive のため)。EC-FEED-024 row では `delete-button.disabled === true` も含める (behavioral-spec line 1340 と一致させる)。",
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter6-002",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "severity": "MEDIUM",
+      "description": "behavioral-spec.md の Sprint 6 Acceptance Criteria 一覧 (lines 1336-1343) には cell 2 (`editingStatus === 'idle'` AND `editingNoteId === self.noteId`) の DOM 状態 AC bullet が存在しない。一方で contract sprint-6.md (line 25) の passThreshold は 'PROP-FEED-S6-001 (cell 1 + EC-FEED-024 row + cell 2/3/4 全 5 行 PASS)' と cell 2 PASS を要求し、verification-architecture.md PROP-FEED-S6-001 (line 801) は cell 2 を defensive として `row-body-preview !== null` AND `block-element === null` と部分的に assert する。behavioral-spec の AC 一覧は 'architecturally unreachable' を理由に cell 2 を Edge Case (line 1346) に書いているが、AC bullet として明示されていないため Phase 2a の test 実装者が cell 2 test を書かない risk がある (verification-architecture.md だけ参照すれば書かれるが、behavioral-spec を正規参照すると漏れる)。3-artifact 整合の観点で behavioral-spec の AC bullet にも cell 2 を含めるべき。",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+        "lineRange": "1336-1343",
+        "snippet": "**Acceptance Criteria** (Sprint 6 PROP-FEED-S6-001..003, S6-007): cell 1 / cell 3 / cell 4 / EC-FEED-024 row のみが bullet 化されており cell 2 が欠落"
+      },
+      "crossReference": [
+        {
+          "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "lineRange": "25",
+          "note": "passThreshold は cell 2 を含む 5 行 PASS を要求"
+        },
+        {
+          "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "801",
+          "note": "PROP-FEED-S6-001 は cell 2 を defensive として assert を含める"
+        }
+      ],
+      "remediation": "behavioral-spec.md AC 一覧に cell 2 の bullet を追加: `(PROP-FEED-S6-001) cell 2 (architecturally unreachable, defensive) では row-body-preview !== null AND feed-row-button !== null AND block-element === null AND delete-button !== null` を明記する。",
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter6-003",
+      "dimension": "structural_integrity",
+      "category": "spec_gap",
+      "severity": "MEDIUM",
+      "description": "verification-architecture.md PROP-FEED-S6-007 description (line 807) は EC-FEED-024 row の S6-001 静的 DOM 状態として 'row-body-preview !== null / block-element === null / **block-editor-surface === null**' と記述するが、PROP-FEED-S6-001 description (line 801) には EC-FEED-024 row で `block-editor-surface` の DOM 状態 assertion が含まれていない。S6-007 が S6-001 を参照する形になっているが、参照先 S6-001 が当該 assertion を欠くため、orthogonality 主張のための cross-reference が成立していない。これは iter5 fixes claim には含まれないが、iter5-003 で 'delete-button assertion を 5 行全てに要求' を主張した際に block-editor-surface の DOM 状態 assertion 整合も同時に reviewer すべきだった。S6-007 の orthogonality 主張は『静的 DOM (S6-001) と動的 effect (S6-007)』だが、参照先 S6-001 に block-editor-surface 状態 assertion が無いため、Phase 2a 実装者が S6-007 の test sequence で `block-editor-surface === null` を assert すべきか曖昧。",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+        "lineRange": "801-807",
+        "snippet": "PROP-FEED-S6-007: 'S6-001 EC-FEED-024 row が静的 DOM 状態 (row-body-preview !== null / block-element === null / **block-editor-surface === null**)' を S6-001 が扱うと記述するが、line 801 の S6-001 description では block-editor-surface assertion が無い"
+      },
+      "remediation": "PROP-FEED-S6-001 description (line 801) の EC-FEED-024 row に `block-editor-surface === null` assertion を明記するか、または PROP-FEED-S6-007 description (line 807) の参照を S6-001 に依存しない形に書き換える。3-artifact 整合の観点で前者が好ましい。",
+      "routeToPhase": "1c"
+    }
+  ]
+}

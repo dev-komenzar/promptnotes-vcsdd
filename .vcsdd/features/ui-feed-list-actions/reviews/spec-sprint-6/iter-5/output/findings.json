@@ -1,0 +1,139 @@
+{
+  "findings": [
+    {
+      "id": "FIND-S6-SPEC-iter5-001",
+      "severity": "HIGH",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "title": "iter4-001/002 fix incomplete: behavioral-spec.md still cites `{#if !shouldMountBlocks}` (single condition) for `.row-button` wrap in two prose locations",
+      "description": "The iter4 fix claim states that the mount predicate references were unified to `{#if !(shouldMountBlocks && blockEditorAdapter)}` (= `{#if !effectiveMount}`) consistently. However, behavioral-spec.md still contains the single-condition form `{#if !shouldMountBlocks}` in two prose locations describing the `.row-button` wrap, which contradicts the authoritative form used elsewhere (REQ-FEED-030.1 EARS at line 1307, the `{#if}` predicate clarification at line 1310, the truth table at lines 1321-1330, and the verification-architecture.md Sprint 6 sections at lines 793/825). Because `shouldMountBlocks` alone does not include the `blockEditorAdapter !== null` condition (EC-FEED-024 race), saying `.row-button` is wrapped in `{#if !shouldMountBlocks}` would imply that for the EC-FEED-024 row (`shouldMountBlocks === true && blockEditorAdapter === null`) the row-button gets unmounted, leaving a blank row — directly contradicting the truth table row 2 which says `feed-row-button = 存在` for that case. This same inconsistency was the basis of FIND-S6-SPEC-iter4-001/002 and is still NOT resolved in iteration 5.",
+      "evidence": [
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "1386",
+          "snippet": "Sprint 6 の `.row-button` を `{#if !shouldMountBlocks}` で囲む変更でも維持される"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "1401",
+          "snippet": "Sprint 6 では `.row-button` を `{#if !shouldMountBlocks}` で囲む変更でも維持される regression guard として位置づける"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "1307",
+          "snippet": "(`{#if !(shouldMountBlocks && blockEditorAdapter)}` すなわち `{#if !effectiveMount}` による条件付きレンダリング"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "825",
+          "snippet": "`.row-button` (timestamp + body-preview + tags + tag-add + pending-switch-indicator) を `{#if !effectiveMount}` で囲み"
+        }
+      ],
+      "remediation": "Replace both occurrences of `{#if !shouldMountBlocks}` at behavioral-spec.md lines 1386 and 1401 with `{#if !(shouldMountBlocks && blockEditorAdapter)}` (or the `{#if !effectiveMount}` equivalent) to match the authoritative form. The DOM-hierarchy code-fence at lines 1379-1384 also uses the older `{#if shouldMountBlocks && blockEditorAdapter}` form for the block-editor-surface, which is logically equivalent but should be unified to `{#if effectiveMount}` for clarity since iter4 introduced the `effectiveMount` $derived as part of the canonical surface.",
+      "routeToPhase": "1c"
+    },
+    {
+      "id": "FIND-S6-SPEC-iter5-002",
+      "severity": "HIGH",
+      "dimension": "verification_readiness",
+      "category": "verification_tool_mismatch",
+      "title": "iter4-003 fix incomplete: numRuns inconsistency between PROP-FEED-S6-002 (250) and Phase 5 gate / contract CRIT-301 description (200)",
+      "description": "iter4-003 claimed to align the fast-check `numRuns` to 250 with stratification (5 cells × ≥50 cases) and seed `0x56BABE` across spec and contract. The PROP-FEED-S6-002 row in verification-architecture.md line 802 and the AC bullet in behavioral-spec.md line 1341 both state `numRuns ≥ 250` and the contract passThreshold (line 30) also states `numRuns ≥ 250`. However TWO call-sites still cite the old value `200`: (a) verification-architecture.md line 861 — Sprint 6 Phase 5 gate — says `200 ケース以上を 0 反例で通過`; (b) contract sprint-6.md CRIT-301 description (line 28) says `seed 固定で 200 ケース以上で 0 反例`. This means: (i) the contract's own CRIT-301 description (line 28) is internally inconsistent with its passThreshold (line 30); (ii) the Phase 5 gate (verification-architecture.md line 861) requires LESS than what PROP-FEED-S6-002 itself specifies, allowing a Sprint to pass Phase 5 with 200 cases while still violating the PROP definition's 250-case stratification floor. A Phase 3 adversary or Phase 5 verifier could legitimately accept 200 runs based on the gate text and skip the per-cell stratification floor. iter4-003 was claimed to fix this; it is NOT fully fixed.",
+      "evidence": [
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "861",
+          "snippet": "fast-check property test (PROP-FEED-S6-002) の seed 固定実行 (`seed: 0x56BABE`) で **200 ケース以上を 0 反例**で通過。"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "lineRange": "28",
+          "snippet": "EC-FEED-024 の adapter null race も同 property でカバー。seed 固定で 200 ケース以上で 0 反例。"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "lineRange": "30",
+          "snippet": "PROP-FEED-S6-002 fast-check (`seed: 0x56BABE`, numRuns ≥ 250 — FIND-S6-SPEC-iter3-003 解消、5 cells × ≥50 cases stratification を契約レベルで担保, 0 counter-example)"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "802",
+          "snippet": "fc.assert: `fc.assert(prop, { seed: 0x56BABE, numRuns: 250, examples: [...] })`"
+        }
+      ],
+      "remediation": "Update verification-architecture.md line 861 to read `numRuns ≥ 250 (5 cells × ≥50 cases stratification)` (matching the PROP definition). Update contracts/sprint-6.md line 28 to also say `numRuns ≥ 250` (matching its own passThreshold on line 30). Both fixes must explicitly re-state the 5-strata floor so that no Phase-5 verifier can pass the gate with fewer cases than the PROP requires.",
+      "routeToPhase": "1c"
+    },
+    {
+      "id": "FIND-S6-SPEC-iter5-003",
+      "severity": "MEDIUM",
+      "dimension": "spec_fidelity",
+      "category": "test_coverage",
+      "title": "PROP-FEED-S6-001 acceptance criteria do not assert delete-button DOM state for cells 2/3/4/EC-FEED-024 row, but contract CRIT-300 requires all 5 rows",
+      "description": "Contract CRIT-300 description (line 23) explicitly requires the truth table to assert DOM existence state for `preview / feed-row-button / block-element / delete-button` across ALL 5 rows (cell 1 effectiveMount=true, EC-FEED-024 row, cell 2, cell 3, cell 4). However the actual PROP-FEED-S6-001 specification asserts `delete-button` only on the cell 1 row in BOTH the verification-architecture.md row (line 801) and the behavioral-spec.md AC bullets (lines 1337-1340). The truth-table itself at behavioral-spec.md lines 1323-1329 lists `delete-button` per row (all `存在 (disabled)` or `存在`), but the AC bullets that translate this into testable assertions only call out `delete-button` for cell 1. A test author following the AC bullets verbatim could legitimately omit `delete-button` assertions for cells 2/3/4/EC-FEED-024-row, even though the contract grading expects them.",
+      "evidence": [
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+          "lineRange": "23",
+          "snippet": "truth table 全 5 行 (cell 1 effectiveMount=true, EC-FEED-024 row, cell 2, cell 3, cell 4) で preview / feed-row-button / block-element / delete-button の DOM 存在状態を assert する。"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "801",
+          "snippet": "**(cell 3)** ... `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null`。**(cell 4)** ... `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null`。**(cell 2, ...)** ... `row-body-preview !== null` AND `block-element === null`"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "1338-1340",
+          "snippet": "cell 3 ... `row-body-preview` が `null` でない (他行は preview 維持)。\ncell 4 ... preview / feed-row-button が DOM に存在する。\nEC-FEED-024 row ... preview / feed-row-button が DOM に存在し、block-element は不在。"
+        }
+      ],
+      "remediation": "Either (a) extend the PROP-FEED-S6-001 specification (verification-architecture.md line 801) to add `delete-button !== null` for cells 2/3/4/EC-FEED-024 row (and explicitly state the disabled state — likely `false` for cells 3/4 since `editingNoteId !== self.noteId`, `true` for cells 1/2/EC-FEED-024 since `editingNoteId === self.noteId` triggers `isDeleteButtonDisabled`), or (b) loosen contract CRIT-300 to require `delete-button` assertions only on cell 1 + cells where the disabled state is non-trivial. Option (a) is preferred since the contract is intentionally strict.",
+      "routeToPhase": "1c"
+    },
+    {
+      "id": "FIND-S6-SPEC-iter5-004",
+      "severity": "MEDIUM",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "title": "Behavioral-spec AC bullets for PROP-FEED-S6-001 cell 3 omit `feed-row-button` and `block-element` assertions present in verification-architecture",
+      "description": "The PROP-FEED-S6-001 specification in verification-architecture.md line 801 says, for cell 3, `row-body-preview !== null AND feed-row-button !== null AND block-element === null`. The corresponding AC bullet in behavioral-spec.md line 1338 only asserts `row-body-preview` is not null. Cell 3 needs all three assertions (preview present, feed-row-button present, block-element absent) to fully cover the truth table row. Without explicit AC bullets covering `feed-row-button !== null` and `block-element === null` for cell 3, a test implementing the AC verbatim would not detect a regression where (e.g.) the feed-row-button gets unmounted under cell 3, or a stray block-element shows up under cell 3.",
+      "evidence": [
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "1338",
+          "snippet": "(PROP-FEED-S6-001) cell 3 (`editingStatus ∈ {editing,...}` AND `editingNoteId !== self.noteId`) では `querySelector('[data-testid=\"row-body-preview\"]')` が `null` でない (他行は preview 維持)。"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "801",
+          "snippet": "**(cell 3)** `editingStatus ∈ {editing,...}` AND `editingNoteId !== self.noteId`: `row-body-preview !== null` AND `feed-row-button !== null` AND `block-element === null`"
+        }
+      ],
+      "remediation": "Update behavioral-spec.md line 1338 cell 3 AC bullet to mirror the verification-architecture.md PROP definition: include `feed-row-button !== null` AND `block-element === null`. The same applies to the cell 4 AC bullet (line 1339), which mentions `preview / feed-row-button` but does not assert `block-element === null`.",
+      "routeToPhase": "1c"
+    },
+    {
+      "id": "FIND-S6-SPEC-iter5-005",
+      "severity": "LOW",
+      "dimension": "structural_integrity",
+      "category": "spec_gap",
+      "title": "DOM hierarchy code-fence in behavioral-spec.md (REQ-FEED-034) still uses pre-iter4 wrapping `{#if shouldMountBlocks && blockEditorAdapter}` instead of unified `{#if effectiveMount}`",
+      "description": "The DOM-hierarchy code-fence at behavioral-spec.md lines 1378-1384 visually depicts the FeedRow tree using `{#if shouldMountBlocks && blockEditorAdapter}` to gate the `.block-editor-surface`. This is logically equivalent to `{#if effectiveMount}` and is not strictly wrong, but iter4 explicitly introduced `effectiveMount` as a $derived for naming consistency (verification-architecture.md line 793 / 825). The code-fence still using the un-named expression undermines the iter4 unification objective and forces the reader to mentally rewrite the predicate when comparing to the rest of the spec. This is a minor coherence issue but adds friction to spec → implementation translation in Phase 2a.",
+      "evidence": [
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+          "lineRange": "1378-1384",
+          "snippet": "{#if shouldMountBlocks && blockEditorAdapter}\n    <div class=\"block-editor-surface\" data-testid=\"block-editor-surface\">\n      ...BlockElement 群...\n    </div>\n  {/if}"
+        },
+        {
+          "file": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+          "lineRange": "825",
+          "snippet": "`block-editor-surface` のマウント条件は `{#if effectiveMount}` に書き換え (Sprint 5 までの `shouldMountBlocks && blockEditorAdapter` と論理同値、命名統一)。"
+        }
+      ],
+      "remediation": "Update the code-fence to use `{#if effectiveMount}` and add the `effectiveMount` $derived declaration above the fence so the reader sees the canonical form that Sprint 6 will land. This also helps Phase 2a TDD by preventing test authors from constructing assertions against the older form.",
+      "routeToPhase": "1c"
+    }
+  ]
+}

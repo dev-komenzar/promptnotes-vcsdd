@@ -1,0 +1,34 @@
+{
+  "verdict": "FAIL",
+  "iteration": 3,
+  "feature": "ui-feed-list-actions",
+  "sprintNumber": 6,
+  "timestamp": "2026-05-10T00:00:00Z",
+  "dimensions": {
+    "spec_fidelity": "FAIL",
+    "edge_case_coverage": "PASS",
+    "implementation_correctness": "PASS",
+    "structural_integrity": "PASS",
+    "verification_readiness": "PASS"
+  },
+  "totalFindings": 6,
+  "criticalFindings": 2,
+  "summary": "Iter-3 verification of Sprint 6 spec gates fails on spec_fidelity. Two HIGH findings drive the FAIL: (1) REQ-FEED-030.1 EARS literal predicate `{#if !shouldMountBlocks}` contradicts its own truth table EC-FEED-024 row, which requires preview to remain mounted when blockEditorAdapter is null; the correct implementation predicate must be `{#if !(shouldMountBlocks && blockEditorAdapter)}` (= `{#if !effectiveMount}`) as stated in the truth table, contract red-line, calibration note, and Test Strategy — but NOT in the EARS itself. A Phase 2a implementer reading EARS literally produces empty-row regressions for the adapter-null race. (2) iter2-008 was supposed to replace the cell-2 unreachability rationale citation from REQ-FEED-009 (the pending-switch-indicator REQ, which is unrelated to the idle mirror invariant) to EditingSessionStateDto 5-arm + REQ-FEED-029 wire shape; the fix was applied at behavioral-spec.md:1038 but the same incorrect citation remains at line 1343 (REQ-FEED-030.1 Edge Cases) and at contracts/sprint-6.md:80. Remaining findings (MEDIUM/LOW): contract CRIT-301 weakens spec numRuns from 250 to 200, breaking iter2-004's stratification math; PROP-FEED-S6-002 examples list omits cell-2 representative while arbitrary includes it; CRIT-302 implementation_correctness dimension is composed entirely of regression-guard PROPs that pass on Sprint 5 baseline, providing no failing-test gate for the new mount-predicate logic; the property-test wrapper component required by the calibration note is not enumerated in the Sprint 6 Test Strategy file table. iter2-001..iter2-007 fixes are verified intact; iter2-008 is partially applied. Spec is NOT ready for Phase 2a TDD red phase.",
+  "iter2FixVerification": {
+    "iter2-001-seed-0x56BABE": "PASS — confirmed at verification-architecture.md:802 and sprint-6.md:30, sprint-6.md:60",
+    "iter2-002-PROP-S6-004-regression-guard": "PASS — confirmed at verification-architecture.md:850 and sprint-6.md:55",
+    "iter2-003-flushSync-clause": "PASS — confirmed at verification-architecture.md:802 (`assertion を実行する前に flushSync(() => {}) を呼び $effect を完了させる`)",
+    "iter2-004-stratification-5cells-50each": "PARTIAL — spec specifies numRuns:250 (verification-architecture.md:802) but contract CRIT-301 passThreshold weakens to ≥200 (sprint-6.md:30); see FIND-S6-SPEC-iter3-003",
+    "iter2-005-PROP-S6-007-orthogonal": "PASS — confirmed at verification-architecture.md:807 (dynamic dispatch 0-calls observation, separate from S6-001 EC-FEED-024 row static DOM observation)",
+    "iter2-006-PROP-S6-003-defense-in-depth": "PASS — confirmed at behavioral-spec.md:1339 explicitly notes `本 grep は二次防御であり、preview unmount の一次防御は PROP-FEED-S6-001 の querySelector(...) === null`",
+    "iter2-007-REQ-FEED-034-split": "PASS — confirmed at behavioral-spec.md:1356-1364 (REQ-FEED-034.1 row-button click, REQ-FEED-034.2 block-element click)",
+    "iter2-008-cell2-rationale-fix": "FAIL — fix applied at behavioral-spec.md:1038 (REQ-FEED-030 truth table note) but NOT at behavioral-spec.md:1343 (REQ-FEED-030.1 Edge Cases) and NOT at contracts/sprint-6.md:80 (calibration note); REQ-FEED-009 still cited where it does not apply; see FIND-S6-SPEC-iter3-002"
+  },
+  "convergenceSignals": {
+    "findingCount": 6,
+    "highSeverityCount": 2,
+    "evaluatedCriteria": ["CRIT-300", "CRIT-301", "CRIT-302", "CRIT-303", "CRIT-304"],
+    "duplicateFindings": []
+  },
+  "nextStep": "Route findings to Phase 1c (spec correction) for iter-4. The EARS predicate at REQ-FEED-030.1 must be corrected to match the truth table and contract red-line. The cell-2 unreachability rationale at behavioral-spec.md:1343 and sprint-6.md:80 must be updated per iter2-008's original mandate. Contract CRIT-301 numRuns must be tightened to ≥250 to match the spec stratification. Until these are corrected, the spec is NOT ready for Phase 2a TDD red phase."
+}

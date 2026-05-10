@@ -1,0 +1,82 @@
+{
+  "findings": [
+    {
+      "findingId": "FIND-S6-SPEC-iter3-001",
+      "dimension": "spec_fidelity",
+      "category": "requirement_mismatch",
+      "severity": "HIGH",
+      "description": "REQ-FEED-030.1 EARS sentence specifies the implementation MUST use `{#if !shouldMountBlocks}` for DOM unmount, but the truth table in the same REQ requires the `EC-FEED-024` row (adapter null) to keep preview MOUNTED. With `{#if !shouldMountBlocks}` (the EARS predicate), preview would be unmounted whenever `shouldMountBlocks === true` regardless of adapter state, contradicting the EC-FEED-024 row. The actual mount predicate must be `{#if !(shouldMountBlocks && blockEditorAdapter)}` (= `{#if !effectiveMount}`), which matches the truth table, the contract red-line at sprint-6.md:16 wording, the calibration note at sprint-6.md:78, and the Test Strategy 主たる責務変更 at verification-architecture.md:824. The EARS literal therefore mis-specifies the gating predicate. Phase 2a implementer reading the EARS literally would write the wrong condition and break EC-FEED-024.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+        "lineRange": "1305-1322",
+        "snippet": "**EARS**: WHEN ... AND `blockEditorAdapter !== null` THEN `FeedRow` は ... を **DOM から完全に unmount** しなければならない (`{#if !shouldMountBlocks}` による条件付きレンダリング ...)\n... `effectiveMount := shouldMountBlocks && blockEditorAdapter !== null` ..."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter3-002",
+      "dimension": "spec_fidelity",
+      "category": "spec_gap",
+      "severity": "HIGH",
+      "description": "iter-2 finding iter2-008 mandated that the cell 2 unreachability rationale cite EditingSessionStateDto 5-arm definition + REQ-FEED-029 wire shape, NOT REQ-FEED-009. The fix was applied at behavioral-spec.md:1038 (REQ-FEED-030 truth table note), but the new REQ-FEED-030.1 Edge Cases section at line 1343 still says `viewState.editingStatus === 'idle' AND viewState.editingNoteId === self.noteId: architecturally unreachable (REQ-FEED-009 mirror 不変条件)`, AND the adversary calibration note at contracts/sprint-6.md:80 still says `(Sprint 5 の REQ-FEED-009 mirror 不変条件)`. REQ-FEED-009 in this spec (behavioral-spec.md:240-280) is the pending-switch indicator requirement, NOT the idle-mirror invariant. The unreachability of cell 2 actually follows from feedReducer's DomainSnapshotReceived mirroring of the Idle arm of EditingSessionStateDto, where the Idle arm has no currentNoteId field (REQ-FEED-029 wire shape table row 1, behavioral-spec.md:971). Citing REQ-FEED-009 is substantively incorrect and contradicts iter2-008's stated fix. This produces a load-bearing rationale failure: an implementer following the citation would search REQ-FEED-009 and find pending-switch indicator semantics, not the mirror invariant.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+        "lineRange": "1343",
+        "snippet": "- `viewState.editingStatus === 'idle'` AND `viewState.editingNoteId === self.noteId`: architecturally unreachable (REQ-FEED-009 mirror 不変条件)。defensive test では preview を表示する (cell 2)。"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter3-003",
+      "dimension": "edge_case_coverage",
+      "category": "test_quality",
+      "severity": "MEDIUM",
+      "description": "Contract CRIT-301 passThreshold (sprint-6.md:30) requires PROP-FEED-S6-002 fast-check `numRuns ≥ 200`, while the spec text in PROP-FEED-S6-002 (verification-architecture.md:802) requires `numRuns: 250` and Sprint 6 Phase 5 gate (verification-architecture.md:860) says `200 ケース以上`. The contract therefore weakens the obligation that iter2-004 explicitly raised (5 cells × ≥ 50 cases each = ≥ 250). 250 ≥ 200, so a Phase 6 evaluator running 200 cases would PASS the contract while violating the spec's stratification. The contract must be tightened to `numRuns ≥ 250` to match the spec, otherwise stratified coverage of 5 cells × ≥ 50 cases is not contractually enforced.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "28-30",
+        "snippet": "passThreshold: PROP-FEED-S6-002 fast-check (`seed: 0x56BABE`, numRuns ≥ 200, 0 counter-example) ..."
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter3-004",
+      "dimension": "edge_case_coverage",
+      "category": "test_quality",
+      "severity": "LOW",
+      "description": "PROP-FEED-S6-002 stratification specifies `fc.constantFrom('cell1','ec024','cell2','cell3','cell4')` (5 strata) but the explicit `examples` array passed to fc.assert lists only 4 representative inputs: `[<cell1 representative>, <ec024 representative>, <cell3 rep>, <cell4 rep>]` (verification-architecture.md:802). cell 2 representative is omitted. Although cell 2 is architecturally unreachable, the stratified arbitrary will still produce cell-2 cases (the `fc.constantFrom` includes 'cell2'), and the assertion is `non-coexistence + non-emptiness`, which must hold for cell 2 as well (preview present, block-element absent). Omitting the cell-2 representative from `examples` makes shrinkage on cell-2 failures slower and weakens the stratification guarantee. Add a cell-2 representative to the `examples` list to maintain symmetry with the stratification arbitrary.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+        "lineRange": "802",
+        "snippet": "fc.assert: `fc.assert(prop, { seed: 0x56BABE, numRuns: 250, examples: [<cell1 representative>, <ec024 representative>, <cell3 rep>, <cell4 rep>] })`"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter3-005",
+      "dimension": "implementation_correctness",
+      "category": "test_coverage",
+      "severity": "LOW",
+      "description": "The `implementation_correctness` dimension (CRIT-302) is mapped to PROP-FEED-S6-004, S6-005, S6-006 — all three are explicitly classified as `regression guard` PROPs that already PASS in Sprint 5 baseline (verification-architecture.md:850-852, sprint-6.md:55-57). No PROP under CRIT-302 actually exercises the new Sprint 6 implementation logic (the `{#if !(shouldMountBlocks && blockEditorAdapter)}` introduction). The contract therefore has weight 0.27 on a dimension that does not test new code. PROP-FEED-S6-001 / S6-002 / S6-007 (which DO exercise new logic) are mapped to spec_fidelity / edge_case_coverage and not to implementation_correctness. This is a structural gap in the criteria-to-PROP mapping: there is no failing-test gate that proves the new Sprint 6 click-routing or DOM-tree change is functionally correct; only that pre-existing behavior is unchanged. Consider adding either (a) a CRIT-302 PROP that fails on a naive implementation (e.g. one that uses `display: none` instead of `{#if}`, which would cause click-event bubbling differences), or (b) re-route PROP-FEED-S6-001 cell 1 effectiveMount=true assertion to also count as implementation_correctness evidence.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md",
+        "lineRange": "31-35",
+        "snippet": "- id: CRIT-302\n    dimension: implementation_correctness\n    description: REQ-FEED-034 — 行外クリック (cell 3 の `feed-row-button`) → ... S6-005 / S6-006 は現行 Sprint 5 で既に成立する regression guard 性質を Sprint 6 でも維持することを確認。"
+      },
+      "routeToPhase": "1c"
+    },
+    {
+      "findingId": "FIND-S6-SPEC-iter3-006",
+      "dimension": "verification_readiness",
+      "category": "spec_gap",
+      "severity": "LOW",
+      "description": "Adversary calibration note at sprint-6.md:84 mentions a property-test wrapper component (`FeedRowSprint6PropertyWrapper.svelte` 仮称) under `__tests__/dom/_helpers/` is needed for fast-check to mount FeedRow with the prop combinations driven by arbitraries. CRIT-304 verification_readiness allowlist at sprint-6.md:43 includes `__tests__/dom/_helpers/` paths. However the Sprint 6 Test Strategy table (verification-architecture.md:813-818) does not enumerate this wrapper file — only the three test files. A Phase 2a TDD red-phase implementer reading the Test Strategy alone would not realize the wrapper is required, and a Phase 3 reviewer enforcing the file-set allowlist might flag the wrapper's introduction as out-of-scope. Add the wrapper to the Test Strategy `TS Files affected` table with explicit annotation that it is a test-only fixture and not production code.",
+      "evidence": {
+        "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+        "lineRange": "811-818",
+        "snippet": "**TS Files affected (新規 + 変更)**:\n\n| ファイル | 種別 | PROP |\n|---------|------|------|\n| `promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts` (新規) | vitest + jsdom + Svelte 5 mount | PROP-FEED-S6-001 |\n| `promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts` (新規) | fast-check + jsdom + Svelte 5 mount | PROP-FEED-S6-002 |\n| `promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts` (新規) | vitest + jsdom + mock adapter | PROP-FEED-S6-004, S6-005, S6-006 |\n| CI grep audit script (Sprint 6 拡張) | grep | PROP-FEED-S6-003 |"
+      },
+      "routeToPhase": "1c"
+    }
+  ]
+}

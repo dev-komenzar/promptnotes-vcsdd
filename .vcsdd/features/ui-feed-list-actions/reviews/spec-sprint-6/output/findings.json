@@ -1,0 +1,98 @@
+[
+  {
+    "id": "FIND-S6-SPEC-001",
+    "dimension": "spec_fidelity",
+    "severity": "HIGH",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1348",
+    "description": "REQ-FEED-034 EARS本文に「`block-editor-surface` は `.row-button` の sibling であり click event は冒泡しても `onRowClick` を起動しない」と書かれているが、`promptnotes/src/lib/feed/FeedRow.svelte:322-471` を見ると `.row-button` は `.row-layout` (display:flex) の子であり、`.block-editor-surface` は `.row-layout` の **次の sibling** (= `.feed-row` 直下) として配置されている。つまり `.block-editor-surface` と `.row-button` は **直接の siblings ではなく、`.row-layout` を間に挟んだ別階層**にある。Sprint 6 で `.row-button` を `{#if !shouldMountBlocks}` で囲んでも DOM 階層は変わらず、誤った「sibling」記述は実装ガイドとして危険 (実装者が `.row-button` の隣に直接 `.block-editor-surface` を置こうとして DOM 階層を変えてしまう恐れがある)。",
+    "suggestedFix": "REQ-FEED-034 の該当箇所を「`.block-editor-surface` は `.row-layout` の次の sibling であり、`.row-button` は `.row-layout` 内に閉じている。よって `.block-editor-surface` 内の click event は `.row-button` の click handler に届かない (DOM 木の同一系統下にない)」に書き換える。あるいは現行 FeedRow.svelte の DOM 階層図を REQ 内に図示する。"
+  },
+  {
+    "id": "FIND-S6-SPEC-002",
+    "dimension": "spec_fidelity",
+    "severity": "HIGH",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1307",
+    "description": "REQ-FEED-030.1 EARS 本文に「`data-testid=\"row-body-preview\"`、`data-testid=\"row-created-at\"`、`data-testid=\"feed-row-button\"` および `.row-button` 配下に置かれる **すべての preview 系要素 (`row-timestamp`, `row-body-preview`, `tag-list`, `tag-actions`, `pending-switch-indicator`)**」と並列列挙されているが、実際の DOM では: (1) `data-testid=\"row-body-preview\"` は `<div class=\"row-body-preview\">` (FeedRow.svelte:344-346)、(2) `data-testid=\"row-created-at\"` は `<div class=\"row-timestamp\">` (line 333-336) — つまり `row-timestamp` (class) と `row-created-at` (testid) は同一要素を指す重複表現。さらに `tag-list`, `tag-actions` には **data-testid が無い** (class 名のみ)、`pending-switch-indicator` のみ data-testid 付き (line 429)。EARS が「testid と class 名の混在」を列挙すると、テスト側で何を query すべきかが曖昧になり、Phase 2a で失敗テストを書く際に testid 不在の `tag-list` 要素を探そうとして空振りする。",
+    "suggestedFix": "EARS を再構成する: (1) 「`<button class=\"row-button\">` 要素自体 (data-testid=\"feed-row-button\") とその全子要素 (timestamp/preview/tag-list/tag-actions/pending-switch-indicator) は DOM から完全に unmount される」と階層的に記述; (2) testid が無い要素は class セレクタで明示する (e.g., `.tag-list`, `.tag-actions`); (3) 「row-timestamp と row-created-at は同一要素」と注記する (重複の解消)。"
+  },
+  {
+    "id": "FIND-S6-SPEC-003",
+    "dimension": "edge_case_coverage",
+    "severity": "HIGH",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1305-1340 / verification-architecture.md:801",
+    "description": "REQ-FEED-030.1 / PROP-FEED-S6-001 / PROP-FEED-S6-002 のいずれも、**`shouldMountBlocks === true` AND `blockEditorAdapter === null` のケース** をカバーしていない。FeedRow.svelte:448 の現行実装は `{#if shouldMountBlocks && blockEditorAdapter}` で block-editor-surface を mount し、Sprint 6 では `{#if !shouldMountBlocks}` で .row-button を unmount する。両者の組合せにより、**adapter が null かつ shouldMountBlocks が true** の瞬間 (例: `+page.svelte` で adapter 初期化前または初期化失敗時に editingSessionState が先に到達した race) は、preview も block-element も両方 unmount され、ユーザーは空白のフィード行を見ることになる。non-coexistence property は満たされるが UX として致命的。spec はこのケースを明示的に edge case として規定すべき。",
+    "suggestedFix": "EC-FEED-024 を新設: 「`viewState.editingNoteId === self.noteId` AND `viewState.editingStatus ∈ {editing,...}` AND `blockEditorAdapter === null` (adapter 未注入) のとき、preview を mount し続ける (cell 1 fallback)」を AC 化。または mount predicate を `shouldMountBlocks && blockEditorAdapter` に統一して `{#if shouldMountBlocks && blockEditorAdapter}` と `{#if !(shouldMountBlocks && blockEditorAdapter)}` で対称化し、adapter null 時は preview を残す形にする。さらに PROP-FEED-S6-002 fast-check の prop 空間に `blockEditorAdapter ∈ {Mock, null}` を追加して両ケースで non-coexistence + 「どちらか一方は必ず mount される」(empty state を禁止) を assert する。"
+  },
+  {
+    "id": "FIND-S6-SPEC-004",
+    "dimension": "edge_case_coverage",
+    "severity": "MEDIUM",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1314-1320",
+    "description": "REQ-FEED-030.1 truth table cell 1 の row は `delete-button` を「存在 (disabled, isDeleteButtonDisabled で disabled=true)」と規定しているが、PROP-FEED-S6-001 / S6-002 / S6-003 のいずれも cell 1 で `data-testid=\"delete-button\"` が DOM に存在することを assert しない。contracts/sprint-6.md:69 の calibration note では「delete-button を cell 1 で unmount しないことは意図的設計」と明記されているが、その意図を **正しく実装したかを検証する PROP が無い**。実装者が誤って `<button data-testid=\"delete-button\">` も `{#if !shouldMountBlocks}` の中に巻き込んだら、Phase 2/5 を通過してしまう。",
+    "suggestedFix": "PROP-FEED-S6-001 の cell 1 assertion に「`querySelector('[data-testid=\"delete-button\"]') !== null` AND `disabled` 属性が `true`」を追加する。または新規 PROP-FEED-S6-007 として cell 1 で delete-button が DOM に残り disabled=true であることを明示的に assert する。"
+  },
+  {
+    "id": "FIND-S6-SPEC-005",
+    "dimension": "implementation_correctness",
+    "severity": "HIGH",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:803",
+    "description": "PROP-FEED-S6-003 の grep pattern `opacity:\\s*0` は `opacity: 0.5`、`opacity: 0.04`、`opacity: 0.027` などの **小数の opacity 値にも誤マッチ**する (regex は「`0` の後に何が続くか」を制約しない)。FeedRow.svelte:479 を含め、現行 CSS では既に box-shadow に `rgba(0,0,0,0.04)` 等が登場しており、CSS の他箇所で `opacity: 0.5` 等が将来追加されると本 PROP は **意図せず FAIL する** (false positive)。逆に、悪意/誤りで `opacity:0` (空白なし) を入れる回帰は捕捉できる。",
+    "suggestedFix": "regex を `opacity:\\s*0\\s*[;}]` または `opacity:\\s*0(?![.0-9])` に修正し、整数 0 のみ捕捉する。同様に `display:\\s*none` と `visibility:\\s*hidden` も末尾境界 (`\\s*[;}]`) を含めて精度を上げる。実装後にこの grep を `wc -l == 0` baseline と比較する形に統一する (現行の PROP は「Sprint 5 baseline 同数 = 0」と書いているので命題は同等だが、将来 baseline が 1 以上になる可能性を考えて regex を厳密化すべき)。"
+  },
+  {
+    "id": "FIND-S6-SPEC-006",
+    "dimension": "implementation_correctness",
+    "severity": "HIGH",
+    "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md:48 / verification-architecture.md:840",
+    "description": "Phase 2 gate (Red phase entry) で「PROP-FEED-S6-006 に対応する failing test が存在する」と要求しているが、PROP-FEED-S6-006 の (a) (cell 1 で block-element click が onRowClick を発火しない) は **Sprint 5 現行実装で既に PASS する** assertion である。理由: FeedRow.svelte:322-471 の現行 DOM では `.block-editor-surface` は `.row-layout` の sibling として `.feed-row` 直下に配置され、`<button class=\"row-button\">` の subtree 外にある。よって block-element の click は `.row-button` の onclick handler に届かない (event は `.feed-row` で受けるが `.row-button` 自体には伝わらない)。(b) (dispatchFocusBlock が 1 回呼ばれる) は ui-block-editor REQ-BE-002b の既存実装由来で、これも既に PASS する。結果として Sprint 6 実装前に S6-006 は **両方 PASS してしまい failing test として成立しない**。Red phase の存在意義 (TDD: 失敗するテストが先) が崩れる。",
+    "suggestedFix": "S6-006 を「regression guard PROP」として明示し、Phase 2 gate のリストから外す (S6-003 と同じ扱い)。あるいは S6-006 を強化して「cell 1 で `feed-row-button` が DOM に存在しない結果として、それ以前のクリック経路が全て遮断されている」ことを直接 assert する形にし、Sprint 5 → Sprint 6 で挙動が変わる方向 (preview unmount により feed-row-button が消える) を fail-then-pass で検出できるようにする。Phase 2 gate 文言を「S6-001/S6-002/S6-004/S6-005 が failing、S6-003/S6-006 は実装後 regression guard として PASS 確認」に修正する。"
+  },
+  {
+    "id": "FIND-S6-SPEC-007",
+    "dimension": "implementation_correctness",
+    "severity": "MEDIUM",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:802 / behavioral-spec.md:1327",
+    "description": "PROP-FEED-S6-002 (fast-check non-coexistence property) の prop 空間は `viewState × editingSessionState × serverBlocksLength ∈ {0..5}` と定義されているが、(1) `viewState.editingStatus` の取りうる値の列挙、(2) `viewState.editingNoteId` が `self.noteId` か別 ID かの分岐、(3) `editingSessionState` が `null` の場合と各 5-arm の場合の生成、(4) `blockEditorAdapter` が null の場合 (FIND-S6-SPEC-003 関連)、これらの **生成 arbitrary が明示されていない**。fast-check は arbitrary が貧弱だと「実は 1 cell しか叩いていない」状態になりやすい。さらに「100 ケース以上ランダム生成」とあるが seed 固定 (Phase 5 gate に「seed 固定実行」と書いてあるのに seed 値が未指定) や統計的カバレッジ要件 (各 cell が ≥ N 回踏まれる) が無く、非決定的に PASS する property test になる懸念がある。",
+    "suggestedFix": "PROP-FEED-S6-002 の Description に明示的な arbitrary 仕様を追加する: (a) `editingStatus`: `fc.constantFrom('idle','editing','saving','switching','save-failed')`、(b) `editingNoteId`: `fc.option(fc.constantFrom(self.noteId, 'other-note-id'))`、(c) `editingSessionState`: 5-arm の各 status を arbitrary で生成、(d) `serverBlocksLength`: `fc.integer({ min: 0, max: 5 })`、(e) `blockEditorAdapter`: `fc.constantFrom(mockAdapter, null)`。seed 値も明示 (`fc.assert(prop, { seed: <constant>, numRuns: 100 })`) して再現性を確保。さらに 4 cell × 各 ≥ 10 ケース踏むよう `fc.pre(...)` で stratify する。"
+  },
+  {
+    "id": "FIND-S6-SPEC-008",
+    "dimension": "edge_case_coverage",
+    "severity": "MEDIUM",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1384 / verification-architecture.md:833",
+    "description": "EC-FEED-021 は「cell 3 → cell 1 遷移時の preview unmount race」を扱い、coverage matrix では「PROP-FEED-S6-001 cell 1/3 transition + PROP-FEED-S5-005 emit ordering で cover」とされているが、PROP-FEED-S6-001 は **静的な mount snapshot** を 4 セル個別に検証するだけで、**遷移過程 (cell 3 → cell 1 の中間 microtask)** で preview と block-element が一瞬同時に DOM 上に存在しないことは assert しない。EC-FEED-021 の本質は遷移中の race condition であるため、(a) 静的 snapshot 検証 + (b) emit ordering 検証 だけでは不十分。fast-check property test (S6-002) も snapshot を打つだけで遷移を観測しない。",
+    "suggestedFix": "新規 PROP-FEED-S6-007 として「cell 3 → cell 1 transition 時に MutationObserver で `.feed-row` subtree を監視し、`row-body-preview` と `block-element` の同時存在 frame が 0 件であること」を DOM integration test で検証する。あるいは EC-FEED-021 の coverage 主張を「Svelte 5 の reactivity が同期的に flush されることに依拠した間接論証」と spec で明示し、観測テストを deferred として state.json の openDeferrals に記録する。"
+  },
+  {
+    "id": "FIND-S6-SPEC-009",
+    "dimension": "verification_readiness",
+    "severity": "MEDIUM",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:801,805",
+    "description": "PROP-FEED-S6-001 (cell 1) と PROP-FEED-S6-005 は **同一の assertion** (`querySelector('[data-testid=\"feed-row-button\"]') === null` in cell 1) を 2 回テストする重複 PROP になっている。同様に PROP-FEED-S6-001 (cell 1) と PROP-FEED-S6-006 (a) は cell 1 における block-element 経由 onRowClick の発火可否について似た性質を扱う。CRIT-302 と CRIT-300 は別次元 (implementation_correctness vs spec_fidelity) を grade しているのに、内部的には同じ DOM 状態を 2 回 assert する形になり、grade inflation のリスクがある (1 つのバグで 2 つの dimension が同時に FAIL)。",
+    "suggestedFix": "PROP-FEED-S6-005 を「cell 1 における feed-row-button 不在の click-routing 観点での再 assert」と位置づけ、PROP-FEED-S6-001 cell 1 で既に検証済みであることを明示する。あるいは S6-005 を削除して S6-001 cell 1 に「click-routing 観点も兼ねる」と注記する。次元独立性を保ちたい場合は、S6-005 を「cell 1 で `dispatchEvent(new MouseEvent('click'))` を `.feed-row` 上で発火しても dispatchSelectPastNote が呼ばれない」(振る舞いの直接観測) に変更する。"
+  },
+  {
+    "id": "FIND-S6-SPEC-010",
+    "dimension": "structural_integrity",
+    "severity": "LOW",
+    "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md:43",
+    "description": "CRIT-304 の許容ファイルセットに `feed-row-preview-exclusivity.dom.vitest.ts`、`feed-row-preview-exclusivity.property.test.ts`、`feed-row-click-routing.dom.vitest.ts` の 3 ファイルが列挙されているが、property test (`feed-row-preview-exclusivity.property.test.ts`) を `__tests__/dom/` 配下に置くという path 規約が他 Sprint と整合しているか不明。例えば PROP-FEED-S5-009 の property test は `promptnotes/src/lib/feed/__tests__/feedRowPredicates.property.test.ts` (`dom/` 配下ではない) に置かれている。Sprint 6 の property test は DOM mount を伴うため `dom/` 配下が妥当だが、ディレクトリ規約が暗黙的で、Phase 3 で reviewer が「property test は dom/ 配下に置くべきでない」と reject する余地が残る。",
+    "suggestedFix": "verification-architecture.md の Sprint 6 Test Strategy table に「property test であっても DOM mount を伴う場合は `__tests__/dom/` 配下に置く」という規約を 1 行明記する。あるいは Sprint 5 既存の `__tests__/feedRowPredicates.property.test.ts` (pure property test) との対比を notes として残す。"
+  },
+  {
+    "id": "FIND-S6-SPEC-011",
+    "dimension": "verification_readiness",
+    "severity": "MEDIUM",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:840 / contracts/sprint-6.md:48",
+    "description": "Phase 2 gate (Red phase entry) は「PROP-FEED-S6-001..006 のうち S6-001/S6-002/S6-004/S6-005/S6-006 に対応する failing test が存在する」と要求し、S6-003 は「Sprint 5 baseline で既に 0 ヒット」と除外している。しかし PROP-FEED-S6-005 は前述 (FIND-S6-SPEC-009) のとおり S6-001 cell 1 と冗長で、独立した failing test を書く余地が薄い。さらに PROP-FEED-S6-006 は前述 (FIND-S6-SPEC-006) のとおり Sprint 5 で既に PASS する可能性が高い。結果、Phase 2 gate で「S6-001/S6-002/S6-004 の 3 つだけが本当の意味で failing test として成立」する状態になり、宣言と実態が乖離する。",
+    "suggestedFix": "Phase 2 gate 文言を以下に修正: 「failing test (RED): PROP-FEED-S6-001 (cell 1)、PROP-FEED-S6-002、PROP-FEED-S6-004 (cell 3 click)。Regression guard / 既に PASS: PROP-FEED-S6-003 (grep), PROP-FEED-S6-005 (DOM 不在 derived from S6-001), PROP-FEED-S6-006 (現行 DOM 階層由来で既に PASS だが、Sprint 6 で `.row-button` unmount 後も維持されることを regression として確認)」と区別し、TDD 上の「失敗テストが必須」の対象 PROP のみを Phase 2 entry の必須条件とする。"
+  },
+  {
+    "id": "FIND-S6-SPEC-012",
+    "dimension": "spec_fidelity",
+    "severity": "LOW",
+    "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1316",
+    "description": "REQ-FEED-030.1 truth table cell 1 row の `BlockElement` 表示数列は「`blocks.length` (>= 1; fallback 適用時 = 1)」と書かれているが、blocks.length が 0 の場合 (server から空配列が来た場合) の挙動が REQ-FEED-031 fallback 経路に流れることが本 truth table 内で明示されていない。REQ-FEED-031 を別途読まないと cell 1 行の意味が完結しない。docs/tasks/block-based-ui-spec-migration.md:259-260 では「Sprint 6 段階では best-effort のままで良い」とあるが、本 spec でも 0 件 → fallback への流れを 1 行で再記載すべき。",
+    "suggestedFix": "truth table cell 1 row の脚注として「`blocks.length === 0` の場合は REQ-FEED-031 fallback により synthetic paragraph 1 件が追加され、最終 BlockElement 数 = 1」と注記する。"
+  }
+]

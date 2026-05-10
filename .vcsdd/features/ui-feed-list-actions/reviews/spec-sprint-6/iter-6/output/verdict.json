@@ -1,0 +1,138 @@
+{
+  "sprintNumber": 6,
+  "feature": "ui-feed-list-actions",
+  "reviewType": "spec-sprint-6",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-05-10T00:00:00Z",
+  "iteration": 6,
+  "reviewContext": {
+    "scope": "Phase 1c spec review iter-6 of Sprint 6 (REQ-FEED-030.1 + REQ-FEED-034.1/2). Independent verification of iter-5 fix claims (iter5-001..iter5-005) without prior Builder context.",
+    "artifactsRead": [
+      ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md (Sprint 6 Extensions, lines 1281-1435)",
+      ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md (Sprint 6 sections, lines 791-861)",
+      ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md"
+    ]
+  },
+  "iter5FixVerification": {
+    "iter5-001 (HIGH)": {
+      "claim": "behavioral-spec.md:1386 (DOM hierarchy note) and :1401 (PROP-FEED-S6-006) updated to `{#if !effectiveMount}`; line 1379 code-fence updated to `{#if effectiveMount}`",
+      "verified": true,
+      "evidence": "Line 1379 reads `{#if effectiveMount}`; line 1386 reads `{#if !effectiveMount}` (with `(= {#if !(shouldMountBlocks && blockEditorAdapter)})` qualifier); line 1401 reads `{#if !effectiveMount}`. Fix complete."
+    },
+    "iter5-002 (HIGH)": {
+      "claim": "contracts/sprint-6.md:28 description and verification-architecture.md:861 Phase 5 gate updated to `numRuns ≥ 250 (5 cells × ≥50 cases stratification)`",
+      "verified": true,
+      "evidence": "contracts/sprint-6.md line 28 reads 'numRuns ≥ 250 (5 cells × ≥ 50 cases stratification)'; verification-architecture.md line 861 reads 'numRuns ≥ 250 (5 cells × ≥ 50 cases stratification) を 0 反例'. Behavioral-spec.md line 1341 also matches. 3-artifact 整合 OK."
+    },
+    "iter5-003 (MED)": {
+      "claim": "PROP-FEED-S6-001 cell 3, cell 4, EC-FEED-024 row now include delete-button assertions",
+      "verified": false,
+      "evidence": "behavioral-spec.md lines 1338-1340 do include `delete-button !== null` for cell 3/4/EC-FEED-024 (PASS). HOWEVER verification-architecture.md PROP-FEED-S6-001 description (line 801) DOES NOT include `delete-button` assertions for EC-FEED-024 row, cell 3, cell 4 — only cell 1 has delete-button assertion. iter5-003 fix is asymmetric across the 3 artifacts. See FIND-S6-SPEC-iter6-001 (HIGH)."
+    },
+    "iter5-004 (MED)": {
+      "claim": "cell 3 and cell 4 AC now include `feed-row-button !== null` / `block-element === null`",
+      "verified": true,
+      "evidence": "behavioral-spec.md lines 1338-1339 explicitly include `feed-row-button !== null` AND `block-element === null` for cell 3 and cell 4. verification-architecture.md line 801 also includes these assertions for cell 3 and cell 4. Fix complete in both artifacts."
+    },
+    "iter5-005 (LOW)": {
+      "claim": "same as iter5-001 (DOM hierarchy code-fence)",
+      "verified": true,
+      "evidence": "Line 1379 code-fence within DOM hierarchy block reads `{#if effectiveMount}`; surrounding hierarchy text at line 1386 reads `{#if !effectiveMount}`. Consistent."
+    }
+  },
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-SPEC-iter6-001", "FIND-S6-SPEC-iter6-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:801",
+          "description": "PROP-FEED-S6-001 description omits delete-button !== null assertions for EC-FEED-024 row / cell 3 / cell 4 / cell 2, despite behavioral-spec.md (lines 1338-1340) and contract CRIT-300 (line 23) requiring all 5 rows to assert delete-button DOM existence. iter5-003 fix incomplete in verification-architecture artifact."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1336-1343",
+          "description": "AC bullet list omits cell 2 entirely; contract passThreshold (sprint-6.md:25) explicitly requires cell 2 PASS as part of 'cell 1 + EC-FEED-024 row + cell 2/3/4 全 5 行 PASS'."
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1418-1426",
+          "description": "EC-FEED-021..024 catalog covered. EC-FEED-024 (adapter null race) wired into PROP-FEED-S6-001 EC-FEED-024 row + PROP-FEED-S6-007."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:802",
+          "description": "PROP-FEED-S6-002 fast-check stratification with seed 0x56BABE / numRuns ≥ 250 / 5 cells × ≥50 cases / 5 examples symmetrically enumerated; iter5-002 fix complete in this dimension."
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-SPEC-iter6-003"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:807",
+          "description": "PROP-FEED-S6-007 description claims orthogonality with S6-001 by referencing 'S6-001 EC-FEED-024 row が静的 DOM 状態 (row-body-preview !== null / block-element === null / block-editor-surface === null)' but the cross-referenced PROP-FEED-S6-001 description at line 801 does not contain block-editor-surface assertion for the EC-FEED-024 row. The orthogonality argument relies on an assertion that is not actually specified in the referenced PROP, leaving Phase 2a implementer ambiguous about whether to assert block-editor-surface === null in S6-007 test."
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md:7-19",
+          "description": "scope and redLines clearly delineate 1-file constraint (FeedRow.svelte) and Sprint 5 baseline preservation. CRIT-304 1-file enforcement holds. Test wrapper allowance (`__tests__/dom/_helpers/`) is explicitly carved out (line 77) and consistent with verification-architecture.md line 818."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:791-808",
+          "description": "Sprint 6 Purity Boundary Notes correctly state that no new pure helper is added; effectiveMount is a derived boundary in shell only. Module split respects existing boundary."
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:842-861",
+          "description": "Sprint 6 Phase 2/Phase 5 gates clearly distinguish 'Failing test (RED) 必須' (S6-001/002/007) from 'Regression guard (実装後 PASS 確認)' (S6-003/004/005/006). Phase 5 gate echoes numRuns ≥ 250 (5 cells × ≥ 50 cases) consistent with contract and behavioral-spec. Sprint 5 baseline regression (PROP-FEED-S5-001..022) explicitly preserved."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:809-819",
+          "description": "Test Strategy table enumerates 4 test files (3 .ts + 1 .svelte fixture) with concrete PROP mappings. CRIT-304 allowlist matches."
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 3,
+    "highSeverityCount": 1,
+    "mediumSeverityCount": 2,
+    "lowSeverityCount": 0,
+    "iter5FixesCompleteVerified": ["iter5-001", "iter5-002", "iter5-004", "iter5-005"],
+    "iter5FixesIncompleteVerified": ["iter5-003"],
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-300", "CRIT-301", "CRIT-302", "CRIT-303", "CRIT-304"],
+    "duplicateFindings": [],
+    "escalationRecommended": true,
+    "escalationReason": "iter-6 still contains 1 HIGH finding (FIND-S6-SPEC-iter6-001) due to iter5-003 being incomplete in verification-architecture.md (only behavioral-spec was synced). Per session protocol, HIGH at iter-6 may trigger escalation review."
+  }
+}

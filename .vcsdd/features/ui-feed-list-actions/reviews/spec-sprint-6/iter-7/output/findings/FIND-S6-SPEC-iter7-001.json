@@ -1,0 +1,18 @@
+{
+  "findingId": "FIND-S6-SPEC-iter7-001",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "severity": "low",
+  "description": "Cross-artifact asymmetry between behavioral-spec.md PROP-FEED-S6-001 AC bullets and verification-architecture.md PROP-FEED-S6-001 canonical description for cell 1 / cell 3 / cell 4. The iter-6 fix iter6-001 explicitly extended verification-architecture.md:801 so that all 5 rows assert delete-button + block-editor-surface (verified complete). However, behavioral-spec.md AC at lines 1337 (cell 1), 1338 (cell 3), 1339 (cell 4) only include row-body-preview / feed-row-button / block-element / delete-button assertions and OMIT the corresponding `block-editor-surface (!=)null` clause. Only line 1340 (EC-FEED-024 row) and line 1341 (cell 2) explicitly include block-editor-surface. Line 1340 contains a self-referential note claiming '5 行全てで delete-button + block-editor-surface 含む 5 testid を要求' but that claim is only literally fulfilled in 2 of the 5 rows of behavioral-spec.md. This asymmetry does NOT block Phase 2a TDD because: (a) verification-architecture.md is canonical for PROP definitions and tests, (b) cell 1 `block-element !== null` semantically implies surface presence (block-element renders inside .block-editor-surface per FeedRow.svelte:449-471), (c) contract CRIT-300 passThreshold references PROP-FEED-S6-001 by id and inherits the verification-architecture canonical definition. Flagged as LOW informational, not as a blocker.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "1337-1341",
+    "snippet": "- (PROP-FEED-S6-001) cell 1 (...): ... [no block-editor-surface clause]\n- (PROP-FEED-S6-001) cell 3 (...): row-body-preview !== null AND feed-row-button !== null AND block-element === null AND delete-button !== null [no block-editor-surface clause]\n- (PROP-FEED-S6-001) cell 4 (...): same shape as cell 3, no block-editor-surface clause\n- (PROP-FEED-S6-001) EC-FEED-024 row (...): ... AND block-editor-surface === null ... (line 1340 self-claims '5 行全てで...含む')\n- (PROP-FEED-S6-001) cell 2 (...): ... AND block-editor-surface === null ..."
+  },
+  "crossReference": {
+    "verificationArchitecture": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:801 — canonical PROP-FEED-S6-001 description includes block-editor-surface assertion for all 5 rows",
+    "feedRowSource": "promptnotes/src/lib/feed/FeedRow.svelte:448-471 — `<div class=\"block-editor-surface\" data-testid=\"block-editor-surface\">` is the parent wrapping `<BlockElement>`; surface presence and block-element presence are coupled in source"
+  },
+  "routeToPhase": "1c",
+  "blocking": false
+}

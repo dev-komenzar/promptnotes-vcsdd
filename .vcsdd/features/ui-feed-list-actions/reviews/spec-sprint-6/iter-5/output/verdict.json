@@ -1,0 +1,98 @@
+{
+  "verdict": "FAIL",
+  "iteration": 5,
+  "sprintNumber": 6,
+  "feature": "ui-feed-list-actions",
+  "timestamp": "2026-05-10T00:00:00Z",
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-SPEC-iter5-001", "FIND-S6-SPEC-iter5-003", "FIND-S6-SPEC-iter5-004"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1386",
+          "description": "Stale `{#if !shouldMountBlocks}` citation contradicting authoritative `{#if !(shouldMountBlocks && blockEditorAdapter)}` form"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1338-1340",
+          "description": "PROP-FEED-S6-001 cell 3/4/EC-FEED-024 AC bullets do not match the verification-architecture PROP definition"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1418-1426",
+          "description": "EC-FEED-021..024 catalog covers cell 3→cell 1 transition, cell 1 editingNoteId change, fast-check random clicks, and adapter null race"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:802",
+          "description": "PROP-FEED-S6-002 cell-stratified fast-check spans 5 strata × ≥50 cases with seed 0x56BABE; PROP-FEED-S6-007 covers adapter-null dispatch=0 dynamic observation"
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1357-1414",
+          "description": "REQ-FEED-034.1/2 splits click responsibility into `feed-row-button` (cell 3/4) → onRowClick → dispatchSelectPastNote and BlockElement (cell 1) → dispatchFocusBlock with cross-feature ui-block-editor REQ-BE-002b citation"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md:35",
+          "description": "CRIT-302 enumerates RED→GREEN evidence (cell 1 effectiveMount=true) and ties PROP-FEED-S6-004/005/006 to behavioral observation"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-SPEC-iter5-005"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md:1378-1384",
+          "description": "DOM-hierarchy code-fence still uses pre-iter4 `{#if shouldMountBlocks && blockEditorAdapter}` form instead of unified `{#if effectiveMount}` $derived form"
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-S6-SPEC-iter5-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md:861",
+          "description": "Phase 5 gate still says `200 ケース以上` while PROP-FEED-S6-002 (line 802) and contract passThreshold (line 30) require `numRuns ≥ 250`"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-6.md:28",
+          "description": "Contract CRIT-301 description says `200 ケース以上` while its own passThreshold (line 30) says `numRuns ≥ 250`"
+        }
+      ]
+    }
+  ],
+  "totalFindings": 5,
+  "criticalFindings": 2,
+  "summary": "FAIL — Iteration 5 has 2 HIGH and 2 MEDIUM and 1 LOW finding. The iter4-001/002 mount-predicate unification is incomplete: behavioral-spec.md lines 1386 and 1401 still cite the single-condition `{#if !shouldMountBlocks}` form, contradicting the EC-FEED-024 truth-table row and the authoritative `{#if !(shouldMountBlocks && blockEditorAdapter)}` form used elsewhere. The iter4-003 numRuns alignment is also incomplete: verification-architecture.md line 861 (Phase 5 gate) and contract CRIT-301 description (line 28) still cite `200 ケース以上` while PROP-FEED-S6-002 itself (line 802) and the contract passThreshold (line 30) require `numRuns ≥ 250`. CRIT-300 contract requires delete-button assertions on all 5 truth-table rows but PROP-FEED-S6-001 only specifies them for cell 1. Behavioral-spec PROP-FEED-S6-001 AC bullets for cells 3/4 omit `feed-row-button !== null` / `block-element === null` assertions present in the canonical PROP definition. The DOM-hierarchy code-fence at behavioral-spec.md:1378-1384 still uses the pre-iter4 expression instead of the new `effectiveMount` $derived. Phase 2a TDD red phase MUST NOT begin until these inconsistencies are resolved.",
+  "convergenceSignals": {
+    "findingCount": 5,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": ["CRIT-300", "CRIT-301", "CRIT-302", "CRIT-303", "CRIT-304"],
+    "duplicateFindings": []
+  }
+}
