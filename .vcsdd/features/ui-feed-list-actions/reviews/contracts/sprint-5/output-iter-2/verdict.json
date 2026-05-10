@@ -1,0 +1,162 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "2c-contract",
+  "sprint": 5,
+  "iteration": 3,
+  "negotiationRound": 2,
+  "timestamp": "2026-05-10T07:30:00Z",
+  "reviewer": "adversary",
+  "freshContext": true,
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+    "contractDigest": "e70b64601a0213c82254ea1e5be6d1f25451f0d6a003e101afe0051710b021bc"
+  },
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+          "lineRange": "63-101",
+          "description": "FIND-S5-CONTRACT-001 解消確認: PROP-FEED-S5-005 main protocol test (line 64) implements downstream spy pattern — `downstreamSpy` (line 79-83) asserts `observedSnapshot` already includes `currentNoteId === 'noteX'` BEFORE the spy's delegate runs. Synchronous emit pair (line 86-97) is followed by `downstreamSpy()` invocation; assertion runs INSIDE the spy callback. The substance of verification-architecture.md §14 line 709 (a)+(c) — 'downstream consumer sees editingSessionState already updated when invoked' — is now mechanically verified. Note: literal cross-event emit of `feed_state_changed` is replaced by a hand-rolled downstream spy; the contract description honestly reflects this by saying 'downstream spy assertion of synchronous state update before delegate'."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+          "lineRange": "105-197",
+          "description": "FIND-S5-CONTRACT-001 解消確認 (5-arm coverage): 4 separate arm-coverage tests added — Idle (line 106), Editing (line 121), Switching (line 147), SaveFailed (line 172). Each test emits the corresponding wire payload and asserts the channel forwards `status` + arm-specific fields unchanged. CRIT-201 description explicitly acknowledges 'Saving arm shape verified through Editing inheritance' — Saving has structurally identical fields to Editing (status discriminator only), so the narrowing is honest and the contract pass-threshold language matches what the tests actually verify."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts",
+          "lineRange": "214-226",
+          "description": "FIND-S5-CONTRACT-004 解消確認: Sprint 5 PROP-FEED-S5-002 DOM-portion test 'PROP-FEED-S5-002 (source structure): height: 100vh + FeedList mount + no EditorPanel mount' added. Asserts `<main class=\"feed-main\"`, `height: 100vh`, `<FeedList`, NOT `<EditorPanel`, NOT `editor-main`, NOT `feed-sidebar`. main-route.dom.vitest.ts now appears in manifest.tests array (manifest.json line 23). CRIT-200 passThreshold explicitly references the test name."
+        }
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+          "lineRange": "287-337",
+          "description": "FIND-S5-CONTRACT-002 解消確認: PROP-FEED-S5-011 scenario (d) tautology fully replaced. New test uses FeedRowSprint5Wrapper to reactively mutate `editingSessionState` post-mount. Sequence: undefined → records firstId (UUID v4 assertion line 307); non-empty `[{id:'server-block'}]` → records interimId === 'server-block' (line 324); undefined again → records secondId, asserts `secondId !== firstId` (line 332) AND `dispatchInsertBlockAtBeginning` called exactly 2 times (line 334). The test would FAIL if FeedRow.svelte line 272 (`if (fallbackAppliedFor) fallbackAppliedFor = null;`) were removed — restart condition (iii) regression is now guarded."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+          "lineRange": "215-250",
+          "description": "PROP-FEED-S5-011 scenario (b) also strengthened to use FeedRowSprint5Wrapper. Reactive `setEditingSessionState` post-mount with second `blocks=undefined` payload; asserts `dispatchInsertBlockAtBeginning` count remains 1 and UUID is preserved. Verifies idempotent no-op path (restart conditions (i)-(iii) all false → fallback not re-armed)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts",
+          "lineRange": "309-403",
+          "description": "FIND-S5-CONTRACT-003 解消確認: PROP-FEED-S5-018 inverted assertion replaced. New test asserts mount→unmount→remount cycle preserves block-element rendering when `editingSessionState` is unchanged. (1) Mount → blockEls.length === SAMPLE_BLOCKS.length; (2) Unmount → blockEls.length === 0; (3) Re-mount with same state → blockEls.length === SAMPLE_BLOCKS.length. Models the FeedList-side filter exclusion / re-visible cycle at the row-instance level. CRIT-207 description honestly discloses 'modeling FeedList unmounting the row when filter excludes'. The actual filter-induced unmount is structurally covered by Svelte's `{#each visibleNoteIds}` semantics (proven by Sprint 1-4 baseline tests for filter mechanics). Second test (line 369-402) additionally guards against spurious adapter dispatches during unmount."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+          "lineRange": "201-237",
+          "description": "PROP-FEED-S5-020 (EC-FEED-020 handler-late mount) verified: pre-subscribe emit lost (`observed === null` at line 222); post-subscribe emit delivered (`currentNoteId === 'noteB'` at line 234)."
+        }
+      ]
+    },
+    "implementation_correctness": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/editingSessionChannel.ts",
+          "lineRange": "34-54",
+          "description": "Subscriber registration centralized; INBOUND only (no `invoke`, no `@tauri-apps/api/core` import); handler body (line 39-45) is synchronous (no await/then/setTimeout/queueMicrotask). PROP-FEED-S5-003/004/012/021 all mechanically satisfied via sprint-5-grep-audit.sh."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte",
+          "lineRange": "251-310",
+          "description": "REQ-FEED-031 fallback dispatch chain: `$effect` block at line 251 implements all 3 restart conditions ((i) fallbackAppliedFor === null, (ii) cycleSwitched, (iii) lastBlocksWasNonEmpty); restart-condition-(iii) cache invalidation at line 272 (`if (fallbackAppliedFor) fallbackAppliedFor = null;`). Dispatch chain (line 290-308) wrapped in try/catch with console.warn on reject (best-effort per Sprint 5 scope acknowledgement). CRIT-202/203/206 implementation verified."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-best-effort-dispatch.dom.vitest.ts",
+          "lineRange": "108-228",
+          "description": "PROP-FEED-S5-022 sub-assertions (a)-(d) all implemented as concrete tests with `makeBlockAdapterGroupBReject()` (line 34) configuring all 9 Group B methods to reject. CRIT-206 binding verified."
+        }
+      ]
+    },
+    "structural_integrity": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+          "lineRange": "9-16",
+          "description": "All 7 redLines remain executable via PROP-FEED-S5-XXX (grep audit / git diff / filesystem checks); Sprint-4 baseline tag (`vcsdd/ui-feed-list-actions/sprint-4-baseline = d30ab13`) is named. CRIT dimension distribution unchanged from round 1 (CRIT-205 still classified as verification_readiness rather than structural_integrity — a minor categorization concern noted but not load-bearing since its passThreshold is mechanically evaluable)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/FeedRowSprint5Wrapper.svelte",
+          "lineRange": "1-83",
+          "description": "Test-only wrapper component introduced for round-2 fixes. Documented as vitest-only (header comment line 11). Setter exposure via per-mount window key (line 56) is hacky but isolated to test scope; cleanup function in `$effect` return (line 63) prevents leak across tests. Does not affect production code structure."
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/reviews/contracts/sprint-5/input/manifest.json",
+          "lineRange": "14-26",
+          "description": "Manifest now correctly includes both `main-route.dom.vitest.ts` (line 23, FIND-004 fix) and `FeedRowSprint5Wrapper.svelte` (line 22, supporting FIND-002 fix). Round-2 contract claims and review scope are coherent."
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+          "lineRange": "22, 27, 32, 37, 42, 47, 52, 57",
+          "description": "All 8 CRIT passThresholds are now binary-evaluable AND aligned with the substance of the underlying spec: (CRIT-200) grep + named DOM test 'PROP-FEED-S5-002 (source structure)'; (CRIT-201) grep + 4-arm + downstream-spy protocol test; (CRIT-202) 4-cell truth table + tsc + grep diff; (CRIT-203) fast-check + DOM + 5 scenarios with non-tautological (d); (CRIT-204) awk/grep + git diff + wire_audit; (CRIT-205) grep + filesystem; (CRIT-206) PROP-FEED-S5-022 (a-d); (CRIT-207) PROP-FEED-S5-018 mount/unmount/remount + S5-019 + S5-020. FIND-S5-CONTRACT-005 (verification_tool_mismatch) resolved — contract pass entails spec satisfaction at the load-bearing semantic level."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+          "lineRange": "287-337",
+          "description": "Restart-condition-(iii) regression is now guarded by an executable assertion (`expect(secondId).not.toBe(firstId)`) — would FAIL if the FIND-S5-SPEC-iter2-005 fix at FeedRow.svelte:272 were removed. The contract's 'PROP-FEED-S5-011 all 5 scenarios PASS' claim now has substantive backing."
+        }
+      ]
+    }
+  },
+  "overallVerdict": "PASS",
+  "convergenceSignals": {
+    "findingCount": 0,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-200",
+      "CRIT-201",
+      "CRIT-202",
+      "CRIT-203",
+      "CRIT-204",
+      "CRIT-205",
+      "CRIT-206",
+      "CRIT-207"
+    ],
+    "duplicateFindings": [],
+    "round1FindingsResolved": [
+      "FIND-S5-CONTRACT-001",
+      "FIND-S5-CONTRACT-002",
+      "FIND-S5-CONTRACT-003",
+      "FIND-S5-CONTRACT-004",
+      "FIND-S5-CONTRACT-005"
+    ],
+    "round1FindingsUnresolved": [],
+    "newIssuesIntroduced": []
+  }
+}

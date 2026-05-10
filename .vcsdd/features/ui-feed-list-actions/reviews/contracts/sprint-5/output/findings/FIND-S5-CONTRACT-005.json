@@ -1,0 +1,35 @@
+{
+  "findingId": "FIND-S5-CONTRACT-005",
+  "dimension": "verification_readiness",
+  "category": "verification_tool_mismatch",
+  "severity": "high",
+  "summary": "Contract criteria CRIT-201 and CRIT-203 cite PROP-FEED-S5-005 / PROP-FEED-S5-011 as binary-evaluable pass thresholds, but those PROPs' actual test implementations are weaker than verification-architecture.md §14 specifies. Phase 3 will mechanically observe 'PROP PASS' while the underlying cross-event-ordering / restart-condition-(iii) properties remain unverified.",
+  "description": "The contract is supposed to bind Phase 3 (adversarial code review) to a concrete pass/fail outcome via the passThreshold field. For CRIT-201 ('PROP-FEED-S5-005 mock-emitter integration test PASS') and CRIT-203 ('PROP-FEED-S5-011 all 5 scenarios PASS'), the named tests will mechanically PASS, but they do NOT actually verify what the contract description and verification-architecture.md §14 promise: (1) For PROP-FEED-S5-005, the test omits the cross-event ordering assertion (no feedReducer spy, no `feed_state_changed` co-emit, no 5-arm parameterization — see FIND-S5-CONTRACT-001). (2) For PROP-FEED-S5-011 scenario (d), the test body is a tautological no-op `expect(true).toBe(true)` that PASSes regardless of FeedRow.svelte's restart-condition (iii) implementation (see FIND-S5-CONTRACT-002). This is a verification_tool_mismatch in the strict sense: the cited verification mechanism (vitest test name PASS) cannot prove the property the contract claims it proves. From Phase 3's perspective the criterion is 'binary-evaluable' (test exits 0 or 1), but from a spec-coherence perspective it is decoupled from the actual REQ-FEED-029/031 + EC-FEED-018/019/020 behaviour. The contract fails the verification_readiness dimension because passing the contract does not entail satisfying the spec.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+    "lineRange": "26-37",
+    "snippet": "  - id: CRIT-201\n    ... passThreshold: PROP-FEED-S5-003 grep wc -l == 1 + listener path includes editingSessionChannel.ts; PROP-FEED-S5-004 exit 1 (no editorStateChannel hits); PROP-FEED-S5-021 exit 0 (INBOUND only); PROP-FEED-S5-005 mock-emitter integration test PASS.\n  - id: CRIT-203\n    ... passThreshold: PROP-FEED-S5-009 fast-check PASS, PROP-FEED-S5-010 (DOM fallback BlockElement, UUID v4) PASS, PROP-FEED-S5-011 all 5 scenarios PASS."
+  },
+  "additionalEvidence": [
+    {
+      "type": "test-output",
+      "location": "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+      "lineRange": "54-83",
+      "description": "PROP-FEED-S5-005 implementation: only verifies single-event handler synchronicity. No feedReducer spy, no dual-event emit ordering, no 5-arm coverage. Will trivially PASS even if cross-event ordering is broken."
+    },
+    {
+      "type": "test-output",
+      "location": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+      "lineRange": "280-290",
+      "description": "PROP-FEED-S5-011 scenario (d) implementation: `expect(true).toBe(true);` — tautological. Will PASS even if restart-condition (iii) (the entire FIND-S5-SPEC-iter2-005 fix) is removed from FeedRow.svelte."
+    },
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+      "lineRange": "709, 715",
+      "description": "Both PROPs' verification-architecture.md text specifies stronger assertions than the test implementations actually deliver. The contract chose to inherit those PROP IDs without amending its passThreshold to reflect the implementation gap."
+    }
+  ],
+  "remediation": "The cleanest fix is to either (1) tighten the test implementations to match verification-architecture.md §14 (preferred — preserves contract binding semantics); or (2) split each affected PROP into a 'mechanical' and an 'aspirational' part, and have the contract's passThreshold reference only the mechanical part while logging the aspirational part as a Phase 6 manual gate. Without one of these fixes, Phase 3's PASS verdict for CRIT-201 / CRIT-203 will be a false-positive signal: the contract will report convergence on REQ-FEED-029 / REQ-FEED-031 / EC-FEED-018 cross-event-ordering and restart-condition-(iii) without actually exercising those behaviours.",
+  "routeToPhase": "2c-contract"
+}

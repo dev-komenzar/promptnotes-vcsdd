@@ -1,0 +1,29 @@
+{
+  "findingId": "FIND-S5-CONTRACT-004",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "medium",
+  "summary": "CRIT-200 passThreshold names a DOM-level assertion (FeedList present, EditorPanel absent) but the test artifact (main-route.dom.vitest.ts Sprint 5 extension) is not in the manifest's tests array, leaving the DOM half of PROP-FEED-S5-002 unverifiable from this review scope.",
+  "description": "CRIT-200 (sprint-5.md line 22) passThreshold reads: 'PROP-FEED-S5-001 grep audit exit 1 (no match); PROP-FEED-S5-002 grep ≥ 1 hit on `height:\\s*100vh` in +page.svelte AND DOM test confirms FeedList present, EditorPanel absent'. The grep portion of PROP-FEED-S5-002 is implemented in scripts/sprint-5-grep-audit.sh lines 47-58 ✓. The DOM portion is registered to 'promptnotes/src/routes/__tests__/main-route.dom.vitest.ts (Sprint 5 拡張)' in verification-architecture.md §14 line 744. However, the manifest.tests array (manifest.json lines 14-23) does NOT include main-route.dom.vitest.ts. Phase 3 reviewing only the manifest-listed artefacts cannot confirm the DOM half of PROP-FEED-S5-002. The contract therefore makes a passThreshold claim ('DOM test confirms FeedList present, EditorPanel absent') that cannot be evaluated from the review scope. This is a manifest/contract coordination defect, not necessarily a missing test (the file may exist on disk and be exercised by the regression baseline), but the contract should not depend on un-listed evidence.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/reviews/contracts/sprint-5/input/manifest.json",
+    "lineRange": "14-32",
+    "snippet": "\"tests\": [\n  \"promptnotes/src/lib/feed/__tests__/sprint-5.gates.test.ts\",\n  \"promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts\",\n  \"promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts\",\n  \"promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts\",\n  \"promptnotes/src/lib/feed/__tests__/dom/feed-row-best-effort-dispatch.dom.vitest.ts\",\n  \"promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts\",\n  \"promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts\",\n  \"promptnotes/src/lib/block-editor/__tests__/types/createBlockEditorAdapter.types.test.ts\",\n  \"promptnotes/scripts/sprint-5-grep-audit.sh\"\n],\n... (no main-route.dom.vitest.ts)"
+  },
+  "additionalEvidence": [
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+      "lineRange": "744",
+      "description": "PROP-FEED-S5-002 (DOM portion) registered test: 'promptnotes/src/routes/__tests__/main-route.dom.vitest.ts (Sprint 5 拡張)'. The Sprint 5 extension to this file is the canonical DOM evidence."
+    },
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+      "lineRange": "20-22",
+      "description": "CRIT-200 description references 'main-route.dom.vitest.ts asserts FeedList is the sole content surface and feed-main has height 100vh in CSS source' but the file is not in this contract review's manifest."
+    }
+  ],
+  "remediation": "Add 'promptnotes/src/routes/__tests__/main-route.dom.vitest.ts' to the manifest.tests array, and verify (via Read) that the file contains the Sprint 5 PROP-FEED-S5-002 DOM-portion test (FeedList sole content surface, EditorPanel absent, .feed-main height check). Alternatively, if the DOM portion is intentionally deferred to the regression baseline, amend CRIT-200 passThreshold to remove 'AND DOM test confirms FeedList present, EditorPanel absent' so the contract claim matches the in-scope evidence.",
+  "routeToPhase": "2c-contract"
+}

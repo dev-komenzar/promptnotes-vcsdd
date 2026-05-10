@@ -1,0 +1,42 @@
+{
+  "reviewType": "contract",
+  "featureName": "ui-feed-list-actions",
+  "sprintNumber": 5,
+  "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+  "contractDigest": "e70b64601a0213c82254ea1e5be6d1f25451f0d6a003e101afe0051710b021bc",
+  "negotiationRound": 2,
+  "iteration": 3,
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+      ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src/lib/feed/__tests__/sprint-5.gates.test.ts",
+      "promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-row-best-effort-dispatch.dom.vitest.ts",
+      "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+      "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+      "promptnotes/src/lib/feed/__tests__/dom/FeedRowSprint5Wrapper.svelte",
+      "promptnotes/src/routes/__tests__/main-route.dom.vitest.ts",
+      "promptnotes/src/lib/block-editor/__tests__/types/createBlockEditorAdapter.types.test.ts",
+      "promptnotes/scripts/sprint-5-grep-audit.sh"
+    ],
+    "source": [
+      "promptnotes/src/routes/+page.svelte",
+      "promptnotes/src/lib/feed/FeedRow.svelte",
+      "promptnotes/src/lib/feed/editingSessionChannel.ts",
+      "promptnotes/src/lib/feed/feedRowPredicates.ts",
+      "promptnotes/src/lib/block-editor/createBlockEditorAdapter.ts"
+    ]
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ]
+}

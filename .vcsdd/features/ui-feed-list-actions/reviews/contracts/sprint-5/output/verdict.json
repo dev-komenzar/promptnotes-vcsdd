@@ -1,0 +1,126 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "2c-contract",
+  "sprint": 5,
+  "iteration": 2,
+  "negotiationRound": 1,
+  "timestamp": "2026-05-10T05:30:00Z",
+  "reviewer": "adversary",
+  "freshContext": true,
+  "reviewContext": {
+    "reviewType": "contract",
+    "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+    "contractDigest": "98ecbe6aed1f9375431bfbee2afcab53116a275c3424656fbf45b78b80277302"
+  },
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-S5-CONTRACT-001",
+        "FIND-S5-CONTRACT-002"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+          "lineRange": "20-57",
+          "description": "CRIT-200..207 全 8 criterion を spec-sprint-5 (Phase 1c PASS iter-3) の REQ-FEED-028..033 + EC-FEED-018..020 + EC-FEED-016 (S5 amendment) と突合。CRIT/REQ mapping は完全 (REQ-FEED-028→CRIT-200, REQ-FEED-029→CRIT-201, REQ-FEED-030→CRIT-202+CRIT-206, REQ-FEED-031→CRIT-203, REQ-FEED-032→CRIT-204, REQ-FEED-033→CRIT-205, EC-FEED-018/019/020→CRIT-207)。ただし CRIT-201/CRIT-203 の passThreshold が verification-architecture.md §14 の PROP-FEED-S5-005/S5-011 仕様と divergent — 詳細は FIND-001/002。"
+        }
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-S5-CONTRACT-003"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+          "lineRange": "53-57",
+          "description": "CRIT-207 が EC-FEED-018/019/020 を PROP-FEED-S5-018/019/020 に紐付け。EC-FEED-016 (S5 amendment) は CRIT-203 の passThreshold (PROP-FEED-S5-009/010/011) で扱われる。EC-FEED-018 (filter excludes editingNoteId) の検証実態が contract claim と乖離 — FIND-003 参照。EC-FEED-019/020 の test 実装は contract と整合 (feed-row.dom.vitest.ts / feed-list-editing-channel.dom.vitest.ts)。"
+        }
+      ]
+    },
+    "implementation_correctness": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/block-editor/createBlockEditorAdapter.ts",
+          "lineRange": "27-64",
+          "description": "16 invoke 呼び出しすべて確認: Group A 7 メソッド (trigger_idle_save, trigger_blur_save, retry_save, discard_current_session, cancel_switch, copy_note_body, request_new_note) + Group B 9 メソッド (editor_focus_block, editor_edit_block_content, editor_insert_block_after, editor_insert_block_at_beginning, editor_remove_block, editor_merge_blocks, editor_split_block, editor_change_block_type, editor_move_block)。各 dispatch payload に issuedAt 含有。CRIT-202 passThreshold (PROP-FEED-S5-016/017) と完全整合。"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/editingSessionChannel.ts",
+          "lineRange": "34-54",
+          "description": "唯一の listen('editing_session_state_changed', ...) 呼び出し。INBOUND only (invoke なし、@tauri-apps/api/core import なし)。callback handler 内に await/setTimeout/queueMicrotask なし (PROP-FEED-S5-003/012/021 充足)。CRIT-201 redLine 整合。"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte",
+          "lineRange": "189-310",
+          "description": "REQ-FEED-030/031 in-place block embedding + fallback dispatch chain 実装確認。shouldMountBlocks 述語は 2x2 truth table cell 1 を厳密に encoding。fallbackAppliedFor restart 条件 (i)/(ii)/(iii) すべて effect 内で実装 (271-279 行)。両 dispatch を try/catch で wrap (289-308)。CRIT-202/203/206 redLine 整合。"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/scripts/sprint-5-grep-audit.sh",
+          "lineRange": "33-222",
+          "description": "Sprint 5 grep audit (PROP-FEED-S5-001/003/004/012/013/014/015/017/021) 全項目を bash で executable に encoding。CRIT-200/201/204/205 の passThreshold (grep + filesystem) を mechanical に検証可能。Sprint-4 baseline tag 経由の git diff も実装 (208-221)。"
+        }
+      ]
+    },
+    "structural_integrity": {
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-S5-CONTRACT-004"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+          "lineRange": "9-16",
+          "description": "redLines 7 項目すべて verification-architecture.md §14 PROP-FEED-S5-XXX で執行可能。Sprint-4 baseline tag (vcsdd/ui-feed-list-actions/sprint-4-baseline = d30ab13) の存在は spec-sprint-5/output-iter-3/verdict.json (line 84-85) で confirmed。"
+        },
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+          "lineRange": "20-57",
+          "description": "CRIT-200..207 の dimension 分類 (spec_fidelity x 2, edge_case_coverage x 2, implementation_correctness x 2, structural_integrity x 1, verification_readiness x 1)。dimension 分布が偏っており、特に CRIT-205 (REQ-FEED-033, 旧 EditorPane 識別子禁止 grep) が verification_readiness に分類されているが本質的には structural_integrity / boundary purity の問題 — minor concern。FIND-004 参照。"
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "FAIL",
+      "findings": [
+        "FIND-S5-CONTRACT-005"
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+          "lineRange": "22, 27, 32, 37, 42, 47, 52, 57",
+          "description": "全 CRIT の passThreshold は grep / wc / diff / vitest test 名 / git diff exit code として concretely specified。CRIT-200/204/205/207 は PROP-FEED-S5-XXX の grep/filesystem audit で完全に mechanical。CRIT-201/203 の passThreshold は PROP-FEED-S5-005/011 を引用するが、当該 PROP の実装が verification-architecture.md §14 の規定より大幅に degraded されており Phase 3 が contract 通り PASS と判定しても underlying spec を verify していない。FIND-005 参照。"
+        }
+      ]
+    }
+  },
+  "overallVerdict": "FAIL",
+  "convergenceSignals": {
+    "findingCount": 5,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-200",
+      "CRIT-201",
+      "CRIT-202",
+      "CRIT-203",
+      "CRIT-204",
+      "CRIT-205",
+      "CRIT-206",
+      "CRIT-207"
+    ],
+    "duplicateFindings": []
+  }
+}

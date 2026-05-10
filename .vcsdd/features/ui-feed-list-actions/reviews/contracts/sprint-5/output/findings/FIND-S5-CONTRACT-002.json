@@ -1,0 +1,35 @@
+{
+  "findingId": "FIND-S5-CONTRACT-002",
+  "dimension": "spec_fidelity",
+  "category": "test_quality",
+  "severity": "high",
+  "summary": "CRIT-203 passThreshold 'PROP-FEED-S5-011 all 5 scenarios PASS' over-claims: scenario (d) (undefined→non-empty→undefined restart, FIND-S5-SPEC-iter2-005) is implemented as a tautological no-op `expect(true).toBe(true)`, so PROP-FEED-S5-011 will always PASS regardless of whether the restart logic works.",
+  "description": "The contract's CRIT-203 description explicitly enumerates 'fallbackAppliedFor state ownership prevents UUID churn under (a) repeated undefined, (b) noteA→noteB→noteA cycle, (c) undefined→non-empty→undefined transition (FIND-S5-SPEC-iter2-005), (d) non-empty only' and the passThreshold says 'PROP-FEED-S5-011 all 5 scenarios PASS' (verification-architecture.md §14 PROP-FEED-S5-011 enumerates scenarios (a)/(b)/(c)/(d)/(e), where (d) is the FIND-S5-SPEC-iter2-005 restart-on-non-empty-then-undefined sequence). The actual test file (feed-row-empty-fallback.dom.vitest.ts lines 280-290) implements scenario (d) as a documented deferral with body `expect(true).toBe(true);` — the test is structurally tautological and will PASS even if FeedRow.svelte deletes its restart-condition (iii) logic entirely. The test comment acknowledges 'Svelte 5 mount() does not provide a public API to update top-level props post-mount without a parent wrapper component' and defers the assertion to a 'Phase 6 manual UI test'. The contract does NOT acknowledge this deferral; from Phase 3's perspective PROP-FEED-S5-011 will be reported PASS, satisfying CRIT-203, while restart condition (iii) — the entire FIND-S5-SPEC-iter2-005 fix — has zero automated regression protection. This is a hidden contract fidelity gap.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+    "lineRange": "280-290",
+    "snippet": "test('(d) FIND-iter2-005: undefined→non-empty→undefined within single mount → restart not feasible to assert via Svelte 5 prop mutation; deferred to runtime UI verification', () => {\n    // Svelte 5 mount() does not provide a public API to update top-level props\n    // post-mount without a parent wrapper component. ...\n    // Runtime end-to-end verification is covered by Phase 6 manual UI test (Tauri dev mount).\n    expect(true).toBe(true); // documented deferral\n});"
+  },
+  "additionalEvidence": [
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+      "lineRange": "34-37",
+      "description": "CRIT-203 description includes scenario (c) 'undefined→non-empty→undefined transition (FIND-S5-SPEC-iter2-005)' and passThreshold 'PROP-FEED-S5-011 all 5 scenarios PASS'. Spec promise vs test reality diverge."
+    },
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+      "lineRange": "715",
+      "description": "PROP-FEED-S5-011 spec text: '(d) シナリオ C (FIND-S5-SPEC-iter2-005 解消) — 同一 editingNoteId で blocks=undefined → blocks=[{...}] → blocks=undefined 順に受信: 各 dispatch attempt count 累計 = 2 ずつ ... 2 回目 fallback の UUID は 1 回目と異なる (restart 条件 (iii) 発火)' — concrete behavioural assertion that the no-op test cannot verify."
+    },
+    {
+      "type": "file",
+      "location": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "268-273",
+      "description": "Restart condition (iii) IS implemented in FeedRow.svelte ($effect block, `lastBlocksWasNonEmpty` track + `if (fallbackAppliedFor) fallbackAppliedFor = null;`), but no automated test guards against regression. A future refactor that removes the `if (fallbackAppliedFor) fallbackAppliedFor = null;` line would still pass PROP-FEED-S5-011 because scenario (d) is a no-op."
+    }
+  ],
+  "remediation": "Replace the no-op (d) test with one of: (1) wrap FeedRow in a thin parent component that re-renders with mutating editingSessionState prop, then assert two distinct UUIDs across the undefined→non-empty→undefined cycle; (2) extract the restart-condition predicate to a pure helper (e.g. shouldRestartFallback(prevBlocksWasNonEmpty, currentBlocksAbsent, fallbackAppliedFor, currentNoteId): boolean) and unit-test it; or (3) explicitly amend CRIT-203 passThreshold to read 'PROP-FEED-S5-011 scenarios (a)/(b)/(c)/(e) PASS; scenario (d) deferred to Phase 6 manual verification' so the contract is honest about its coverage gap. Option (2) is least invasive and best preserves Phase 3 evaluability.",
+  "routeToPhase": "2c-contract"
+}

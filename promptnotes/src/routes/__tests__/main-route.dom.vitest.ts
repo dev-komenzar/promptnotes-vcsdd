@@ -205,4 +205,23 @@ describe('Main route source structure assertions (block-based UI: single column)
     const source = fs.readFileSync(pageSveltePath, 'utf-8');
     expect(source).toContain('vaultPath');
   });
+
+  // Sprint 5 PROP-FEED-S5-002 (DOM portion): ensure +page.svelte source declares
+  // the single-column layout structurally (height: 100vh, .feed-main wrapper),
+  // and contains the FeedList mount but no EditorPanel mount. The grep portion
+  // is also covered by sprint-5-grep-audit.sh; this duplicates as a vitest
+  // assertion so contract CRIT-200 has a DOM-test trace.
+  test('PROP-FEED-S5-002 (source structure): height: 100vh + FeedList mount + no EditorPanel mount', () => {
+    const source = fs.readFileSync(pageSveltePath, 'utf-8');
+    // Single-column wrapper present.
+    expect(source).toMatch(/<main\s+class=["']feed-main["']/);
+    // Height invariant declared in CSS.
+    expect(source).toMatch(/height:\s*100vh/);
+    // FeedList is the sole content surface.
+    expect(source).toContain('<FeedList');
+    expect(source).not.toMatch(/<EditorPanel/);
+    // Forbidden CSS class names from old layout.
+    expect(source).not.toContain('editor-main');
+    expect(source).not.toContain('feed-sidebar');
+  });
 });

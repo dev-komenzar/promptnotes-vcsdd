@@ -1,0 +1,29 @@
+{
+  "findingId": "FIND-S5-CONTRACT-001",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "high",
+  "summary": "CRIT-201 passThreshold 'PROP-FEED-S5-005 mock-emitter integration test PASS' over-claims: actual test verifies only single-event handler synchronicity, not the cross-event ordering / 5-arm exhaustive dispatch the contract description promises.",
+  "description": "The contract's CRIT-201 description states '5-arm EditingSessionStateDto wire shape exhaustively dispatched (Idle/Editing/Saving/Switching/SaveFailed)' and its passThreshold names PROP-FEED-S5-005 as the integration verification. verification-architecture.md §14 line 709 specifies four sub-conditions for PROP-FEED-S5-005: (a) vi.spyOn(feedReducerModule, 'feedReducer') with assertion in spy callback that editingSessionState is observable; (b) two synchronous emits ('editing_session_state_changed' THEN 'feed_state_changed') with no await between them; (c) expect(feedReducerSpy).toHaveBeenCalledTimes(1) AND the spy-callback assertion of (a); (d) handler grep audit (delegated to S5-012). The actual test in feed-list-editing-channel.dom.vitest.ts (lines 54-83) emits ONLY 'editing_session_state_changed' (single event, no feed_state_changed), uses NO feedReducer spy, asserts only that the channel handler synchronously updates an `observed` local variable, and emits ONLY the 'editing' arm — Idle/Saving/Switching/SaveFailed are never exercised. The test therefore validates a degraded variant of (a) only; (b)/(c)/(d) are absent. Phase 3 will see 'PROP-FEED-S5-005 PASS' and approve, but the underlying spec promise (cross-event ordering + 5-arm coverage) is not verified.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+    "lineRange": "54-83",
+    "snippet": "describe('PROP-FEED-S5-005: editing_session_state_changed handler is synchronous', () => {\n  test('handler updates state observable from feedReducer call (sync)', async () => {\n    ... let observed: unknown = null;\n    const unsubscribe = channelModule.subscribeEditingSessionState((state) => { observed = state; });\n    emit('editing_session_state_changed', payload);\n    expect(observed).not.toBeNull();\n    expect((observed as { currentNoteId?: string }).currentNoteId).toBe('note-001');\n    unsubscribe();\n  });\n});"
+  },
+  "additionalEvidence": [
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+      "lineRange": "709",
+      "description": "PROP-FEED-S5-005 spec text: '(a) test は vi.spyOn(feedReducerModule, \\'feedReducer\\') で feedReducer を spy し...; (b) test は 同期的に両イベントを emit する: mockEmit(\\'editing_session_state_changed\\', editingPayload); mockEmit(\\'feed_state_changed\\', feedPayload); ...; (c) emit 後 expect(feedReducerSpy).toHaveBeenCalledTimes(1) ... (d) editingSessionChannel ハンドラ内に await を含まないことは PROP-FEED-S5-012 で別途 grep 監査'"
+    },
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+      "lineRange": "26-27",
+      "description": "CRIT-201 description '5-arm EditingSessionStateDto wire shape exhaustively dispatched (Idle/Editing/Saving/Switching/SaveFailed)' + passThreshold 'PROP-FEED-S5-005 mock-emitter integration test PASS' — neither '5-arm exhaustive' nor 'cross-event ordering' is verified by the actual test."
+    }
+  ],
+  "remediation": "Either (A) tighten PROP-FEED-S5-005 test to match its verification-architecture.md spec (add feedReducer spy, dual-event synchronous emit, and 5-arm parameterization), or (B) amend CRIT-201 passThreshold + description to acknowledge that PROP-FEED-S5-005 covers only handler synchronicity and that 5-arm cross-event ordering is verified manually / deferred to Phase 6. Option (A) is preferred to maintain Phase 3 mechanical evaluability.",
+  "routeToPhase": "2c-contract"
+}

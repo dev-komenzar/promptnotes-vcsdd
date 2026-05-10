@@ -2119,9 +2119,22 @@
           "scopeAcknowledgement": "Group B Rust handler deferral approved; Sprint 5 ships UI-only with best-effort dispatch and known persistence constraint per REQ-FEED-031"
         }
       }
+    },
+    "contract-sprint-5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-10T05:50:00.000Z",
+      "reviewedBy": "adversary",
+      "details": {
+        "sprint": 5,
+        "negotiationRound": 2,
+        "iteration": 3,
+        "round1FindingsResolved": "5/5",
+        "newFindings": 0,
+        "contractDigest": "e70b64601a0213c82254ea1e5be6d1f25451f0d6a003e101afe0051710b021bc"
+      }
     }
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T05:00:00.000Z"
+  "updatedAt": "2026-05-10T05:50:00.000Z"
 }

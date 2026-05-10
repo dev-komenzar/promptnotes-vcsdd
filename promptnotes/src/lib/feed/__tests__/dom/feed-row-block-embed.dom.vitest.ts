@@ -304,23 +304,29 @@ describe('PROP-FEED-S5-008: typing in BlockElement triggers dispatchEditBlockCon
   });
 });
 
-// ── PROP-FEED-S5-018: EC-FEED-018 — filter excludes editingNoteId ────────────
+// ── PROP-FEED-S5-018: EC-FEED-018 — filter exclusion + re-visible cache restore
 
-describe('PROP-FEED-S5-018: EC-FEED-018 — filter exclusion + re-visible cache restore', () => {
-  test('row not in visibleNoteIds → BlockElement absent (rendered by FeedList container)', () => {
-    // FeedList is the container that decides which rows mount; this test verifies
-    // the precondition that a non-mounted row produces 0 block-elements. The
-    // FeedList-side cache restore is exercised via FeedList.dom.vitest.ts (Sprint 5
-    // extension). RED phase: this passes trivially because BlockElement isn't
-    // implemented yet, so we encode it as a stronger assertion: when the row is
-    // mounted with editingNoteId = self.noteId AND the row's noteId is NOT in
-    // visibleNoteIds, the block-element should still be absent (FeedList won't
-    // render the row at all in production; this test asserts the row component
-    // also defends against being asked).
+describe('PROP-FEED-S5-018: EC-FEED-018 — filter exclusion unmounts row + remount restores blocks', () => {
+  /**
+   * EC-FEED-018 says the FeedList unmounts the row when filter excludes the
+   * editingNoteId; re-mount after re-visible should display blocks again. We
+   * model this at the row level by:
+   *   (1) Mount row with editing context → block-element count = blocks.length
+   *   (2) Unmount the row (= filter exclusion)
+   *   (3) Re-mount with the same editing context → block-element count = blocks.length
+   *
+   * Step 3 verifies the cache-restore behaviour: as long as the upstream
+   * editingSessionState.blocks is preserved (= held by the channel/+page.svelte
+   * subscriber across filter toggles), the re-mounted FeedRow produces the
+   * same block-element rendering. The Sprint 5 contract for cache continuity
+   * is "the upstream subscriber holds editingSessionState across remounts" —
+   * verified by REQ-FEED-029 single-subscription.
+   */
+  test('mount→unmount→remount preserves block-element rendering when editingSessionState unchanged', () => {
     const viewState = makeViewState({
       editingStatus: 'editing',
       editingNoteId: 'note-001',
-      visibleNoteIds: ['note-OTHER'], // note-001 filtered out
+      visibleNoteIds: ['note-001'],
     });
     const editingSessionState = {
       status: 'editing',
@@ -331,25 +337,67 @@ describe('PROP-FEED-S5-018: EC-FEED-018 — filter exclusion + re-visible cache 
       lastSaveResult: null,
       blocks: SAMPLE_BLOCKS,
     };
-    // Even if a parent erroneously mounts this row, REQ-FEED-030 cell 1 still
-    // fires (the row mount predicate only checks editingStatus + editingNoteId).
-    // The protection is at the FeedList layer (visibleNoteIds.includes(noteId)).
-    // For PROP-FEED-S5-018 we assert this Phase 2b expectation: the integration
-    // test in feed-list.dom.vitest.ts will verify the FeedList-level exclusion.
-    // Here we only assert the row, when mounted, shows the embedded blocks
-    // (which is independent of visibleNoteIds at the row level).
+    const adapter = makeFeedAdapter();
+    const blockAdapter = makeBlockAdapter();
+    // (1) Mount → blocks render
+    let component = mountRow({
+      ...BASE_PROPS,
+      viewState,
+      adapter,
+      editingSessionState,
+      blockEditorAdapter: blockAdapter,
+    });
+    flushSync();
+    expect(target.querySelectorAll('[data-testid="block-element"]').length).toBe(SAMPLE_BLOCKS.length);
+    // (2) Unmount (= filter exclusion equivalent)
+    unmount(component);
+    flushSync();
+    expect(target.querySelectorAll('[data-testid="block-element"]').length).toBe(0);
+    // (3) Re-mount with same editingSessionState → blocks restored
+    component = mountRow({
+      ...BASE_PROPS,
+      viewState,
+      adapter,
+      editingSessionState,
+      blockEditorAdapter: blockAdapter,
+    });
+    flushSync();
+    expect(target.querySelectorAll('[data-testid="block-element"]').length).toBe(SAMPLE_BLOCKS.length);
+    unmount(component);
+  });
+
+  test('unmount → block-element count drops to 0; no spurious adapter dispatches during unmount', () => {
+    const adapter = makeFeedAdapter();
+    const blockAdapter = makeBlockAdapter();
+    const viewState = makeViewState({
+      editingStatus: 'editing',
+      editingNoteId: 'note-001',
+      visibleNoteIds: ['note-001'],
+    });
+    const editingSessionState = {
+      status: 'editing',
+      currentNoteId: 'note-001',
+      focusedBlockId: 'b1',
+      isDirty: false,
+      isNoteEmpty: false,
+      lastSaveResult: null,
+      blocks: SAMPLE_BLOCKS,
+    };
     const component = mountRow({
       ...BASE_PROPS,
       viewState,
-      adapter: makeFeedAdapter(),
+      adapter,
       editingSessionState,
-      blockEditorAdapter: makeBlockAdapter(),
+      blockEditorAdapter: blockAdapter,
     });
     flushSync();
-    // Row level: BlockElement IS rendered (independent of visibleNoteIds).
-    // The full S5-018 (mount/unmount via filter) is verified at FeedList level.
-    const blockEls = target.querySelectorAll('[data-testid="block-element"]');
-    expect(blockEls.length).toBe(SAMPLE_BLOCKS.length);
+    // Reset call counts after mount (we accept BlockElement dispatchFocusBlock at mount).
+    blockAdapter.dispatchInsertBlockAtBeginning.mockClear();
+    blockAdapter.dispatchFocusBlock.mockClear();
     unmount(component);
+    flushSync();
+    expect(target.querySelectorAll('[data-testid="block-element"]').length).toBe(0);
+    // No NEW adapter dispatch during unmount.
+    expect(blockAdapter.dispatchInsertBlockAtBeginning).not.toHaveBeenCalled();
   });
 });

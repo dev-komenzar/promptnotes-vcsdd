@@ -1,0 +1,29 @@
+{
+  "findingId": "FIND-S5-CONTRACT-003",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "high",
+  "summary": "CRIT-207 passThreshold 'PROP-FEED-S5-018 PASS' for EC-FEED-018 is unsupported: the actual test asserts the OPPOSITE of the spec (BlockElement IS rendered when row is mounted with editingNoteId not in visibleNoteIds), and the file the test points to as the real verification ('FeedList.dom.vitest.ts Sprint 5 extension') is not in the manifest.",
+  "description": "EC-FEED-018 (behavioral-spec.md line 1254) requires: 'editingNoteId が visibleNoteIds から filter で除外された → 対応する FeedRow が unmount し block primitive も破棄。filter 解除で再 mount 時に直前の blocks が再描画される'. The contract's CRIT-207 description (sprint-5.md line 55) states 'EC-FEED-018 (filter excludes editingNoteId)' and passThreshold 'PROP-FEED-S5-018 PASS'. verification-architecture.md §14 line 722 elaborates: 'フィルタ適用で editingNoteId が viewState.visibleNoteIds から除外された状況で当該 FeedRow が DOM から消えること、再 visible 化後に直近の editingSessionState.blocks (キャッシュ済) で再描画されること'. The actual test file feed-row-block-embed.dom.vitest.ts lines 309-355 contains the PROP-FEED-S5-018 section with the assertion `expect(blockEls.length).toBe(SAMPLE_BLOCKS.length);` — i.e. it explicitly asserts that BlockElement IS rendered when the row is mounted with `visibleNoteIds: ['note-OTHER']` (note-001 NOT visible). The test file's own comment block (lines 311-340) acknowledges the gap: 'the FeedList-side cache restore is exercised via FeedList.dom.vitest.ts (Sprint 5 extension)' and 'the full S5-018 (mount/unmount via filter) is verified at FeedList level'. However, NO Sprint 5 FeedList test file appears in the manifest's tests array. Phase 3 will see PROP-FEED-S5-018 PASS, satisfying CRIT-207, but EC-FEED-018's actual mount/unmount + cache-restore behaviour is verified nowhere in the test manifest.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts",
+    "lineRange": "309-355",
+    "snippet": "describe('PROP-FEED-S5-018: EC-FEED-018 — filter exclusion + re-visible cache restore', () => {\n  test('row not in visibleNoteIds → BlockElement absent (rendered by FeedList container)', () => {\n    // ... For PROP-FEED-S5-018 we assert this Phase 2b expectation: the integration\n    // test in feed-list.dom.vitest.ts will verify the FeedList-level exclusion.\n    // Here we only assert the row, when mounted, shows the embedded blocks\n    // (which is independent of visibleNoteIds at the row level).\n    ...\n    // Row level: BlockElement IS rendered (independent of visibleNoteIds).\n    // The full S5-018 (mount/unmount via filter) is verified at FeedList level.\n    const blockEls = target.querySelectorAll('[data-testid=\"block-element\"]');\n    expect(blockEls.length).toBe(SAMPLE_BLOCKS.length);\n  });\n});"
+  },
+  "additionalEvidence": [
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/reviews/contracts/sprint-5/input/manifest.json",
+      "lineRange": "14-23",
+      "description": "manifest.tests array does NOT include any FeedList Sprint 5 DOM test file (e.g. 'FeedList.dom.vitest.ts' Sprint 5 extension). The test PROP-FEED-S5-018 explicitly delegates its verification to a file not present in the review scope."
+    },
+    {
+      "type": "file",
+      "location": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+      "lineRange": "1254",
+      "description": "EC-FEED-018 spec: 'editingNoteId が visibleNoteIds から filter で除外された → 対応する FeedRow が unmount し block primitive も破棄。filter 解除で再 mount 時に直前の blocks が再描画される' — neither half (unmount nor cache-restore) is asserted in the manifest tests."
+    }
+  ],
+  "remediation": "Either (A) add a FeedList-level Sprint 5 DOM test (e.g. promptnotes/src/lib/feed/__tests__/dom/feed-list-filter-edit.dom.vitest.ts) that mounts FeedList with editingNoteId='note-X', sets visibleNoteIds without note-X, asserts the FeedRow is unmounted, then sets visibleNoteIds back to include note-X and asserts BlockElement re-renders with the cached blocks; add this file to the manifest. Or (B) amend CRIT-207 passThreshold to clarify that EC-FEED-018 is verified at the FeedList level by an explicitly-named test path, AND add that path to the manifest. The current row-level test PASSes trivially regardless of EC-FEED-018 behaviour; it cannot bind Phase 3 to verify the edge case.",
+  "routeToPhase": "2c-contract"
+}

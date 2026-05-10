@@ -213,33 +213,40 @@ describe('PROP-FEED-S5-011: fallback dispatch chain + idempotency + restart', ()
   });
 
   test('(b) same noteId, blocks=undefined twice → fallback chain attempt = 1, same UUID', async () => {
+    // Use FeedRowSprint5Wrapper to mutate editingSessionState reactively post-mount.
+    const Wrapper = (await import('./FeedRowSprint5Wrapper.svelte')).default;
     const blockAdapter = makeBlockAdapter();
-    const props: Record<string, unknown> = {
-      ...BASE_PROPS,
-      viewState: makeViewState(),
-      adapter: makeFeedAdapter(),
-      editingSessionState: makeEditingSession({ blocks: undefined }),
-      blockEditorAdapter: blockAdapter,
-    };
-    let component = mountRow(props);
+    const wrapperApp = mount(Wrapper as never, {
+      target,
+      props: {
+        initialNoteId: 'note-001',
+        initialBody: '',
+        initialCreatedAt: 1746352800000,
+        initialUpdatedAt: 1746352800000,
+        initialTags: [],
+        initialViewState: makeViewState(),
+        initialEditingSessionState: makeEditingSession({ blocks: undefined }),
+        feedAdapter: makeFeedAdapter(),
+        blockAdapter,
+      } as never,
+    });
     await settle();
     const firstId = getRenderedFallbackId();
-    // Second event with same noteId, blocks still undefined — re-mount with same fallback state.
-    // We simulate the "second event" by remounting with a fresh editingSessionState reference.
-    // In production, the editingSessionState prop reactively updates from the channel and Svelte
-    // re-runs $effect; here we use mount→unmount→mount with the SAME fallbackAppliedFor would
-    // require external state, so instead we verify within a single mount that successive
-    // editingSessionState reassignments don't trigger restart by using bind/$state.
-    // Simpler: mount twice; assert insert call count remains 1 in the original mount only.
-    // Since FeedRow's fallbackAppliedFor lives in instance $state, a fresh mount resets it.
-    // For (b) we instead assert: dispatch attempt count = 1 after the initial mount with
-    // blocks=undefined; then we synthesize a second 'undefined' arrival by toggling the prop
-    // through a parent wrapper would be ideal but requires wrapper code. As a Sprint 5 scope
-    // simplification: assert the single-mount case here and rely on the Phase 6 manual UI test
-    // to cover repeat-undefined idempotency at runtime.
-    expect(blockAdapter.dispatchInsertBlockAtBeginning).toHaveBeenCalledTimes(1);
     expect(firstId).toMatch(UUID_V4_REGEX);
-    unmount(component);
+    expect(blockAdapter.dispatchInsertBlockAtBeginning).toHaveBeenCalledTimes(1);
+
+    const wrapperEl = target.querySelector('[data-testid="sprint-5-wrapper"]') as HTMLElement;
+    const setterKey = wrapperEl.getAttribute('data-setter-key')!;
+    const setters = (window as unknown as Record<string, { setEditingSessionState: (s: unknown) => void }>)[setterKey];
+
+    // Second emit with blocks=undefined for the same noteId; new object reference.
+    setters.setEditingSessionState(makeEditingSession({ blocks: undefined }));
+    await settle();
+    // No additional fallback dispatch — same UUID retained.
+    expect(blockAdapter.dispatchInsertBlockAtBeginning).toHaveBeenCalledTimes(1);
+    const secondId = getRenderedFallbackId();
+    expect(secondId).toBe(firstId);
+    unmount(wrapperApp);
   });
 
   test('(c) noteA→noteB→noteA cycle (separate mounts) → second fallback uses NEW UUID', async () => {
@@ -277,16 +284,56 @@ describe('PROP-FEED-S5-011: fallback dispatch chain + idempotency + restart', ()
     unmount(c2);
   });
 
-  test('(d) FIND-iter2-005: undefined→non-empty→undefined within single mount → restart not feasible to assert via Svelte 5 prop mutation; deferred to runtime UI verification', () => {
-    // Svelte 5 mount() does not provide a public API to update top-level props
-    // post-mount without a parent wrapper component. The PROP-FEED-S5-011 scenario
-    // (d) restart-on-non-empty-then-undefined behavior is encoded in FeedRow's
-    // $effect logic via lastBlocksWasNonEmpty + fallbackAppliedFor reset. The
-    // unit-level assertion is satisfied by reading the FeedRow source for this
-    // pattern — see Phase 5 grep gate (PROP-FEED-S5-001..022 audit) which
-    // confirms the implementation contains the restart logic. Runtime end-to-end
-    // verification is covered by Phase 6 manual UI test (Tauri dev mount).
-    expect(true).toBe(true); // documented deferral
+  test('(d) FIND-iter2-005: undefined→non-empty→undefined within single mount → 2nd fallback uses NEW UUID', async () => {
+    // Use FeedRowSprint5Wrapper to mutate editingSessionState reactively post-mount.
+    const Wrapper = (await import('./FeedRowSprint5Wrapper.svelte')).default;
+    const blockAdapter = makeBlockAdapter();
+    const wrapperApp = mount(Wrapper as never, {
+      target,
+      props: {
+        initialNoteId: 'note-001',
+        initialBody: '',
+        initialCreatedAt: 1746352800000,
+        initialUpdatedAt: 1746352800000,
+        initialTags: [],
+        initialViewState: makeViewState(),
+        initialEditingSessionState: makeEditingSession({ blocks: undefined }),
+        feedAdapter: makeFeedAdapter(),
+        blockAdapter,
+      } as never,
+    });
+    await settle();
+    const firstId = getRenderedFallbackId();
+    expect(firstId).toMatch(UUID_V4_REGEX);
+
+    // Read the wrapper's setter key from data attribute and grab setters.
+    const wrapperEl = target.querySelector('[data-testid="sprint-5-wrapper"]') as HTMLElement;
+    const setterKey = wrapperEl.getAttribute('data-setter-key');
+    expect(setterKey).not.toBeNull();
+    const setters = (window as unknown as Record<string, { setEditingSessionState: (s: unknown) => void }>)[setterKey!];
+    expect(setters).toBeDefined();
+
+    // Transition: blocks become non-empty (resets fallbackAppliedFor).
+    setters.setEditingSessionState(makeEditingSession({
+      blocks: [{ id: 'server-block', type: 'paragraph', content: 'server' }],
+      focusedBlockId: 'server-block',
+    }));
+    await settle();
+    // Server block is now displayed.
+    const interimId = getRenderedFallbackId();
+    expect(interimId).toBe('server-block');
+
+    // Transition back: blocks=undefined.
+    setters.setEditingSessionState(makeEditingSession({ blocks: undefined }));
+    await settle();
+    // restart condition (iii) MUST fire → new UUID.
+    const secondId = getRenderedFallbackId();
+    expect(secondId).toMatch(UUID_V4_REGEX);
+    expect(secondId).not.toBe(firstId);
+    // Fallback chain dispatch attempt count = 2 (one for each undefined arrival).
+    expect(blockAdapter.dispatchInsertBlockAtBeginning).toHaveBeenCalledTimes(2);
+
+    unmount(wrapperApp);
   });
 
   test('(e) blocks non-empty only → no fallback insertBlock dispatch', async () => {
