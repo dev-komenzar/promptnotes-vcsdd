@@ -70,3 +70,14 @@ export function bodyPreviewLines(body: string, maxLines: number): readonly strin
 export function timestampLabel(epochMs: number, locale: string): string {
   return new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(epochMs);
 }
+
+/**
+ * REQ-FEED-031 / PROP-FEED-S5-009
+ * Sprint 5: returns true iff the FeedRow should apply its empty paragraph
+ * fallback (because the editing session arrived without usable blocks).
+ */
+export function needsEmptyParagraphFallback(
+  blocks: ReadonlyArray<unknown> | null | undefined,
+): boolean {
+  return blocks == null || blocks.length === 0;
+}

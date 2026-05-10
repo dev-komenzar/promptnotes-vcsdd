@@ -22,8 +22,13 @@
     isFeedRowClickBlocked,
     bodyPreviewLines,
     timestampLabel,
+    needsEmptyParagraphFallback,
   } from './feedRowPredicates.js';
   import { nowIso } from './clockHelpers.js';
+  import BlockElement from '$lib/block-editor/BlockElement.svelte';
+  import SaveFailureBanner from '$lib/block-editor/SaveFailureBanner.svelte';
+  import type { BlockEditorAdapter, DtoBlock, SaveError } from '$lib/block-editor/types.js';
+  import type { EditingSessionStateDto } from './editingSessionChannel.js';
 
   interface Props {
     noteId: string;
@@ -41,9 +46,18 @@
     onTagAddClick?: (noteId: string) => void;
     onTagInputCommit?: (noteId: string, rawTag: string) => void;
     onTagInputCancel?: () => void;
+    /** Sprint 5: editing session state from editingSessionChannel (REQ-FEED-029). */
+    editingSessionState?: EditingSessionStateDto | null;
+    /** Sprint 5: BlockEditorAdapter for embedded block dispatches (REQ-FEED-030). */
+    blockEditorAdapter?: BlockEditorAdapter | null;
   }
 
-  const { noteId, body, createdAt, updatedAt, tags, viewState, adapter, tagInventory, onRowClick, onDeleteClick, onTagRemove, onTagAddClick, onTagInputCommit, onTagInputCancel }: Props = $props();
+  const {
+    noteId, body, createdAt, updatedAt, tags, viewState, adapter, tagInventory,
+    onRowClick, onDeleteClick, onTagRemove, onTagAddClick, onTagInputCommit, onTagInputCancel,
+    editingSessionState = null,
+    blockEditorAdapter = null,
+  }: Props = $props();
 
   const locale = 'ja-JP';
 
@@ -170,6 +184,133 @@
     tagInputText = '';
     tagErrorText = null;
     highlightedIndex = -1;
+  }
+
+  // ── Sprint 5: in-place block editing surface (REQ-FEED-030/031) ──
+
+  /** REQ-FEED-030 mount predicate (cell 1 of 2x2 truth table). */
+  const shouldMountBlocks = $derived(
+    viewState.editingNoteId === noteId &&
+    (viewState.editingStatus === 'editing' ||
+     viewState.editingStatus === 'saving' ||
+     viewState.editingStatus === 'switching' ||
+     viewState.editingStatus === 'save-failed'),
+  );
+
+  /** REQ-FEED-031 fallback state ownership (FIND-S5-SPEC-004 / iter2-005). */
+  let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null);
+  let lastBlocksWasNonEmpty = $state(false);
+
+  /** REQ-FEED-030 server blocks: tolerate undefined when editingSessionState mismatches. */
+  const serverBlocks = $derived.by<readonly DtoBlock[] | null>(() => {
+    if (!editingSessionState) return null;
+    const ess = editingSessionState as { currentNoteId?: unknown; blocks?: unknown };
+    if (ess.currentNoteId !== noteId) return null;
+    const b = ess.blocks;
+    if (Array.isArray(b)) return b as readonly DtoBlock[];
+    return null;
+  });
+
+  /** Synthetic fallback block (REQ-FEED-031 step 1). */
+  const fallbackBlock = $derived.by<DtoBlock | null>(() => {
+    if (!fallbackAppliedFor) return null;
+    if (fallbackAppliedFor.noteId !== viewState.editingNoteId) return null;
+    return { id: fallbackAppliedFor.blockId, type: 'paragraph', content: '' };
+  });
+
+  /** REQ-FEED-030 §State source-of-truth: server blocks > fallback > none. */
+  const blocksToShow = $derived.by<readonly DtoBlock[]>(() => {
+    if (serverBlocks && serverBlocks.length > 0) return serverBlocks;
+    if (fallbackBlock) return [fallbackBlock];
+    return [];
+  });
+
+  const focusedBlockId = $derived.by<string | null>(() => {
+    const ess = editingSessionState as { focusedBlockId?: unknown; priorFocusedBlockId?: unknown } | null;
+    if (ess) {
+      if (typeof ess.focusedBlockId === 'string') return ess.focusedBlockId;
+      if (typeof ess.priorFocusedBlockId === 'string') return ess.priorFocusedBlockId;
+    }
+    return fallbackBlock?.id ?? null;
+  });
+
+  /** REQ-FEED-030 SaveFailureBanner predicate (REQ-BE-015 stateless, error from session). */
+  const saveFailedError = $derived.by<SaveError | null>(() => {
+    if (viewState.editingStatus !== 'save-failed') return null;
+    if (viewState.editingNoteId !== noteId) return null;
+    const ess = editingSessionState as { lastSaveResult?: unknown } | null;
+    const r = ess?.lastSaveResult as { kind?: string; reason?: string; detail?: string } | null;
+    if (r && r.kind === 'failure' && typeof r.reason === 'string') {
+      // Default to fs-error shape for banner rendering. validation errors don't reach here.
+      return { kind: 'fs', reason: { kind: r.reason } as SaveError['reason'] };
+    }
+    return null;
+  });
+
+  /** REQ-FEED-031 fallback dispatch chain (best-effort, try/catch each). */
+  $effect(() => {
+    if (!shouldMountBlocks) {
+      // Reset on note unfocus / editingNoteId change.
+      if (fallbackAppliedFor && fallbackAppliedFor.noteId !== viewState.editingNoteId) {
+        fallbackAppliedFor = null;
+        lastBlocksWasNonEmpty = false;
+      }
+      return;
+    }
+
+    const noteIdNow = viewState.editingNoteId;
+    if (noteIdNow == null) return;
+
+    const sb = serverBlocks;
+    const blocksAbsent = needsEmptyParagraphFallback(sb);
+    const blocksPresent = !blocksAbsent;
+
+    // Track non-empty → reset fallback so a future undefined triggers restart (cond iii).
+    if (blocksPresent) {
+      lastBlocksWasNonEmpty = true;
+      // FIND-iter2-005: invalidate cached fallback so next undefined restarts.
+      if (fallbackAppliedFor) fallbackAppliedFor = null;
+      return;
+    }
+
+    // blocks absent
+    const cycleSwitched = fallbackAppliedFor !== null && fallbackAppliedFor.noteId !== noteIdNow;
+    const restart = fallbackAppliedFor === null || cycleSwitched || lastBlocksWasNonEmpty;
+    if (!restart) return;
+
+    const newId = crypto.randomUUID();
+    fallbackAppliedFor = { noteId: noteIdNow, blockId: newId };
+    lastBlocksWasNonEmpty = false;
+
+    const at = nowIso();
+    const adapterRef = blockEditorAdapter;
+    if (!adapterRef) return;
+    void (async () => {
+      try {
+        await adapterRef.dispatchInsertBlockAtBeginning({
+          noteId: noteIdNow,
+          type: 'paragraph',
+          content: '',
+          issuedAt: at,
+        });
+      } catch {
+        // best-effort: Group B Rust handler may be unimplemented (Sprint 5 scope).
+        console.warn('[FeedRow] dispatchInsertBlockAtBeginning rejected (Sprint 5 best-effort)');
+      }
+      try {
+        await adapterRef.dispatchFocusBlock({
+          noteId: noteIdNow,
+          blockId: newId,
+          issuedAt: nowIso(),
+        });
+      } catch {
+        console.warn('[FeedRow] dispatchFocusBlock rejected (Sprint 5 best-effort)');
+      }
+    })();
+  });
+
+  function noopHandler(): void {
+    /* SaveFailureBanner stateless callback placeholder; wired by FeedList in future sprint */
   }
 </script>
 
@@ -303,6 +444,31 @@
       ×
     </button>
   </div>
+
+  {#if shouldMountBlocks && blockEditorAdapter}
+    <div class="block-editor-surface" data-testid="block-editor-surface">
+      {#each blocksToShow as block, blockIndex (block.id)}
+        <BlockElement
+          {block}
+          {blockIndex}
+          totalBlocks={blocksToShow.length}
+          {noteId}
+          isFocused={block.id === focusedBlockId}
+          isEditable={true}
+          issuedAt={nowIso}
+          adapter={blockEditorAdapter}
+        />
+      {/each}
+      {#if saveFailedError}
+        <SaveFailureBanner
+          error={saveFailedError}
+          onRetry={noopHandler}
+          onDiscard={noopHandler}
+          onCancel={noopHandler}
+        />
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -549,5 +715,11 @@
   .delete-button:focus-visible {
     outline: 2px solid #097fe8;
     outline-offset: 2px;
+  }
+
+  /* Sprint 5: in-place block editing surface (REQ-FEED-030) */
+  .block-editor-surface {
+    padding: 8px 16px 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
   }
 </style>

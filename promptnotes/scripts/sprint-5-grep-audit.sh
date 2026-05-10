@@ -95,13 +95,29 @@ fi
 
 CHANNEL="src/lib/feed/editingSessionChannel.ts"
 if [ -f "$CHANNEL" ]; then
-  # Find lines between listen('editing_session_state_changed' opening and matching close.
-  # Simple heuristic: extract the file content and grep for forbidden async patterns
-  # within any line between listen( and the next top-level }) or ).
+  # Track listen() callback body only, by counting brace depth.
+  # in_block starts on the line with listen('editing_session_state_changed', ...) at
+  # the moment we see "=>" (arrow function open). It ends when the depth returns to 0.
   forbidden=$(awk '
-    /listen\(.editing_session_state_changed./ { in_block = 1 }
-    in_block && /(await|\.then\(|setTimeout\(|setInterval\(|queueMicrotask\()/ { print NR ": " $0; found = 1 }
-    in_block && /^\}\)?[[:space:]]*$/ { in_block = 0 }
+    BEGIN { depth = 0; in_block = 0 }
+    /listen\(.editing_session_state_changed./ { saw_listen = 1 }
+    saw_listen && /=>[[:space:]]*\{/ { in_block = 1; saw_listen = 0; depth = 1; next }
+    in_block {
+      # count opens/closes on this line
+      n_open = gsub(/\{/, "{", $0)
+      n_close = gsub(/\}/, "}", $0)
+      depth += n_open - n_close
+      if (/(\bawait\b|\.then\(|setTimeout\(|setInterval\(|queueMicrotask\()/) {
+        # ignore lines that are pure comments (start with //, *, or /*)
+        line_body = $0
+        sub(/^[[:space:]]*/, "", line_body)
+        if (line_body !~ /^(\/\/|\*|\/\*)/) {
+          print NR ": " $0
+          found = 1
+        }
+      }
+      if (depth <= 0) { in_block = 0 }
+    }
     END { if (found) exit 1 }
   ' "$CHANNEL" || true)
   if [ -z "$forbidden" ]; then
@@ -138,7 +154,11 @@ fi
 
 ADAPTER="src/lib/block-editor/createBlockEditorAdapter.ts"
 if [ -f "$ADAPTER" ]; then
-  invoke_count=$(grep -cE 'invoke\(' "$ADAPTER" || true)
+  # Count actual invoke() calls (exclude comment lines starting with //, *, or /*).
+  invoke_count=$(grep -nE 'invoke\(' "$ADAPTER" \
+    | grep -vE '^[0-9]+:[[:space:]]*(//|\*|/\*)' \
+    | wc -l)
+  invoke_count="${invoke_count// /}"
   if [ "$invoke_count" = "16" ]; then
     expected_set=$(printf 'cancel_switch\ncopy_note_body\ndiscard_current_session\neditor_change_block_type\neditor_edit_block_content\neditor_focus_block\neditor_insert_block_after\neditor_insert_block_at_beginning\neditor_merge_blocks\neditor_move_block\neditor_remove_block\neditor_split_block\nrequest_new_note\nretry_save\ntrigger_blur_save\ntrigger_idle_save\n' | sort -u)
     actual_set=$(grep -oE "invoke\((['\"])([a-z_]+)\1" "$ADAPTER" \
@@ -165,8 +185,15 @@ fi
 # ── PROP-FEED-S5-021: editingSessionChannel.ts INBOUND only ──────────────────
 
 if [ -f "$CHANNEL" ]; then
-  invoke_hits=$(grep -cE '\binvoke\(' "$CHANNEL" || true)
-  core_hits=$(grep -cE '@tauri-apps/api/core' "$CHANNEL" || true)
+  # Exclude comment lines (lines starting with //, *, or /* after optional whitespace).
+  invoke_hits=$(grep -nE '\binvoke\(' "$CHANNEL" \
+    | grep -vE '^[0-9]+:[[:space:]]*(//|\*|/\*)' \
+    | wc -l)
+  invoke_hits="${invoke_hits// /}"
+  core_hits=$(grep -nE '@tauri-apps/api/core' "$CHANNEL" \
+    | grep -vE '^[0-9]+:[[:space:]]*(//|\*|/\*)' \
+    | wc -l)
+  core_hits="${core_hits// /}"
   if [ "$invoke_hits" = "0" ] && [ "$core_hits" = "0" ]; then
     assert_pass "PROP-FEED-S5-021" "INBOUND only (no invoke / no core import)"
   else

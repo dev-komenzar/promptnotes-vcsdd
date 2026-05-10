@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2b",
+  "currentPhase": "3",
   "phaseHistory": [
     {
       "from": "init",
@@ -486,6 +486,20 @@
       "to": "2b",
       "timestamp": "2026-05-10T04:30:00.000Z",
       "reason": "Sprint 5 Phase 2a complete (Red phase entry): 15 new failing tests across 5 new test files + sprint-5-grep-audit.sh script. Regression baseline green (1858 bun pass + 192 vitest pass).",
+      "sprint": 5
+    },
+    {
+      "from": "2b",
+      "to": "2c",
+      "timestamp": "2026-05-10T05:00:00.000Z",
+      "reason": "Sprint 5 Phase 2b complete (Green): all 10 grep audit gates PASS, 1909 bun tests PASS (incl. PROP-FEED-S5-009 fast-check), 209 vitest DOM tests PASS. Zero Rust changes since sprint-4-baseline.",
+      "sprint": 5
+    },
+    {
+      "from": "2c",
+      "to": "3",
+      "timestamp": "2026-05-10T05:00:00.000Z",
+      "reason": "Sprint 5 Phase 2c complete (Refactor): no structural refactor needed beyond Phase 2b implementation. Adapter command-mapping aligned with BlockEditorAdapter type contract. FeedRow surface kept minimal.",
       "sprint": 5
     }
   ],
@@ -2109,5 +2123,5 @@
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T04:30:00.000Z"
+  "updatedAt": "2026-05-10T05:00:00.000Z"
 }

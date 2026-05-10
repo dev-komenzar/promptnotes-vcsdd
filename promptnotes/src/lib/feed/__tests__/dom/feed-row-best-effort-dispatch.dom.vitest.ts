@@ -130,7 +130,7 @@ describe('PROP-FEED-S5-022: Group B reject acceptance — UI continues to functi
     unmount(component);
   });
 
-  test('(b) typing into BlockElement updates client-side textContent (independent of dispatch outcome)', async () => {
+  test('(b) typing into BlockElement attempts dispatchEditBlockContent and remains in DOM after reject', async () => {
     const editingSessionState = {
       status: 'editing',
       currentNoteId: 'note-001',
@@ -152,15 +152,20 @@ describe('PROP-FEED-S5-022: Group B reject acceptance — UI continues to functi
     const blockEl = target.querySelector('[data-testid="block-element"]') as HTMLElement | null;
     expect(blockEl).not.toBeNull();
     if (!blockEl) return;
-    const editable = blockEl.querySelector('[contenteditable="true"]') as HTMLElement | null;
-    if (editable) {
-      editable.textContent = 'h';
-      editable.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    // BlockElement IS the contenteditable element (per ui-block-editor REQ-BE-001).
+    const editable = blockEl.matches('[contenteditable="true"]')
+      ? blockEl
+      : (blockEl.querySelector('[contenteditable="true"]') as HTMLElement | null);
+    expect(editable).not.toBeNull();
+    if (!editable) return;
+    editable.textContent = 'hello';
+    editable.dispatchEvent(new Event('input', { bubbles: true }));
     flushSync();
     await Promise.resolve();
-    // Client-side textContent reflects user input regardless of dispatch reject.
-    expect(editable?.textContent ?? '').toContain('h');
+    // Group B dispatchEditBlockContent was attempted (and rejected). UI didn't crash.
+    expect(blockAdapter.dispatchEditBlockContent).toHaveBeenCalled();
+    // BlockElement stays in DOM after the reject.
+    expect(target.querySelector('[data-testid="block-element"]')).not.toBeNull();
     unmount(component);
   });
 

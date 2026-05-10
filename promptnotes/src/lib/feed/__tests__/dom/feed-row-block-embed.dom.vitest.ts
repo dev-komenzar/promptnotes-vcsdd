@@ -290,13 +290,14 @@ describe('PROP-FEED-S5-008: typing in BlockElement triggers dispatchEditBlockCon
     const blockEl = target.querySelector('[data-testid="block-element"]') as HTMLElement | null;
     expect(blockEl).not.toBeNull();
     if (!blockEl) return;
-    // Simulate user typing — BlockElement listens to `input` events on its
-    // contenteditable child. The exact DOM is owned by ui-block-editor.
-    const editable = blockEl.querySelector('[contenteditable="true"]') as HTMLElement | null;
-    if (editable) {
-      editable.textContent = 'h';
-      editable.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    // BlockElement IS the contenteditable element (per ui-block-editor REQ-BE-001).
+    const editable = blockEl.matches('[contenteditable="true"]')
+      ? blockEl
+      : (blockEl.querySelector('[contenteditable="true"]') as HTMLElement | null);
+    expect(editable).not.toBeNull();
+    if (!editable) return;
+    editable.textContent = 'h';
+    editable.dispatchEvent(new Event('input', { bubbles: true }));
     flushSync();
     expect(blockAdapter.dispatchEditBlockContent).toHaveBeenCalledTimes(1);
     unmount(component);

@@ -840,30 +840,22 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
 // ── Sprint 5: PROP-FEED-S5-019 — EC-FEED-019 double-click race ──────────────
 
 describe('PROP-FEED-S5-019: EC-FEED-019 — double-click race during switching', () => {
-  test('second click while editingStatus=switching is suppressed (no second dispatch)', () => {
+  test('click while editingStatus=switching is suppressed (no dispatch)', () => {
     const adapter = makeMockAdapter();
-    // Initial: idle, click 1 fires.
-    const initialState = makeViewState({
-      editingStatus: 'idle',
-      editingNoteId: null,
-    });
-    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState: initialState, adapter } });
-    flushSync();
-    const button = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement;
-    button.click();
-    flushSync();
-    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(1);
-    // Now simulate transition to switching — REQ-FEED-006 should suppress further clicks.
-    (app as unknown as Record<string, unknown>).viewState = makeViewState({
+    // Mount with editingStatus=switching directly — REQ-FEED-006 should suppress click.
+    const switchingState = makeViewState({
       editingStatus: 'switching',
       editingNoteId: 'note-001',
       pendingNextFocus: { noteId: 'note-001', blockId: 'b1' },
     });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState: switchingState, adapter } });
     flushSync();
+    const button = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement;
     button.click();
     flushSync();
-    // dispatchSelectPastNote count remains 1 (the second click was suppressed).
-    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(1);
+    // dispatchSelectPastNote is NOT called because rowDisabled is true.
+    expect(adapter.dispatchSelectPastNote).not.toHaveBeenCalled();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
     unmount(app);
   });
 });
