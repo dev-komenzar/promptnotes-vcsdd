@@ -1,0 +1,51 @@
+Sprint 6 Phase 2b (Green phase) evidence
+=========================================
+Date: 2026-05-10
+
+## Implementation change
+File modified: promptnotes/src/lib/feed/FeedRow.svelte
+- Added: `const effectiveMount = $derived(shouldMountBlocks && blockEditorAdapter !== null);`
+- Wrapped `.row-button` (button[data-testid="feed-row-button"] including timestamp/preview/tags/tag-add/pending-switch-indicator children) inside `{#if !effectiveMount}` block
+- Replaced `{#if shouldMountBlocks && blockEditorAdapter}` with `{#if effectiveMount}` for the block-editor-surface mount
+
+## Test results
+
+### Sprint 6 PROP tests (NEW)
+$ bun run test:dom -- src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+
+$ bun run test:dom -- src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts
+ Test Files  2 passed (2)
+      Tests  9 passed (9)
+
+PROP-FEED-S6-001 cell 1 (effectiveMount=true): row-body-preview === null, feed-row-button === null, block-element !== null, block-editor-surface !== null, delete-button !== null, delete-button.disabled === true → PASS (Sprint 5 baseline FAILed; Sprint 6 implementation makes it PASS)
+PROP-FEED-S6-001 cell 2/3/4/EC-FEED-024 row → PASS
+PROP-FEED-S6-002 fast-check non-coexistence + non-emptiness (seed 0x56BABE, numRuns 250, 5 strata × ≥50): 0 counter-examples → PASS (Sprint 5 baseline found cell 1 counter-examples; Sprint 6 fix eliminates them)
+PROP-FEED-S6-003 grep audit (display:none / visibility:hidden / opacity:0): 0 hits → PASS
+PROP-FEED-S6-004 cell 3 click → dispatchSelectPastNote(noteId, vaultPath, issuedAt) called once → PASS
+PROP-FEED-S6-005 cell 1 .feed-row direct click → dispatchSelectPastNote 0 calls → PASS
+PROP-FEED-S6-006 cell 1 block-element click → onRowClick 0 calls + dispatchFocusBlock 1 call → PASS
+PROP-FEED-S6-007 adapter null + dispatch 0 calls → PASS
+
+### Sprint 5 regression tests (existing)
+$ bun run test:dom (full vitest suite)
+ Test Files  22 passed (22)
+      Tests  240 passed (240)
+
+Sprint 5 PROP-FEED-S5-022 (d) updated to acknowledge Sprint 6 supersession (feed-row-button is now unmounted in cell 1 by REQ-FEED-030.1; the assertion now flips from "rowButton not null" to "rowButton null AND blockEl not null").
+Sprint 5 main-route-wiring test "FeedRow.svelte mount gate" updated to check for `effectiveMount` $derived + `{#if effectiveMount}` + `{#if !effectiveMount}` patterns.
+
+### Bun pure tests (existing)
+$ bun test src/
+1909 tests across 160 files: 1901 pass + 4 skip + 4 todo + 0 fail
+32197 expect() calls
+
+### svelte-check
+109 pre-existing errors (TauriFeedAdapter type missing) — same as main branch, NOT introduced by Sprint 6.
+
+## Phase 2 gate verification
+✅ Failing test (RED) 必須 (S6-001 / S6-002): both FAILed in Phase 2a baseline, both PASS in Phase 2b after implementation
+✅ Regression guard (S6-003 / S6-004 / S6-005 / S6-006 / S6-007): all PASS in both phases
+✅ Sprint 1-5 全テスト regression: 1909 bun + 240 vitest (Sprint 6 added 17 new tests, replaced 1 invalid Sprint 5 assertion that contradicts REQ-FEED-030.1) — green
+✅ DESIGN.md compliance: changes are purely structural (DOM unmount via {#if}); no new CSS, no design system violations

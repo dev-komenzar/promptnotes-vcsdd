@@ -198,7 +198,7 @@ describe('PROP-FEED-S5-022: Group B reject acceptance — UI continues to functi
     unmount(component);
   });
 
-  test('(d) row-level click outside BlockElement still routes via FeedAdapter (Group A path)', async () => {
+  test('(d) Sprint 6 supersession: in cell 1 the feed-row-button is unmounted by REQ-FEED-030.1', async () => {
     const editingSessionState = {
       status: 'editing',
       currentNoteId: 'note-001',
@@ -218,11 +218,18 @@ describe('PROP-FEED-S5-022: Group B reject acceptance — UI continues to functi
       blockEditorAdapter: blockAdapter,
     });
     flushSync();
-    // Click on the row's outer button (preview area) — should still be wired to
-    // FeedAdapter as before; not affected by BlockEditorAdapter's reject state.
-    // For this RED-phase test we assert the row remains interactive (button exists).
+    // Sprint 6 REQ-FEED-030.1 (preview ↔ editor 排他化): in cell 1
+    // (`editingNoteId === self.noteId` AND editingStatus ∈ {editing,...} AND
+    // adapter !== null), the `.row-button` (data-testid="feed-row-button") is
+    // unmounted via `{#if !effectiveMount}`. The Sprint 5 PROP-FEED-S5-022 (d)
+    // assertion ("row-button still exists in cell 1") is explicitly superseded
+    // by REQ-FEED-030.1 — the assertion now flips: feed-row-button must be null,
+    // and block-element must be present (the BlockElement itself becomes the
+    // interactive surface, not a wrapper button).
     const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement | null;
-    expect(rowButton).not.toBeNull();
+    expect(rowButton).toBeNull();
+    const blockEl = target.querySelector('[data-testid="block-element"]');
+    expect(blockEl).not.toBeNull();
     unmount(component);
   });
 });

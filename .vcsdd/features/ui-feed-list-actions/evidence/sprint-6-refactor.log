@@ -1,0 +1,31 @@
+Sprint 6 Phase 2c (Refactor) evidence
+======================================
+Date: 2026-05-10
+
+## Refactor scope analysis
+
+Sprint 6 implementation in FeedRow.svelte is structurally minimal:
+1. New `$derived`: `effectiveMount := shouldMountBlocks && blockEditorAdapter !== null`
+2. Wrap `<button class="row-button">` in `{#if !effectiveMount}` block
+3. Replace `{#if shouldMountBlocks && blockEditorAdapter}` with `{#if effectiveMount}` for block-editor-surface
+
+## Refactor opportunities considered and rejected
+
+- **Extract preview into a sub-component**: Out of scope for Sprint 6 (CRIT-304 1-file constraint). Would require adding new files. Defer to a future sprint if reuse demands.
+- **Resolve nested-button SSR warnings (FeedRow.svelte:364, 398, 420)**: Pre-existing since Sprint 1 (`<button class="tag-remove">` / `<button class="tag-add">` inside `<button class="row-button">`). Not introduced by Sprint 6 — Sprint 6 keeps the same structure inside the now-conditional `.row-button`. Defer to a separate refactor task.
+- **Consolidate `shouldMountBlocks` and `effectiveMount` $derived**: `shouldMountBlocks` is still used standalone in the REQ-FEED-031 fallback `$effect` (line 257-318). Keeping both keeps intent clear: `shouldMountBlocks` = "this row is the editing target", `effectiveMount` = "this row should display the block-editor-surface". Consolidation would obscure the EC-FEED-024 distinction.
+
+## Refactor decision: NO-OP
+
+Sprint 6 is a small, focused change. No refactor needed.
+
+## Verification post-refactor (= post-implementation, since no changes made)
+
+$ bun run test:dom
+ Test Files  22 passed (22)
+      Tests  240 passed (240)
+
+$ bun test src/
+1909 tests across 160 files: 1901 pass + 4 skip + 4 todo + 0 fail
+
+All gates remain green.

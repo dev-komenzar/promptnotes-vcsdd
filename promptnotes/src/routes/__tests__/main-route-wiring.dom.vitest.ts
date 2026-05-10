@@ -67,9 +67,14 @@ describe('Sprint 5 production wiring chain (+page.svelte → FeedList → FeedRo
     expect(src).toMatch(/blockEditorAdapter\?:\s*BlockEditorAdapter/);
   });
 
-  test('FeedRow.svelte mount gate uses blockEditorAdapter and shouldMountBlocks', () => {
+  test('FeedRow.svelte mount gate uses blockEditorAdapter and shouldMountBlocks (Sprint 6: effectiveMount)', () => {
     const src = fs.readFileSync(FEEDROW, 'utf-8');
-    // The {#if shouldMountBlocks && blockEditorAdapter} gate must exist.
-    expect(src).toMatch(/\{#if\s+shouldMountBlocks\s*&&\s*blockEditorAdapter\}/);
+    // Sprint 6 (REQ-FEED-030.1): mount gate consolidated as
+    // `effectiveMount := shouldMountBlocks && blockEditorAdapter !== null`.
+    // The block-editor-surface mounts under `{#if effectiveMount}`, and the
+    // preview row-button is unmounted under `{#if !effectiveMount}`.
+    expect(src).toMatch(/\$derived\(shouldMountBlocks\s*&&\s*blockEditorAdapter\s*!==\s*null\)/);
+    expect(src).toMatch(/\{#if\s+effectiveMount\}/);
+    expect(src).toMatch(/\{#if\s+!effectiveMount\}/);
   });
 });

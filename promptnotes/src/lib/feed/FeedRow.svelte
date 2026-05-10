@@ -197,6 +197,9 @@
      viewState.editingStatus === 'save-failed'),
   );
 
+  /** Sprint 6 REQ-FEED-030.1: effective mount = shouldMountBlocks AND adapter injected. EC-FEED-024. */
+  const effectiveMount = $derived(shouldMountBlocks && blockEditorAdapter !== null);
+
   /** REQ-FEED-031 fallback state ownership (FIND-S5-SPEC-004 / iter2-005). */
   let fallbackAppliedFor = $state<{ noteId: string; blockId: string } | null>(null);
   let lastBlocksWasNonEmpty = $state(false);
@@ -324,113 +327,115 @@
   data-row-note-id={noteId}
 >
   <div class="row-layout">
-    <button
-      data-testid="feed-row-button"
-      aria-disabled={rowDisabled ? 'true' : 'false'}
-      onclick={handleRowClick}
-      class="row-button"
-    >
-      <div
-        data-testid="row-created-at"
-        class="row-timestamp"
+    {#if !effectiveMount}
+      <button
+        data-testid="feed-row-button"
+        aria-disabled={rowDisabled ? 'true' : 'false'}
+        onclick={handleRowClick}
+        class="row-button"
       >
-        {createdAtLabel}
-        {#if createdAt !== updatedAt}
-          <span class="updated-at">{updatedAtLabel}</span>
-        {/if}
-      </div>
+        <div
+          data-testid="row-created-at"
+          class="row-timestamp"
+        >
+          {createdAtLabel}
+          {#if createdAt !== updatedAt}
+            <span class="updated-at">{updatedAtLabel}</span>
+          {/if}
+        </div>
 
-      <div
-        data-testid="row-body-preview"
-        class="row-body-preview"
-      >
-        {#each previewLines as line}
-          <div>{line}</div>
-        {/each}
-      </div>
-
-      {#if tags.length > 0}
-        <div class="tag-list">
-          {#each tags as tag}
-            <span
-              data-testid="tag-chip"
-              class="tag-chip"
-            >
-              <span class="tag-text">{tag}</span>
-              <button
-                class="tag-remove"
-                data-testid="tag-remove"
-                aria-label={`タグ '${tag}' を削除`}
-                onclick={(e: MouseEvent) => {
-                  e.stopPropagation();
-                  onTagRemove?.(noteId, tag);
-                }}
-              >×</button>
-            </span>
+        <div
+          data-testid="row-body-preview"
+          class="row-body-preview"
+        >
+          {#each previewLines as line}
+            <div>{line}</div>
           {/each}
         </div>
-      {/if}
 
-      <div class="tag-actions">
-        {#if isTagInputOpen}
-          <div class="tag-input-wrapper" data-testid="tag-input-wrapper">
-            <input
-              type="text"
-              data-testid="tag-input"
-              class="tag-input"
-              placeholder="タグを入力..."
-              bind:value={tagInputText}
-              onkeydown={handleTagInputKeydown}
-              oninput={resetHighlight}
-              onblur={handleTagInputBlur}
-            />
-            {#if tagErrorText !== null}
-              <div class="tag-error" data-testid="tag-error">{tagErrorText}</div>
-            {/if}
-            {#if autocompleteSuggestions.length > 0}
-              <ul class="autocomplete-list" data-testid="autocomplete-list" role="listbox">
-                {#each autocompleteSuggestions as suggestion, index (suggestion.name)}
-                  <li>
-                    <button
-                      class="autocomplete-item"
-                      class:autocomplete-item--highlighted={index === highlightedIndex}
-                      data-testid="autocomplete-item"
-                      role="option"
-                      aria-selected={index === highlightedIndex}
-                      onmousedown={(e: MouseEvent) => {
-                        e.preventDefault();
-                        handleSuggestionClick(suggestion.name);
-                      }}
-                    >
-                      <span class="autocomplete-name">#{suggestion.name}</span>
-                      <span class="autocomplete-count">({suggestion.usageCount})</span>
-                    </button>
-                  </li>
-                {/each}
-              </ul>
-            {:else if tagInputText.trim().length > 0}
-              <div class="autocomplete-empty" data-testid="autocomplete-empty">一致するタグがありません</div>
-            {/if}
+        {#if tags.length > 0}
+          <div class="tag-list">
+            {#each tags as tag}
+              <span
+                data-testid="tag-chip"
+                class="tag-chip"
+              >
+                <span class="tag-text">{tag}</span>
+                <button
+                  class="tag-remove"
+                  data-testid="tag-remove"
+                  aria-label={`タグ '${tag}' を削除`}
+                  onclick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    onTagRemove?.(noteId, tag);
+                  }}
+                >×</button>
+              </span>
+            {/each}
           </div>
-        {:else}
-          <button
-            class="tag-add"
-            data-testid="tag-add"
-            aria-label="タグを追加"
-            onclick={(e: MouseEvent) => {
-              e.stopPropagation();
-              onTagAddClick?.(noteId);
-            }}
-          >+</button>
         {/if}
-      </div>
 
-      {#if showPendingSwitch}
-        <span data-testid="pending-switch-indicator" class="pending-indicator">
-          切り替え中...
-        </span>
-      {/if}
-    </button>
+        <div class="tag-actions">
+          {#if isTagInputOpen}
+            <div class="tag-input-wrapper" data-testid="tag-input-wrapper">
+              <input
+                type="text"
+                data-testid="tag-input"
+                class="tag-input"
+                placeholder="タグを入力..."
+                bind:value={tagInputText}
+                onkeydown={handleTagInputKeydown}
+                oninput={resetHighlight}
+                onblur={handleTagInputBlur}
+              />
+              {#if tagErrorText !== null}
+                <div class="tag-error" data-testid="tag-error">{tagErrorText}</div>
+              {/if}
+              {#if autocompleteSuggestions.length > 0}
+                <ul class="autocomplete-list" data-testid="autocomplete-list" role="listbox">
+                  {#each autocompleteSuggestions as suggestion, index (suggestion.name)}
+                    <li>
+                      <button
+                        class="autocomplete-item"
+                        class:autocomplete-item--highlighted={index === highlightedIndex}
+                        data-testid="autocomplete-item"
+                        role="option"
+                        aria-selected={index === highlightedIndex}
+                        onmousedown={(e: MouseEvent) => {
+                          e.preventDefault();
+                          handleSuggestionClick(suggestion.name);
+                        }}
+                      >
+                        <span class="autocomplete-name">#{suggestion.name}</span>
+                        <span class="autocomplete-count">({suggestion.usageCount})</span>
+                      </button>
+                    </li>
+                  {/each}
+                </ul>
+              {:else if tagInputText.trim().length > 0}
+                <div class="autocomplete-empty" data-testid="autocomplete-empty">一致するタグがありません</div>
+              {/if}
+            </div>
+          {:else}
+            <button
+              class="tag-add"
+              data-testid="tag-add"
+              aria-label="タグを追加"
+              onclick={(e: MouseEvent) => {
+                e.stopPropagation();
+                onTagAddClick?.(noteId);
+              }}
+            >+</button>
+          {/if}
+        </div>
+
+        {#if showPendingSwitch}
+          <span data-testid="pending-switch-indicator" class="pending-indicator">
+            切り替え中...
+          </span>
+        {/if}
+      </button>
+    {/if}
 
     <button
       data-testid="delete-button"
@@ -445,7 +450,7 @@
     </button>
   </div>
 
-  {#if shouldMountBlocks && blockEditorAdapter}
+  {#if effectiveMount}
     <div class="block-editor-surface" data-testid="block-editor-surface">
       {#each blocksToShow as block, blockIndex (block.id)}
         <BlockElement
