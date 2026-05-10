@@ -1,0 +1,19 @@
+$ vitest run "--reporter=verbose" src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes
+
+20:08:53 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:364:16 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+20:08:53 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:398:22 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+20:08:53 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:420:12 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+ ✓ src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts > PROP-FEED-S6-002: non-coexistence + non-emptiness (fast-check stratified) > non-coexistence: row-body-preview and block-element never coexist 796ms
+ ✓ src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts > PROP-FEED-S6-002: non-coexistence + non-emptiness (fast-check stratified) > non-emptiness: at least one of row-body-preview or block-element is present 1049ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  20:08:52
+   Duration  3.22s (transform 571ms, setup 35ms, import 706ms, tests 1.85s, environment 524ms)
+
+PROP_EXIT:0

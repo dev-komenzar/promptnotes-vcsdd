@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -627,6 +627,13 @@
       "to": "5",
       "timestamp": "2026-05-10T11:04:16.000Z",
       "reason": "Sprint 6 Phase 3 PASS at iter-1 — 5/5 dimensions PASS, 0 HIGH, 2 LOW resolved post-review",
+      "sprint": 6
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-10T11:15:20.000Z",
+      "reason": "Sprint 6 Phase 5 PASS: 7 required PROPs proved, Sprint 5 regression preserved (1909 bun + 240 vitest), Rust 0-diff vs baseline, purity/security audits clean",
       "sprint": 6
     }
   ],
@@ -1266,6 +1273,62 @@
       "required": true,
       "status": "proved",
       "artifact": "feed-row-best-effort-dispatch.dom.vitest.ts (PROP-FEED-S5-022: Group B reject acceptance)"
+    },
+    {
+      "id": "PROP-FEED-S6-001",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "sprint": 6,
+      "artifact": "promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts (5-row truth table DOM assertions — 240 vitest tests PASS)"
+    },
+    {
+      "id": "PROP-FEED-S6-002",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "sprint": 6,
+      "artifact": "promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.property.test.ts (fast-check seed 0x56BABE numRuns 500 non-coexistence + non-emptiness — 0 counter-examples, per-cell strata all >= 50)"
+    },
+    {
+      "id": "PROP-FEED-S6-003",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "sprint": 6,
+      "artifact": "grep audit: grep -nE '(display:*none*[;}]|visibility:*hidden*[;}]|opacity:*0*[;}])' FeedRow.svelte — exit 1 (0 hits)"
+    },
+    {
+      "id": "PROP-FEED-S6-004",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "sprint": 6,
+      "artifact": "promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts (cell 3 click -> dispatchSelectPastNote 1 call)"
+    },
+    {
+      "id": "PROP-FEED-S6-005",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "sprint": 6,
+      "artifact": "promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts (cell 1 .feed-row direct click -> dispatchSelectPastNote 0 calls)"
+    },
+    {
+      "id": "PROP-FEED-S6-006",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "sprint": 6,
+      "artifact": "promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts (cell 1 block-element click -> onRowClick 0 + dispatchFocusBlock 1)"
+    },
+    {
+      "id": "PROP-FEED-S6-007",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "sprint": 6,
+      "artifact": "promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.dom.vitest.ts (adapter null + dispatch 0 calls orthogonal observation)"
     }
   ],
   "traceability": {
@@ -2583,9 +2646,27 @@
           "FIND-S6-PHASE3-002 unused FeedRowSprint6PropertyWrapper.svelte deleted"
         ]
       }
+    },
+    "5-sprint-6": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-10T11:15:20.000Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "requiredObligations": 7,
+        "proved": 7,
+        "failed": 0,
+        "skipped": 0,
+        "bunTests": "1901 pass + 4 skip + 4 todo + 0 fail = 1909 tests (Sprint 5 baseline match)",
+        "vitestTests": "240 tests passed (240) / 22 files",
+        "grepAudit": "PROP-FEED-S6-003 0 hits (POSIX [[:space:]] regex)",
+        "rustDiffBaseline": "git diff vs sprint-4-baseline editor.rs feed.rs emit lines: 0 changes (exit 1)",
+        "fastCheckProperty": "seed 0x56BABE numRuns 500, 0 counter-examples, 5 strata × ≥50 cases verified",
+        "purityAudit": "no new pure helpers, no new effectful modules, effectiveMount is pure $derived",
+        "filewallAudit": "git diff main..HEAD --name-only matches CRIT-304 allowlist exactly"
+      }
     }
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T11:04:16.000Z"
+  "updatedAt": "2026-05-10T11:15:20.000Z"
 }

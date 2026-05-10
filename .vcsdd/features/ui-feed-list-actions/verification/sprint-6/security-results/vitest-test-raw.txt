@@ -1,0 +1,20 @@
+$ vitest run
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes
+
+20:08:20 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:364:16 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+20:08:20 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:398:22 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+20:08:20 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:420:12 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+20:08:20 [vite-plugin-svelte] src/lib/feed/__tests__/dom/FeedRowSprint5Wrapper.svelte:42:40 This reference only captures the initial value of `initialViewState`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+20:08:20 [vite-plugin-svelte] src/lib/feed/__tests__/dom/FeedRowSprint5Wrapper.svelte:43:66 This reference only captures the initial value of `initialEditingSessionState`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+
+ Test Files  22 passed (22)
+      Tests  240 passed (240)
+   Start at  20:08:18
+   Duration  5.28s (transform 10.69s, setup 957ms, import 15.91s, tests 5.47s, environment 25.96s)
+
