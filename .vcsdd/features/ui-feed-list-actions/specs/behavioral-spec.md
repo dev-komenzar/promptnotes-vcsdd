@@ -21,6 +21,7 @@ coherence:
     - "edit-past-note-start"
     - "delete-note"
   source_files:
+    - "promptnotes/src/routes/+page.svelte"
     - "promptnotes/src/lib/feed/FeedList.svelte"
     - "promptnotes/src/lib/feed/FeedRow.svelte"
     - "promptnotes/src/lib/feed/DeleteConfirmModal.svelte"
@@ -32,6 +33,13 @@ coherence:
     - "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
     - "promptnotes/src/lib/feed/types.ts"
     - "promptnotes/src/lib/feed/clockHelpers.ts"
+    - "promptnotes/src/lib/feed/editingSessionChannel.ts"
+    - "promptnotes/src/lib/block-editor/BlockElement.svelte"
+    - "promptnotes/src/lib/block-editor/SlashMenu.svelte"
+    - "promptnotes/src/lib/block-editor/BlockDragHandle.svelte"
+    - "promptnotes/src/lib/block-editor/SaveFailureBanner.svelte"
+    - "promptnotes/src/lib/block-editor/types.ts"
+    - "promptnotes/src/lib/block-editor/blockPredicates.ts"
     - "promptnotes/src-tauri/src/feed.rs"
     - "promptnotes/src-tauri/src/editor.rs"
     - "docs/domain/code/ts/src/capture/states.ts"
@@ -888,3 +896,241 @@ Sprint 5 (`tag-chip-update` block migration) で実施し、その際に本 spec
 
 `apply-filter-or-search` の検索対象も現状 `NoteRowMetadata.body` (派生 Markdown 文字列) のまま維持する。
 完全な block payload 化 (blocks フィールドで検索) は Sprint 5 の `tag-chip-update` / `apply-filter-or-search` block migration 時に決定する。
+
+---
+
+## Sprint 5 Extensions
+
+> **Sprint**: 5
+> **Rationale**: `block-based-ui-spec-migration.md` の確定アーキテクチャに従い、EditorPane を完全廃止して **in-place 編集モデル** へ移行する。`+page.svelte` は単一カラム (FeedList のみ) になり、編集サーフェスは `FeedRow` 内に組み込まれた BlockElement 群に集約される。`editing_session_state_changed` の購読も EditorPanel から FeedList / FeedRow 階層へ再配線する。
+>
+> **Source of truth**:
+> - `docs/domain/bounded-contexts.md` §Capture Context（in-place 編集モデルの定義）
+> - `docs/tasks/block-based-ui-spec-migration.md` §アーキテクチャ判断
+> - `.vcsdd/features/ui-block-editor/specs/behavioral-spec.md` REQ-BE-001..027（埋め込まれる block primitive の契約）
+>
+> **既存 REQ への作用** (本 Sprint 5 で supersede / amend される対象):
+> | 旧 REQ | 状態 | 上位 REQ |
+> |-------|------|---------|
+> | REQ-FEED-023 (Sprint 2) | **superseded by REQ-FEED-028** | REQ-FEED-028 |
+> | REQ-FEED-024 (Sprint 3) | **amended by REQ-FEED-029** (emit unchanged, subscriber rerouted) | REQ-FEED-029 |
+> | EC-FEED-016 (Sprint 4 amendment) | **superseded by EC-FEED-016 Sprint 5 amendment** (FeedRow が空 paragraph fallback を担当) | REQ-FEED-031 |
+> | EC-FEED-017 | **保持** (順序保証は維持) | REQ-FEED-032 |
+
+---
+
+### REQ-FEED-028: `+page.svelte` — 単一カラムレイアウト (REQ-FEED-023 全面 supersede)
+
+**EARS**: WHEN the application is in `Configured` state THEN the main route SHALL render `FeedList` as the **sole** content surface inside `AppShell`. The `EditorPane` (旧 ui-editor) MUST NOT be mounted, imported, or referenced.
+
+**Layout specification** (REQ-FEED-023 supersession):
+- レイアウト: 単一カラム — `<main class="feed-main">` が `<FeedList>` のみを子に持つ。
+- `display: grid` および `grid-template-columns: 320px 1fr` は使用しない（CSS 上から削除）。
+- `.feed-sidebar` / `.editor-main` クラスは使用しない（DOM 上から削除）。
+- 高さ: `100vh` (`html, body { height: 100% }` + `.feed-main { height: 100vh; overflow-y: auto }`).
+- 背景: `#ffffff` (DESIGN.md §10 background) — `:global(html, body)` で指定。
+- `FeedList` props: `viewState`, `adapter`, `stateChannel`, `vaultPath` （Sprint 4 と同じ）。
+  - Sprint 5 で `FeedList` には新たに `editingSessionState`（`editing_session_state_changed` 購読結果）を渡す **OR** `FeedList` 内部で購読する責務を持たせる（実装選択肢: REQ-FEED-029 を参照）。
+
+**Exclusions** (重要 — 既存の正面解除を spec で固定する):
+- `EditorPanel` の import が `+page.svelte` に存在しない (grep で `EditorPanel` ゼロヒット)。
+- `editorStateChannel` の import が `+page.svelte` に存在しない (grep で `editorStateChannel` ゼロヒット)。
+- `tauriEditorAdapter` の import が `+page.svelte` に存在しない (grep で `tauriEditorAdapter` ゼロヒット)。
+- `editor-main` クラス、`feed-sidebar` クラス、`grid-template-columns` の使用が `+page.svelte` に存在しない (grep でゼロヒット)。
+
+**Acceptance Criteria** (REQ-FEED-023 旧 AC は破棄、Sprint 5 で再定義):
+- `+page.svelte` は `FeedList` のみを `AppShell` 配下に mount する (DOM integration test)。
+- レンダリング後の `<main class="feed-main">` は子要素として `<FeedList>` のみを持つ (DOM test)。
+- `+page.svelte` ソースに `EditorPanel` / `editorStateChannel` / `tauriEditorAdapter` / `editor-main` / `feed-sidebar` / `grid-template-columns` のいずれも grep で 0 ヒット (静的検査)。
+- `feed-main` 要素の高さが `100vh`、背景が `#ffffff`、横スクロールが発生しない (DOM + CSS test)。
+- 既存 EditorPane 関連の DOM regression test (`promptnotes/src/routes/__tests__/main-route.dom.vitest.ts` の `EditorPanel`/`editorStateChannel`/`tauriEditorAdapter` non-presence check) が pass する。
+
+**Edge Cases**:
+- `feedViewState.loadingStatus === 'loading'`: `FeedList` は内部で skeleton/spinner を表示（REQ-FEED-008 既存）。EditorPane が無いため editing 領域の placeholder は不要。
+- `editingNoteId === null`: どの `FeedRow` も in-place block surface を表示しない（REQ-FEED-030 参照）。
+- `editingNoteId` がフィードに存在しない (race condition): `FeedList` は `editingSessionState` を保持しつつ該当行が無い旨を黙過する（IPC レイヤがやがて `feed_state_changed` で再同期）。
+
+---
+
+### REQ-FEED-029: `editing_session_state_changed` の購読再配線 (REQ-FEED-024 amendment)
+
+**EARS**: WHEN Rust が `editing_session_state_changed` を emit する THEN UI 側では `FeedList`（または `FeedList` が委譲する FeedRow）が当該イベントを購読し、自身の `editingSessionState` 状態を更新しなければならない。`EditorPanel` / `editorStateChannel.ts` を経由した配送経路は使用してはならない。
+
+> **Sprint 4 の REQ-FEED-024 は emit 側の契約**（Rust handler が `editing_session_state_changed` を `feed_state_changed` の前に emit する）であり、これは **Sprint 5 でも変更しない**。Sprint 5 は **subscribe 側の経路** のみを変更する。
+
+**購読経路の選択肢**（実装は (a) を推奨、(b) も spec 準拠とする）:
+
+- (a) **集中購読**: `+page.svelte` または `FeedList.svelte` が単一の `listen('editing_session_state_changed', ...)` 購読を持ち、結果を `editingSessionState: EditingSessionStateDto` として `$state` に保持する。`editingNoteId === noteId` の `FeedRow` にのみ `blocks` / `focusedBlockId` / `lastSaveResult` などの編集スライスを props で伝播する。
+- (b) **行ごと購読**: 各 `FeedRow` が `listen('editing_session_state_changed', ...)` を持ち、payload の `currentNoteId === self.noteId` のときのみ自身の `editingSessionState` を更新する（unmount 時に unlisten）。
+
+> 実装注: (a) は subscriber が 1 つで済み GC に優しいため推奨。(b) は同時に 100 行表示するシナリオで listener が 100 個になるため非推奨だが、spec 上は禁止しない。
+
+**ペイロード契約**:
+- `event.payload.state` の形状は **REQ-FEED-024 Sprint 4 amendment と同一** (`EditingSessionStateDto` 5-arm)。
+- ラッパー `{ state: ... }` は Rust `editor::make_editing_state_changed_payload` が生成（変更なし）。
+- TS 受信側は `EditingSessionStateDto` 5-arm の rehydration ロジックで処理する（既存 `ui-editor` Sprint 8 の rehydration 知識を `feed/` 側へ移管）。
+
+**Subscriber 契約 (Pure / Effectful 区分)**:
+- 新規 effectful module `editingSessionChannel.ts` (または既存 `feedStateChannel.ts` 拡張) を `src/lib/feed/` に配置する。**INBOUND only**（dispatch しない、PROP-FEED-032 同様）。
+- `subscribe(handler: (state: EditingSessionStateDto) => void): () => void` を export する。
+- `editorStateChannel.ts` の再活用は禁止（旧 ui-editor feature の名前空間に依存させない）。
+
+**Acceptance Criteria**:
+- `src/lib/feed/` 以下に `editing_session_state_changed` を購読する module (`editingSessionChannel.ts` または `feedStateChannel.ts` 内追加 export) が存在する (grep)。
+- `+page.svelte` または `FeedList.svelte` が当該購読を 1 回 mount し、unmount 時に unlisten する (DOM lifecycle test)。
+- 購読モジュールの import 元が **`src/lib/editor/` を含まない** (`editorStateChannel`/`tauriEditorAdapter` の参照ゼロ — Sprint 5 では `src/lib/editor/` 自体が物理削除済み、回帰防止 grep)。
+- イベント emit 順序 (`editing_session_state_changed` → `feed_state_changed`) が UI 受信側で守られる結果として、`feedReducer` が `DomainSnapshotReceived` を処理する時点で常に最新の `editingSessionState` がローカルに到達済みである (integration test, mock emitter)。
+- 旧 `editorStateChannel` の subscriber registration が `src/lib/feed/` または `src/routes/` に存在しない (grep ゼロヒット)。
+
+**Edge Cases**:
+- `editing_session_state_changed` が emit されたが対応する note が `feed_state_changed` 到着前に削除された: subscriber は受信した state をいったん保持し、続く `feed_state_changed` 受信で `editingNoteId` が `null` または別 note に切り替わったら local state を破棄する。
+- 多重購読: implementation (a) を選ぶ場合は `+page.svelte` または `FeedList` の `$effect(() => onMount; return onUnmount)` で唯一性を担保する。implementation (b) を選ぶ場合は各 FeedRow の lifecycle に責任を持つ。
+- TS 側で 5-arm payload の `kind` が想定外の文字列 (将来の Rust 拡張): subscriber は warning ログを残しつつ無視する (UI を壊さない)。
+
+---
+
+### REQ-FEED-030: `FeedRow` — in-place 編集サーフェスの埋め込み
+
+**EARS**: WHEN `viewState.editingStatus ∈ {'editing', 'saving', 'switching', 'save-failed'}` AND `viewState.editingNoteId === self.noteId` THEN `FeedRow` は当該行に対応する `EditingSessionStateDto` の `blocks` を順序通りにレンダリングし、各 block を `BlockElement` (ui-block-editor REQ-BE-001) として表示しなければならない。
+
+**埋め込み詳細**:
+- `BlockElement` の props は ui-block-editor REQ-BE-001..010 の契約に従う:
+  - `block: DtoBlock` (id, type, content)
+  - `isFocused: boolean` — `block.id === focusedBlockId` のとき `true`
+  - `slashMenuOpen` 関連 props は `BlockElement` 内部または FeedRow が共有 state で管理（ui-block-editor REQ-BE-009..012 参照）
+  - `BlockEditorAdapter` の 16 dispatch メソッド (ui-block-editor REQ-BE-026) を props で注入
+- `BlockDragHandle` (REQ-BE-013/014) と `SlashMenu` (REQ-BE-011/012) は ui-block-editor の振る舞いをそのまま継承。
+- `SaveFailureBanner` (REQ-BE-015/016) は `editingStatus === 'save-failed'` かつ `editingNoteId === self.noteId` のとき行内に表示する（行外オーバーレイは不要）。
+
+**非編集行**:
+- `viewState.editingNoteId !== self.noteId` の `FeedRow` は **既存の preview 表示** (`row-body-preview` / タグチップ / pending-switch indicator など) を維持する。`BlockElement` を mount してはならない。
+
+**Adapter 注入経路**:
+- `BlockEditorAdapter` の生成は `+page.svelte` または `FeedList` で 1 回行い、`FeedRow` に props として渡す（`createBlockEditorAdapter()` のような factory を `src/lib/block-editor/` で公開する想定）。
+- 各 dispatch は最終的に `@tauri-apps/api/core::invoke(...)` を呼ぶ effectful shell の責務（PROP-FEED-032 同様、purity boundary 維持）。
+- Sprint 5 spec 上は adapter factory のシグネチャ細部までは規定しない（`ui-block-editor` の REQ-BE-026 が型を、本 REQ-FEED-030 は注入経路を規定）。
+
+**Acceptance Criteria**:
+- `viewState.editingNoteId === self.noteId` のとき、`FeedRow` の DOM ツリーに `data-testid="block-element"`（ui-block-editor 命名）の要素が `blocks.length` 個存在する (DOM integration test)。
+- `viewState.editingNoteId !== self.noteId` のとき、当該 `FeedRow` の DOM ツリーに `block-element` が 0 個 (DOM integration test)。
+- `editingStatus === 'save-failed'` かつ `editingNoteId === self.noteId` のとき、当該行内に `data-testid="save-failure-banner"` が存在する (DOM integration test)。他行には存在しない。
+- `BlockEditorAdapter` 経由の dispatch が、ユーザー操作（block content への文字入力 / Enter / `/` メニュー選択など）に対して **ui-block-editor の REQ-BE-003..010 の AC を満たす形** で発火する（FeedRow 経由でも primitive の振る舞いが維持される）。
+- 埋め込み state は `FeedViewState` に含めない（block 編集 state は `editingSessionState` 経由で行に伝播し、`feedReducer` の責務外）。
+
+**Edge Cases**:
+- `editingSessionState.kind === 'switching'` または `'save-failed'`: `FeedRow` は最後の有効な `blocks` を表示し続ける（既存 ui-block-editor の振る舞い）。`focusedBlockId` は `priorFocusedBlockId` を採用（ui-block-editor §フォーカス保持規約）。
+- `editingNoteId` が **フィードの可視 note ID リストに存在しない** (filter 適用で隠れた): 対応する `FeedRow` 自体が DOM に存在しないため、`BlockElement` も描画されない。`feed_state_changed` が当該 note を再可視化したタイミングで blocks が表示される。
+- `blocks` フィールドが `undefined` または empty: REQ-FEED-031 (EC-FEED-016 Sprint 5 amendment) の fallback を適用する。
+
+---
+
+### REQ-FEED-031: `FeedRow` 側 empty paragraph fallback (EC-FEED-016 Sprint 5 amendment)
+
+**EARS**: WHEN `viewState.editingNoteId === self.noteId` AND 受信した `editingSessionState.blocks` が `undefined`、`null`、または空配列である THEN `FeedRow` は **クライアント側で UUID v4 を発番した空 paragraph block 1 件** を `blocks` として採用し、`focusedBlockId` を当該 block の id に設定して `BlockElement` を mount しなければならない。
+
+> **Sprint 4 までの責務**: EditorPane 側が空 paragraph fallback を担当（EC-FEED-016 旧定義）。
+> **Sprint 5 の責務**: EditorPane 廃止により `FeedRow` 側に責務が移管される。
+
+**fallback 生成手順**:
+1. `id`: UUID v4 (`crypto.randomUUID()`)。Effectful shell 内（`FeedRow.svelte` の `$effect` 内）でのみ生成する。pure helper には UUID 生成を含めない。
+2. `block_type`: `BlockTypeDto::Paragraph` (`'paragraph'`)。
+3. `content`: 空文字列 `""`。
+4. `focusedBlockId`: 上記で生成した `id` を採用。
+
+**Pure / Effectful 区分**:
+- fallback 適用判定 (`blocks` が undefined/null/empty かどうか) は pure helper として `feedRowPredicates.ts` に追加可能 (例: `needsEmptyParagraphFallback(blocks: ReadonlyArray<DtoBlock> | null | undefined): boolean`)。
+- UUID 生成は **必ず effectful shell** で行う（pure core への持ち込み禁止）。
+
+**Acceptance Criteria**:
+- `editingSessionState.blocks === undefined` （ケース 1: REQ-FEED-025 で `blocks` フィールド absent）のとき、対応する `FeedRow` の DOM に `data-testid="block-element"` が 1 個存在し、その `data-block-type === 'paragraph'`、`textContent === ''` である (DOM integration test)。
+- `editingSessionState.blocks === []` （契約上到達不能だが防御的に）のとき、上記同様の挙動 (DOM integration test)。
+- fallback で生成された block の `id` は UUID v4 形式 (`/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i`) (DOM test)。
+- fallback 適用後、`BlockEditorAdapter::dispatchFocusBlock({ noteId, blockId })` がただちに呼ばれ、Rust 側 capture state が当該 block id を `focusedBlockId` として保持する (integration test, mock adapter)。
+- 同一 `editingNoteId` への切り替えで fallback が **2 回連続で発火しない**（最初の fallback で生成した block id を保持）。
+
+**Edge Cases**:
+- ユーザーが空 paragraph に文字を入力: `BlockElement` の `EditBlockContent` dispatch が発火（ui-block-editor REQ-BE-003）し、Rust が `blocks` を持つ次の `editing_session_state_changed` を emit。FeedRow は次回 mount からはサーバ提供の `blocks` を採用し、fallback ロジックは無効化される。
+- ユーザーがすぐに別 note を選択: fallback で発番した block id は破棄される（次の `editingNoteId` に伴い state がリセットされる）。`dispatchFocusBlock` が race で発火していても Rust 側は `currentNoteId` mismatch で no-op 扱い（`ui-block-editor` の guard を信頼）。
+
+---
+
+### REQ-FEED-032: イベント順序保証 (EC-FEED-017 維持)
+
+**EARS**: WHEN Rust が `select_past_note` および将来の他 handler から state-mutating な emit を行う THEN `editing_session_state_changed` は `feed_state_changed` よりも **必ず先に** emit されなければならない (Sprint 4 までの REQ-FEED-024 / EC-FEED-017 の不変条件)。
+
+> **Sprint 5 で変更しないこと**:
+> - emit 順序 (`editing_session_state_changed` → `feed_state_changed`) — Rust 側 invariant
+> - `make_editing_state_changed_payload` の生成ロジック (editor.rs)
+> - `feed.rs::compose_state_for_select_past_note` の出力契約 (3 ケース固定表 / REQ-FEED-025)
+> - `parse_markdown_to_blocks` の non-empty 不変条件 (REQ-FEED-025)
+>
+> **Sprint 5 で UI 側に課す追加義務**:
+> - 購読側 (`+page.svelte` / `FeedList`) は `editing_session_state_changed` 受信ハンドラ内で同期的に `editingSessionState` 状態を更新する（イベントループの後続マイクロタスクに延期しない）。これにより `feed_state_changed` の `feedReducer.DomainSnapshotReceived` が回ってきた時点で `editingSessionState` が最新であることが保証される。
+
+**Acceptance Criteria**:
+- 既存 PROP-FEED-S4-008 (Sprint 4 で確立した emit 順序検証) は **そのまま継承**。Sprint 5 で新規テストは不要だが、`editor.rs` の emit 順序を変更しないことを Sprint 5 contract のレッドラインとして記録する (contracts/sprint-5.md)。
+- `+page.svelte` または `FeedList` の `editing_session_state_changed` ハンドラ実装は同期的に `$state` を更新する (grep: ハンドラ内に `await` / `Promise.then` / `setTimeout` / `queueMicrotask` を含まない)。
+- 受信タイミング regression test: mock emitter で `editing_session_state_changed → feed_state_changed` の順に emit したとき、`feedReducer.DomainSnapshotReceived` 処理時点で `editingSessionState` が新しい値を持つこと (DOM integration test)。
+
+**Edge Cases**:
+- Tauri 側で event delivery 順序が `feed_state_changed → editing_session_state_changed` に逆転するケース: Tauri 2 の同一 emitter 内同期 emit はキューイング順を保証するため、現実には起きないと仮定する。万一発生した場合は `feedReducer` の mirror が一瞬古い `editingSessionState` を参照することがあるが、次の `editing_session_state_changed` 受信で復旧する（自己治癒）。
+
+---
+
+### REQ-FEED-033: 旧 EditorPane 関連型/モジュール参照の禁止 (回帰防止)
+
+**EARS**: THE `src/lib/feed/`、`src/routes/+page.svelte`、`src/lib/block-editor/` の production コード (テスト・コメント・migration note を除く) は、以下のいずれの識別子も import / 参照してはならない:
+
+- `EditorPanel` （旧 ui-editor のコンポーネント）
+- `editorStateChannel` （旧 ui-editor の inbound channel）
+- `tauriEditorAdapter` （旧 ui-editor の outbound adapter）
+- `editorReducer` / `editorPredicates` （旧 ui-editor の pure core）
+- `EditorViewState` / `EditorAction` / `EditorCommand` / `EditorIpcAdapter` （旧 ui-editor の型）
+
+> **根拠**: `block-based-ui-spec-migration.md` の「削除対象」テーブル。`src/lib/editor/` 配下は物理削除済み。本 REQ は **回帰防止** の grep 検査として spec に固定する。`ui-block-editor` REQ-BE-027 と整合。
+
+**Acceptance Criteria**:
+- 以下の grep 出力がゼロ行 (production code only):
+  ```
+  grep -rnE "\b(EditorPanel|editorStateChannel|tauriEditorAdapter|editorReducer|editorPredicates|EditorViewState|EditorAction|EditorCommand|EditorIpcAdapter)\b" \
+    promptnotes/src/lib/feed/ \
+    promptnotes/src/routes/+page.svelte \
+    promptnotes/src/lib/block-editor/ \
+    --include='*.ts' --include='*.svelte' \
+    | grep -vE '/__tests__/|\.test\.|\.vitest\.|^\s*(//|\*|/\*)'
+  ```
+- 既存テスト (`promptnotes/src/routes/__tests__/main-route.dom.vitest.ts`) の non-presence 検査が pass する。
+- `src/lib/editor/` ディレクトリが存在しない (filesystem check)。
+
+**Edge Cases**:
+- コメント・migration 説明文・テストファイル内の説明的言及は許容する（grep の `-v` フィルタで除外）。
+- ドキュメント (`docs/`, `CLAUDE.md`, `.vcsdd/features/`) は対象外。
+
+---
+
+## Sprint 5 Edge Case Catalog 追補
+
+| EC-ID | 条件 | 期待動作 |
+|-------|------|----------|
+| EC-FEED-016 (Sprint 5) | `editing_session_state_changed` 受信時に `blocks` が absent / empty | FeedRow 側で UUID v4 発番の空 paragraph 1 件を fallback として採用し `dispatchFocusBlock` を発火 (REQ-FEED-031) |
+| EC-FEED-018 | `editingNoteId` が `visibleNoteIds` から filter で除外された | 対応する FeedRow が unmount し block primitive も破棄。Rust 側 capture state は変更されないため、filter 解除で再 mount 時に直前の blocks が再描画される |
+| EC-FEED-019 | 同一 note への二重クリック (race) | 1 回目の click が emit する `editing_session_state_changed` を待つ間に 2 回目 click 発火: `feedReducer` の REQ-FEED-006 ガード (`editingStatus ∈ {'saving','switching'}` のクリック抑止) で no-op (Sprint 1 既存の挙動を継承) |
+| EC-FEED-020 | `editing_session_state_changed` ハンドラが mount 直後に到達 | `+page.svelte` の `$effect` 内で listener 登録が完了する前に Rust が emit したケース。Tauri の listen 登録が `await` 解決前であれば payload は loss する。許容 (Tauri の標準仕様)、次の emit で復旧する |
+
+> **Note (EC-FEED-016 Sprint 5 amendment と Sprint 4 amendment の関係)**:
+> Sprint 4 amendment では「EditorPane 側が空 paragraph fallback を担当」と記述していた。
+> Sprint 5 amendment は EditorPane 廃止に伴い同責務を `FeedRow` に移管する。
+> 旧定義は **superseded by REQ-FEED-031** とし、本表の EC-FEED-016 (Sprint 5) 行を最新定義として参照すること。
+
+---
+
+## Sprint 5 Traceability 追補
+
+| REQ-ID | 参照ドキュメント |
+|--------|----------------|
+| REQ-FEED-028 | `docs/tasks/block-based-ui-spec-migration.md` §コード移行方針 / §アーキテクチャ判断, `docs/domain/bounded-contexts.md` §Capture Context |
+| REQ-FEED-029 | `block-based-ui-spec-migration.md` Step 2 (2項目), `editor.rs::make_editing_state_changed_payload`, `ui-block-editor` REQ-BE-026 |
+| REQ-FEED-030 | `ui-block-editor` REQ-BE-001/002/003/006/009/013/015/026, `block-based-ui-spec-migration.md` Step 2 (1項目) |
+| REQ-FEED-031 | `block-based-ui-spec-migration.md` Step 2 (3項目), `docs/domain/aggregates.md` §Note 不変条件 (最低 1 ブロック保持), `ui-block-editor` REQ-BE-001 |
+| REQ-FEED-032 | `block-based-ui-spec-migration.md` Step 2 (4項目), 既存 EC-FEED-017 / REQ-FEED-024 Sprint 4 amendment |
+| REQ-FEED-033 | `block-based-ui-spec-migration.md` §削除対象, `ui-block-editor` REQ-BE-027 |

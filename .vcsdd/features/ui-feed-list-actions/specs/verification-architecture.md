@@ -676,4 +676,98 @@ Sprint 3 tests `test_select_past_note_editing_payload_contains_body` must be **r
 | REQ-FEED-025 | PROP-FEED-S4-001, PROP-FEED-S4-002, PROP-FEED-S4-003, PROP-FEED-S4-004, PROP-FEED-S4-016 | 0 + 1 | cargo test, grep, vitest snapshot |
 | REQ-FEED-026 | PROP-FEED-S4-005, PROP-FEED-S4-006, PROP-FEED-S4-007, PROP-FEED-S4-008, PROP-FEED-S4-015 | 0 + 2 + Integration | tsc, grep, fast-check, vitest+jsdom |
 | REQ-FEED-027 | PROP-FEED-S4-009, PROP-FEED-S4-010, PROP-FEED-S4-011 | 0 + 1 | grep, cargo test, tsc |
+
+---
+
+## 14. Sprint 5 Verification Extensions
+
+> **Sprint**: 5
+> **Scope**: EditorPane 廃止 + in-place 編集モデル移行 — 単一カラム化 (REQ-FEED-028)、`editing_session_state_changed` の購読再配線 (REQ-FEED-029)、`FeedRow` への BlockElement 群埋め込み (REQ-FEED-030)、`FeedRow` 側の空 paragraph fallback (REQ-FEED-031)、emit 順序保証の維持 (REQ-FEED-032)、回帰防止のための旧 EditorPane 識別子禁止 (REQ-FEED-033)。
+> **既存 §1〜§13 は不変**。本 Sprint 5 は新規 PROP として追加する。
+
+### Sprint 5 Purity Boundary Notes
+
+§1 の canonical purity-audit grep pattern は **変更なし**。Sprint 5 で追加される pure helper は `feedRowPredicates.ts` に `needsEmptyParagraphFallback(blocks): boolean` を追加するのみ（純粋関数、`Date.now() / crypto / Math.random` を使わない判定式）。UUID 生成は **必ず effectful shell** (`FeedRow.svelte` の `$effect` 内) で `crypto.randomUUID()` を呼ぶ。
+
+§2 Purity Boundary Map の追加:
+
+| Module | 主な exports | 区分 | 根拠 |
+|--------|-------------|------|------|
+| `feedRowPredicates.ts` (Sprint 5 追加) | `needsEmptyParagraphFallback(blocks: ReadonlyArray<DtoBlock> \| null \| undefined): boolean` | Pure | 入力のみに依存。`blocks == null \|\| blocks.length === 0` の boolean 判定。 |
+| `editingSessionChannel.ts` (Sprint 5 新規) または `feedStateChannel.ts` 拡張 | `subscribeEditingSessionState(handler): () => void` | Effectful (INBOUND only) | Tauri `listen` ラッパー。dispatch しない (PROP-FEED-S5-007 で boundary audit)。 |
+| `FeedRow.svelte` (Sprint 5 拡張) | (component) | Effectful | `crypto.randomUUID()` 呼び出し、BlockElement 群の mount、BlockEditorAdapter 呼び出し |
+
+### Sprint 5 Proof Obligations
+
+| PROP-ID | REQ-ID | Description | Tier | Tool | Required | Pure/Shell |
+|---------|--------|-------------|------|------|----------|-----------|
+| PROP-FEED-S5-001 | REQ-FEED-028 | `+page.svelte` ソースに `EditorPanel` / `editorStateChannel` / `tauriEditorAdapter` / `editor-main` / `feed-sidebar` / `grid-template-columns` の grep が **0 ヒット**。実行コマンド: `grep -nE 'EditorPanel\|editorStateChannel\|tauriEditorAdapter\|editor-main\|feed-sidebar\|grid-template-columns' promptnotes/src/routes/+page.svelte` | 0 | grep audit | true | boundary |
+| PROP-FEED-S5-002 | REQ-FEED-028 | DOM integration: `+page.svelte` mount 後、`<main class="feed-main">` の子要素に `<FeedList>` が存在し、`EditorPanel`/`editor-main` は存在しない。`feed-main` の `getBoundingClientRect().height` が viewport の `100vh` に一致する。 | Integration | vitest + jsdom + Svelte 5 mount | false | shell — `main-route.dom.vitest.ts` |
+| PROP-FEED-S5-003 | REQ-FEED-029 | `src/lib/feed/` 以下に `listen('editing_session_state_changed', ...)` を呼ぶ module が **1 つ以上存在**し、`src/routes/` または `src/lib/feed/` の component で当該 subscriber が mount/unmount lifecycle で呼ばれている。実行コマンド: `grep -nrE "listen\\(['\\\"]editing_session_state_changed['\\\"]" promptnotes/src/lib/feed/ promptnotes/src/routes/` — **1 行以上**を assertion とする。 | 0 + 1 | grep + lifecycle test | true | boundary |
+| PROP-FEED-S5-004 | REQ-FEED-029 | 旧 `editorStateChannel` の subscriber registration が production code (`src/lib/feed/`, `src/routes/`) に存在しない。実行コマンド: `grep -rnE "\\beditorStateChannel\\b" promptnotes/src/lib/feed/ promptnotes/src/routes/+page.svelte --include='*.ts' --include='*.svelte' \| grep -vE '/__tests__/\|\\.test\\.\|\\.vitest\\.\|^\\s*(//\|\\*\|/\\*)'` — 0 ヒット。 | 0 | grep audit | true | boundary |
+| PROP-FEED-S5-005 | REQ-FEED-029 | DOM integration: mock emitter で `editing_session_state_changed` を emit したとき、`+page.svelte` または `FeedList` が `editingSessionState` を同期的に更新し、続く `feed_state_changed` の `feedReducer.DomainSnapshotReceived` が処理される時点で常に最新の `editingSessionState` がローカルに到達済みである。 | Integration | vitest + jsdom + mock emitter | false | shell — `feed-list-editing-channel.dom.vitest.ts` (新規) |
+| PROP-FEED-S5-006 | REQ-FEED-030 | DOM integration: `editingNoteId === self.noteId` のとき `FeedRow` 内に `data-testid="block-element"` が `blocks.length` 個存在し、`editingNoteId !== self.noteId` のとき 0 個。 | Integration | vitest + jsdom + Svelte 5 mount | false | shell — `feed-row-block-embed.dom.vitest.ts` (新規) |
+| PROP-FEED-S5-007 | REQ-FEED-030 | DOM integration: `editingStatus === 'save-failed'` かつ `editingNoteId === self.noteId` のとき当該行内に `data-testid="save-failure-banner"` が存在する。他行には存在しない。 | Integration | vitest + jsdom + Svelte 5 mount | false | shell — `feed-row-block-embed.dom.vitest.ts` |
+| PROP-FEED-S5-008 | REQ-FEED-030 | DOM integration: 編集中行の `BlockElement` 上での文字入力で mock `BlockEditorAdapter.dispatchEditBlockContent` が呼ばれる (ui-block-editor REQ-BE-003 の振る舞い継承確認)。 | Integration | vitest + jsdom + Svelte 5 mount + mock adapter | false | shell — `feed-row-block-embed.dom.vitest.ts` |
+| PROP-FEED-S5-009 | REQ-FEED-031 | `needsEmptyParagraphFallback(blocks)` 純粋関数 totality — `null`, `undefined`, `[]` で `true`、`[block, ...]` で `false`。fast-check で全 `ReadonlyArray<DtoBlock> \| null \| undefined` を網羅。 | 2 | fast-check | true | pure |
+| PROP-FEED-S5-010 | REQ-FEED-031 | DOM integration: `editingSessionState.blocks === undefined` のとき `FeedRow` 内に `data-testid="block-element"` が **1 個** 存在し、`data-block-type === 'paragraph'`、`textContent === ''`、`id` が UUID v4 形式 (`/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i`)。 | Integration | vitest + jsdom + Svelte 5 mount | false | shell — `feed-row-empty-fallback.dom.vitest.ts` (新規) |
+| PROP-FEED-S5-011 | REQ-FEED-031 | DOM integration: fallback 適用後、mock `BlockEditorAdapter.dispatchFocusBlock({ noteId, blockId })` が **1 回** 呼ばれる (`blockId` は fallback 生成 UUID と一致)。同一 `editingNoteId` への二度目の mount で fallback が **2 回連続発火しない** (idempotency)。 | Integration | vitest + jsdom + mock adapter | false | shell — `feed-row-empty-fallback.dom.vitest.ts` |
+| PROP-FEED-S5-012 | REQ-FEED-032 | grep audit: `editing_session_state_changed` ハンドラ (上記 PROP-FEED-S5-003 で識別された箇所) の同期実行確認 — ハンドラ関数 body 内に `await` / `Promise.then` / `setTimeout` / `queueMicrotask` を含まない (再現性の高い同期更新を保証)。 | 0 | grep audit | true | boundary |
+| PROP-FEED-S5-013 | REQ-FEED-032 | 既存 PROP-FEED-S4-008 (Sprint 4 で確立した emit 順序検証) の **継承確認** — Sprint 5 で `editor.rs::make_editing_state_changed_payload` および `feed.rs::select_past_note` の emit 順序が変更されていないこと。実行コマンド: `bash promptnotes/src-tauri/tests/wire_audit.sh` および対応する cargo test が PASS。 | 1 | cargo test + wire_audit | true | shell |
+| PROP-FEED-S5-014 | REQ-FEED-033 | 回帰防止 grep audit — production code (test/comment 除く) に `EditorPanel\|editorStateChannel\|tauriEditorAdapter\|editorReducer\|editorPredicates\|EditorViewState\|EditorAction\|EditorCommand\|EditorIpcAdapter` のいずれも存在しない。実行コマンド: `grep -rnE '\b(EditorPanel\|editorStateChannel\|tauriEditorAdapter\|editorReducer\|editorPredicates\|EditorViewState\|EditorAction\|EditorCommand\|EditorIpcAdapter)\b' promptnotes/src/lib/feed/ promptnotes/src/routes/+page.svelte promptnotes/src/lib/block-editor/ --include='*.ts' --include='*.svelte' \| grep -vE '/__tests__/\|\.test\.\|\.vitest\.\|^\s*(//\|\*\|/\*)'` — 0 ヒット。 | 0 | grep audit | true | boundary |
+| PROP-FEED-S5-015 | REQ-FEED-033 | filesystem check: `promptnotes/src/lib/editor/` ディレクトリが存在しない。実行コマンド: `! test -d promptnotes/src/lib/editor` (exit 0)。 | 0 | filesystem | true | boundary |
+
+> **Sprint 5 deferral note**:
+> Sprint 4 で deferral された PROP-FEED-S4-016 fast-check parser parity および EC-FEED-017 の Mock Emitter 自動テスト (sprint-4 state.json `openDeferrals`) は **PROP-FEED-S5-005** および **PROP-FEED-S5-013** で部分的に解消されるが、**fast-check 全 markdown 任意入力 parity** は本 Sprint 5 でもさらに deferral する（block-aware 編集パイプラインの本実装に焦点を当てるため）。Sprint 6 以降での再評価とする。
+
+### Sprint 5 Test Strategy
+
+**TS Files affected (新規 + 変更)**:
+
+| ファイル | 種別 | PROP |
+|---------|------|------|
+| `promptnotes/src/lib/feed/__tests__/feedRowPredicates.property.test.ts` (Sprint 5 追加) | fast-check | PROP-FEED-S5-009 |
+| `promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts` (Sprint 5 追加) | vitest unit | PROP-FEED-S5-009 (example-based) |
+| `promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts` (新規) | vitest + jsdom | PROP-FEED-S5-006, S5-007, S5-008 |
+| `promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts` (新規) | vitest + jsdom | PROP-FEED-S5-010, S5-011 |
+| `promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts` (新規) | vitest + jsdom + mock emitter | PROP-FEED-S5-005 |
+| `promptnotes/src/routes/__tests__/main-route.dom.vitest.ts` (Sprint 5 拡張) | vitest + jsdom | PROP-FEED-S5-002 |
+| CI grep audit script / `Makefile` (Sprint 5 拡張) | grep | PROP-FEED-S5-001, S5-003, S5-004, S5-012, S5-014, S5-015 |
+| `promptnotes/src-tauri/tests/wire_audit.sh` (Sprint 4 既存) | bash audit | PROP-FEED-S5-013 |
+
+**実装新規 modules / 拡張対象**:
+
+| モジュール | 種別 | 主たる責務 |
+|-----------|------|----------|
+| `src/lib/feed/editingSessionChannel.ts` (新規) | Effectful shell | `editing_session_state_changed` の `listen()` 購読 |
+| `src/lib/feed/feedRowPredicates.ts` (Sprint 5 追加 export) | Pure | `needsEmptyParagraphFallback` |
+| `src/lib/feed/FeedList.svelte` (拡張) | Component | `editingSessionState` を保持、対応 FeedRow に props 伝播 |
+| `src/lib/feed/FeedRow.svelte` (拡張) | Component | `BlockElement[]` mount, fallback 適用, BlockEditorAdapter 経由 dispatch |
+| `src/lib/block-editor/createBlockEditorAdapter.ts` (新規 想定) | Effectful shell | 16 dispatch メソッドを Tauri `invoke` で実装 |
+| `src/routes/+page.svelte` (拡張) | Component | `BlockEditorAdapter` を生成し `FeedList` に注入 |
+
+> 注: `createBlockEditorAdapter` のシグネチャは `ui-block-editor` REQ-BE-026 の `BlockEditorAdapter` 型に準拠する。本 Sprint 5 spec は経路のみを規定し、factory の細部は Phase 2b 実装で確定する。
+
+### Sprint 5 Coverage Matrix Additions
+
+| ID | PROP-FEED-S5-XXX | Tier | Test path |
+|----|-----------------|------|-----------|
+| REQ-FEED-028 | PROP-FEED-S5-001, PROP-FEED-S5-002 | 0 + Integration | grep, `main-route.dom.vitest.ts` |
+| REQ-FEED-029 | PROP-FEED-S5-003, PROP-FEED-S5-004, PROP-FEED-S5-005 | 0 + Integration | grep, `feed-list-editing-channel.dom.vitest.ts` |
+| REQ-FEED-030 | PROP-FEED-S5-006, PROP-FEED-S5-007, PROP-FEED-S5-008 | Integration | `feed-row-block-embed.dom.vitest.ts` |
+| REQ-FEED-031 | PROP-FEED-S5-009, PROP-FEED-S5-010, PROP-FEED-S5-011 | 2 + Integration | `feedRowPredicates.property.test.ts`, `feed-row-empty-fallback.dom.vitest.ts` |
+| REQ-FEED-032 | PROP-FEED-S5-012, PROP-FEED-S5-013 | 0 + 1 | grep, cargo test + `wire_audit.sh` |
+| REQ-FEED-033 | PROP-FEED-S5-014, PROP-FEED-S5-015 | 0 | grep, filesystem check |
+
+### Sprint 5 Phase 2 / Phase 5 Gates
+
+**Phase 2 gate (Red phase entry)**:
+- `Required: true` の全 PROP-FEED-S5-XXX に対応する failing test (TS pure, integration tests, grep gates) が存在する。grep gates は Phase 2a 時点で**必ず fail する**新規拡張テストとして追加される (例: 拡張前のソースに対して grep でヒットが出ない / fallback 未実装で integration test fail 等)。
+- regression baseline (Sprint 1〜4 の全テスト) が green。
+
+**Phase 5 gate (formal hardening)**:
+- pure modules の branch coverage ≥ 95% (新規 `needsEmptyParagraphFallback` を含む)。
+- `Required: true` の全 PROP-FEED-S5-XXX が PASS。
+- `Required: false` の integration tests が PASS。
+- `wire_audit.sh` PASS (Sprint 4 emit 順序が変更されていないことの確認)。
 | REQ-FEED-024 (S4) | PROP-FEED-S4-012, PROP-FEED-S4-013, PROP-FEED-S4-014 | 1 | cargo test (unit, AppHandle-free) |
