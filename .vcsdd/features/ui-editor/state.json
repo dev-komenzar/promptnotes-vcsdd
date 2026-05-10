@@ -4172,12 +4172,22 @@
       "reviewedBy": "orchestrator",
       "iteration": 1,
       "details": "Sprint 8 4-dimensional convergence achieved: finding diminishment, finding specificity, criteria coverage, duplicate detection — all PASS. Phase 5 hardening 22/22 required PROPs PASS. 0 critical / 0 major open findings; 2 minor (FIND-095, FIND-096) deferred per §15.4."
+    },
+    "deprecation": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-09T10:32:25.472Z",
+      "reviewedBy": "human",
+      "details": {
+        "kind": "feature-deprecation",
+        "supersededBy": "ui-block-editor",
+        "reason": "Superseded by ui-block-editor. EditorPane architecture abolished in block-based-ui-spec-migration.",
+        "deprecatedAt": "2026-05-09T10:32:25.472Z",
+        "indexStatus": "abandoned",
+        "task": "docs/tasks/block-based-ui-spec-migration.md (旧 ui-editor feature の処理)"
+      }
     }
   },
   "sprintCount": 8,
   "createdAt": "2026-05-03T22:48:00.742Z",
-  "updatedAt": "2026-05-09T07:45:00Z",
-  "deprecatedAt": "2026-05-09T10:32:25.472Z",
-  "deprecationReason": "Superseded by ui-block-editor. EditorPane architecture abolished in block-based-ui-spec-migration.",
-  "supersededBy": "ui-block-editor"
+  "updatedAt": "2026-05-10T08:15:00Z"
 }

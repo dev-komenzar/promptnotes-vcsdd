@@ -82,15 +82,12 @@
       "updatedAt": "2026-05-03T15:51:03.312Z"
     },
     "ui-editor": {
-      "status": "deprecated",
+      "status": "abandoned",
       "createdAt": "2026-05-03T22:48:00.742Z",
       "mode": "strict",
-      "language": "rust",
+      "language": "typescript",
       "currentPhase": "complete",
-      "updatedAt": "2026-05-09T07:45:00Z",
-      "deprecatedAt": "2026-05-09T10:32:25.472Z",
-      "deprecationReason": "Superseded by ui-block-editor. EditorPane architecture abolished in block-based-ui-spec-migration.",
-      "supersededBy": "ui-block-editor"
+      "updatedAt": "2026-05-10T08:15:00Z"
     },
     "ui-feed-list-actions": {
       "status": "active",
