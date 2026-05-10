@@ -684,3 +684,4 @@
 {"feature": "ui-feed-list-actions", "from": "1a", "to": "1b", "timestamp": "2026-05-10T09:34:30.000Z", "sprint": 6}
 {"feature": "ui-feed-list-actions", "from": "1b", "to": "1c", "timestamp": "2026-05-10T09:36:08.000Z", "sprint": 6}
 {"feature": "ui-feed-list-actions", "from": "1c", "to": "2a", "timestamp": "2026-05-10T10:23:57.000Z", "sprint": 6, "gateVerdict": "PASS"}
+{"feature": "ui-feed-list-actions", "from": "2a", "to": "2b", "timestamp": "2026-05-10T10:35:45.000Z", "sprint": 6}

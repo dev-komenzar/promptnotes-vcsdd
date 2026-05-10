@@ -21,6 +21,10 @@ export default defineConfig({
     // `.vitest.ts` は bun の検索範囲外。
     include: [
       "src/lib/**/__tests__/dom/**/*.vitest.ts",
+      // Sprint 6: DOM-backed property tests live in __tests__/dom/ and require
+      // jsdom; they use .property.test.ts suffix to distinguish from bun:test
+      // pure property tests while still being picked up by vitest.
+      "src/lib/**/__tests__/dom/**/*.property.test.ts",
       "src/routes/__tests__/**/*.vitest.ts",
     ],
     setupFiles: ["./src/lib/__tests__/setup/vitest-setup.ts"],

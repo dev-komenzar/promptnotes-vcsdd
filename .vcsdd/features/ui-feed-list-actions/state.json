@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -599,6 +599,13 @@
       "to": "2a",
       "timestamp": "2026-05-10T10:23:57.000Z",
       "reason": "Sprint 6 Phase 1c PASS at iter-7 — 5/5 dimensions PASS, 0 HIGH, 0 MED, 2 LOW non-blocking. Spec ready for TDD red phase.",
+      "sprint": 6
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-10T10:35:45.000Z",
+      "reason": "Sprint 6 Phase 2a (Red phase) complete — PROP-FEED-S6-001 + S6-002 FAIL as required, regression baseline (1909 bun + 237 vitest) green",
       "sprint": 6
     }
   ],
@@ -2519,5 +2526,5 @@
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T10:23:57.000Z"
+  "updatedAt": "2026-05-10T10:35:45.000Z"
 }

@@ -40,9 +40,9 @@ criteria:
     passThreshold: bun test ≥ 1909 PASS AND vitest run = 223 + Sprint 6 新規分 PASS (regression check) AND `git diff vcsdd/ui-feed-list-actions/sprint-4-baseline..HEAD -- src-tauri/src/{editor,feed}.rs` の grep `^[+-].*emit\(.(editing_session_state_changed|feed_state_changed).` が exit 1。
   - id: CRIT-304
     dimension: verification_readiness
-    description: 1 ファイル制約 — Sprint 6 の git diff は `promptnotes/src/lib/feed/FeedRow.svelte` および `.vcsdd/features/ui-feed-list-actions/{specs,contracts,reviews,evidence,verification,state.json}` 配下の変更 + 新規テストファイル (`promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.{dom.vitest,property.test}.ts`、`promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts`、test wrapper Svelte component が必要なら `__tests__/dom/_helpers/` 配下) のみ。`+page.svelte` / `FeedList.svelte` / `feedReducer.ts` / `tauriFeedAdapter.ts` / `editingSessionChannel.ts` / `createBlockEditorAdapter.ts` / `src-tauri/src/*.rs` は変更しない。
+    description: 1 ファイル制約 — Sprint 6 の git diff は (a) production 変更: `promptnotes/src/lib/feed/FeedRow.svelte` のみ; (b) VCSDD artifacts: `.vcsdd/features/ui-feed-list-actions/{specs,contracts,reviews,evidence,verification,state.json}` 配下; (c) 新規テストファイル: `promptnotes/src/lib/feed/__tests__/dom/feed-row-preview-exclusivity.{dom.vitest,property.test}.ts`、`promptnotes/src/lib/feed/__tests__/dom/feed-row-click-routing.dom.vitest.ts`、`promptnotes/src/lib/feed/__tests__/dom/_helpers/FeedRowSprint6PropertyWrapper.svelte`; (d) **test infrastructure config**: `promptnotes/vitest.config.ts` (DOM-backed property test の include pattern 追加) および `promptnotes/bunfig.toml` (bun test から jsdom-backed file を除外する pathIgnorePatterns) — これらは production behavior に影響せず Sprint 6 新規テストの実行に必要な設定。`+page.svelte` / `FeedList.svelte` / `feedReducer.ts` / `tauriFeedAdapter.ts` / `editingSessionChannel.ts` / `createBlockEditorAdapter.ts` / `src-tauri/src/*.rs` は変更しない。
     weight: 0.10
-    passThreshold: `git diff main..HEAD --name-only` で許容ファイルセット以外のヒットが無い (Phase 3 manual audit)。
+    passThreshold: `git diff main..HEAD --name-only` で許容ファイルセット (上記 a-d) 以外のヒットが無い (Phase 3 manual audit)。
 gates:
   phase2: |
     Red phase (Phase 2a) entry — TDD invariant clarification (FIND-S6-SPEC-006 / FIND-S6-SPEC-011 / FIND-S6-SPEC-iter2-002 解消):

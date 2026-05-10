@@ -1,0 +1,8 @@
+[test]
+# Exclude jsdom-backed tests from bun test discovery.
+# Files in __tests__/dom/ require vitest+jsdom and use either .vitest.ts or
+# .property.test.ts extensions.  bun:test auto-discovers *.test.ts but has no
+# DOM environment, so DOM tests must run via `bun run test:dom` (vitest) only.
+# Sprint 6 adds feed-row-preview-exclusivity.property.test.ts (DOM-backed
+# fast-check) in __tests__/dom/ — this exclusion keeps bun baseline clean.
+pathIgnorePatterns = ["**/src/**/__tests__/dom/**"]
