@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "5",
+  "currentPhase": "6",
   "phaseHistory": [
     {
       "from": "init",
@@ -84,7 +84,7 @@
       "from": "6",
       "to": "complete",
       "timestamp": "2026-05-04T15:14:34.541Z",
-      "reason": "Phase 6 PASS: four-dimensional convergence achieved \u2014 finding diminishment 14\u21921\u21920, all 10 CRIT evaluated, 0 duplicate findings, UI mount bug found and fixed, 1475 bun + 188 vitest tests pass",
+      "reason": "Phase 6 PASS: four-dimensional convergence achieved — finding diminishment 14→1→0, all 10 CRIT evaluated, 0 duplicate findings, UI mount bug found and fixed, 1475 bun + 188 vitest tests pass",
       "sprint": 1
     },
     {
@@ -106,7 +106,7 @@
       "from": "1b",
       "to": "1c",
       "timestamp": "2026-05-05T01:00:01.000Z",
-      "reason": "Sprint 2 verification-architecture patch: \u00a711 Sprint 2 extensions appended",
+      "reason": "Sprint 2 verification-architecture patch: §11 Sprint 2 extensions appended",
       "sprint": 2
     },
     {
@@ -155,14 +155,14 @@
       "from": "6",
       "to": "complete",
       "timestamp": "2026-05-05T01:19:54.916Z",
-      "reason": "Phase 6 Sprint 2 PASS: four-dimensional convergence achieved \u2014 Sprint 2 finding diminishment 7->4 (critical+high=0), all CRIT-100..106 evaluated, 26 adversary-finding beads registered + resolved (FIND-S2-08/09/10/11 accepted as deferred tradeoffs), vertical slice complete (6 Rust handlers + AppShell two-column layout + bun run tauri dev confirmed)",
+      "reason": "Phase 6 Sprint 2 PASS: four-dimensional convergence achieved — Sprint 2 finding diminishment 7->4 (critical+high=0), all CRIT-100..106 evaluated, 26 adversary-finding beads registered + resolved (FIND-S2-08/09/10/11 accepted as deferred tradeoffs), vertical slice complete (6 Rust handlers + AppShell two-column layout + bun run tauri dev confirmed)",
       "sprint": 2
     },
     {
       "from": "complete",
       "to": "1a",
       "timestamp": "2026-05-05T05:00:00.000Z",
-      "reason": "Sprint 3: bug fix \u2014 select_past_note does not emit editing_session_state_changed, so past note selection doesn't reflect in editor. Add REQ-FEED-024 + PROP-FEED-S2-008 + 3 Rust tests + fix feed.rs",
+      "reason": "Sprint 3: bug fix — select_past_note does not emit editing_session_state_changed, so past note selection doesn't reflect in editor. Add REQ-FEED-024 + PROP-FEED-S2-008 + 3 Rust tests + fix feed.rs",
       "sprint": 2,
       "nextSprintHint": 3
     },
@@ -177,7 +177,7 @@
       "from": "1b",
       "to": "1c",
       "timestamp": "2026-05-05T05:02:00.000Z",
-      "reason": "Sprint 3 verification-architecture patch: \u00a712 Sprint 3 extensions appended",
+      "reason": "Sprint 3 verification-architecture patch: §12 Sprint 3 extensions appended",
       "sprint": 3
     },
     {
@@ -213,7 +213,7 @@
       "from": "2a",
       "to": "2b",
       "timestamp": "2026-05-05T05:10:00.000Z",
-      "reason": "Red phase: 3 new Rust tests added (test_select_past_note_*). Tests verify body extraction + payload construction. Integration wiring (select_past_note \u2192 editing_session_state_changed emit) still missing \u2014 Green phase fix needed.",
+      "reason": "Red phase: 3 new Rust tests added (test_select_past_note_*). Tests verify body extraction + payload construction. Integration wiring (select_past_note → editing_session_state_changed emit) still missing — Green phase fix needed.",
       "sprint": 3
     },
     {
@@ -227,7 +227,7 @@
       "from": "2c",
       "to": "3",
       "timestamp": "2026-05-05T05:12:00.000Z",
-      "reason": "Refactor: no duplication \u2014 make_editing_state_changed_payload reused from editor.rs. All 26 tests remain green. cargo check clean.",
+      "reason": "Refactor: no duplication — make_editing_state_changed_payload reused from editor.rs. All 26 tests remain green. cargo check clean.",
       "sprint": 3
     },
     {
@@ -248,14 +248,14 @@
       "from": "6",
       "to": "complete",
       "timestamp": "2026-05-05T05:15:00.000Z",
-      "reason": "Phase 6 PASS: 4D convergence achieved. Finding diminishment 9\u21920 (all resolved), all 9 file paths valid, all criteria evaluated, 0 duplicates, 45 cargo + 1475 bun tests PASS. Sprint 3 complete.",
+      "reason": "Phase 6 PASS: 4D convergence achieved. Finding diminishment 9→0 (all resolved), all 9 file paths valid, all criteria evaluated, 0 duplicates, 45 cargo + 1475 bun tests PASS. Sprint 3 complete.",
       "sprint": 3
     },
     {
       "from": "complete",
       "to": "1a",
       "timestamp": "2026-05-09T08:00:00.000Z",
-      "reason": "Sprint 4: block migration spec patch \u2014 REQ-FEED-002/009/024 \u3092 block-aware \u306b\u66f8\u304d\u76f4\u3057 (per docs/tasks/block-migration-spec-impact.md \u00a7ui-feed-list-actions)\u3002Option B (ui-editor sprint-8) \u3067 Rust DTO \u304c 5-arm tagged union \u306b migrate \u6e08\u307f\u3067\u3042\u308b\u3053\u3068\u3092\u524d\u63d0\u3068\u3059\u308b",
+      "reason": "Sprint 4: block migration spec patch — REQ-FEED-002/009/024 を block-aware に書き直し (per docs/tasks/block-migration-spec-impact.md §ui-feed-list-actions)。Option B (ui-editor sprint-8) で Rust DTO が 5-arm tagged union に migrate 済みであることを前提とする",
       "sprint": 3,
       "nextSprintHint": 4
     },
@@ -278,7 +278,7 @@
       "from": "1b",
       "to": "1c",
       "timestamp": "2026-05-09T09:00:00.000Z",
-      "reason": "Sprint 4 iter-2 verification-architecture fix: \u00a713 + \u00a79 amendments + PROP-FEED-S4-016 added",
+      "reason": "Sprint 4 iter-2 verification-architecture fix: §13 + §9 amendments + PROP-FEED-S4-016 added",
       "sprint": 4
     },
     {
@@ -293,14 +293,14 @@
       "from": "1a",
       "to": "1b",
       "timestamp": "2026-05-09T10:00:00.000Z",
-      "reason": "Sprint 4 iter-3 spec fix: 3 iter-2 findings resolved (FIND-S4-SPEC-iter2-001/002/003). parse_markdown_to_blocks contract strengthened (non-empty), \u30b1\u30fc\u30b9(3) wire\u7981\u6b62",
+      "reason": "Sprint 4 iter-3 spec fix: 3 iter-2 findings resolved (FIND-S4-SPEC-iter2-001/002/003). parse_markdown_to_blocks contract strengthened (non-empty), ケース(3) wire禁止",
       "sprint": 4
     },
     {
       "from": "1b",
       "to": "1c",
       "timestamp": "2026-05-09T10:00:00.000Z",
-      "reason": "Sprint 4 iter-3 verification-architecture fix: PROP-FEED-S4-016 Required\u2192true, \u00a75/\u00a76 amendments",
+      "reason": "Sprint 4 iter-3 verification-architecture fix: PROP-FEED-S4-016 Required→true, §5/§6 amendments",
       "sprint": 4
     },
     {
@@ -316,7 +316,7 @@
       "from": "1c",
       "to": "2a",
       "timestamp": "2026-05-09T11:00:00.000Z",
-      "reason": "Phase 1c sprint-4 PASS (adversary iter-3 PASS + human approved). spec_fidelity PASS, verification_readiness PASS. iter1 11 findings \u2192 0, iter2 3 findings \u2192 0, iter3 0 findings.",
+      "reason": "Phase 1c sprint-4 PASS (adversary iter-3 PASS + human approved). spec_fidelity PASS, verification_readiness PASS. iter1 11 findings → 0, iter2 3 findings → 0, iter3 0 findings.",
       "sprint": 4,
       "iteration": "1c-sprint-4-iter-3"
     },
@@ -345,7 +345,7 @@
       "from": "3",
       "to": "2b",
       "timestamp": "2026-05-09T13:30:00.000Z",
-      "reason": "Phase 3 sprint-4 iter-1 FAIL routing: 3 findings (test_quality only). Need TS parserParity test, real handler integration test, canonical snapshot. Spec/impl PASS \u2014 return to 2b for test additions only.",
+      "reason": "Phase 3 sprint-4 iter-1 FAIL routing: 3 findings (test_quality only). Need TS parserParity test, real handler integration test, canonical snapshot. Spec/impl PASS — return to 2b for test additions only.",
       "sprint": 4,
       "iteration": "3-sprint-4-iter-1"
     },
@@ -390,7 +390,7 @@
       "from": "6",
       "to": "complete",
       "timestamp": "2026-05-09T18:45:00.000Z",
-      "reason": "Phase 6 Sprint 4 PASS: four-dimensional convergence achieved \u2014 Phase 1c finding diminishment 11\u21923\u21920, Phase 3 finding diminishment 3\u21922\u21920 (both monotonically decreasing, critical+high=0 at final iter), all 16 Sprint 4 findings have valid path/line specificity, all 6 recommended block-migration actions addressed (action 5 approved deferred, action 6 substantially covered via compose_select_past_note extraction), 0 duplicate findings, 45/45 beads resolved. Tests: cargo 19 PASS, bun 1964 PASS, vitest 225 PASS.",
+      "reason": "Phase 6 Sprint 4 PASS: four-dimensional convergence achieved — Phase 1c finding diminishment 11→3→0, Phase 3 finding diminishment 3→2→0 (both monotonically decreasing, critical+high=0 at final iter), all 16 Sprint 4 findings have valid path/line specificity, all 6 recommended block-migration actions addressed (action 5 approved deferred, action 6 substantially covered via compose_select_past_note extraction), 0 duplicate findings, 45/45 beads resolved. Tests: cargo 19 PASS, bun 1964 PASS, vitest 225 PASS.",
       "sprint": 4
     },
     {
@@ -412,14 +412,14 @@
       "from": "1b",
       "to": "1c",
       "timestamp": "2026-05-10T00:05:00.000Z",
-      "reason": "Sprint 5 Phase 1b complete: verification-architecture \u00a714 added with PROP-FEED-S5-001..015",
+      "reason": "Sprint 5 Phase 1b complete: verification-architecture §14 added with PROP-FEED-S5-001..015",
       "sprint": 5
     },
     {
       "from": "1c",
       "to": "4",
       "timestamp": "2026-05-10T01:00:00.000Z",
-      "reason": "Sprint 5 Phase 1c iter-1 FAIL: 16 findings (1 critical, 5 high, 8 medium, 2 low) \u2014 routing to Phase 4",
+      "reason": "Sprint 5 Phase 1c iter-1 FAIL: 16 findings (1 critical, 5 high, 8 medium, 2 low) — routing to Phase 4",
       "sprint": 5,
       "iteration": "1c-sprint-5-iter-1"
     },
@@ -427,14 +427,14 @@
       "from": "4",
       "to": "1a",
       "timestamp": "2026-05-10T01:00:00.000Z",
-      "reason": "Phase 4 routing: 8 spec_fidelity findings \u2192 1a (FIND-S5-SPEC-001..008), 8 verification_readiness findings \u2192 1b (FIND-S5-SPEC-009..016). Earliest affected phase = 1a.",
+      "reason": "Phase 4 routing: 8 spec_fidelity findings → 1a (FIND-S5-SPEC-001..008), 8 verification_readiness findings → 1b (FIND-S5-SPEC-009..016). Earliest affected phase = 1a.",
       "sprint": 5
     },
     {
       "from": "1a",
       "to": "1b",
       "timestamp": "2026-05-10T01:30:00.000Z",
-      "reason": "Sprint 5 iter-2 Phase 1a fixes complete (FIND-S5-SPEC-001..008 resolved): 5-arm DTO table, state source-of-truth + 2x2 truth table, fallback ownership + insert\u2192focus dispatch chain, REQ-FEED-029 single-subscription mandate, REQ-FEED-033 delegation note, EC-FEED-016 Sprint 4 amendment neutralized.",
+      "reason": "Sprint 5 iter-2 Phase 1a fixes complete (FIND-S5-SPEC-001..008 resolved): 5-arm DTO table, state source-of-truth + 2x2 truth table, fallback ownership + insert→focus dispatch chain, REQ-FEED-029 single-subscription mandate, REQ-FEED-033 delegation note, EC-FEED-016 Sprint 4 amendment neutralized.",
       "sprint": 5,
       "iteration": "1c-sprint-5-iter-2"
     },
@@ -449,7 +449,7 @@
       "from": "1c",
       "to": "4",
       "timestamp": "2026-05-10T02:30:00.000Z",
-      "reason": "Sprint 5 Phase 1c iter-2 FAIL: 7 new findings introduced (1 critical, 1 high, 3 medium, 2 low) \u2014 routing to Phase 4",
+      "reason": "Sprint 5 Phase 1c iter-2 FAIL: 7 new findings introduced (1 critical, 1 high, 3 medium, 2 low) — routing to Phase 4",
       "sprint": 5,
       "iteration": "1c-sprint-5-iter-2"
     },
@@ -457,21 +457,21 @@
       "from": "4",
       "to": "1a",
       "timestamp": "2026-05-10T02:30:00.000Z",
-      "reason": "Phase 4 routing iter-2: 4 spec_fidelity findings \u2192 1a (FIND-S5-SPEC-iter2-001/003/005/007), 3 verification_readiness findings \u2192 1b (FIND-S5-SPEC-iter2-002/004/006). Earliest = 1a.",
+      "reason": "Phase 4 routing iter-2: 4 spec_fidelity findings → 1a (FIND-S5-SPEC-iter2-001/003/005/007), 3 verification_readiness findings → 1b (FIND-S5-SPEC-iter2-002/004/006). Earliest = 1a.",
       "sprint": 5
     },
     {
       "from": "1a",
       "to": "1b",
       "timestamp": "2026-05-10T03:00:00.000Z",
-      "reason": "Sprint 5 iter-3 Phase 1a fixes: REQ-FEED-031 dispatch made best-effort (Group B Rust handlers Sprint 5 scope-out), REQ-FEED-030 Adapter command-mapping split into Group A (existing) + Group B (deferred) with issuedAt added, fallback restart condition (iii) for undefined\u2192non-empty\u2192undefined, truth table row 2 parenthetical removed, sprint-4-baseline tag created (commit d30ab13).",
+      "reason": "Sprint 5 iter-3 Phase 1a fixes: REQ-FEED-031 dispatch made best-effort (Group B Rust handlers Sprint 5 scope-out), REQ-FEED-030 Adapter command-mapping split into Group A (existing) + Group B (deferred) with issuedAt added, fallback restart condition (iii) for undefined→non-empty→undefined, truth table row 2 parenthetical removed, sprint-4-baseline tag created (commit d30ab13).",
       "sprint": 5
     },
     {
       "from": "1b",
       "to": "1c",
       "timestamp": "2026-05-10T03:00:00.000Z",
-      "reason": "Sprint 5 iter-3 Phase 1b fixes: PROP-FEED-S5-005 spy mechanism (vi.spyOn(feedReducer)), PROP-FEED-S5-011 expanded to 5 scenarios (best-effort + restart on undefined\u2192non\u2192undefined), PROP-FEED-S5-013 baseline tag pinned, PROP-FEED-S5-017 issuedAt grep + Group A/B split, PROP-FEED-S5-022 added (Group B reject acceptance), orphan dangling row deleted.",
+      "reason": "Sprint 5 iter-3 Phase 1b fixes: PROP-FEED-S5-005 spy mechanism (vi.spyOn(feedReducer)), PROP-FEED-S5-011 expanded to 5 scenarios (best-effort + restart on undefined→non→undefined), PROP-FEED-S5-013 baseline tag pinned, PROP-FEED-S5-017 issuedAt grep + Group A/B split, PROP-FEED-S5-022 added (Group B reject acceptance), orphan dangling row deleted.",
       "sprint": 5
     },
     {
@@ -514,7 +514,7 @@
       "from": "4",
       "to": "2b",
       "timestamp": "2026-05-10T06:30:00.000Z",
-      "reason": "Phase 4 routing iter-1: FIND-001 (critical) \u2192 2b production wiring fix; FIND-002 (critical) \u2192 2a wiring test added; FIND-003 (high) \u2192 2a real double-click test; FIND-004 (medium) \u2192 1a spec wording adjustment. Earliest = 1a; routing through 2b after 1a edit.",
+      "reason": "Phase 4 routing iter-1: FIND-001 (critical) → 2b production wiring fix; FIND-002 (critical) → 2a wiring test added; FIND-003 (high) → 2a real double-click test; FIND-004 (medium) → 1a spec wording adjustment. Earliest = 1a; routing through 2b after 1a edit.",
       "sprint": 5
     },
     {
@@ -543,7 +543,7 @@
       "from": "4",
       "to": "1a",
       "timestamp": "2026-05-10T07:30:00.000Z",
-      "reason": "Phase 4 routing iter-2: single spec wording fix (REQ-FEED-031 AC step 1 \u2192 align with new shape).",
+      "reason": "Phase 4 routing iter-2: single spec wording fix (REQ-FEED-031 AC step 1 → align with new shape).",
       "sprint": 5
     },
     {
@@ -557,13 +557,20 @@
       "from": "3",
       "to": "5",
       "timestamp": "2026-05-10T08:00:00.000Z",
-      "reason": "Sprint 5 Phase 3 iter-3 PASS \u2014 all 5 dimensions PASS, 0 findings. Production wiring verified, double-click test made real, spec/code/test consistency reached.",
+      "reason": "Sprint 5 Phase 3 iter-3 PASS — all 5 dimensions PASS, 0 findings. Production wiring verified, double-click test made real, spec/code/test consistency reached.",
+      "sprint": 5
+    },
+    {
+      "from": "5",
+      "to": "6",
+      "timestamp": "2026-05-10T06:51:14.000Z",
+      "reason": "Phase 5 Sprint 5 PASS: all 22 PROP-FEED-S5-001..022 proved (PROP-501..PROP-522), 1909 bun tests PASS, 223 vitest tests PASS, purity/IPC/security audits clean",
       "sprint": 5
     }
   ],
   "iterations": {
     "3": 3,
-    "6": 2,
+    "6": 3,
     "1a": 4,
     "1b": 4,
     "1c": 3,
@@ -886,14 +893,14 @@
       "tier": 0,
       "required": true,
       "status": "proved",
-      "artifact": "[PROP-FEED-S2-003 sprint-2] promptnotes/src-tauri/src/feed.rs::select_past_note \u2014 cargo check passes"
+      "artifact": "[PROP-FEED-S2-003 sprint-2] promptnotes/src-tauri/src/feed.rs::select_past_note — cargo check passes"
     },
     {
       "id": "PROP-103",
       "tier": 0,
       "required": true,
       "status": "proved",
-      "artifact": "[PROP-FEED-S2-004 sprint-2] promptnotes/src-tauri/src/feed.rs::confirm_note_deletion \u2014 cargo check passes"
+      "artifact": "[PROP-FEED-S2-004 sprint-2] promptnotes/src-tauri/src/feed.rs::confirm_note_deletion — cargo check passes"
     },
     {
       "id": "PROP-104",
@@ -946,7 +953,7 @@
       "required": true,
       "status": "proved",
       "sprint": 4,
-      "artifact": "grep audit: fn compose_state_for_select_past_note signature has no body:&str parameter \u2014 confirmed Option<Vec<DtoBlock>> signature"
+      "artifact": "grep audit: fn compose_state_for_select_past_note signature has no body:&str parameter — confirmed Option<Vec<DtoBlock>> signature"
     },
     {
       "id": "PROP-FEED-S4-005",
@@ -1043,6 +1050,160 @@
       "status": "proved",
       "sprint": 4,
       "artifact": "Rust: feed_handlers.rs::prop_s4_016b + prop_s4_016; TS: promptnotes/src/lib/feed/__tests__/parserParity.test.ts (6 tests pass)"
+    },
+    {
+      "id": "PROP-501",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-001: no forbidden identifiers in +page.svelte)"
+    },
+    {
+      "id": "PROP-502",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh + main-route.dom.vitest.ts (PROP-FEED-S5-002)"
+    },
+    {
+      "id": "PROP-503",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-003: exactly 1 listen)"
+    },
+    {
+      "id": "PROP-504",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-004: no editorStateChannel)"
+    },
+    {
+      "id": "PROP-505",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-list-editing-channel.dom.vitest.ts (PROP-FEED-S5-005: emit-ordering)"
+    },
+    {
+      "id": "PROP-506",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-row-block-embed.dom.vitest.ts (PROP-FEED-S5-006: 2x2 truth table)"
+    },
+    {
+      "id": "PROP-507",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-row-block-embed.dom.vitest.ts (PROP-FEED-S5-007: save-failure-banner)"
+    },
+    {
+      "id": "PROP-508",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-row-block-embed.dom.vitest.ts (PROP-FEED-S5-008: dispatchEditBlockContent)"
+    },
+    {
+      "id": "PROP-509",
+      "tier": 2,
+      "required": true,
+      "status": "proved",
+      "artifact": "feedRowPredicates.test.ts lines 297-362 (PROP-FEED-S5-009: fast-check needsEmptyParagraphFallback)"
+    },
+    {
+      "id": "PROP-510",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-row-empty-fallback.dom.vitest.ts (PROP-FEED-S5-010: UUID v4 fallback block)"
+    },
+    {
+      "id": "PROP-511",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-row-empty-fallback.dom.vitest.ts (PROP-FEED-S5-011: 5 scenarios)"
+    },
+    {
+      "id": "PROP-512",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-012: handler async-free)"
+    },
+    {
+      "id": "PROP-513",
+      "tier": 1,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh + git diff sprint-4-baseline (PROP-FEED-S5-013)"
+    },
+    {
+      "id": "PROP-514",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-014: no EditorPane forbidden ids)"
+    },
+    {
+      "id": "PROP-515",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-015: src/lib/editor/ absent)"
+    },
+    {
+      "id": "PROP-516",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "createBlockEditorAdapter.types.test.ts (PROP-FEED-S5-016: return type assignable)"
+    },
+    {
+      "id": "PROP-517",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-017: 16 invokes, issuedAt=34)"
+    },
+    {
+      "id": "PROP-518",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-row-block-embed.dom.vitest.ts (PROP-FEED-S5-018: mount/unmount/remount)"
+    },
+    {
+      "id": "PROP-519",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "FeedRow.dom.vitest.ts lines 840-881 (PROP-FEED-S5-019: double-click race)"
+    },
+    {
+      "id": "PROP-520",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-list-editing-channel.dom.vitest.ts (PROP-FEED-S5-020: handler-late mount)"
+    },
+    {
+      "id": "PROP-521",
+      "tier": 0,
+      "required": true,
+      "status": "proved",
+      "artifact": "promptnotes/scripts/sprint-5-grep-audit.sh (PROP-FEED-S5-021: INBOUND only)"
+    },
+    {
+      "id": "PROP-522",
+      "tier": 3,
+      "required": true,
+      "status": "proved",
+      "artifact": "feed-row-best-effort-dispatch.dom.vitest.ts (PROP-FEED-S5-022: Group B reject acceptance)"
     }
   ],
   "traceability": {
@@ -1698,7 +1859,7 @@
       "details": {
         "iteration": 1,
         "sprint": 2,
-        "scope": "spec patch only \u2014 REQ-FEED-019..023 appended, no scope reduction, no existing REQ changes",
+        "scope": "spec patch only — REQ-FEED-019..023 appended, no scope reduction, no existing REQ changes",
         "approved": "pre-approved by architect for sprint 2 scope extension"
       }
     },
@@ -1724,7 +1885,7 @@
         "iter2Findings": [
           "FIND-S3-006 (low, resolved)"
         ],
-        "scope": "spec patch only \u2014 REQ-FEED-024 appended, no scope reduction"
+        "scope": "spec patch only — REQ-FEED-024 appended, no scope reduction"
       }
     },
     "1c-sprint-4": {
@@ -1839,9 +2000,9 @@
         "cargoTests": "19/19 feed_handlers PASS (113 total Rust)",
         "bunTests": "290/290 feed PASS",
         "vitestTests": "225/225 DOM PASS",
-        "purityAudit": "PASS \u2014 0 hits on pure modules",
-        "securityAudit": "PASS \u2014 no XSS, no panic vectors, no new deps",
-        "regressionCheck": "PASS \u2014 Sprint 1/2/3 baselines intact"
+        "purityAudit": "PASS — 0 hits on pure modules",
+        "securityAudit": "PASS — no XSS, no panic vectors, no new deps",
+        "regressionCheck": "PASS — Sprint 1/2/3 baselines intact"
       }
     },
     "3-sprint-4": {
@@ -1975,7 +2136,7 @@
           "resolved": 45,
           "open": 0
         },
-        "tauriDevMount": "SKIPPED (headless env \u2014 fallback: Sprint 2 baseline cargo build clean + Vite HTTP 200 on record)",
+        "tauriDevMount": "SKIPPED (headless env — fallback: Sprint 2 baseline cargo build clean + Vite HTTP 200 on record)",
         "formalHardeningArtifacts": {
           "verificationReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/verification-report.md",
           "securityReport": ".vcsdd/features/ui-feed-list-actions/verification/sprint-4/security-report.md",
@@ -2063,7 +2224,7 @@
             "whisperBorder": "line 144: #e9e9e7",
             "warmNeutral": "line 145: #f7f7f5"
           },
-          "tauriDevMount": "PASS \u2014 Rust PID 686487 + Vite HTTP 200 + 4 DOM tests",
+          "tauriDevMount": "PASS — Rust PID 686487 + Vite HTTP 200 + 4 DOM tests",
           "combinedTests": "cargo:27, bun:1475, vitest:195"
         },
         "formalHardeningArtifacts": {
@@ -2126,7 +2287,7 @@
             "verdict": "PASS",
             "allCriteriaEvaluated": true,
             "evaluatedCriteria": [
-              "REQ-FEED-024 acceptance criteria \u00d7 3"
+              "REQ-FEED-024 acceptance criteria × 3"
             ]
           },
           "duplicateDetection": {
@@ -2204,9 +2365,24 @@
         "criticalFindingCount": 0,
         "allCRITsPassed": true
       }
+    },
+    "5-sprint-5": {
+      "verdict": "PASS",
+      "timestamp": "2026-05-10T06:51:14.000Z",
+      "reviewedBy": "verifier",
+      "details": {
+        "requiredObligations": 22,
+        "proved": 22,
+        "failed": 0,
+        "skipped": 0,
+        "bunTests": "1909/1909",
+        "vitestTests": "223/223",
+        "grepAudit": "10/10 PASS",
+        "rustDiffBaseline": "empty diff (exit 0)"
+      }
     }
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T08:00:00.000Z"
+  "updatedAt": "2026-05-10T06:51:14.000Z"
 }

@@ -1,0 +1,51 @@
+
+=== PROP-IPC-012: emit call sites preceded by make_editing_state_changed_payload ===
+  OK  [/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:568] emit preceded by make_editing_state_changed_payload
+  OK  [/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:643] emit preceded by make_editing_state_changed_payload
+  OK  [/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:658] emit preceded by make_editing_state_changed_payload
+  OK  [/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:711] emit preceded by make_editing_state_changed_payload
+  ERR [/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/feed.rs:312] emit NOT preceded by make_editing_state_changed_payload within 5 lines
+      Context:
+            let _ = issued_at; // timestamp recorded for audit; not used in Rust state
+        
+            let result = compose_select_past_note(&note_id, &vault_path);
+        
+            // EC-FEED-017: editing_session_state_changed MUST be emitted before feed_state_changed.
+            app.emit("editing_session_state_changed", result.editing_payload)
+FAIL: PROP-IPC-012: One or more emit sites bypass make_editing_state_changed_payload
+
+=== PROP-IPC-020: skip_serializing_if allow-list ===
+  Found skip_serializing_if at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:47
+    Annotation:     #[serde(skip_serializing_if = "Option::is_none")]
+    Field line:      pub reason: Option<FsErrorDto>,
+    -> ALLOWED: reason field (SaveErrorDto::reason)
+  Found skip_serializing_if at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:115
+    Annotation:         #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+    Field line:          blocks: Option<Vec<DtoBlock>>,
+    -> ALLOWED: blocks field
+  Found skip_serializing_if at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:123
+    Annotation:         #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+    Field line:          blocks: Option<Vec<DtoBlock>>,
+    -> ALLOWED: blocks field
+  Found skip_serializing_if at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:133
+    Annotation:         #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+    Field line:          blocks: Option<Vec<DtoBlock>>,
+    -> ALLOWED: blocks field
+  Found skip_serializing_if at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/editor.rs:147
+    Annotation:         #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
+    Field line:          blocks: Option<Vec<DtoBlock>>,
+    -> ALLOWED: blocks field
+  Found skip_serializing_if at /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes/src-tauri/src/feed.rs:64
+    Annotation:     #[serde(skip_serializing_if = "Option::is_none")]
+    Field line:      pub detail: Option<String>,
+    -> ALLOWED: detail field (grandfathered pre-Sprint-8 feed.rs annotation)
+PASS: PROP-IPC-020: All skip_serializing_if annotations are on the allow-list
+
+=== PROP-IPC-021: No legacy 6-arg make_editing_state_changed_payload ===
+PASS: PROP-IPC-021: No legacy 6-arg make_editing_state_changed_payload found (single+multi-line scan)
+
+=== wire_audit.sh summary ===
+  PASS: 2
+  FAIL: 1
+AUDIT FAILED: 1 check(s) did not pass
+WIRE_AUDIT_EXIT:1

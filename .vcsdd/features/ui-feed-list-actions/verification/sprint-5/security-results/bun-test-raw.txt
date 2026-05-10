@@ -1,0 +1,21 @@
+path "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes" does not contain a 'flake.nix', searching up
+promptnotes dev shell
+  rustc:  rustc 1.95.0 (59807616e 2026-04-14)
+  node:   v22.22.2
+  bun:    1.3.11
+  tsc:    Version 5.9.3
+  tauri:  tauri-cli 2.9.6
+bun test v1.3.11 (af24e281)
+
+src/lib/domain/__tests__/apply-filter-or-search/apply-filter-or-search.perf.test.ts:
+[perf] applyFilterOrSearch median: 0.671ms (advisory bound: 50ms)
+[perf] parseFilterInput median: 0.004ms (advisory bound: 5ms)
+
+ 1901 pass
+ 4 skip
+ 4 todo
+ 0 fail
+ 32215 expect() calls
+Ran 1909 tests across 160 files. [15.47s]
+EXIT_CODE:0
+bun-test-raw.txt exit code 0

@@ -1,0 +1,29 @@
+path "/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes" does not contain a 'flake.nix', searching up
+error (ignored): SQLite database '/home/takuya/.cache/nix/eval-cache-v6/9af6e4649758e1b7e84ce35acd5cae0f8a5266920eb3eb427c9fd73278e6b389.sqlite' is busy
+promptnotes dev shell
+  rustc:  rustc 1.95.0 (59807616e 2026-04-14)
+  node:   v22.22.2
+  bun:    1.3.11
+  tsc:    Version 5.9.3
+  tauri:  tauri-cli 2.9.6
+$ vitest run
+
+ RUN  v4.1.5 /home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd=feature-block-based-ui-migration/promptnotes
+
+15:41:04 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:360:14 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+15:41:04 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:394:20 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+15:41:04 [vite-plugin-svelte] src/lib/feed/FeedRow.svelte:416:10 `<button>` cannot be a descendant of `<button>`. When rendering this component on the server, the resulting HTML will be modified by the browser (by moving, removing, or inserting elements), likely resulting in a `hydration_mismatch` warning
+https://svelte.dev/e/node_invalid_placement_ssr
+15:41:04 [vite-plugin-svelte] src/lib/feed/__tests__/dom/FeedRowSprint5Wrapper.svelte:42:40 This reference only captures the initial value of `initialViewState`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+15:41:04 [vite-plugin-svelte] src/lib/feed/__tests__/dom/FeedRowSprint5Wrapper.svelte:43:66 This reference only captures the initial value of `initialEditingSessionState`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+
+ Test Files  19 passed (19)
+      Tests  223 passed (223)
+   Start at  15:41:01
+   Duration  3.59s (transform 10.65s, setup 994ms, import 15.29s, tests 2.36s, environment 21.94s)
+
+EXIT_CODE:0

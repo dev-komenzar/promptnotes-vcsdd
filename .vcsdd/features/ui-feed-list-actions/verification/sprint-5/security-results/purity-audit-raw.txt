@@ -1,0 +1,6 @@
+=== feedRowPredicates.ts ===
+EXIT:1
+=== feedReducer.ts ===
+EXIT:1
+=== deleteConfirmPredicates.ts ===
+EXIT:1
