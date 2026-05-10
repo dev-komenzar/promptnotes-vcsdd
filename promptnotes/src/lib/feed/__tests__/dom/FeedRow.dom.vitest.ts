@@ -836,3 +836,34 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
     unmount(app);
   });
 });
+
+// ── Sprint 5: PROP-FEED-S5-019 — EC-FEED-019 double-click race ──────────────
+
+describe('PROP-FEED-S5-019: EC-FEED-019 — double-click race during switching', () => {
+  test('second click while editingStatus=switching is suppressed (no second dispatch)', () => {
+    const adapter = makeMockAdapter();
+    // Initial: idle, click 1 fires.
+    const initialState = makeViewState({
+      editingStatus: 'idle',
+      editingNoteId: null,
+    });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState: initialState, adapter } });
+    flushSync();
+    const button = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement;
+    button.click();
+    flushSync();
+    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(1);
+    // Now simulate transition to switching — REQ-FEED-006 should suppress further clicks.
+    (app as unknown as Record<string, unknown>).viewState = makeViewState({
+      editingStatus: 'switching',
+      editingNoteId: 'note-001',
+      pendingNextFocus: { noteId: 'note-001', blockId: 'b1' },
+    });
+    flushSync();
+    button.click();
+    flushSync();
+    // dispatchSelectPastNote count remains 1 (the second click was suppressed).
+    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(1);
+    unmount(app);
+  });
+});

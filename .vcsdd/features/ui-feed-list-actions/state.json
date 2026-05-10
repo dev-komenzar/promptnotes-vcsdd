@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "2a",
+  "currentPhase": "2b",
   "phaseHistory": [
     {
       "from": "init",
@@ -480,6 +480,13 @@
       "timestamp": "2026-05-10T03:30:00.000Z",
       "reason": "spec gate PASS (adversary iter-3 PASS + human approval)",
       "sprint": 5
+    },
+    {
+      "from": "2a",
+      "to": "2b",
+      "timestamp": "2026-05-10T04:30:00.000Z",
+      "reason": "Sprint 5 Phase 2a complete (Red phase entry): 15 new failing tests across 5 new test files + sprint-5-grep-audit.sh script. Regression baseline green (1858 bun pass + 192 vitest pass).",
+      "sprint": 5
     }
   ],
   "iterations": {
@@ -498,7 +505,28 @@
     "1c-sprint-3": 1,
     "1a-sprint-4": 0,
     "1c-sprint-4": 3,
-    "3-sprint-4": 3
+    "3-sprint-4": 3,
+    "2a-sprint-5": {
+      "iteration": 1,
+      "timestamp": "2026-05-10T04:30:00.000Z",
+      "redPhaseEvidence": {
+        "newFailingTests": 15,
+        "regressionBaseline": "PASS (1858 bun + 192 vitest)",
+        "newTestFiles": [
+          "promptnotes/src/lib/feed/__tests__/sprint-5.gates.test.ts",
+          "promptnotes/src/lib/feed/__tests__/dom/feed-row-block-embed.dom.vitest.ts",
+          "promptnotes/src/lib/feed/__tests__/dom/feed-row-empty-fallback.dom.vitest.ts",
+          "promptnotes/src/lib/feed/__tests__/dom/feed-row-best-effort-dispatch.dom.vitest.ts",
+          "promptnotes/src/lib/feed/__tests__/dom/feed-list-editing-channel.dom.vitest.ts",
+          "promptnotes/src/lib/block-editor/__tests__/types/createBlockEditorAdapter.types.test.ts"
+        ],
+        "newAuditScript": "promptnotes/scripts/sprint-5-grep-audit.sh",
+        "extendedTestFiles": [
+          "promptnotes/src/lib/feed/__tests__/feedRowPredicates.test.ts (PROP-FEED-S5-009)",
+          "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts (PROP-FEED-S5-019)"
+        ]
+      }
+    }
   },
   "proofObligations": [
     {
@@ -2081,5 +2109,5 @@
   },
   "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-10T03:30:00.000Z"
+  "updatedAt": "2026-05-10T04:30:00.000Z"
 }

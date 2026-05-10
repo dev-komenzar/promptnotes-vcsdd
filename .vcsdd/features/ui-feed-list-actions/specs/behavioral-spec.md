@@ -1070,24 +1070,26 @@ ui-block-editor REQ-BE-026 の 16 メソッドのうち、Rust 側 `#[tauri::com
 
 **Adapter command-mapping** (FIND-S5-SPEC-013 解消 — factory 出力の正規 mapping; payload に `issuedAt` を含む):
 
-| dispatch メソッド | Tauri command name | payload 主要フィールド | group |
-|------------------|-------------------|---------------------|-------|
-| `dispatchFocusBlock` | `editor_focus_block` | `{ noteId, blockId, issuedAt }` | B |
-| `dispatchEditBlockContent` | `editor_edit_block_content` | `{ noteId, blockId, content, issuedAt }` | B |
-| `dispatchInsertBlockAfter` | `editor_insert_block_after` | `{ noteId, anchorBlockId, newBlock, issuedAt }` | B |
-| `dispatchInsertBlockAtBeginning` | `editor_insert_block_at_beginning` | `{ noteId, newBlock, issuedAt }` | B |
-| `dispatchRemoveBlock` | `editor_remove_block` | `{ noteId, blockId, issuedAt }` | B |
-| `dispatchMergeBlocks` | `editor_merge_blocks` | `{ noteId, targetBlockId, mergeFromBlockId, issuedAt }` | B |
-| `dispatchSplitBlock` | `editor_split_block` | `{ noteId, blockId, splitAt, issuedAt }` | B |
-| `dispatchChangeBlockType` | `editor_change_block_type` | `{ noteId, blockId, newType, issuedAt }` | B |
-| `dispatchMoveBlock` | `editor_move_block` | `{ noteId, blockId, targetIndex, issuedAt }` | B |
-| `dispatchTriggerIdleSave` | `trigger_idle_save` | `{ noteId, issuedAt }` | A (既存) |
-| `dispatchTriggerBlurSave` | `trigger_blur_save` | `{ noteId, issuedAt }` | A (既存) |
-| `dispatchRetrySave` | `retry_save` | `{ noteId, issuedAt }` | A (既存) |
-| `dispatchDiscardCurrentSession` | `discard_current_session` | `{ noteId, issuedAt }` | A (既存) |
-| `dispatchCancelSwitch` | `cancel_switch` | `{ noteId, issuedAt }` | A (既存) |
-| `dispatchCopyNoteBody` | `copy_note_body` | `{ noteId, issuedAt }` | A (既存) |
-| `dispatchRequestNewNote` | `request_new_note` | `{ issuedAt }` | A (既存) |
+> **注 (Phase 2a 整合)**: 各 dispatch の payload field 名は **`src/lib/block-editor/types.ts` の `BlockEditorAdapter` interface (既存)** と完全一致させる。本 table は `BlockEditorAdapter` の payload type を Tauri invoke の引数として **そのまま渡す** mapping を規定する (Phase 2b で `factoryOutput satisfies BlockEditorAdapter` 検証)。
+
+| dispatch メソッド | Tauri command name | payload (BlockEditorAdapter type に準拠) | group |
+|------------------|-------------------|--------------------------------------|-------|
+| `dispatchFocusBlock` | `editor_focus_block` | `{ noteId: string; blockId: string; issuedAt: string }` | B |
+| `dispatchEditBlockContent` | `editor_edit_block_content` | `{ noteId: string; blockId: string; content: string; issuedAt: string }` | B |
+| `dispatchInsertBlockAfter` | `editor_insert_block_after` | `{ noteId: string; prevBlockId: string; type: BlockType; content: string; issuedAt: string }` | B |
+| `dispatchInsertBlockAtBeginning` | `editor_insert_block_at_beginning` | `{ noteId: string; type: BlockType; content: string; issuedAt: string }` | B |
+| `dispatchRemoveBlock` | `editor_remove_block` | `{ noteId: string; blockId: string; issuedAt: string }` | B |
+| `dispatchMergeBlocks` | `editor_merge_blocks` | `{ noteId: string; blockId: string; issuedAt: string }` | B |
+| `dispatchSplitBlock` | `editor_split_block` | `{ noteId: string; blockId: string; offset: number; issuedAt: string }` | B |
+| `dispatchChangeBlockType` | `editor_change_block_type` | `{ noteId: string; blockId: string; newType: BlockType; issuedAt: string }` | B |
+| `dispatchMoveBlock` | `editor_move_block` | `{ noteId: string; blockId: string; toIndex: number; issuedAt: string }` | B |
+| `dispatchTriggerIdleSave` | `trigger_idle_save` | `{ source: 'capture-idle'; noteId: string; issuedAt: string }` | A (既存) |
+| `dispatchTriggerBlurSave` | `trigger_blur_save` | `{ source: 'capture-blur'; noteId: string; issuedAt: string }` | A (既存) |
+| `dispatchRetrySave` | `retry_save` | `{ noteId: string; issuedAt: string }` | A (既存) |
+| `dispatchDiscardCurrentSession` | `discard_current_session` | `{ noteId: string; issuedAt: string }` | A (既存) |
+| `dispatchCancelSwitch` | `cancel_switch` | `{ noteId: string; issuedAt: string }` | A (既存) |
+| `dispatchCopyNoteBody` | `copy_note_body` | `{ noteId: string; issuedAt: string }` | A (既存) |
+| `dispatchRequestNewNote` | `request_new_note` | `{ source: NewNoteSource; issuedAt: string }` | A (既存) |
 
 > **注**: Group A の command name は **既存 Rust 実装に合わせて prefix なし** (例: `trigger_idle_save`)、Group B の command name は **`editor_` prefix 付き** (例: `editor_focus_block`)。後者は将来 Rust 実装される予定の命名予約。両 group とも `payload.issuedAt` を含む。
 >
@@ -1114,7 +1116,7 @@ ui-block-editor REQ-BE-026 の 16 メソッドのうち、Rust 側 `#[tauri::com
 
 ### REQ-FEED-031: `FeedRow` 側 empty paragraph fallback (EC-FEED-016 Sprint 5 amendment)
 
-**EARS**: WHEN `viewState.editingNoteId === self.noteId` AND 受信した `editingSessionState.blocks` が `undefined`、`null`、または空配列である AND **fallback restart 条件 (下記) を満たす** THEN `FeedRow` は (1) クライアント側で UUID v4 を発番した空 paragraph block を 1 件構築し、(2) **`blocks` として採用して `BlockElement` を mount** し、(3) **best-effort で** `BlockEditorAdapter::dispatchInsertBlockAtBeginning(payload)` (Group B, REQ-FEED-030 の Sprint 5 Rust handler scope split table 参照) → `dispatchFocusBlock(payload)` の順に await dispatch を試行し、(4) どちらの dispatch が reject しても fallback BlockElement の表示は維持しなければならない。
+**EARS**: WHEN `viewState.editingNoteId === self.noteId` AND 受信した `editingSessionState.blocks` が `undefined`、`null`、または空配列である AND **fallback restart 条件 (下記) を満たす** THEN `FeedRow` は (1) クライアント側で UUID v4 を発番した空 paragraph block を 1 件構築し、(2) **`blocks` として採用して `BlockElement` を mount** し、(3) **best-effort で** `BlockEditorAdapter::dispatchInsertBlockAtBeginning({ noteId, type: 'paragraph', content: '', issuedAt })` (Group B, REQ-FEED-030 の Sprint 5 Rust handler scope split table 参照) → `dispatchFocusBlock({ noteId, blockId: <生成した UUID>, issuedAt })` の順に await dispatch を試行し、(4) どちらの dispatch が reject しても fallback BlockElement の表示は維持しなければならない。
 
 > **Sprint 4 までの責務**: EditorPane 側が空 paragraph fallback を担当（EC-FEED-016 旧定義）。
 > **Sprint 5 の責務**: EditorPane 廃止により `FeedRow` 側に責務が移管される。

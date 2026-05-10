@@ -293,3 +293,70 @@ describe('REQ-FEED-003 / PROP-FEED-034: tag array order and length preservation'
     expect(result[2]).toBe('gamma');
   });
 });
+
+// ── Sprint 5: REQ-FEED-031 / PROP-FEED-S5-009: needsEmptyParagraphFallback ────
+
+import { needsEmptyParagraphFallback } from '$lib/feed/feedRowPredicates';
+import type { DtoBlock } from '$lib/block-editor/types';
+
+describe('Sprint 5: REQ-FEED-031 / PROP-FEED-S5-009: needsEmptyParagraphFallback totality', () => {
+  test('PROP-FEED-S5-009a: undefined input → true', () => {
+    expect(needsEmptyParagraphFallback(undefined)).toBe(true);
+  });
+
+  test('PROP-FEED-S5-009b: null input → true', () => {
+    expect(needsEmptyParagraphFallback(null)).toBe(true);
+  });
+
+  test('PROP-FEED-S5-009c: empty array → true', () => {
+    expect(needsEmptyParagraphFallback([])).toBe(true);
+  });
+
+  test('PROP-FEED-S5-009d: single block → false', () => {
+    expect(
+      needsEmptyParagraphFallback([
+        { id: 'b1', type: 'paragraph', content: '' },
+      ]),
+    ).toBe(false);
+  });
+
+  test('PROP-FEED-S5-009e: multiple blocks → false', () => {
+    expect(
+      needsEmptyParagraphFallback([
+        { id: 'b1', type: 'paragraph', content: 'hello' },
+        { id: 'b2', type: 'heading-1', content: 'title' },
+      ]),
+    ).toBe(false);
+  });
+
+  test('PROP-FEED-S5-009f (fast-check): any non-empty array → false', () => {
+    const arbBlock = fc.record({
+      id: fc.string({ minLength: 1, maxLength: 36 }),
+      type: fc.constantFrom(
+        'paragraph' as const,
+        'heading-1' as const,
+        'heading-2' as const,
+        'heading-3' as const,
+        'bullet' as const,
+        'numbered' as const,
+        'code' as const,
+        'quote' as const,
+        'divider' as const,
+      ),
+      content: fc.string(),
+    });
+    fc.assert(
+      fc.property(fc.array(arbBlock, { minLength: 1, maxLength: 100 }), (blocks: DtoBlock[]) => {
+        return needsEmptyParagraphFallback(blocks) === false;
+      }),
+    );
+  });
+
+  test('PROP-FEED-S5-009g (fast-check): null/undefined/[] always → true', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(null, undefined, [] as DtoBlock[]), (input) => {
+        return needsEmptyParagraphFallback(input) === true;
+      }),
+    );
+  });
+});
