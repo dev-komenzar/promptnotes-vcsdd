@@ -1,12 +1,12 @@
 {
   "version": 1,
   "nodes": {
-    "req:apply-filter-or-search": {
-      "id": "req:apply-filter-or-search",
+    "req:copy-body": {
+      "id": "req:copy-body",
       "type": "req",
       "placeholder": false,
       "path": "specs/behavioral-spec.md",
-      "name": "apply-filter-or-search 行動仕様"
+      "name": "copy-body 行動仕様"
     },
     "design:workflows": {
       "id": "design:workflows",
@@ -23,64 +23,47 @@
       "type": "design",
       "placeholder": true
     },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:glossary": {
-      "id": "governance:glossary",
+    "governance:domain-events": {
+      "id": "governance:domain-events",
       "type": "governance",
       "placeholder": true
     },
-    "module:apply-filter-or-search": {
-      "id": "module:apply-filter-or-search",
+    "module:copy-body": {
+      "id": "module:copy-body",
       "type": "module",
       "placeholder": false,
-      "name": "apply-filter-or-search"
+      "name": "copy-body"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+    "file:promptnotes/src/lib/domain/copy-body/pipeline.ts": {
+      "id": "file:promptnotes/src/lib/domain/copy-body/pipeline.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts"
+      "path": "promptnotes/src/lib/domain/copy-body/pipeline.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+    "file:promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts": {
+      "id": "file:promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
+      "path": "promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
-      "type": "file",
-      "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
-    },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
-      "type": "file",
-      "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
-    },
-    "design:apply-filter-or-search-verification": {
-      "id": "design:apply-filter-or-search-verification",
+    "design:copy-body-verification": {
+      "id": "design:copy-body-verification",
       "type": "design",
       "placeholder": false,
       "path": "specs/verification-architecture.md",
-      "name": "apply-filter-or-search 検証アーキテクチャ（純粋性境界・証明義務）"
+      "name": "copy-body 検証アーキテクチャ（純粋性境界・証明義務）"
     },
-    "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search": {
-      "id": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+    "file:promptnotes/src/lib/domain/__tests__/copy-body": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/copy-body",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
+      "path": "promptnotes/src/lib/domain/__tests__/copy-body"
     }
   },
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:copy-body",
       "targetId": "design:workflows",
       "relation": "derives_from",
       "semantic": "governance",
@@ -98,7 +81,7 @@
     },
     {
       "id": 2,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:copy-body",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -116,7 +99,7 @@
     },
     {
       "id": 3,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:copy-body",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
       "semantic": "governance",
@@ -134,9 +117,9 @@
     },
     {
       "id": 4,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
+      "sourceId": "req:copy-body",
+      "targetId": "governance:domain-events",
+      "relation": "depends_on",
       "semantic": "governance",
       "confidence": 0.9,
       "isActive": true,
@@ -152,26 +135,8 @@
     },
     {
       "id": 5,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "req:apply-filter-or-search",
+      "sourceId": "module:copy-body",
+      "targetId": "req:copy-body",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -187,9 +152,27 @@
       ]
     },
     {
+      "id": 6,
+      "sourceId": "req:copy-body",
+      "targetId": "file:promptnotes/src/lib/domain/copy-body/pipeline.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
       "id": 7,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+      "sourceId": "req:copy-body",
+      "targetId": "file:promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -206,62 +189,8 @@
     },
     {
       "id": 8,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
-      "relation": "extracted_from",
-      "semantic": "technical",
-      "confidence": 0.85,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "source_files",
-          "score": 0.85,
-          "detail": "Source file declared in specs/behavioral-spec.md",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 9,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
-      "relation": "extracted_from",
-      "semantic": "technical",
-      "confidence": 0.85,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "source_files",
-          "score": 0.85,
-          "detail": "Source file declared in specs/behavioral-spec.md",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 10,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
-      "relation": "extracted_from",
-      "semantic": "technical",
-      "confidence": 0.85,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "source_files",
-          "score": 0.85,
-          "detail": "Source file declared in specs/behavioral-spec.md",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 11,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "req:apply-filter-or-search",
+      "sourceId": "design:copy-body-verification",
+      "targetId": "req:copy-body",
       "relation": "derives_from",
       "semantic": "governance",
       "confidence": 0.9,
@@ -277,8 +206,8 @@
       ]
     },
     {
-      "id": 12,
-      "sourceId": "design:apply-filter-or-search-verification",
+      "id": 9,
+      "sourceId": "design:copy-body-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -295,8 +224,8 @@
       ]
     },
     {
-      "id": 13,
-      "sourceId": "design:apply-filter-or-search-verification",
+      "id": 10,
+      "sourceId": "design:copy-body-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
       "semantic": "governance",
@@ -313,9 +242,9 @@
       ]
     },
     {
-      "id": 14,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "design:apply-filter-or-search-verification",
+      "id": 11,
+      "sourceId": "module:copy-body",
+      "targetId": "design:copy-body-verification",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -331,9 +260,9 @@
       ]
     },
     {
-      "id": 15,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+      "id": 12,
+      "sourceId": "design:copy-body-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/copy-body",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -349,5 +278,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:10:19.174Z"
+  "lastScanAt": "2026-05-10T04:14:10.182Z"
 }

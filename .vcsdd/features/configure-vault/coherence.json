@@ -1,12 +1,12 @@
 {
   "version": 1,
   "nodes": {
-    "req:apply-filter-or-search": {
-      "id": "req:apply-filter-or-search",
+    "req:configure-vault": {
+      "id": "req:configure-vault",
       "type": "req",
       "placeholder": false,
       "path": "specs/behavioral-spec.md",
-      "name": "apply-filter-or-search 行動仕様"
+      "name": "configure-vault 行動仕様"
     },
     "design:workflows": {
       "id": "design:workflows",
@@ -28,59 +28,65 @@
       "type": "design",
       "placeholder": true
     },
-    "governance:glossary": {
-      "id": "governance:glossary",
+    "governance:domain-events": {
+      "id": "governance:domain-events",
       "type": "governance",
       "placeholder": true
     },
-    "module:apply-filter-or-search": {
-      "id": "module:apply-filter-or-search",
+    "module:configure-vault": {
+      "id": "module:configure-vault",
       "type": "module",
       "placeholder": false,
-      "name": "apply-filter-or-search"
+      "name": "configure-vault"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+    "file:promptnotes/src/lib/domain/configure-vault/pipeline.ts": {
+      "id": "file:promptnotes/src/lib/domain/configure-vault/pipeline.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts"
+      "path": "promptnotes/src/lib/domain/configure-vault/pipeline.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+    "file:promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts": {
+      "id": "file:promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
+      "path": "promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+    "file:promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts": {
+      "id": "file:promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
+      "path": "promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+    "file:promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts": {
+      "id": "file:promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
+      "path": "promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts"
     },
-    "design:apply-filter-or-search-verification": {
-      "id": "design:apply-filter-or-search-verification",
+    "file:promptnotes/src-tauri/src/lib.rs": {
+      "id": "file:promptnotes/src-tauri/src/lib.rs",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src-tauri/src/lib.rs"
+    },
+    "design:configure-vault-verification": {
+      "id": "design:configure-vault-verification",
       "type": "design",
       "placeholder": false,
       "path": "specs/verification-architecture.md",
-      "name": "apply-filter-or-search 検証アーキテクチャ（純粋性境界・証明義務）"
+      "name": "configure-vault 検証アーキテクチャ（純粋性境界・証明義務）"
     },
-    "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search": {
-      "id": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+    "file:promptnotes/src/lib/domain/__tests__/configure-vault": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/configure-vault",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
+      "path": "promptnotes/src/lib/domain/__tests__/configure-vault"
     }
   },
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:configure-vault",
       "targetId": "design:workflows",
       "relation": "derives_from",
       "semantic": "governance",
@@ -98,7 +104,7 @@
     },
     {
       "id": 2,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:configure-vault",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -116,7 +122,7 @@
     },
     {
       "id": 3,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:configure-vault",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
       "semantic": "governance",
@@ -134,7 +140,7 @@
     },
     {
       "id": 4,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:configure-vault",
       "targetId": "design:ui-fields",
       "relation": "derives_from",
       "semantic": "governance",
@@ -152,9 +158,9 @@
     },
     {
       "id": 5,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
+      "sourceId": "req:configure-vault",
+      "targetId": "governance:domain-events",
+      "relation": "depends_on",
       "semantic": "governance",
       "confidence": 0.9,
       "isActive": true,
@@ -170,8 +176,8 @@
     },
     {
       "id": 6,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "req:apply-filter-or-search",
+      "sourceId": "module:configure-vault",
+      "targetId": "req:configure-vault",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -188,8 +194,8 @@
     },
     {
       "id": 7,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+      "sourceId": "req:configure-vault",
+      "targetId": "file:promptnotes/src/lib/domain/configure-vault/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -206,8 +212,8 @@
     },
     {
       "id": 8,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+      "sourceId": "req:configure-vault",
+      "targetId": "file:promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -224,8 +230,8 @@
     },
     {
       "id": 9,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+      "sourceId": "req:configure-vault",
+      "targetId": "file:promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -242,8 +248,8 @@
     },
     {
       "id": 10,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+      "sourceId": "req:configure-vault",
+      "targetId": "file:promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -260,26 +266,26 @@
     },
     {
       "id": 11,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "req:apply-filter-or-search",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
+      "sourceId": "req:configure-vault",
+      "targetId": "file:promptnotes/src-tauri/src/lib.rs",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
       "isActive": true,
       "evidence": [
         {
           "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
       "id": 12,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "design:aggregates",
+      "sourceId": "design:configure-vault-verification",
+      "targetId": "req:configure-vault",
       "relation": "derives_from",
       "semantic": "governance",
       "confidence": 0.9,
@@ -296,8 +302,8 @@
     },
     {
       "id": 13,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "design:type-contracts",
+      "sourceId": "design:configure-vault-verification",
+      "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
       "confidence": 0.9,
@@ -314,8 +320,26 @@
     },
     {
       "id": 14,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "design:apply-filter-or-search-verification",
+      "sourceId": "design:configure-vault-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "module:configure-vault",
+      "targetId": "design:configure-vault-verification",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -331,9 +355,9 @@
       ]
     },
     {
-      "id": 15,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+      "id": 16,
+      "sourceId": "design:configure-vault-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/configure-vault",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -349,5 +373,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:10:19.174Z"
+  "lastScanAt": "2026-05-10T04:12:46.784Z"
 }

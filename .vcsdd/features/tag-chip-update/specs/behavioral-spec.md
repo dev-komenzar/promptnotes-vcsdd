@@ -1,3 +1,29 @@
+---
+coherence:
+  node_id: "req:tag-chip-update"
+  type: req
+  name: "tag-chip-update 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "governance:domain-events"
+      relation: depends_on
+  modules:
+    - "tag-chip-update"
+  source_files:
+    - "promptnotes/src/lib/domain/tag-chip-update/pipeline.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update/update-projections.ts"
+    - "promptnotes/src/lib/domain/tag-chip-update/index.ts"
+---
+
 # Behavioral Specification: TagChipUpdate
 
 **Feature**: `tag-chip-update`

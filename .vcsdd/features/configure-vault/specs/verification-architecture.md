@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:configure-vault-verification"
+  type: design
+  name: "configure-vault 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:configure-vault"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "configure-vault"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/configure-vault"
+---
+
 # Verification Architecture: ConfigureVault
 
 **Feature**: `configure-vault`

@@ -1,3 +1,22 @@
+---
+coherence:
+  node_id: "design:app-startup-verification"
+  type: design
+  name: "app-startup 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:app-startup"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "app-startup"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/app-startup"
+    - "promptnotes/src-tauri/src/domain/vault"
+---
+
 # Verification Architecture: AppStartup
 
 **Feature**: `app-startup`

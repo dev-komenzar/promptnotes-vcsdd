@@ -1,3 +1,33 @@
+---
+coherence:
+  node_id: "req:capture-auto-save"
+  type: req
+  name: "capture-auto-save 行動仕様"
+  depends_on:
+    - id: "design:workflows"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+    - id: "governance:domain-events"
+      relation: depends_on
+    - id: "governance:glossary"
+      relation: specifies
+  modules:
+    - "capture-auto-save"
+  source_files:
+    - "promptnotes/src/lib/domain/capture-auto-save/pipeline.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/update-projections.ts"
+    - "promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts"
+---
+
 # Behavioral Specification: CaptureAutoSave
 
 **Feature**: `capture-auto-save`

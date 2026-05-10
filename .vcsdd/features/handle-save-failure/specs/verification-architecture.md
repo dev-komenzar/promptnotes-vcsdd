@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:handle-save-failure-verification"
+  type: design
+  name: "handle-save-failure 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:handle-save-failure"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "handle-save-failure"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/handle-save-failure"
+---
+
 # Verification Architecture: HandleSaveFailure
 
 **Feature**: `handle-save-failure`

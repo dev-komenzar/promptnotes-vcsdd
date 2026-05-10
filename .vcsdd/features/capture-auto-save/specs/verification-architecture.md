@@ -1,3 +1,21 @@
+---
+coherence:
+  node_id: "design:capture-auto-save-verification"
+  type: design
+  name: "capture-auto-save 検証アーキテクチャ（純粋性境界・証明義務）"
+  depends_on:
+    - id: "req:capture-auto-save"
+      relation: derives_from
+    - id: "design:aggregates"
+      relation: derives_from
+    - id: "design:type-contracts"
+      relation: derives_from
+  modules:
+    - "capture-auto-save"
+  source_files:
+    - "promptnotes/src/lib/domain/__tests__/capture-auto-save"
+---
+
 # Verification Architecture: CaptureAutoSave
 
 **Feature**: `capture-auto-save`

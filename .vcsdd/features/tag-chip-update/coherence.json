@@ -1,12 +1,12 @@
 {
   "version": 1,
   "nodes": {
-    "req:apply-filter-or-search": {
-      "id": "req:apply-filter-or-search",
+    "req:tag-chip-update": {
+      "id": "req:tag-chip-update",
       "type": "req",
       "placeholder": false,
       "path": "specs/behavioral-spec.md",
-      "name": "apply-filter-or-search 行動仕様"
+      "name": "tag-chip-update 行動仕様"
     },
     "design:workflows": {
       "id": "design:workflows",
@@ -23,64 +23,77 @@
       "type": "design",
       "placeholder": true
     },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:glossary": {
-      "id": "governance:glossary",
+    "governance:domain-events": {
+      "id": "governance:domain-events",
       "type": "governance",
       "placeholder": true
     },
-    "module:apply-filter-or-search": {
-      "id": "module:apply-filter-or-search",
+    "module:tag-chip-update": {
+      "id": "module:tag-chip-update",
       "type": "module",
       "placeholder": false,
-      "name": "apply-filter-or-search"
+      "name": "tag-chip-update"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+    "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts"
+      "path": "promptnotes/src/lib/domain/tag-chip-update/pipeline.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+    "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
+      "path": "promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+    "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
+      "path": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
     },
-    "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts": {
-      "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+    "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
+      "path": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts"
     },
-    "design:apply-filter-or-search-verification": {
-      "id": "design:apply-filter-or-search-verification",
+    "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts"
+    },
+    "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/tag-chip-update/update-projections.ts"
+    },
+    "file:promptnotes/src/lib/domain/tag-chip-update/index.ts": {
+      "id": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
+      "type": "file",
+      "placeholder": false,
+      "path": "promptnotes/src/lib/domain/tag-chip-update/index.ts"
+    },
+    "design:tag-chip-update-verification": {
+      "id": "design:tag-chip-update-verification",
       "type": "design",
       "placeholder": false,
       "path": "specs/verification-architecture.md",
-      "name": "apply-filter-or-search 検証アーキテクチャ（純粋性境界・証明義務）"
+      "name": "tag-chip-update 検証アーキテクチャ（純粋性境界・証明義務）"
     },
-    "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search": {
-      "id": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+    "file:promptnotes/src/lib/domain/__tests__/tag-chip-update": {
+      "id": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
       "type": "file",
       "placeholder": false,
-      "path": "promptnotes/src/lib/domain/__tests__/apply-filter-or-search"
+      "path": "promptnotes/src/lib/domain/__tests__/tag-chip-update"
     }
   },
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:tag-chip-update",
       "targetId": "design:workflows",
       "relation": "derives_from",
       "semantic": "governance",
@@ -98,7 +111,7 @@
     },
     {
       "id": 2,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:tag-chip-update",
       "targetId": "design:aggregates",
       "relation": "derives_from",
       "semantic": "governance",
@@ -116,7 +129,7 @@
     },
     {
       "id": 3,
-      "sourceId": "req:apply-filter-or-search",
+      "sourceId": "req:tag-chip-update",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
       "semantic": "governance",
@@ -134,9 +147,9 @@
     },
     {
       "id": 4,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
+      "sourceId": "req:tag-chip-update",
+      "targetId": "governance:domain-events",
+      "relation": "depends_on",
       "semantic": "governance",
       "confidence": 0.9,
       "isActive": true,
@@ -152,26 +165,8 @@
     },
     {
       "id": 5,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "req:apply-filter-or-search",
+      "sourceId": "module:tag-chip-update",
+      "targetId": "req:tag-chip-update",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -187,9 +182,27 @@
       ]
     },
     {
+      "id": 6,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
       "id": 7,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -206,8 +219,8 @@
     },
     {
       "id": 8,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -224,8 +237,8 @@
     },
     {
       "id": 9,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -242,8 +255,8 @@
     },
     {
       "id": 10,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -260,44 +273,44 @@
     },
     {
       "id": 11,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "req:apply-filter-or-search",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
       "isActive": true,
       "evidence": [
         {
           "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
       "id": 12,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
       "isActive": true,
       "evidence": [
         {
           "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
           "isNegative": false
         }
       ]
     },
     {
       "id": 13,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "design:type-contracts",
+      "sourceId": "design:tag-chip-update-verification",
+      "targetId": "req:tag-chip-update",
       "relation": "derives_from",
       "semantic": "governance",
       "confidence": 0.9,
@@ -314,8 +327,44 @@
     },
     {
       "id": 14,
-      "sourceId": "module:apply-filter-or-search",
-      "targetId": "design:apply-filter-or-search-verification",
+      "sourceId": "design:tag-chip-update-verification",
+      "targetId": "design:aggregates",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "design:tag-chip-update-verification",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/verification-architecture.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "module:tag-chip-update",
+      "targetId": "design:tag-chip-update-verification",
       "relation": "implements",
       "semantic": "technical",
       "confidence": 0.85,
@@ -331,9 +380,9 @@
       ]
     },
     {
-      "id": 15,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
+      "id": 17,
+      "sourceId": "design:tag-chip-update-verification",
+      "targetId": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -349,5 +398,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:10:19.174Z"
+  "lastScanAt": "2026-05-10T04:19:17.458Z"
 }
