@@ -7,7 +7,7 @@ coherence:
     - id: "req:ui-feed-list-actions"
       relation: extends
     - id: "req:ui-editor"
-      relation: coexists_with
+      relation: replaces
     - id: "req:capture-auto-save"
       relation: integrates_with
     - id: "req:handle-save-failure"
