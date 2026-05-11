@@ -690,3 +690,6 @@
 {"feature": "ui-feed-list-actions", "from": "3", "to": "5", "timestamp": "2026-05-10T11:04:16.000Z", "sprint": 6, "gateVerdict": "PASS"}
 {"feature": "ui-feed-list-actions", "from": "5", "to": "6", "timestamp": "2026-05-10T11:15:20.000Z", "sprint": 6, "gateVerdict": "PASS"}
 {"feature": "ui-feed-list-actions", "from": "6", "to": "complete", "timestamp": "2026-05-10T11:19:56.000Z", "sprint": 6, "gateVerdict": "PASS"}
+{"timestamp":"2026-05-11T02:57:49.913Z","event":"feature_created","featureName":"app-startup-runtime","mode":"strict","language":"typescript"}
+{"timestamp":"2026-05-11T03:03:44.575Z","event":"phase_transition","featureName":"app-startup-runtime","from":"init","to":"1a","iteration":1,"phase":"1a"}
+{"timestamp":"2026-05-11T03:03:44.577Z","event":"phase_transition","featureName":"app-startup-runtime","from":"1a","to":"1b","iteration":1,"phase":"1b"}
