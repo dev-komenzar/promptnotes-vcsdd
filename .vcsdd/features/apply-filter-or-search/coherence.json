@@ -8,31 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "apply-filter-or-search 行動仕様"
     },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:glossary": {
-      "id": "governance:glossary",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:apply-filter-or-search": {
       "id": "module:apply-filter-or-search",
       "type": "module",
@@ -84,96 +59,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "sourceId": "req:apply-filter-or-search",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
       "sourceId": "module:apply-filter-or-search",
       "targetId": "req:apply-filter-or-search",
       "relation": "implements",
@@ -191,7 +76,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 2,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
       "relation": "must_review",
@@ -209,7 +94,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 3,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
       "relation": "must_review",
@@ -227,7 +112,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 4,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
       "relation": "must_review",
@@ -245,7 +130,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 5,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
       "relation": "must_review",
@@ -263,7 +148,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 6,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "module:apply-filter-or-search",
       "relation": "must_review",
@@ -281,7 +166,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 7,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
       "relation": "extracted_from",
@@ -299,7 +184,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 8,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
       "relation": "extracted_from",
@@ -317,7 +202,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 9,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
       "relation": "extracted_from",
@@ -335,7 +220,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 10,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
       "relation": "extracted_from",
@@ -353,7 +238,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 11,
       "sourceId": "design:apply-filter-or-search-verification",
       "targetId": "req:apply-filter-or-search",
       "relation": "derives_from",
@@ -371,43 +256,7 @@
       ]
     },
     {
-      "id": 17,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 18,
-      "sourceId": "design:apply-filter-or-search-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 19,
+      "id": 12,
       "sourceId": "module:apply-filter-or-search",
       "targetId": "design:apply-filter-or-search-verification",
       "relation": "implements",
@@ -425,7 +274,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 13,
       "sourceId": "design:apply-filter-or-search-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
       "relation": "extracted_from",
@@ -443,5 +292,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.499Z"
+  "lastScanAt": "2026-05-11T09:51:50.171Z"
 }

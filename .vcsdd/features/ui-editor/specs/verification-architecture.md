@@ -6,10 +6,6 @@ coherence:
   depends_on:
     - id: "req:ui-editor"
       relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
   modules:
     - "ui-editor"
   source_files:

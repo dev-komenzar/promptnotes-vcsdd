@@ -3,19 +3,6 @@ coherence:
   node_id: "req:ui-editor"
   type: req
   name: "ui-editor 行動仕様 (block-based)"
-  depends_on:
-    - id: "governance:implement-mapping"
-      relation: derives_from
-    - id: "design:ui-fields"
-      relation: derives_from
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
-    - id: "governance:design-system"
-      relation: depends_on
   modules:
     - "ui-editor"
     - "capture-auto-save"

@@ -8,26 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "delete-note 行動仕様"
     },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:domain-events": {
-      "id": "governance:domain-events",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:delete-note": {
       "id": "module:delete-note",
       "type": "module",
@@ -107,78 +87,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:delete-note",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:delete-note",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:delete-note",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:delete-note",
-      "targetId": "governance:domain-events",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
       "sourceId": "module:delete-note",
       "targetId": "req:delete-note",
       "relation": "implements",
@@ -196,9 +104,81 @@
       ]
     },
     {
-      "id": 6,
+      "id": 2,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:delete-note",
+      "targetId": "file:promptnotes/src/lib/domain/delete-note/authorize-deletion.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:delete-note",
+      "targetId": "file:promptnotes/src/lib/domain/delete-note/authorize-deletion-pure.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:delete-note",
+      "targetId": "file:promptnotes/src/lib/domain/delete-note/build-delete-request.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:delete-note",
+      "targetId": "file:promptnotes/src/lib/domain/delete-note/update-projections.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -216,7 +196,7 @@
     {
       "id": 7,
       "sourceId": "req:delete-note",
-      "targetId": "file:promptnotes/src/lib/domain/delete-note/authorize-deletion.ts",
+      "targetId": "file:promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -234,7 +214,7 @@
     {
       "id": 8,
       "sourceId": "req:delete-note",
-      "targetId": "file:promptnotes/src/lib/domain/delete-note/authorize-deletion-pure.ts",
+      "targetId": "file:promptnotes/src/lib/domain/delete-note/index.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -252,7 +232,7 @@
     {
       "id": 9,
       "sourceId": "req:delete-note",
-      "targetId": "file:promptnotes/src/lib/domain/delete-note/build-delete-request.ts",
+      "targetId": "file:promptnotes/src-tauri/src/feed.rs",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -270,7 +250,7 @@
     {
       "id": 10,
       "sourceId": "req:delete-note",
-      "targetId": "file:promptnotes/src/lib/domain/delete-note/update-projections.ts",
+      "targetId": "module:delete-note",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -288,78 +268,6 @@
     {
       "id": 11,
       "sourceId": "req:delete-note",
-      "targetId": "file:promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "sourceId": "req:delete-note",
-      "targetId": "file:promptnotes/src/lib/domain/delete-note/index.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 13,
-      "sourceId": "req:delete-note",
-      "targetId": "file:promptnotes/src-tauri/src/feed.rs",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "sourceId": "req:delete-note",
-      "targetId": "module:delete-note",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 15,
-      "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -376,7 +284,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 12,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/authorize-deletion.ts",
       "relation": "extracted_from",
@@ -394,7 +302,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 13,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/authorize-deletion-pure.ts",
       "relation": "extracted_from",
@@ -412,7 +320,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 14,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/build-delete-request.ts",
       "relation": "extracted_from",
@@ -430,7 +338,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 15,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/update-projections.ts",
       "relation": "extracted_from",
@@ -448,7 +356,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 16,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts",
       "relation": "extracted_from",
@@ -466,7 +374,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 17,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src/lib/domain/delete-note/index.ts",
       "relation": "extracted_from",
@@ -484,7 +392,7 @@
       ]
     },
     {
-      "id": 22,
+      "id": 18,
       "sourceId": "req:delete-note",
       "targetId": "file:promptnotes/src-tauri/src/feed.rs",
       "relation": "extracted_from",
@@ -502,7 +410,7 @@
       ]
     },
     {
-      "id": 23,
+      "id": 19,
       "sourceId": "design:delete-note-verification",
       "targetId": "req:delete-note",
       "relation": "derives_from",
@@ -520,43 +428,7 @@
       ]
     },
     {
-      "id": 24,
-      "sourceId": "design:delete-note-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 25,
-      "sourceId": "design:delete-note-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 26,
+      "id": 20,
       "sourceId": "module:delete-note",
       "targetId": "design:delete-note-verification",
       "relation": "implements",
@@ -574,7 +446,7 @@
       ]
     },
     {
-      "id": 27,
+      "id": 21,
       "sourceId": "design:delete-note-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/delete-note",
       "relation": "extracted_from",
@@ -592,5 +464,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.504Z"
+  "lastScanAt": "2026-05-11T09:51:50.177Z"
 }

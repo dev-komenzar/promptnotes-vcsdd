@@ -3,19 +3,6 @@ coherence:
   node_id: "req:ui-tag-chip"
   type: req
   name: "ui-tag-chip 行動仕様"
-  depends_on:
-    - id: "governance:implement-mapping"
-      relation: derives_from
-    - id: "design:ui-fields"
-      relation: derives_from
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "governance:glossary"
-      relation: specifies
-    - id: "governance:design-system"
-      relation: depends_on
   modules:
     - "ui-tag-chip"
     - "tag-chip-update"

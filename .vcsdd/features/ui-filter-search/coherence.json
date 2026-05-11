@@ -8,41 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "ui-filter-search 行動仕様"
     },
-    "governance:implement-mapping": {
-      "id": "governance:implement-mapping",
-      "type": "governance",
-      "placeholder": true
-    },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:design-system": {
-      "id": "governance:design-system",
-      "type": "governance",
-      "placeholder": true
-    },
-    "req:apply-filter-or-search": {
-      "id": "req:apply-filter-or-search",
-      "type": "requirement",
-      "placeholder": true
-    },
-    "req:ui-tag-chip": {
-      "id": "req:ui-tag-chip",
-      "type": "requirement",
-      "placeholder": true
-    },
     "module:ui-filter-search": {
       "id": "module:ui-filter-search",
       "type": "module",
@@ -112,11 +77,6 @@
       "path": "specs/verification-architecture.md",
       "name": "ui-filter-search 検証アーキテクチャ（純粋性境界・証明義務）"
     },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
     "file:promptnotes/src/lib/feed/__tests__": {
       "id": "file:promptnotes/src/lib/feed/__tests__",
       "type": "file",
@@ -127,132 +87,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "governance:implement-mapping",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "governance:design-system",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "req:apply-filter-or-search",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 7,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "req:ui-tag-chip",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 8,
       "sourceId": "module:ui-filter-search",
       "targetId": "req:ui-filter-search",
       "relation": "implements",
@@ -270,9 +104,135 @@
       ]
     },
     {
-      "id": 9,
+      "id": 2,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/SearchInput.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/SortToggle.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/computeVisible.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/searchPredicate.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/types.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -290,7 +250,7 @@
     {
       "id": 10,
       "sourceId": "req:ui-filter-search",
-      "targetId": "file:promptnotes/src/lib/feed/SortToggle.svelte",
+      "targetId": "module:ui-filter-search",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -308,132 +268,6 @@
     {
       "id": 11,
       "sourceId": "req:ui-filter-search",
-      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "file:promptnotes/src/lib/feed/computeVisible.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 13,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "file:promptnotes/src/lib/feed/searchPredicate.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 15,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "file:promptnotes/src/lib/feed/types.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 16,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 17,
-      "sourceId": "req:ui-filter-search",
-      "targetId": "module:ui-filter-search",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 18,
-      "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/SearchInput.svelte",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -450,7 +284,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 12,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/SortToggle.svelte",
       "relation": "extracted_from",
@@ -468,7 +302,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 13,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
       "relation": "extracted_from",
@@ -486,7 +320,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 14,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/computeVisible.ts",
       "relation": "extracted_from",
@@ -504,7 +338,7 @@
       ]
     },
     {
-      "id": 22,
+      "id": 15,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/searchPredicate.ts",
       "relation": "extracted_from",
@@ -522,7 +356,7 @@
       ]
     },
     {
-      "id": 23,
+      "id": 16,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
       "relation": "extracted_from",
@@ -540,7 +374,7 @@
       ]
     },
     {
-      "id": 24,
+      "id": 17,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/types.ts",
       "relation": "extracted_from",
@@ -558,7 +392,7 @@
       ]
     },
     {
-      "id": 25,
+      "id": 18,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "relation": "extracted_from",
@@ -576,7 +410,7 @@
       ]
     },
     {
-      "id": 26,
+      "id": 19,
       "sourceId": "design:ui-filter-search-verification",
       "targetId": "req:ui-filter-search",
       "relation": "derives_from",
@@ -594,43 +428,7 @@
       ]
     },
     {
-      "id": 27,
-      "sourceId": "design:ui-filter-search-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 28,
-      "sourceId": "design:ui-filter-search-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 29,
+      "id": 20,
       "sourceId": "module:ui-filter-search",
       "targetId": "design:ui-filter-search-verification",
       "relation": "implements",
@@ -648,7 +446,7 @@
       ]
     },
     {
-      "id": 30,
+      "id": 21,
       "sourceId": "design:ui-filter-search-verification",
       "targetId": "file:promptnotes/src/lib/feed/__tests__",
       "relation": "extracted_from",
@@ -666,5 +464,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.513Z"
+  "lastScanAt": "2026-05-11T09:51:50.188Z"
 }

@@ -6,10 +6,6 @@ coherence:
   depends_on:
     - id: "req:apply-filter-or-search"
       relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
   modules:
     - "apply-filter-or-search"
   source_files:

@@ -8,31 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "capture-auto-save 行動仕様"
     },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:domain-events": {
-      "id": "governance:domain-events",
-      "type": "governance",
-      "placeholder": true
-    },
-    "governance:glossary": {
-      "id": "governance:glossary",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:capture-auto-save": {
       "id": "module:capture-auto-save",
       "type": "module",
@@ -119,96 +94,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "governance:domain-events",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
       "sourceId": "module:capture-auto-save",
       "targetId": "req:capture-auto-save",
       "relation": "implements",
@@ -226,9 +111,99 @@
       ]
     },
     {
-      "id": 7,
+      "id": 2,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:capture-auto-save",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -246,7 +221,7 @@
     {
       "id": 8,
       "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -264,7 +239,7 @@
     {
       "id": 9,
       "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/update-projections.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -282,7 +257,7 @@
     {
       "id": 10,
       "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts",
+      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -300,7 +275,7 @@
     {
       "id": 11,
       "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts",
+      "targetId": "module:capture-auto-save",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -318,96 +293,6 @@
     {
       "id": 12,
       "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 13,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/update-projections.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 15,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 16,
-      "sourceId": "req:capture-auto-save",
-      "targetId": "module:capture-auto-save",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 17,
-      "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -424,7 +309,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 13,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts",
       "relation": "extracted_from",
@@ -442,7 +327,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 14,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts",
       "relation": "extracted_from",
@@ -460,7 +345,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 15,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts",
       "relation": "extracted_from",
@@ -478,7 +363,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 16,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts",
       "relation": "extracted_from",
@@ -496,7 +381,7 @@
       ]
     },
     {
-      "id": 22,
+      "id": 17,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts",
       "relation": "extracted_from",
@@ -514,7 +399,7 @@
       ]
     },
     {
-      "id": 23,
+      "id": 18,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts",
       "relation": "extracted_from",
@@ -532,7 +417,7 @@
       ]
     },
     {
-      "id": 24,
+      "id": 19,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/update-projections.ts",
       "relation": "extracted_from",
@@ -550,7 +435,7 @@
       ]
     },
     {
-      "id": 25,
+      "id": 20,
       "sourceId": "req:capture-auto-save",
       "targetId": "file:promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts",
       "relation": "extracted_from",
@@ -568,7 +453,7 @@
       ]
     },
     {
-      "id": 26,
+      "id": 21,
       "sourceId": "design:capture-auto-save-verification",
       "targetId": "req:capture-auto-save",
       "relation": "derives_from",
@@ -586,43 +471,7 @@
       ]
     },
     {
-      "id": 27,
-      "sourceId": "design:capture-auto-save-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 28,
-      "sourceId": "design:capture-auto-save-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 29,
+      "id": 22,
       "sourceId": "module:capture-auto-save",
       "targetId": "design:capture-auto-save-verification",
       "relation": "implements",
@@ -640,7 +489,7 @@
       ]
     },
     {
-      "id": 30,
+      "id": 23,
       "sourceId": "design:capture-auto-save-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/capture-auto-save",
       "relation": "extracted_from",
@@ -658,5 +507,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.501Z"
+  "lastScanAt": "2026-05-11T09:51:50.173Z"
 }

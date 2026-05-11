@@ -3,15 +3,6 @@ coherence:
   node_id: "req:delete-note"
   type: req
   name: "delete-note 行動仕様"
-  depends_on:
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
-    - id: "governance:domain-events"
-      relation: depends_on
   modules:
     - "delete-note"
   source_files:

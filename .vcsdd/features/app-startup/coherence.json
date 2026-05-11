@@ -8,31 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "app-startup 行動仕様"
     },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:glossary": {
-      "id": "governance:glossary",
-      "type": "governance",
-      "placeholder": true
-    },
-    "governance:domain-events": {
-      "id": "governance:domain-events",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:app-startup": {
       "id": "module:app-startup",
       "type": "module",
@@ -126,96 +101,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:app-startup",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:app-startup",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:app-startup",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:app-startup",
-      "targetId": "governance:glossary",
-      "relation": "specifies",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "sourceId": "req:app-startup",
-      "targetId": "governance:domain-events",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
       "sourceId": "module:app-startup",
       "targetId": "req:app-startup",
       "relation": "implements",
@@ -233,9 +118,99 @@
       ]
     },
     {
-      "id": 7,
+      "id": 2,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -253,7 +228,7 @@
     {
       "id": 8,
       "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -271,7 +246,7 @@
     {
       "id": 9,
       "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -289,7 +264,7 @@
     {
       "id": 10,
       "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "targetId": "file:promptnotes/src-tauri/src/domain/vault",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -307,7 +282,7 @@
     {
       "id": 11,
       "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
+      "targetId": "file:promptnotes/src-tauri/src/lib.rs",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -325,7 +300,7 @@
     {
       "id": 12,
       "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
+      "targetId": "module:app-startup",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -343,96 +318,6 @@
     {
       "id": 13,
       "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 15,
-      "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src-tauri/src/domain/vault",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 16,
-      "sourceId": "req:app-startup",
-      "targetId": "file:promptnotes/src-tauri/src/lib.rs",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 17,
-      "sourceId": "req:app-startup",
-      "targetId": "module:app-startup",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 18,
-      "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -449,7 +334,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 14,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
       "relation": "extracted_from",
@@ -467,7 +352,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 15,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
       "relation": "extracted_from",
@@ -485,7 +370,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 16,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
       "relation": "extracted_from",
@@ -503,7 +388,7 @@
       ]
     },
     {
-      "id": 22,
+      "id": 17,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
       "relation": "extracted_from",
@@ -521,7 +406,7 @@
       ]
     },
     {
-      "id": 23,
+      "id": 18,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
       "relation": "extracted_from",
@@ -539,7 +424,7 @@
       ]
     },
     {
-      "id": 24,
+      "id": 19,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
       "relation": "extracted_from",
@@ -557,7 +442,7 @@
       ]
     },
     {
-      "id": 25,
+      "id": 20,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
       "relation": "extracted_from",
@@ -575,7 +460,7 @@
       ]
     },
     {
-      "id": 26,
+      "id": 21,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src-tauri/src/domain/vault",
       "relation": "extracted_from",
@@ -593,7 +478,7 @@
       ]
     },
     {
-      "id": 27,
+      "id": 22,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src-tauri/src/lib.rs",
       "relation": "extracted_from",
@@ -611,7 +496,7 @@
       ]
     },
     {
-      "id": 28,
+      "id": 23,
       "sourceId": "design:app-startup-verification",
       "targetId": "req:app-startup",
       "relation": "derives_from",
@@ -629,43 +514,7 @@
       ]
     },
     {
-      "id": 29,
-      "sourceId": "design:app-startup-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 30,
-      "sourceId": "design:app-startup-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 31,
+      "id": 24,
       "sourceId": "module:app-startup",
       "targetId": "design:app-startup-verification",
       "relation": "implements",
@@ -683,7 +532,7 @@
       ]
     },
     {
-      "id": 32,
+      "id": 25,
       "sourceId": "design:app-startup-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/app-startup",
       "relation": "extracted_from",
@@ -701,7 +550,7 @@
       ]
     },
     {
-      "id": 33,
+      "id": 26,
       "sourceId": "design:app-startup-verification",
       "targetId": "file:promptnotes/src-tauri/src/domain/vault",
       "relation": "extracted_from",
@@ -719,5 +568,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.496Z"
+  "lastScanAt": "2026-05-11T09:51:50.167Z"
 }

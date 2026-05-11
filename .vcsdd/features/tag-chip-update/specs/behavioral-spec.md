@@ -3,15 +3,6 @@ coherence:
   node_id: "req:tag-chip-update"
   type: req
   name: "tag-chip-update 行動仕様"
-  depends_on:
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
-    - id: "governance:domain-events"
-      relation: depends_on
   modules:
     - "tag-chip-update"
   source_files:

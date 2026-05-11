@@ -8,31 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "configure-vault 行動仕様"
     },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:domain-events": {
-      "id": "governance:domain-events",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:configure-vault": {
       "id": "module:configure-vault",
       "type": "module",
@@ -91,96 +66,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:configure-vault",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:configure-vault",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:configure-vault",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:configure-vault",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "sourceId": "req:configure-vault",
-      "targetId": "governance:domain-events",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
       "sourceId": "module:configure-vault",
       "targetId": "req:configure-vault",
       "relation": "implements",
@@ -198,7 +83,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 2,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/pipeline.ts",
       "relation": "must_review",
@@ -216,7 +101,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 3,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
       "relation": "must_review",
@@ -234,7 +119,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 4,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts",
       "relation": "must_review",
@@ -252,7 +137,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 5,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts",
       "relation": "must_review",
@@ -270,7 +155,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 6,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src-tauri/src/lib.rs",
       "relation": "must_review",
@@ -288,7 +173,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 7,
       "sourceId": "req:configure-vault",
       "targetId": "module:configure-vault",
       "relation": "must_review",
@@ -306,7 +191,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 8,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/pipeline.ts",
       "relation": "extracted_from",
@@ -324,7 +209,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 9,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts",
       "relation": "extracted_from",
@@ -342,7 +227,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 10,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts",
       "relation": "extracted_from",
@@ -360,7 +245,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 11,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts",
       "relation": "extracted_from",
@@ -378,7 +263,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 12,
       "sourceId": "req:configure-vault",
       "targetId": "file:promptnotes/src-tauri/src/lib.rs",
       "relation": "extracted_from",
@@ -396,7 +281,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 13,
       "sourceId": "design:configure-vault-verification",
       "targetId": "req:configure-vault",
       "relation": "derives_from",
@@ -414,43 +299,7 @@
       ]
     },
     {
-      "id": 19,
-      "sourceId": "design:configure-vault-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 20,
-      "sourceId": "design:configure-vault-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 21,
+      "id": 14,
       "sourceId": "module:configure-vault",
       "targetId": "design:configure-vault-verification",
       "relation": "implements",
@@ -468,7 +317,7 @@
       ]
     },
     {
-      "id": 22,
+      "id": 15,
       "sourceId": "design:configure-vault-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/configure-vault",
       "relation": "extracted_from",
@@ -486,5 +335,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.502Z"
+  "lastScanAt": "2026-05-11T09:51:50.174Z"
 }

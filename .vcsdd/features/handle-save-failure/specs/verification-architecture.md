@@ -6,10 +6,6 @@ coherence:
   depends_on:
     - id: "req:handle-save-failure"
       relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
   modules:
     - "handle-save-failure"
   source_files:

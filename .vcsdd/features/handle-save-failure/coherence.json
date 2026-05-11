@@ -8,26 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "handle-save-failure 行動仕様"
     },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:domain-events": {
-      "id": "governance:domain-events",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:handle-save-failure": {
       "id": "module:handle-save-failure",
       "type": "module",
@@ -86,78 +66,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:handle-save-failure",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:handle-save-failure",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:handle-save-failure",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:handle-save-failure",
-      "targetId": "governance:domain-events",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
       "sourceId": "module:handle-save-failure",
       "targetId": "req:handle-save-failure",
       "relation": "implements",
@@ -175,9 +83,81 @@
       ]
     },
     {
-      "id": 6,
+      "id": 2,
       "sourceId": "req:handle-save-failure",
       "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:handle-save-failure",
+      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/transitions.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:handle-save-failure",
+      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/retry.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:handle-save-failure",
+      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/discard.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:handle-save-failure",
+      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/cancel-switch.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -195,7 +175,7 @@
     {
       "id": 7,
       "sourceId": "req:handle-save-failure",
-      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/transitions.ts",
+      "targetId": "module:handle-save-failure",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -213,78 +193,6 @@
     {
       "id": 8,
       "sourceId": "req:handle-save-failure",
-      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/retry.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 9,
-      "sourceId": "req:handle-save-failure",
-      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/discard.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 10,
-      "sourceId": "req:handle-save-failure",
-      "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/cancel-switch.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 11,
-      "sourceId": "req:handle-save-failure",
-      "targetId": "module:handle-save-failure",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "sourceId": "req:handle-save-failure",
       "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -301,7 +209,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 9,
       "sourceId": "req:handle-save-failure",
       "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/transitions.ts",
       "relation": "extracted_from",
@@ -319,7 +227,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 10,
       "sourceId": "req:handle-save-failure",
       "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/retry.ts",
       "relation": "extracted_from",
@@ -337,7 +245,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 11,
       "sourceId": "req:handle-save-failure",
       "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/discard.ts",
       "relation": "extracted_from",
@@ -355,7 +263,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 12,
       "sourceId": "req:handle-save-failure",
       "targetId": "file:promptnotes/src/lib/domain/handle-save-failure/cancel-switch.ts",
       "relation": "extracted_from",
@@ -373,7 +281,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 13,
       "sourceId": "design:handle-save-failure-verification",
       "targetId": "req:handle-save-failure",
       "relation": "derives_from",
@@ -391,43 +299,7 @@
       ]
     },
     {
-      "id": 18,
-      "sourceId": "design:handle-save-failure-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 19,
-      "sourceId": "design:handle-save-failure-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 20,
+      "id": 14,
       "sourceId": "module:handle-save-failure",
       "targetId": "design:handle-save-failure-verification",
       "relation": "implements",
@@ -445,7 +317,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 15,
       "sourceId": "design:handle-save-failure-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/handle-save-failure",
       "relation": "extracted_from",
@@ -463,5 +335,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.506Z"
+  "lastScanAt": "2026-05-11T09:51:50.179Z"
 }

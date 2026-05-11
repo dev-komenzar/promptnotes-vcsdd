@@ -3,15 +3,6 @@ coherence:
   node_id: "req:note-body-editor"
   type: req
   name: "note-body-editor 行動仕様 (inline feed-row CodeMirror editor)"
-  depends_on:
-    - id: "req:ui-feed-list-actions"
-      relation: extends
-    - id: "req:ui-editor"
-      relation: replaces
-    - id: "req:capture-auto-save"
-      relation: integrates_with
-    - id: "req:handle-save-failure"
-      relation: shares_save_pipeline
   modules:
     - "note-body-editor"
     - "feed-row-inline-edit"

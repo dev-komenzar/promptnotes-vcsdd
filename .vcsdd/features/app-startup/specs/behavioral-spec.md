@@ -3,17 +3,6 @@ coherence:
   node_id: "req:app-startup"
   type: req
   name: "app-startup 行動仕様"
-  depends_on:
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
-    - id: "governance:glossary"
-      relation: specifies
-    - id: "governance:domain-events"
-      relation: depends_on
   modules:
     - "app-startup"
   source_files:

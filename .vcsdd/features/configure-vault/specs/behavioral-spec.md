@@ -3,17 +3,6 @@ coherence:
   node_id: "req:configure-vault"
   type: req
   name: "configure-vault 行動仕様"
-  depends_on:
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
-    - id: "design:ui-fields"
-      relation: derives_from
-    - id: "governance:domain-events"
-      relation: depends_on
   modules:
     - "configure-vault"
   source_files:

@@ -9,26 +9,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "ui-app-shell 行動仕様"
     },
-    "governance:implement-mapping": {
-      "id": "governance:implement-mapping",
-      "type": "governance",
-      "placeholder": true
-    },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:design-system": {
-      "id": "governance:design-system",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:ui-app-shell": {
       "id": "module:ui-app-shell",
       "type": "module",
@@ -75,16 +55,6 @@
       "path": "specs/verification-architecture.md",
       "name": "ui-app-shell 検証アーキテクチャ（純粋性境界・証明義務）"
     },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
     "file:promptnotes/src/lib/ui/app-shell/__tests__": {
       "id": "file:promptnotes/src/lib/ui/app-shell/__tests__",
       "type": "file",
@@ -95,78 +65,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:ui-app-shell",
-      "targetId": "governance:implement-mapping",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:ui-app-shell",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:ui-app-shell",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:ui-app-shell",
-      "targetId": "governance:design-system",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
       "sourceId": "module:ui-app-shell",
       "targetId": "req:ui-app-shell",
       "relation": "implements",
@@ -184,7 +82,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 2,
       "sourceId": "module:app-startup",
       "targetId": "req:ui-app-shell",
       "relation": "implements",
@@ -202,7 +100,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 3,
       "sourceId": "module:configure-vault",
       "targetId": "req:ui-app-shell",
       "relation": "implements",
@@ -220,7 +118,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 4,
       "sourceId": "req:ui-app-shell",
       "targetId": "file:promptnotes/src/lib/ui/app-shell",
       "relation": "must_review",
@@ -238,7 +136,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 5,
       "sourceId": "req:ui-app-shell",
       "targetId": "file:promptnotes/src/routes/+page.svelte",
       "relation": "must_review",
@@ -256,7 +154,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 6,
       "sourceId": "req:ui-app-shell",
       "targetId": "file:promptnotes/src/routes/+layout.ts",
       "relation": "must_review",
@@ -274,7 +172,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 7,
       "sourceId": "req:ui-app-shell",
       "targetId": "module:ui-app-shell",
       "relation": "must_review",
@@ -292,7 +190,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 8,
       "sourceId": "req:ui-app-shell",
       "targetId": "module:app-startup",
       "relation": "must_review",
@@ -310,7 +208,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 9,
       "sourceId": "req:ui-app-shell",
       "targetId": "module:configure-vault",
       "relation": "must_review",
@@ -328,7 +226,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 10,
       "sourceId": "req:ui-app-shell",
       "targetId": "file:promptnotes/src/lib/ui/app-shell",
       "relation": "extracted_from",
@@ -346,7 +244,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 11,
       "sourceId": "req:ui-app-shell",
       "targetId": "file:promptnotes/src/routes/+page.svelte",
       "relation": "extracted_from",
@@ -364,7 +262,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 12,
       "sourceId": "req:ui-app-shell",
       "targetId": "file:promptnotes/src/routes/+layout.ts",
       "relation": "extracted_from",
@@ -382,7 +280,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 13,
       "sourceId": "design:ui-app-shell-verification",
       "targetId": "req:ui-app-shell",
       "relation": "derives_from",
@@ -400,43 +298,7 @@
       ]
     },
     {
-      "id": 18,
-      "sourceId": "design:ui-app-shell-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 19,
-      "sourceId": "design:ui-app-shell-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 20,
+      "id": 14,
       "sourceId": "module:ui-app-shell",
       "targetId": "design:ui-app-shell-verification",
       "relation": "implements",
@@ -454,7 +316,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 15,
       "sourceId": "design:ui-app-shell-verification",
       "targetId": "file:promptnotes/src/lib/ui/app-shell/__tests__",
       "relation": "extracted_from",
@@ -472,5 +334,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.510Z"
+  "lastScanAt": "2026-05-11T09:51:50.183Z"
 }

@@ -8,36 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "ui-editor 行動仕様 (block-based)"
     },
-    "governance:implement-mapping": {
-      "id": "governance:implement-mapping",
-      "type": "governance",
-      "placeholder": true
-    },
-    "design:ui-fields": {
-      "id": "design:ui-fields",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:design-system": {
-      "id": "governance:design-system",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:ui-editor": {
       "id": "module:ui-editor",
       "type": "module",
@@ -92,114 +62,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:ui-editor",
-      "targetId": "governance:implement-mapping",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:ui-editor",
-      "targetId": "design:ui-fields",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:ui-editor",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:ui-editor",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "sourceId": "req:ui-editor",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "sourceId": "req:ui-editor",
-      "targetId": "governance:design-system",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 7,
       "sourceId": "module:ui-editor",
       "targetId": "req:ui-editor",
       "relation": "implements",
@@ -217,7 +79,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 2,
       "sourceId": "module:capture-auto-save",
       "targetId": "req:ui-editor",
       "relation": "implements",
@@ -235,7 +97,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 3,
       "sourceId": "module:copy-body",
       "targetId": "req:ui-editor",
       "relation": "implements",
@@ -253,7 +115,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 4,
       "sourceId": "module:edit-past-note-start",
       "targetId": "req:ui-editor",
       "relation": "implements",
@@ -271,7 +133,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 5,
       "sourceId": "module:handle-save-failure",
       "targetId": "req:ui-editor",
       "relation": "implements",
@@ -289,7 +151,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 6,
       "sourceId": "req:ui-editor",
       "targetId": "file:promptnotes/src/lib/editor",
       "relation": "must_review",
@@ -307,7 +169,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 7,
       "sourceId": "req:ui-editor",
       "targetId": "module:ui-editor",
       "relation": "must_review",
@@ -325,7 +187,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 8,
       "sourceId": "req:ui-editor",
       "targetId": "module:capture-auto-save",
       "relation": "must_review",
@@ -343,7 +205,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 9,
       "sourceId": "req:ui-editor",
       "targetId": "module:copy-body",
       "relation": "must_review",
@@ -361,7 +223,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 10,
       "sourceId": "req:ui-editor",
       "targetId": "module:edit-past-note-start",
       "relation": "must_review",
@@ -379,7 +241,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 11,
       "sourceId": "req:ui-editor",
       "targetId": "module:handle-save-failure",
       "relation": "must_review",
@@ -397,7 +259,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 12,
       "sourceId": "req:ui-editor",
       "targetId": "file:promptnotes/src/lib/editor",
       "relation": "extracted_from",
@@ -415,7 +277,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 13,
       "sourceId": "design:ui-editor-verification",
       "targetId": "req:ui-editor",
       "relation": "derives_from",
@@ -433,43 +295,7 @@
       ]
     },
     {
-      "id": 20,
-      "sourceId": "design:ui-editor-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 21,
-      "sourceId": "design:ui-editor-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 22,
+      "id": 14,
       "sourceId": "module:ui-editor",
       "targetId": "design:ui-editor-verification",
       "relation": "implements",
@@ -487,7 +313,7 @@
       ]
     },
     {
-      "id": 23,
+      "id": 15,
       "sourceId": "design:ui-editor-verification",
       "targetId": "file:promptnotes/src/lib/editor/__tests__",
       "relation": "extracted_from",
@@ -505,5 +331,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.511Z"
+  "lastScanAt": "2026-05-11T09:51:50.185Z"
 }

@@ -14,21 +14,6 @@
       "placeholder": false,
       "name": "ui-editor 行動仕様 (deprecated, block-based)"
     },
-    "req:ui-feed-list-actions": {
-      "id": "req:ui-feed-list-actions",
-      "type": "requirement",
-      "placeholder": true
-    },
-    "req:capture-auto-save": {
-      "id": "req:capture-auto-save",
-      "type": "requirement",
-      "placeholder": true
-    },
-    "req:handle-save-failure": {
-      "id": "req:handle-save-failure",
-      "type": "requirement",
-      "placeholder": true
-    },
     "module:note-body-editor": {
       "id": "module:note-body-editor",
       "type": "module",
@@ -96,78 +81,6 @@
     },
     {
       "id": 3,
-      "sourceId": "req:note-body-editor",
-      "targetId": "req:ui-feed-list-actions",
-      "relation": "extends",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:note-body-editor",
-      "targetId": "req:ui-editor",
-      "relation": "replaces",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "sourceId": "req:note-body-editor",
-      "targetId": "req:capture-auto-save",
-      "relation": "integrates_with",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "sourceId": "req:note-body-editor",
-      "targetId": "req:handle-save-failure",
-      "relation": "shares_save_pipeline",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 7,
       "sourceId": "module:note-body-editor",
       "targetId": "req:note-body-editor",
       "relation": "implements",
@@ -185,7 +98,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 4,
       "sourceId": "module:feed-row-inline-edit",
       "targetId": "req:note-body-editor",
       "relation": "implements",
@@ -203,7 +116,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 5,
       "sourceId": "req:note-body-editor",
       "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "relation": "must_review",
@@ -221,7 +134,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 6,
       "sourceId": "req:note-body-editor",
       "targetId": "file:promptnotes/src-tauri/src/editor.rs",
       "relation": "must_review",
@@ -239,7 +152,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 7,
       "sourceId": "req:note-body-editor",
       "targetId": "module:note-body-editor",
       "relation": "must_review",
@@ -257,7 +170,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 8,
       "sourceId": "req:note-body-editor",
       "targetId": "module:feed-row-inline-edit",
       "relation": "must_review",
@@ -275,7 +188,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 9,
       "sourceId": "req:note-body-editor",
       "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "relation": "extracted_from",
@@ -293,7 +206,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 10,
       "sourceId": "req:note-body-editor",
       "targetId": "file:promptnotes/src-tauri/src/editor.rs",
       "relation": "extracted_from",
@@ -311,7 +224,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 11,
       "sourceId": "design:note-body-editor-verification",
       "targetId": "req:note-body-editor",
       "relation": "verifies",
@@ -329,7 +242,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 12,
       "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src-tauri/src/editor.rs",
       "relation": "extracted_from",
@@ -347,7 +260,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 13,
       "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src-tauri/tests/editor_handlers.rs",
       "relation": "extracted_from",
@@ -365,7 +278,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 14,
       "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
       "relation": "extracted_from",
@@ -383,7 +296,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 15,
       "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "relation": "extracted_from",
@@ -401,5 +314,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.507Z"
+  "lastScanAt": "2026-05-11T09:51:50.180Z"
 }

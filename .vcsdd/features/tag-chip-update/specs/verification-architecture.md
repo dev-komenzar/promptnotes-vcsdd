@@ -6,10 +6,6 @@ coherence:
   depends_on:
     - id: "req:tag-chip-update"
       relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
   modules:
     - "tag-chip-update"
   source_files:

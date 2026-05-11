@@ -3,17 +3,6 @@ coherence:
   node_id: "req:capture-auto-save"
   type: req
   name: "capture-auto-save 行動仕様"
-  depends_on:
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "design:type-contracts"
-      relation: derives_from
-    - id: "governance:domain-events"
-      relation: depends_on
-    - id: "governance:glossary"
-      relation: specifies
   modules:
     - "capture-auto-save"
   source_files:

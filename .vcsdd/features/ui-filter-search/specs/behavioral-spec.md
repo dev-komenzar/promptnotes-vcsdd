@@ -3,21 +3,6 @@ coherence:
   node_id: "req:ui-filter-search"
   type: req
   name: "ui-filter-search 行動仕様"
-  depends_on:
-    - id: "governance:implement-mapping"
-      relation: derives_from
-    - id: "design:ui-fields"
-      relation: derives_from
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "governance:design-system"
-      relation: depends_on
-    - id: "req:apply-filter-or-search"
-      relation: depends_on
-    - id: "req:ui-tag-chip"
-      relation: depends_on
   modules:
     - "ui-filter-search"
   source_files:
@@ -516,7 +501,7 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
 ### REQ-FILTER-017 — Adversarial input handling
 
 **Ubiquitous**: THE SYSTEM SHALL handle pathological search inputs without throwing, hanging, or corrupting state:
-- EC-S-011: Control characters (`\n`, `\t`, ` `) in query — `String.includes` processes them literally; they match if present in haystack
+- EC-S-011: Control characters (`\n`, `\t`, `\0`) in query — `String.includes` processes them literally; they match if present in haystack
 - EC-S-012: Extremely long query (up to 10 000 characters) — `searchPredicate` runs substring match; performance may degrade for very long queries but correctness is maintained
 - EC-S-013: RTL characters (Arabic, Hebrew) in query — substring match only; text direction is irrelevant to `String.includes`
 - EC-S-014: Multiple consecutive Esc presses — second and subsequent presses dispatch `SearchCleared` with already-empty `searchQuery`; no visible change (no-op in reducer)
@@ -545,7 +530,7 @@ computeVisible(allNoteIds, noteMetadata, activeTags, searchQuery, sortDir):
 | EC-S-008 | Query with only tag name (no body match needed) | Matches if any note tag name contains query as substring. e.g. query "dra" matches note with tag "draft". |
 | EC-S-009 | Unicode query "テスト" | `toLowerCase()` does not change Japanese. Match is exact substring. |
 | EC-S-010 | Esc key with no pending debounce | Timer cancel is no-op. `SearchCleared` dispatched. No visible change if already empty. |
-| EC-S-011 | Control characters in query (\n, \t,  ) | `String.includes` processes literally. Match if present in haystack. |
+| EC-S-011 | Control characters in query (\n, \t, \0) | `String.includes` processes literally. Match if present in haystack. |
 | EC-S-012 | Extremely long query (10 000 chars) | No crash. Correctness preserved. |
 | EC-S-013 | RTL characters in query | Substring match only. No directional difference. |
 | EC-S-014 | Multiple consecutive Esc presses | Second+ press: `SearchCleared` with already-empty query. No-op. |

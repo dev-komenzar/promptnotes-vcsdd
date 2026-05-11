@@ -8,26 +8,6 @@
       "path": "specs/behavioral-spec.md",
       "name": "tag-chip-update 行動仕様"
     },
-    "design:workflows": {
-      "id": "design:workflows",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:aggregates": {
-      "id": "design:aggregates",
-      "type": "design",
-      "placeholder": true
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
-    },
-    "governance:domain-events": {
-      "id": "governance:domain-events",
-      "type": "governance",
-      "placeholder": true
-    },
     "module:tag-chip-update": {
       "id": "module:tag-chip-update",
       "type": "module",
@@ -100,78 +80,6 @@
   "edges": [
     {
       "id": 1,
-      "sourceId": "req:tag-chip-update",
-      "targetId": "design:workflows",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "sourceId": "req:tag-chip-update",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:tag-chip-update",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:tag-chip-update",
-      "targetId": "governance:domain-events",
-      "relation": "depends_on",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 5,
       "sourceId": "module:tag-chip-update",
       "targetId": "req:tag-chip-update",
       "relation": "implements",
@@ -189,9 +97,81 @@
       ]
     },
     {
-      "id": 6,
+      "id": 2,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -209,7 +189,7 @@
     {
       "id": 7,
       "sourceId": "req:tag-chip-update",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -227,7 +207,7 @@
     {
       "id": 8,
       "sourceId": "req:tag-chip-update",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -245,7 +225,7 @@
     {
       "id": 9,
       "sourceId": "req:tag-chip-update",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
+      "targetId": "module:tag-chip-update",
       "relation": "must_review",
       "semantic": "governance",
       "confidence": 0.8,
@@ -263,78 +243,6 @@
     {
       "id": 10,
       "sourceId": "req:tag-chip-update",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 11,
-      "sourceId": "req:tag-chip-update",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "sourceId": "req:tag-chip-update",
-      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 13,
-      "sourceId": "req:tag-chip-update",
-      "targetId": "module:tag-chip-update",
-      "relation": "must_review",
-      "semantic": "governance",
-      "confidence": 0.8,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "convention",
-          "score": 0.8,
-          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -351,7 +259,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 11,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
       "relation": "extracted_from",
@@ -369,7 +277,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 12,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
       "relation": "extracted_from",
@@ -387,7 +295,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 13,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
       "relation": "extracted_from",
@@ -405,7 +313,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 14,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
       "relation": "extracted_from",
@@ -423,7 +331,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 15,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
       "relation": "extracted_from",
@@ -441,7 +349,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 16,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
       "relation": "extracted_from",
@@ -459,7 +367,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 17,
       "sourceId": "design:tag-chip-update-verification",
       "targetId": "req:tag-chip-update",
       "relation": "derives_from",
@@ -477,43 +385,7 @@
       ]
     },
     {
-      "id": 22,
-      "sourceId": "design:tag-chip-update-verification",
-      "targetId": "design:aggregates",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 23,
-      "sourceId": "design:tag-chip-update-verification",
-      "targetId": "design:type-contracts",
-      "relation": "derives_from",
-      "semantic": "governance",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/verification-architecture.md depends_on",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 24,
+      "id": 18,
       "sourceId": "module:tag-chip-update",
       "targetId": "design:tag-chip-update-verification",
       "relation": "implements",
@@ -531,7 +403,7 @@
       ]
     },
     {
-      "id": 25,
+      "id": 19,
       "sourceId": "design:tag-chip-update-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
       "relation": "extracted_from",
@@ -549,5 +421,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T09:18:23.509Z"
+  "lastScanAt": "2026-05-11T09:51:50.181Z"
 }

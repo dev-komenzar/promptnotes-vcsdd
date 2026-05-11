@@ -3,19 +3,6 @@ coherence:
   node_id: "req:ui-feed-list-actions"
   type: req
   name: "ui-feed-list-actions 行動仕様"
-  depends_on:
-    - id: "governance:implement-mapping"
-      relation: derives_from
-    - id: "design:ui-fields"
-      relation: derives_from
-    - id: "design:workflows"
-      relation: derives_from
-    - id: "design:aggregates"
-      relation: derives_from
-    - id: "governance:design-system"
-      relation: depends_on
-    - id: "design:type-contracts"
-      relation: derives_from
   modules:
     - "ui-feed-list-actions"
     - "edit-past-note-start"
