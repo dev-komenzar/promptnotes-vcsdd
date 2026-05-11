@@ -43,24 +43,28 @@
       "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
       "path": "promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts"
     },
     "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts": {
       "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
       "path": "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
     },
     "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts": {
       "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
       "path": "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
     },
     "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts": {
       "id": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
       "path": "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
     },
     "design:apply-filter-or-search-verification": {
@@ -190,6 +194,96 @@
       "id": 7,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:apply-filter-or-search",
+      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:apply-filter-or-search",
+      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:apply-filter-or-search",
+      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:apply-filter-or-search",
+      "targetId": "module:apply-filter-or-search",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:apply-filter-or-search",
+      "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -205,7 +299,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 13,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts",
       "relation": "extracted_from",
@@ -223,7 +317,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 14,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts",
       "relation": "extracted_from",
@@ -241,7 +335,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 15,
       "sourceId": "req:apply-filter-or-search",
       "targetId": "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts",
       "relation": "extracted_from",
@@ -259,7 +353,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 16,
       "sourceId": "design:apply-filter-or-search-verification",
       "targetId": "req:apply-filter-or-search",
       "relation": "derives_from",
@@ -277,7 +371,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 17,
       "sourceId": "design:apply-filter-or-search-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
@@ -295,7 +389,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 18,
       "sourceId": "design:apply-filter-or-search-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
@@ -313,7 +407,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 19,
       "sourceId": "module:apply-filter-or-search",
       "targetId": "design:apply-filter-or-search-verification",
       "relation": "implements",
@@ -331,7 +425,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 20,
       "sourceId": "design:apply-filter-or-search-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/apply-filter-or-search",
       "relation": "extracted_from",
@@ -349,5 +443,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:10:19.174Z"
+  "lastScanAt": "2026-05-11T09:18:23.499Z"
 }

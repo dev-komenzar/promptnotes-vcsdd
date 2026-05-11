@@ -29,6 +29,18 @@ coherence:
     - "promptnotes/src/lib/feed/sortByUpdatedAt.ts"
     - "promptnotes/src/lib/feed/types.ts"
     - "promptnotes/src/lib/feed/FeedList.svelte"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/feed/SearchInput.svelte"
+        - "file:promptnotes/src/lib/feed/SortToggle.svelte"
+        - "file:promptnotes/src/lib/feed/feedReducer.ts"
+        - "file:promptnotes/src/lib/feed/computeVisible.ts"
+        - "file:promptnotes/src/lib/feed/searchPredicate.ts"
+        - "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts"
+        - "file:promptnotes/src/lib/feed/types.ts"
+        - "file:promptnotes/src/lib/feed/FeedList.svelte"
+        - "module:ui-filter-search"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification — ui-filter-search

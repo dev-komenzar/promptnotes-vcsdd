@@ -26,6 +26,19 @@ coherence:
     - "promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts"
     - "promptnotes/src/lib/domain/capture-auto-save/update-projections.ts"
     - "promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/capture-auto-save/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/prepare-save-request.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/build-validated-save-request.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/serialize-note.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/serialize-blocks-to-markdown.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/parse-markdown-to-blocks.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/note-is-empty.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/update-projections.ts"
+        - "file:promptnotes/src/lib/domain/capture-auto-save/timestamp-utils.ts"
+        - "module:capture-auto-save"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: CaptureAutoSave

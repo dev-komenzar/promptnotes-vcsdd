@@ -22,6 +22,15 @@ coherence:
     - "promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts"
     - "promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts"
     - "promptnotes/src-tauri/src/lib.rs"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/configure-vault/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/configure-vault/validate-and-transition.ts"
+        - "file:promptnotes/src/lib/domain/configure-vault/map-stat-dir-result.ts"
+        - "file:promptnotes/src/lib/domain/configure-vault/map-settings-save-error.ts"
+        - "file:promptnotes/src-tauri/src/lib.rs"
+        - "module:configure-vault"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: ConfigureVault

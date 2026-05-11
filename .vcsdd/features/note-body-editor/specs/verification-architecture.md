@@ -1,6 +1,6 @@
 ---
 coherence:
-  node_id: "va:note-body-editor"
+  node_id: "design:note-body-editor-verification"
   type: verification-architecture
   name: "note-body-editor 検証アーキテクチャ"
   depends_on:

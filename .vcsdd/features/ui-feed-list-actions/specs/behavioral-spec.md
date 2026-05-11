@@ -37,6 +37,28 @@ coherence:
     - "docs/domain/code/ts/src/capture/states.ts"
     - "docs/domain/code/ts/src/shared/note.ts"
     - "docs/domain/code/ts/src/shared/blocks.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/feed/FeedList.svelte"
+        - "file:promptnotes/src/lib/feed/FeedRow.svelte"
+        - "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte"
+        - "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte"
+        - "file:promptnotes/src/lib/feed/feedReducer.ts"
+        - "file:promptnotes/src/lib/feed/feedRowPredicates.ts"
+        - "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts"
+        - "file:promptnotes/src/lib/feed/feedStateChannel.ts"
+        - "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts"
+        - "file:promptnotes/src/lib/feed/types.ts"
+        - "file:promptnotes/src/lib/feed/clockHelpers.ts"
+        - "file:promptnotes/src-tauri/src/feed.rs"
+        - "file:promptnotes/src-tauri/src/editor.rs"
+        - "file:docs/domain/code/ts/src/capture/states.ts"
+        - "file:docs/domain/code/ts/src/shared/note.ts"
+        - "file:docs/domain/code/ts/src/shared/blocks.ts"
+        - "module:ui-feed-list-actions"
+        - "module:edit-past-note-start"
+        - "module:delete-note"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: ui-feed-list-actions

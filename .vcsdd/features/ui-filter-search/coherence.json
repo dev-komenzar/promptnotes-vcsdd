@@ -53,48 +53,56 @@
       "id": "file:promptnotes/src/lib/feed/SearchInput.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/SearchInput.svelte",
       "path": "promptnotes/src/lib/feed/SearchInput.svelte"
     },
     "file:promptnotes/src/lib/feed/SortToggle.svelte": {
       "id": "file:promptnotes/src/lib/feed/SortToggle.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/SortToggle.svelte",
       "path": "promptnotes/src/lib/feed/SortToggle.svelte"
     },
     "file:promptnotes/src/lib/feed/feedReducer.ts": {
       "id": "file:promptnotes/src/lib/feed/feedReducer.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/feedReducer.ts",
       "path": "promptnotes/src/lib/feed/feedReducer.ts"
     },
     "file:promptnotes/src/lib/feed/computeVisible.ts": {
       "id": "file:promptnotes/src/lib/feed/computeVisible.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/computeVisible.ts",
       "path": "promptnotes/src/lib/feed/computeVisible.ts"
     },
     "file:promptnotes/src/lib/feed/searchPredicate.ts": {
       "id": "file:promptnotes/src/lib/feed/searchPredicate.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/searchPredicate.ts",
       "path": "promptnotes/src/lib/feed/searchPredicate.ts"
     },
     "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts": {
       "id": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/sortByUpdatedAt.ts",
       "path": "promptnotes/src/lib/feed/sortByUpdatedAt.ts"
     },
     "file:promptnotes/src/lib/feed/types.ts": {
       "id": "file:promptnotes/src/lib/feed/types.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/types.ts",
       "path": "promptnotes/src/lib/feed/types.ts"
     },
     "file:promptnotes/src/lib/feed/FeedList.svelte": {
       "id": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/FeedList.svelte",
       "path": "promptnotes/src/lib/feed/FeedList.svelte"
     },
     "design:ui-filter-search-verification": {
@@ -265,6 +273,168 @@
       "id": 9,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/SearchInput.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/SortToggle.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/computeVisible.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/searchPredicate.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/types.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "module:ui-filter-search",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "req:ui-filter-search",
+      "targetId": "file:promptnotes/src/lib/feed/SearchInput.svelte",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -280,7 +450,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 19,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/SortToggle.svelte",
       "relation": "extracted_from",
@@ -298,7 +468,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 20,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
       "relation": "extracted_from",
@@ -316,7 +486,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 21,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/computeVisible.ts",
       "relation": "extracted_from",
@@ -334,7 +504,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 22,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/searchPredicate.ts",
       "relation": "extracted_from",
@@ -352,7 +522,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 23,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/sortByUpdatedAt.ts",
       "relation": "extracted_from",
@@ -370,7 +540,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 24,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/types.ts",
       "relation": "extracted_from",
@@ -388,7 +558,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 25,
       "sourceId": "req:ui-filter-search",
       "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "relation": "extracted_from",
@@ -406,7 +576,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 26,
       "sourceId": "design:ui-filter-search-verification",
       "targetId": "req:ui-filter-search",
       "relation": "derives_from",
@@ -424,7 +594,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 27,
       "sourceId": "design:ui-filter-search-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
@@ -442,7 +612,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 28,
       "sourceId": "design:ui-filter-search-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
@@ -460,7 +630,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 29,
       "sourceId": "module:ui-filter-search",
       "targetId": "design:ui-filter-search-verification",
       "relation": "implements",
@@ -478,7 +648,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 30,
       "sourceId": "design:ui-filter-search-verification",
       "targetId": "file:promptnotes/src/lib/feed/__tests__",
       "relation": "extracted_from",
@@ -496,5 +666,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:19:45.430Z"
+  "lastScanAt": "2026-05-11T09:18:23.513Z"
 }

@@ -27,6 +27,20 @@ coherence:
     - "promptnotes/src/lib/domain/app-startup/errors.ts"
     - "promptnotes/src-tauri/src/domain/vault"
     - "promptnotes/src-tauri/src/lib.rs"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/app-startup/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts"
+        - "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts"
+        - "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts"
+        - "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts"
+        - "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts"
+        - "file:promptnotes/src/lib/domain/app-startup/stages.ts"
+        - "file:promptnotes/src/lib/domain/app-startup/errors.ts"
+        - "file:promptnotes/src-tauri/src/domain/vault"
+        - "file:promptnotes/src-tauri/src/lib.rs"
+        - "module:app-startup"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: AppStartup

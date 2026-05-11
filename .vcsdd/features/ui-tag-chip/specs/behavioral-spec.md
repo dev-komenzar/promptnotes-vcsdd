@@ -28,6 +28,19 @@ coherence:
     - "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
     - "promptnotes/src/lib/domain/tag-chip-update"
     - "promptnotes/src/lib/domain/apply-filter-or-search"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/feed/TagFilterSidebar.svelte"
+        - "file:promptnotes/src/lib/feed/FeedRow.svelte"
+        - "file:promptnotes/src/lib/feed/feedReducer.ts"
+        - "file:promptnotes/src/lib/feed/tagInventory.ts"
+        - "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts"
+        - "file:promptnotes/src/lib/domain/tag-chip-update"
+        - "file:promptnotes/src/lib/domain/apply-filter-or-search"
+        - "module:ui-tag-chip"
+        - "module:tag-chip-update"
+        - "module:apply-filter-or-search"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification — ui-tag-chip

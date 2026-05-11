@@ -33,6 +33,11 @@
       "type": "governance",
       "placeholder": true
     },
+    "design:type-contracts": {
+      "id": "design:type-contracts",
+      "type": "design",
+      "placeholder": true
+    },
     "module:ui-feed-list-actions": {
       "id": "module:ui-feed-list-actions",
       "type": "module",
@@ -55,67 +60,113 @@
       "id": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/FeedList.svelte",
       "path": "promptnotes/src/lib/feed/FeedList.svelte"
     },
     "file:promptnotes/src/lib/feed/FeedRow.svelte": {
       "id": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/FeedRow.svelte",
       "path": "promptnotes/src/lib/feed/FeedRow.svelte"
     },
     "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte": {
       "id": "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
       "path": "promptnotes/src/lib/feed/DeleteConfirmModal.svelte"
     },
     "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte": {
       "id": "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
       "path": "promptnotes/src/lib/feed/DeletionFailureBanner.svelte"
     },
     "file:promptnotes/src/lib/feed/feedReducer.ts": {
       "id": "file:promptnotes/src/lib/feed/feedReducer.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/feedReducer.ts",
       "path": "promptnotes/src/lib/feed/feedReducer.ts"
     },
     "file:promptnotes/src/lib/feed/feedRowPredicates.ts": {
       "id": "file:promptnotes/src/lib/feed/feedRowPredicates.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/feedRowPredicates.ts",
       "path": "promptnotes/src/lib/feed/feedRowPredicates.ts"
     },
     "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts": {
       "id": "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/deleteConfirmPredicates.ts",
       "path": "promptnotes/src/lib/feed/deleteConfirmPredicates.ts"
     },
     "file:promptnotes/src/lib/feed/feedStateChannel.ts": {
       "id": "file:promptnotes/src/lib/feed/feedStateChannel.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/feedStateChannel.ts",
       "path": "promptnotes/src/lib/feed/feedStateChannel.ts"
     },
     "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts": {
       "id": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/tauriFeedAdapter.ts",
       "path": "promptnotes/src/lib/feed/tauriFeedAdapter.ts"
     },
     "file:promptnotes/src/lib/feed/types.ts": {
       "id": "file:promptnotes/src/lib/feed/types.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/types.ts",
       "path": "promptnotes/src/lib/feed/types.ts"
     },
     "file:promptnotes/src/lib/feed/clockHelpers.ts": {
       "id": "file:promptnotes/src/lib/feed/clockHelpers.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/clockHelpers.ts",
       "path": "promptnotes/src/lib/feed/clockHelpers.ts"
+    },
+    "file:promptnotes/src-tauri/src/feed.rs": {
+      "id": "file:promptnotes/src-tauri/src/feed.rs",
+      "type": "file",
+      "placeholder": false,
+      "name": "promptnotes/src-tauri/src/feed.rs",
+      "path": "promptnotes/src-tauri/src/feed.rs"
+    },
+    "file:promptnotes/src-tauri/src/editor.rs": {
+      "id": "file:promptnotes/src-tauri/src/editor.rs",
+      "type": "file",
+      "placeholder": false,
+      "name": "promptnotes/src-tauri/src/editor.rs",
+      "path": "promptnotes/src-tauri/src/editor.rs"
+    },
+    "file:docs/domain/code/ts/src/capture/states.ts": {
+      "id": "file:docs/domain/code/ts/src/capture/states.ts",
+      "type": "file",
+      "placeholder": false,
+      "name": "docs/domain/code/ts/src/capture/states.ts",
+      "path": "docs/domain/code/ts/src/capture/states.ts"
+    },
+    "file:docs/domain/code/ts/src/shared/note.ts": {
+      "id": "file:docs/domain/code/ts/src/shared/note.ts",
+      "type": "file",
+      "placeholder": false,
+      "name": "docs/domain/code/ts/src/shared/note.ts",
+      "path": "docs/domain/code/ts/src/shared/note.ts"
+    },
+    "file:docs/domain/code/ts/src/shared/blocks.ts": {
+      "id": "file:docs/domain/code/ts/src/shared/blocks.ts",
+      "type": "file",
+      "placeholder": false,
+      "name": "docs/domain/code/ts/src/shared/blocks.ts",
+      "path": "docs/domain/code/ts/src/shared/blocks.ts"
     },
     "design:ui-feed-list-actions-verification": {
       "id": "design:ui-feed-list-actions-verification",
@@ -123,11 +174,6 @@
       "placeholder": false,
       "path": "specs/verification-architecture.md",
       "name": "ui-feed-list-actions 検証アーキテクチャ（純粋性境界・証明義務）"
-    },
-    "design:type-contracts": {
-      "id": "design:type-contracts",
-      "type": "design",
-      "placeholder": true
     },
     "file:promptnotes/src/lib/feed/__tests__": {
       "id": "file:promptnotes/src/lib/feed/__tests__",
@@ -229,25 +275,25 @@
     },
     {
       "id": 6,
-      "sourceId": "module:ui-feed-list-actions",
-      "targetId": "req:ui-feed-list-actions",
-      "relation": "implements",
-      "semantic": "technical",
-      "confidence": 0.85,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "design:type-contracts",
+      "relation": "derives_from",
+      "semantic": "governance",
+      "confidence": 0.9,
       "isActive": true,
       "evidence": [
         {
           "sourceType": "frontmatter",
-          "method": "modules",
-          "score": 0.85,
-          "detail": "Module declared in specs/behavioral-spec.md",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
           "isNegative": false
         }
       ]
     },
     {
       "id": 7,
-      "sourceId": "module:edit-past-note-start",
+      "sourceId": "module:ui-feed-list-actions",
       "targetId": "req:ui-feed-list-actions",
       "relation": "implements",
       "semantic": "technical",
@@ -265,7 +311,7 @@
     },
     {
       "id": 8,
-      "sourceId": "module:delete-note",
+      "sourceId": "module:edit-past-note-start",
       "targetId": "req:ui-feed-list-actions",
       "relation": "implements",
       "semantic": "technical",
@@ -283,6 +329,366 @@
     },
     {
       "id": 9,
+      "sourceId": "module:delete-note",
+      "targetId": "req:ui-feed-list-actions",
+      "relation": "implements",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "modules",
+          "score": 0.85,
+          "detail": "Module declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/feedRowPredicates.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/feedStateChannel.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/types.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src/lib/feed/clockHelpers.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src-tauri/src/feed.rs",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src-tauri/src/editor.rs",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:docs/domain/code/ts/src/capture/states.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:docs/domain/code/ts/src/shared/note.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:docs/domain/code/ts/src/shared/blocks.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "module:ui-feed-list-actions",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "module:edit-past-note-start",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "module:delete-note",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 29,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/FeedList.svelte",
       "relation": "extracted_from",
@@ -300,7 +706,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 30,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "relation": "extracted_from",
@@ -318,7 +724,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 31,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/DeleteConfirmModal.svelte",
       "relation": "extracted_from",
@@ -336,7 +742,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 32,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/DeletionFailureBanner.svelte",
       "relation": "extracted_from",
@@ -354,7 +760,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 33,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/feedReducer.ts",
       "relation": "extracted_from",
@@ -372,7 +778,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 34,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/feedRowPredicates.ts",
       "relation": "extracted_from",
@@ -390,7 +796,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 35,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/deleteConfirmPredicates.ts",
       "relation": "extracted_from",
@@ -408,7 +814,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 36,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/feedStateChannel.ts",
       "relation": "extracted_from",
@@ -426,7 +832,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 37,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/tauriFeedAdapter.ts",
       "relation": "extracted_from",
@@ -444,7 +850,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 38,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/types.ts",
       "relation": "extracted_from",
@@ -462,7 +868,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 39,
       "sourceId": "req:ui-feed-list-actions",
       "targetId": "file:promptnotes/src/lib/feed/clockHelpers.ts",
       "relation": "extracted_from",
@@ -480,7 +886,97 @@
       ]
     },
     {
-      "id": 20,
+      "id": 40,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src-tauri/src/feed.rs",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:promptnotes/src-tauri/src/editor.rs",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:docs/domain/code/ts/src/capture/states.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:docs/domain/code/ts/src/shared/note.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "sourceId": "req:ui-feed-list-actions",
+      "targetId": "file:docs/domain/code/ts/src/shared/blocks.ts",
+      "relation": "extracted_from",
+      "semantic": "technical",
+      "confidence": 0.85,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "source_files",
+          "score": 0.85,
+          "detail": "Source file declared in specs/behavioral-spec.md",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 45,
       "sourceId": "design:ui-feed-list-actions-verification",
       "targetId": "req:ui-feed-list-actions",
       "relation": "derives_from",
@@ -498,7 +994,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 46,
       "sourceId": "design:ui-feed-list-actions-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
@@ -516,7 +1012,7 @@
       ]
     },
     {
-      "id": 22,
+      "id": 47,
       "sourceId": "design:ui-feed-list-actions-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
@@ -534,7 +1030,7 @@
       ]
     },
     {
-      "id": 23,
+      "id": 48,
       "sourceId": "module:ui-feed-list-actions",
       "targetId": "design:ui-feed-list-actions-verification",
       "relation": "implements",
@@ -552,7 +1048,7 @@
       ]
     },
     {
-      "id": 24,
+      "id": 49,
       "sourceId": "design:ui-feed-list-actions-verification",
       "targetId": "file:promptnotes/src/lib/feed/__tests__",
       "relation": "extracted_from",
@@ -570,5 +1066,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-06T06:29:21.152Z"
+  "lastScanAt": "2026-05-11T09:18:23.512Z"
 }

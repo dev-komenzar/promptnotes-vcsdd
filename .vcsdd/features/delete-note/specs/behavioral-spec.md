@@ -23,6 +23,18 @@ coherence:
     - "promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts"
     - "promptnotes/src/lib/domain/delete-note/index.ts"
     - "promptnotes/src-tauri/src/feed.rs"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/delete-note/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/delete-note/authorize-deletion.ts"
+        - "file:promptnotes/src/lib/domain/delete-note/authorize-deletion-pure.ts"
+        - "file:promptnotes/src/lib/domain/delete-note/build-delete-request.ts"
+        - "file:promptnotes/src/lib/domain/delete-note/update-projections.ts"
+        - "file:promptnotes/src/lib/domain/delete-note/normalize-fs-error.ts"
+        - "file:promptnotes/src/lib/domain/delete-note/index.ts"
+        - "file:promptnotes/src-tauri/src/feed.rs"
+        - "module:delete-note"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: DeleteNote

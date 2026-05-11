@@ -8,29 +8,26 @@
       "path": "specs/behavioral-spec.md",
       "name": "note-body-editor 行動仕様 (inline feed-row CodeMirror editor)"
     },
-    "req:ui-feed-list-actions": {
-      "id": "req:ui-feed-list-actions",
-      "type": "req",
-      "placeholder": false,
-      "name": "ui-feed-list-actions 行動仕様"
-    },
     "req:ui-editor": {
       "id": "req:ui-editor",
       "type": "req",
       "placeholder": false,
       "name": "ui-editor 行動仕様 (deprecated, block-based)"
     },
+    "req:ui-feed-list-actions": {
+      "id": "req:ui-feed-list-actions",
+      "type": "requirement",
+      "placeholder": true
+    },
     "req:capture-auto-save": {
       "id": "req:capture-auto-save",
-      "type": "req",
-      "placeholder": false,
-      "name": "capture-auto-save 行動仕様"
+      "type": "requirement",
+      "placeholder": true
     },
     "req:handle-save-failure": {
       "id": "req:handle-save-failure",
-      "type": "req",
-      "placeholder": false,
-      "name": "handle-save-failure 行動仕様"
+      "type": "requirement",
+      "placeholder": true
     },
     "module:note-body-editor": {
       "id": "module:note-body-editor",
@@ -48,16 +45,18 @@
       "id": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/feed/FeedRow.svelte",
       "path": "promptnotes/src/lib/feed/FeedRow.svelte"
     },
     "file:promptnotes/src-tauri/src/editor.rs": {
       "id": "file:promptnotes/src-tauri/src/editor.rs",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src-tauri/src/editor.rs",
       "path": "promptnotes/src-tauri/src/editor.rs"
     },
-    "va:note-body-editor": {
-      "id": "va:note-body-editor",
+    "design:note-body-editor-verification": {
+      "id": "design:note-body-editor-verification",
       "type": "verification-architecture",
       "placeholder": false,
       "path": "specs/verification-architecture.md",
@@ -78,7 +77,25 @@
   },
   "edges": [
     {
-      "id": 1,
+      "id": 2,
+      "sourceId": "req:note-body-editor",
+      "targetId": "req:ui-editor",
+      "relation": "replaces",
+      "semantic": "lifecycle",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "filesystem",
+          "method": "source-deletion",
+          "score": 0.9,
+          "detail": "promptnotes/src/lib/editor/ directory removed; ui-editor behavioral-spec marked deprecated",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 3,
       "sourceId": "req:note-body-editor",
       "targetId": "req:ui-feed-list-actions",
       "relation": "extends",
@@ -96,36 +113,11 @@
       ]
     },
     {
-      "id": 2,
+      "id": 4,
       "sourceId": "req:note-body-editor",
       "targetId": "req:ui-editor",
       "relation": "replaces",
-      "semantic": "lifecycle",
-      "confidence": 0.95,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.95,
-          "detail": "Declared in specs/behavioral-spec.md depends_on (PN-yv3 GAP-2: ui-editor source code removed in PN-064/PN-la1/PN-9hh, deprecation marked in PN-z6f)",
-          "isNegative": false
-        },
-        {
-          "sourceType": "filesystem",
-          "method": "source-deletion",
-          "score": 0.9,
-          "detail": "promptnotes/src/lib/editor/ directory removed; ui-editor behavioral-spec marked deprecated",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "sourceId": "req:note-body-editor",
-      "targetId": "req:capture-auto-save",
-      "relation": "integrates_with",
-      "semantic": "technical",
+      "semantic": "governance",
       "confidence": 0.9,
       "isActive": true,
       "evidence": [
@@ -133,31 +125,49 @@
           "sourceType": "frontmatter",
           "method": "frontmatter",
           "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on; save pipeline reused via trigger_idle_save / trigger_blur_save",
-          "isNegative": false
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "sourceId": "req:note-body-editor",
-      "targetId": "req:handle-save-failure",
-      "relation": "shares_save_pipeline",
-      "semantic": "technical",
-      "confidence": 0.9,
-      "isActive": true,
-      "evidence": [
-        {
-          "sourceType": "frontmatter",
-          "method": "frontmatter",
-          "score": 0.9,
-          "detail": "Declared in specs/behavioral-spec.md depends_on; save-failed event surface inherited",
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
           "isNegative": false
         }
       ]
     },
     {
       "id": 5,
+      "sourceId": "req:note-body-editor",
+      "targetId": "req:capture-auto-save",
+      "relation": "integrates_with",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "sourceId": "req:note-body-editor",
+      "targetId": "req:handle-save-failure",
+      "relation": "shares_save_pipeline",
+      "semantic": "governance",
+      "confidence": 0.9,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "frontmatter",
+          "score": 0.9,
+          "detail": "Declared in specs/behavioral-spec.md depends_on",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
       "sourceId": "module:note-body-editor",
       "targetId": "req:note-body-editor",
       "relation": "implements",
@@ -175,7 +185,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 8,
       "sourceId": "module:feed-row-inline-edit",
       "targetId": "req:note-body-editor",
       "relation": "implements",
@@ -193,7 +203,79 @@
       ]
     },
     {
-      "id": 7,
+      "id": 9,
+      "sourceId": "req:note-body-editor",
+      "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:note-body-editor",
+      "targetId": "file:promptnotes/src-tauri/src/editor.rs",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:note-body-editor",
+      "targetId": "module:note-body-editor",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:note-body-editor",
+      "targetId": "module:feed-row-inline-edit",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
       "sourceId": "req:note-body-editor",
       "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "relation": "extracted_from",
@@ -211,7 +293,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 14,
       "sourceId": "req:note-body-editor",
       "targetId": "file:promptnotes/src-tauri/src/editor.rs",
       "relation": "extracted_from",
@@ -229,8 +311,8 @@
       ]
     },
     {
-      "id": 9,
-      "sourceId": "va:note-body-editor",
+      "id": 15,
+      "sourceId": "design:note-body-editor-verification",
       "targetId": "req:note-body-editor",
       "relation": "verifies",
       "semantic": "governance",
@@ -247,8 +329,8 @@
       ]
     },
     {
-      "id": 10,
-      "sourceId": "va:note-body-editor",
+      "id": 16,
+      "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src-tauri/src/editor.rs",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -265,8 +347,8 @@
       ]
     },
     {
-      "id": 11,
-      "sourceId": "va:note-body-editor",
+      "id": 17,
+      "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src-tauri/tests/editor_handlers.rs",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -283,8 +365,8 @@
       ]
     },
     {
-      "id": 12,
-      "sourceId": "va:note-body-editor",
+      "id": 18,
+      "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src-tauri/tests/editor_wire_sprint8.rs",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -301,8 +383,8 @@
       ]
     },
     {
-      "id": 13,
-      "sourceId": "va:note-body-editor",
+      "id": 19,
+      "sourceId": "design:note-body-editor-verification",
       "targetId": "file:promptnotes/src/lib/feed/FeedRow.svelte",
       "relation": "extracted_from",
       "semantic": "technical",
@@ -319,5 +401,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-11T00:00:00.000Z"
+  "lastScanAt": "2026-05-11T09:18:23.507Z"
 }

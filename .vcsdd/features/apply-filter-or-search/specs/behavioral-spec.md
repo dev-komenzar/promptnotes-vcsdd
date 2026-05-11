@@ -21,6 +21,14 @@ coherence:
     - "promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
     - "promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
     - "promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/apply-filter-or-search/parse-filter-input.ts"
+        - "file:promptnotes/src/lib/domain/apply-filter-or-search/apply-filter-or-search.ts"
+        - "file:promptnotes/src/lib/domain/apply-filter-or-search/try-new-tag.ts"
+        - "file:promptnotes/src/lib/domain/apply-filter-or-search/index.ts"
+        - "module:apply-filter-or-search"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: ApplyFilterOrSearch

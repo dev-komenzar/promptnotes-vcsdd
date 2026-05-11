@@ -20,6 +20,15 @@ coherence:
     - "promptnotes/src/lib/ui/app-shell"
     - "promptnotes/src/routes/+page.svelte"
     - "promptnotes/src/routes/+layout.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/ui/app-shell"
+        - "file:promptnotes/src/routes/+page.svelte"
+        - "file:promptnotes/src/routes/+layout.ts"
+        - "module:ui-app-shell"
+        - "module:app-startup"
+        - "module:configure-vault"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: ui-app-shell

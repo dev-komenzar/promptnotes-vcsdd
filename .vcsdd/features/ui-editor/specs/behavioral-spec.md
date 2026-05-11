@@ -24,6 +24,15 @@ coherence:
     - "handle-save-failure"
   source_files:
     - "promptnotes/src/lib/editor"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/editor"
+        - "module:ui-editor"
+        - "module:capture-auto-save"
+        - "module:copy-body"
+        - "module:edit-past-note-start"
+        - "module:handle-save-failure"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: ui-editor (Block-based)

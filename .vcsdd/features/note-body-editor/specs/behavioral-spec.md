@@ -18,6 +18,13 @@ coherence:
   source_files:
     - "promptnotes/src/lib/feed/FeedRow.svelte"
     - "promptnotes/src-tauri/src/editor.rs"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/feed/FeedRow.svelte"
+        - "file:promptnotes/src-tauri/src/editor.rs"
+        - "module:note-body-editor"
+        - "module:feed-row-inline-edit"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
   beads:
     - "PN-3kb"  # parent epic
     - "PN-bx4"  # editor_update_note_body Rust command

@@ -38,42 +38,49 @@
       "id": "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
       "path": "promptnotes/src/lib/domain/tag-chip-update/pipeline.ts"
     },
     "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts": {
       "id": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
       "path": "promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts"
     },
     "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts": {
       "id": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
       "path": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
     },
     "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts": {
       "id": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
       "path": "promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts"
     },
     "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts": {
       "id": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
       "path": "promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts"
     },
     "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts": {
       "id": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
       "path": "promptnotes/src/lib/domain/tag-chip-update/update-projections.ts"
     },
     "file:promptnotes/src/lib/domain/tag-chip-update/index.ts": {
       "id": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/tag-chip-update/index.ts",
       "path": "promptnotes/src/lib/domain/tag-chip-update/index.ts"
     },
     "design:tag-chip-update-verification": {
@@ -185,6 +192,150 @@
       "id": 6,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "module:tag-chip-update",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:tag-chip-update",
+      "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -200,7 +351,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 15,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts",
       "relation": "extracted_from",
@@ -218,7 +369,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 16,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts",
       "relation": "extracted_from",
@@ -236,7 +387,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 17,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts",
       "relation": "extracted_from",
@@ -254,7 +405,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 18,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts",
       "relation": "extracted_from",
@@ -272,7 +423,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 19,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts",
       "relation": "extracted_from",
@@ -290,7 +441,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 20,
       "sourceId": "req:tag-chip-update",
       "targetId": "file:promptnotes/src/lib/domain/tag-chip-update/index.ts",
       "relation": "extracted_from",
@@ -308,7 +459,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 21,
       "sourceId": "design:tag-chip-update-verification",
       "targetId": "req:tag-chip-update",
       "relation": "derives_from",
@@ -326,7 +477,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 22,
       "sourceId": "design:tag-chip-update-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
@@ -344,7 +495,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 23,
       "sourceId": "design:tag-chip-update-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
@@ -362,7 +513,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 24,
       "sourceId": "module:tag-chip-update",
       "targetId": "design:tag-chip-update-verification",
       "relation": "implements",
@@ -380,7 +531,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 25,
       "sourceId": "design:tag-chip-update-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/tag-chip-update",
       "relation": "extracted_from",
@@ -398,5 +549,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:19:17.458Z"
+  "lastScanAt": "2026-05-11T09:18:23.509Z"
 }

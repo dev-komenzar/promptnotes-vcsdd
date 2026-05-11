@@ -43,60 +43,70 @@
       "id": "file:promptnotes/src/lib/domain/app-startup/pipeline.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/pipeline.ts",
       "path": "promptnotes/src/lib/domain/app-startup/pipeline.ts"
     },
     "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts": {
       "id": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
       "path": "promptnotes/src/lib/domain/app-startup/load-vault-config.ts"
     },
     "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts": {
       "id": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/scan-vault.ts",
       "path": "promptnotes/src/lib/domain/app-startup/scan-vault.ts"
     },
     "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts": {
       "id": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
       "path": "promptnotes/src/lib/domain/app-startup/hydrate-feed.ts"
     },
     "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts": {
       "id": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
       "path": "promptnotes/src/lib/domain/app-startup/hydrate-note.ts"
     },
     "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts": {
       "id": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
       "path": "promptnotes/src/lib/domain/app-startup/initialize-capture.ts"
     },
     "file:promptnotes/src/lib/domain/app-startup/stages.ts": {
       "id": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/stages.ts",
       "path": "promptnotes/src/lib/domain/app-startup/stages.ts"
     },
     "file:promptnotes/src/lib/domain/app-startup/errors.ts": {
       "id": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/app-startup/errors.ts",
       "path": "promptnotes/src/lib/domain/app-startup/errors.ts"
     },
     "file:promptnotes/src-tauri/src/domain/vault": {
       "id": "file:promptnotes/src-tauri/src/domain/vault",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src-tauri/src/domain/vault",
       "path": "promptnotes/src-tauri/src/domain/vault"
     },
     "file:promptnotes/src-tauri/src/lib.rs": {
       "id": "file:promptnotes/src-tauri/src/lib.rs",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src-tauri/src/lib.rs",
       "path": "promptnotes/src-tauri/src/lib.rs"
     },
     "design:app-startup-verification": {
@@ -226,6 +236,204 @@
       "id": 7,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src-tauri/src/domain/vault",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src-tauri/src/lib.rs",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "sourceId": "req:app-startup",
+      "targetId": "module:app-startup",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "sourceId": "req:app-startup",
+      "targetId": "file:promptnotes/src/lib/domain/app-startup/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -241,7 +449,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 19,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/load-vault-config.ts",
       "relation": "extracted_from",
@@ -259,7 +467,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 20,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/scan-vault.ts",
       "relation": "extracted_from",
@@ -277,7 +485,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 21,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-feed.ts",
       "relation": "extracted_from",
@@ -295,7 +503,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 22,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/hydrate-note.ts",
       "relation": "extracted_from",
@@ -313,7 +521,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 23,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/initialize-capture.ts",
       "relation": "extracted_from",
@@ -331,7 +539,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 24,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/stages.ts",
       "relation": "extracted_from",
@@ -349,7 +557,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 25,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src/lib/domain/app-startup/errors.ts",
       "relation": "extracted_from",
@@ -367,7 +575,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 26,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src-tauri/src/domain/vault",
       "relation": "extracted_from",
@@ -385,7 +593,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 27,
       "sourceId": "req:app-startup",
       "targetId": "file:promptnotes/src-tauri/src/lib.rs",
       "relation": "extracted_from",
@@ -403,7 +611,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 28,
       "sourceId": "design:app-startup-verification",
       "targetId": "req:app-startup",
       "relation": "derives_from",
@@ -421,7 +629,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 29,
       "sourceId": "design:app-startup-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
@@ -439,7 +647,7 @@
       ]
     },
     {
-      "id": 19,
+      "id": 30,
       "sourceId": "design:app-startup-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
@@ -457,7 +665,7 @@
       ]
     },
     {
-      "id": 20,
+      "id": 31,
       "sourceId": "module:app-startup",
       "targetId": "design:app-startup-verification",
       "relation": "implements",
@@ -475,7 +683,7 @@
       ]
     },
     {
-      "id": 21,
+      "id": 32,
       "sourceId": "design:app-startup-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/app-startup",
       "relation": "extracted_from",
@@ -493,7 +701,7 @@
       ]
     },
     {
-      "id": 22,
+      "id": 33,
       "sourceId": "design:app-startup-verification",
       "targetId": "file:promptnotes/src-tauri/src/domain/vault",
       "relation": "extracted_from",
@@ -511,5 +719,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:09:12.783Z"
+  "lastScanAt": "2026-05-11T09:18:23.496Z"
 }

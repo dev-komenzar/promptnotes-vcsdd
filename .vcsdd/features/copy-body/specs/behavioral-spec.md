@@ -17,6 +17,12 @@ coherence:
   source_files:
     - "promptnotes/src/lib/domain/copy-body/pipeline.ts"
     - "promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/copy-body/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/copy-body/body-for-clipboard.ts"
+        - "module:copy-body"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: CopyBody

@@ -38,30 +38,35 @@
       "id": "file:promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
       "path": "promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts"
     },
     "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts": {
       "id": "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
       "path": "promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts"
     },
     "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts": {
       "id": "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
       "path": "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts"
     },
     "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts": {
       "id": "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
       "path": "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts"
     },
     "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts": {
       "id": "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts",
       "type": "file",
       "placeholder": false,
+      "name": "promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts",
       "path": "promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts"
     },
     "design:edit-past-note-start-verification": {
@@ -173,6 +178,114 @@
       "id": 6,
       "sourceId": "req:edit-past-note-start",
       "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "module:edit-past-note-start",
+      "relation": "must_review",
+      "semantic": "governance",
+      "confidence": 0.8,
+      "isActive": true,
+      "evidence": [
+        {
+          "sourceType": "frontmatter",
+          "method": "convention",
+          "score": 0.8,
+          "detail": "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)",
+          "isNegative": false
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "sourceId": "req:edit-past-note-start",
+      "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts",
       "relation": "extracted_from",
       "semantic": "technical",
       "confidence": 0.85,
@@ -188,7 +301,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 13,
       "sourceId": "req:edit-past-note-start",
       "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts",
       "relation": "extracted_from",
@@ -206,7 +319,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 14,
       "sourceId": "req:edit-past-note-start",
       "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts",
       "relation": "extracted_from",
@@ -224,7 +337,7 @@
       ]
     },
     {
-      "id": 9,
+      "id": 15,
       "sourceId": "req:edit-past-note-start",
       "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts",
       "relation": "extracted_from",
@@ -242,7 +355,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 16,
       "sourceId": "req:edit-past-note-start",
       "targetId": "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts",
       "relation": "extracted_from",
@@ -260,7 +373,7 @@
       ]
     },
     {
-      "id": 11,
+      "id": 17,
       "sourceId": "design:edit-past-note-start-verification",
       "targetId": "req:edit-past-note-start",
       "relation": "derives_from",
@@ -278,7 +391,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 18,
       "sourceId": "design:edit-past-note-start-verification",
       "targetId": "design:aggregates",
       "relation": "derives_from",
@@ -296,7 +409,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 19,
       "sourceId": "design:edit-past-note-start-verification",
       "targetId": "design:type-contracts",
       "relation": "derives_from",
@@ -314,7 +427,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 20,
       "sourceId": "module:edit-past-note-start",
       "targetId": "design:edit-past-note-start-verification",
       "relation": "implements",
@@ -332,7 +445,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 21,
       "sourceId": "design:edit-past-note-start-verification",
       "targetId": "file:promptnotes/src/lib/domain/__tests__/edit-past-note-start",
       "relation": "extracted_from",
@@ -350,5 +463,5 @@
       ]
     }
   ],
-  "lastScanAt": "2026-05-10T04:18:22.943Z"
+  "lastScanAt": "2026-05-11T09:18:23.505Z"
 }

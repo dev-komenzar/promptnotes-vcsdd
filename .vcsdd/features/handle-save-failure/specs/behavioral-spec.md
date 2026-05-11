@@ -20,6 +20,15 @@ coherence:
     - "promptnotes/src/lib/domain/handle-save-failure/retry.ts"
     - "promptnotes/src/lib/domain/handle-save-failure/discard.ts"
     - "promptnotes/src/lib/domain/handle-save-failure/cancel-switch.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/handle-save-failure/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/handle-save-failure/transitions.ts"
+        - "file:promptnotes/src/lib/domain/handle-save-failure/retry.ts"
+        - "file:promptnotes/src/lib/domain/handle-save-failure/discard.ts"
+        - "file:promptnotes/src/lib/domain/handle-save-failure/cancel-switch.ts"
+        - "module:handle-save-failure"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: HandleSaveFailure

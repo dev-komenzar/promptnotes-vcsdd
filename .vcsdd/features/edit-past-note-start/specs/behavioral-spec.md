@@ -20,6 +20,15 @@ coherence:
     - "promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts"
     - "promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts"
     - "promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/edit-past-note-start/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/edit-past-note-start/classify-current-session.ts"
+        - "file:promptnotes/src/lib/domain/edit-past-note-start/flush-current-session.ts"
+        - "file:promptnotes/src/lib/domain/edit-past-note-start/start-new-session.ts"
+        - "file:promptnotes/src/lib/domain/edit-past-note-start/is-empty-note.ts"
+        - "module:edit-past-note-start"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: EditPastNoteStart

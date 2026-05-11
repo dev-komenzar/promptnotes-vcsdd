@@ -22,6 +22,17 @@ coherence:
     - "promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts"
     - "promptnotes/src/lib/domain/tag-chip-update/update-projections.ts"
     - "promptnotes/src/lib/domain/tag-chip-update/index.ts"
+  conventions:
+    - targets:
+        - "file:promptnotes/src/lib/domain/tag-chip-update/pipeline.ts"
+        - "file:promptnotes/src/lib/domain/tag-chip-update/load-current-note.ts"
+        - "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation.ts"
+        - "file:promptnotes/src/lib/domain/tag-chip-update/apply-tag-operation-pure.ts"
+        - "file:promptnotes/src/lib/domain/tag-chip-update/build-save-request.ts"
+        - "file:promptnotes/src/lib/domain/tag-chip-update/update-projections.ts"
+        - "file:promptnotes/src/lib/domain/tag-chip-update/index.ts"
+        - "module:tag-chip-update"
+      reason: "Behavioral spec must be reviewed when declared source files or modules change (GAP-4 PN-6xl)"
 ---
 
 # Behavioral Specification: TagChipUpdate
