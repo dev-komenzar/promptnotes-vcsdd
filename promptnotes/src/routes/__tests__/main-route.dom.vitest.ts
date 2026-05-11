@@ -194,24 +194,11 @@ describe('Main route source structure assertions (PROP-FEED-S2-006, PROP-FEED-S2
     '../+page.svelte',
   );
 
-  test('+page.svelte contains grid-template-columns: 320px 1fr (PROP-FEED-S2-006)', () => {
+  test('+page.svelte uses single-column flex layout (PN-la1 single-column migration)', () => {
     const source = fs.readFileSync(pageSveltePath, 'utf-8');
-    expect(source).toContain('grid-template-columns: 320px 1fr');
-  });
-
-  test('+page.svelte uses DESIGN.md whisper border #e9e9e7 (PROP-FEED-S2-007)', () => {
-    const source = fs.readFileSync(pageSveltePath, 'utf-8');
-    expect(source).toContain('#e9e9e7');
-  });
-
-  test('+page.svelte has .feed-sidebar and .editor-main CSS classes (FIND-S2-02)', () => {
-    // FIND-S2-02: +page.svelte must use <div class="editor-main">, NOT <main class="editor-main">.
-    const source = fs.readFileSync(pageSveltePath, 'utf-8');
-    expect(source).toContain('.feed-sidebar');
-    expect(source).toContain('.editor-main');
-    // Must NOT have a nested <main> element inside AppShell slot.
-    // The pattern <main class="editor-main"> would produce double-main.
-    expect(source).not.toMatch(/<main\s[^>]*class="[^"]*editor-main[^"]*"/);
+    expect(source).toContain('flex-direction: column');
+    expect(source).not.toContain('grid-template-columns');
+    expect(source).not.toMatch(/import\s+EditorPanel/);
   });
 
   test('+page.svelte passes vaultPath to FeedList (FIND-S2-01/05/06)', () => {

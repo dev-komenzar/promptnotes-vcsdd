@@ -2,32 +2,18 @@
   /**
    * +page.svelte — Main route.
    *
-   * Sprint 2/7 (REQ-FEED-023): Two-column layout inside AppShell.
-   *   - Left sidebar (.feed-sidebar, 320px): FeedList
-   *   - Central pane (.editor-main, 1fr): EditorPanel (Sprint 7)
-   *
-   * DESIGN.md compliance:
-   *   - Sidebar border: #e9e9e7 (whisper border)
-   *   - Sidebar background: #f7f7f5 (warm neutral surface)
-   *   - Layout: CSS Grid 320px 1fr, height 100vh
+   * Single-column layout: FeedList fills the full width with in-place editing
+   * via FeedRow (CodeMirror embedded per note). EditorPanel has been removed.
    */
 
   import AppShell from "$lib/ui/app-shell/AppShell.svelte";
-  import EditorPanel from "$lib/editor/EditorPanel.svelte";
   import FeedList from "$lib/feed/FeedList.svelte";
-  import { createTauriEditorAdapter } from "$lib/editor/tauriEditorAdapter.js";
-  import { createEditorStateChannel } from "$lib/editor/editorStateChannel.js";
   import { createTauriFeedAdapter } from "$lib/feed/tauriFeedAdapter.js";
   import { createFeedStateChannel } from "$lib/feed/feedStateChannel.js";
   import type { FeedViewState } from "$lib/feed/types.js";
   import { invoke } from "@tauri-apps/api/core";
 
-  // ── Editor adapter (Sprint 7, ui-editor feature) ─────────────────────────
-  // Compose outbound dispatch + inbound subscribeToState into a single EditorIpcAdapter
-  const { subscribeToState: editorSubscribeToState } = createEditorStateChannel();
-  const adapter = createTauriEditorAdapter(editorSubscribeToState);
-
-  // ── Feed adapters (Sprint 2, ui-feed-list-actions feature) ──────────────
+  // ── Feed adapters ──────────────────────────────────────────────────────
   const feedAdapter = createTauriFeedAdapter();
   const feedStateChannel = createFeedStateChannel();
 
@@ -99,19 +85,13 @@
 </script>
 
 <AppShell>
-  <!-- REQ-FEED-023: Two-column layout — sidebar (FeedList) + central pane (EditorPanel) -->
   <div class="layout">
-    <aside class="feed-sidebar">
-      <FeedList
-        viewState={feedViewState}
-        adapter={feedAdapter}
-        stateChannel={feedStateChannel}
-        vaultPath={currentVaultPath}
-      />
-    </aside>
-    <div class="editor-main">
-      <EditorPanel {adapter} />
-    </div>
+    <FeedList
+      viewState={feedViewState}
+      adapter={feedAdapter}
+      stateChannel={feedStateChannel}
+      vaultPath={currentVaultPath}
+    />
   </div>
 </AppShell>
 
@@ -133,24 +113,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* REQ-FEED-023: Two-column grid layout. DESIGN.md: 320px sidebar + 1fr main. */
   .layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
+    display: flex;
+    flex-direction: column;
     height: 100vh;
     overflow: hidden;
-  }
-
-  /* REQ-FEED-023: Sidebar — DESIGN.md whisper border #e9e9e7, warm neutral #f7f7f5 */
-  .feed-sidebar {
-    border-right: 1px solid #e9e9e7;
-    background: #f7f7f5;
-    overflow-y: auto;
-    height: 100%;
-  }
-
-  .editor-main {
-    overflow-y: auto;
-    height: 100%;
   }
 </style>
