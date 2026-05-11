@@ -3,6 +3,9 @@
   "mode": "strict",
   "language": "typescript",
   "currentPhase": "complete",
+  "deprecatedAt": "2026-05-11T00:00:00.000Z",
+  "deprecationReason": "EditorPane architecture abolished in favor of FeedRow in-place editing (CodeMirror embedded per note). All EditorPane-specific code (EditorPanel.svelte, editorStateChannel.ts, tauriEditorAdapter.ts, editorReducer.ts, editorPredicates.ts, block-editor components) has been deleted.",
+  "supersededBy": "note-body-editor (Rust backend editor.rs + FeedRow CodeMirror in-place editing)",
   "phaseHistory": [
     {
       "from": "init",
