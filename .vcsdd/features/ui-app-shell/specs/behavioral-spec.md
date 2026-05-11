@@ -38,9 +38,10 @@ coherence:
 - `.vcsdd/features/app-startup/specs/behavioral-spec.md` (参照のみ、パイプライン実装は非重複)
 - `.vcsdd/features/configure-vault/specs/behavioral-spec.md` (参照のみ)
 
-> **注意**: `docs/domain/code/ts/src/capture/states.ts` (`EditingSessionState`) は本 feature の対象外。
-> `InitialUIState.editingSessionState` は editor feature へのパススルーであり、
-> `ui-app-shell` はその内容を参照・レンダリングしない（NEG-REQ-001 参照）。(FIND-016 解消)
+> **注意**: `editingSessionState` は FeedRow 内 in-place 編集機能へのパススルーであり、
+> `ui-app-shell` はその内容を参照・レンダリングしない（NEG-REQ-001 参照）。
+> EditorPane（独立エディタペイン）は廃止済み。in-place 編集モデルでは FeedRow.svelte が
+> CodeMirror をノート行内に埋め込む。(block-ui-migration: EditorPanel.svelte 削除済み)
 
 **Scope**: UI シェル層のみ。ドメインパイプライン (`app-startup`, `configure-vault`) の再実装は一切行わない。それらのパイプラインを Svelte UI および Tauri コマンドへ結線し、グローバルレイアウトフレームを描画することが本 feature の責務。
 
@@ -573,12 +574,12 @@ rgba(0,0,0,0.01)   — Card Shadow layer 4 / Deep Shadow layer 1
 
 ## NEG-REQ: 対象外の明示的排除
 
-### NEG-REQ-001: エディタ UI の排除
+### NEG-REQ-001: エディタ UI の排除（in-place 編集モデル移行済み）
 
-**EARS**: WHILE `ui-app-shell` feature is being implemented, THE SYSTEM SHALL NOT implement the note editor textarea, inline YAML frontmatter editor, copy button (`CopyNoteBody`), or new note button (`RequestNewNote`).
+**EARS**: WHILE `ui-app-shell` feature is being implemented, THE SYSTEM SHALL NOT implement the note body editor surface. In-place editing (FeedRow embedded CodeMirror) is handled by the feed module; the legacy EditorPane (separate right-column editor panel) has been abolished.
 
 **Acceptance Criteria**:
-- エディタ textarea を含む Svelte コンポーネントが本 feature のファイルに存在しない
+- エディタ専用ペイン（旧 EditorPanel.svelte）を import または mount するコードが本 feature のファイルに存在しない
 - `EditNoteBody` / `CopyNoteBody` / `RequestNewNote` コマンドを dispatch するコードが存在しない
 
 ---

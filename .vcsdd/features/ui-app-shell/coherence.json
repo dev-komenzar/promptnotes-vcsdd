@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "block-ui-migration-acknowledged": true,
   "nodes": {
     "req:ui-app-shell": {
       "id": "req:ui-app-shell",
