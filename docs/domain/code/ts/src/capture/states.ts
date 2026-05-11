@@ -6,15 +6,7 @@
 // 「保存中なのに次ノートが未指定」のような不正状態を型で禁止する。
 
 import type { SaveError } from "../shared/errors.js";
-import type { BlockId, NoteId, Timestamp } from "../shared/value-objects.js";
-
-/** 別ノート切替時の遷移先 Block Focus（noteId + blockId）。
- * 同一 Note 内のブロック移動は switching を経由せず focusedBlockId のみ更新するため、
- * pending 状態に登場するのは常に別 Note のブロック。aggregates.md L342。 */
-export type PendingNextFocus = {
-  readonly noteId: NoteId;
-  readonly blockId: BlockId;
-};
+import type { NoteId, Timestamp } from "../shared/value-objects.js";
 
 /** ブラウザの setTimeout 戻り値などを保持するための不透明ハンドル。 */
 export type IdleTimerHandle = { readonly __opaque: "IdleTimerHandle" };
@@ -28,19 +20,14 @@ export type IdleState = {
   readonly status: "idle";
 };
 
-/** ノート編集中。`isDirty` で未保存判定。
- * ブロックベース UI 化により `focusedBlockId` を追加（at most one block focused per Note、
- * aggregates.md L337）。同一 Note 内のブロック間カーソル移動はセッションを終了させず、
- * `focusedBlockId` のみ更新する。 */
+/** ノート編集中。`isDirty` で未保存判定。 */
 export type EditingState = {
   readonly status: "editing";
   readonly currentNoteId: NoteId;
-  /** 現在キャレットを保持しているブロック。null は短い遷移期間（focus 取得直前）のみ。 */
-  readonly focusedBlockId: BlockId | null;
   readonly isDirty: boolean;
   readonly lastInputAt: Timestamp | null;
   readonly idleTimerHandle: IdleTimerHandle | null;
-  /** 直近保存結果（F14）。 */
+  /** 直近保存結果。 */
   readonly lastSaveResult: "success" | "failed" | null;
 };
 
@@ -53,24 +40,22 @@ export type SavingState = {
 
 /**
  * 別ノート切替待機。blur save を強制発火し、完了後に next を編集開始する。
- * `pendingNextFocus` を非 null で必ず持つ（noteId + blockId）。
- * aggregates.md L342：`pendingNextFocus: { noteId; blockId } | null`。
  */
 export type SwitchingState = {
   readonly status: "switching";
   readonly currentNoteId: NoteId;
-  readonly pendingNextFocus: PendingNextFocus;
+  readonly pendingNoteId: NoteId;
   readonly savingStartedAt: Timestamp;
 };
 
 /**
  * 保存失敗。ユーザーが Discard / Retry / Cancel を選ぶまで滞留。
- * 切替途中に失敗した場合のみ `pendingNextFocus` を持つ。
+ * 切替途中に失敗した場合のみ `pendingNoteId` を持つ。
  */
 export type SaveFailedState = {
   readonly status: "save-failed";
   readonly currentNoteId: NoteId;
-  readonly pendingNextFocus: PendingNextFocus | null;
+  readonly pendingNoteId: NoteId | null;
   readonly lastSaveError: SaveError;
 };
 
@@ -91,26 +76,15 @@ export type EditingSessionState =
 // ──────────────────────────────────────────────────────────────────────
 
 export interface EditingSessionTransitions {
-  /** idle → editing。新規/過去ノートのいずれかのブロックにフォーカスが入った瞬間。
-   * `focusedBlockId` は対象ブロック。 */
-  focusOnBlock(
+  /** idle → editing。新規/過去ノートにフォーカスが入った瞬間。 */
+  focusOnNote(
     state: IdleState,
     noteId: NoteId,
-    blockId: BlockId,
     now: Timestamp,
   ): EditingState;
 
-  /** editing → editing。同一 Note 内のブロック間移動。`focusedBlockId` のみ更新、
-   * セッション継続（idle timer も継続）。aggregates.md L355。 */
-  refocusBlockSameNote(
-    state: EditingState,
-    blockId: BlockId,
-    now: Timestamp,
-  ): EditingState;
-
-  /** editing → editing。Block 構造・内容変更時。`isDirty=true`、idle timer 起動／再スタート。
-   * aggregates.md L356。 */
-  applyBlockEdit(
+  /** editing → editing。本文編集時。`isDirty=true`、idle timer 起動／再スタート。 */
+  applyBodyEdit(
     state: EditingState,
     handle: IdleTimerHandle,
     now: Timestamp,
@@ -125,10 +99,10 @@ export interface EditingSessionTransitions {
   /** saving → save-failed。isDirty=true 保持、UI 警告。 */
   onSaveFailed(state: SavingState, error: SaveError): SaveFailedState;
 
-  /** editing → switching。別ノートのブロックにフォーカスが移った瞬間、blur save を強制発火。 */
+  /** editing → switching。別ノートにフォーカスが移った瞬間、blur save を強制発火。 */
   beginSwitch(
     state: EditingState,
-    pendingNextFocus: PendingNextFocus,
+    pendingNoteId: NoteId,
     now: Timestamp,
   ): SwitchingState;
 
@@ -141,9 +115,9 @@ export interface EditingSessionTransitions {
   /** save-failed → saving。RetrySave 選択。 */
   retry(state: SaveFailedState, now: Timestamp): SavingState;
 
-  /** save-failed → editing(pendingNextFocus) or idle。DiscardCurrentSession。 */
+  /** save-failed → editing(pendingNoteId) or idle。DiscardCurrentSession。 */
   discard(state: SaveFailedState, now: Timestamp): EditingState | IdleState;
 
-  /** save-failed → editing(currentNoteId, focusedBlockId)。CancelSwitch。 */
+  /** save-failed → editing(currentNoteId)。CancelSwitch。 */
   cancelSwitch(state: SaveFailedState, now: Timestamp): EditingState;
 }

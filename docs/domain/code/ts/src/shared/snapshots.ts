@@ -11,9 +11,7 @@ import type { Body, Frontmatter, NoteId, Timestamp } from "./value-objects.js";
 
 /**
  * Vault 境界を渡る DTO。
- * `body` は Markdown 文字列のまま保持する（ファイル境界では Markdown 文字列が一次データ）。
- * Aggregate 境界内では `parseMarkdownToBlocks(body)` で Block[] に変換してから扱う
- * （Hydration の責務、aggregates.md §1.6 / workflows.md Workflow 1）。
+ * `body` は Markdown 文字列のまま保持する。
  */
 export type NoteFileSnapshot = {
   readonly noteId: NoteId;
@@ -34,7 +32,6 @@ export type HydrationFailureReason =
   | "yaml-parse"
   | "missing-field"
   | "invalid-value"
-  | "block-parse"
   | "unknown";
 
 /**

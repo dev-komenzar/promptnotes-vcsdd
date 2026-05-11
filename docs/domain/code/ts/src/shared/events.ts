@@ -9,14 +9,12 @@ import type {
   NoteDeletionFailureReason,
   NoteSaveFailureReason,
 } from "./errors.js";
-import type { Block } from "./note.js";
 import type {
   CorruptedFile,
   HydrationFailureReason,
   NoteFileSnapshot,
 } from "./snapshots.js";
 import type {
-  BlockId,
   Body,
   Frontmatter,
   NoteId,
@@ -49,15 +47,10 @@ export type VaultScanned = {
   readonly occurredOn: Timestamp;
 };
 
-/** Note ファイルが保存された。
- * payload には `blocks: Block[]`（ブロックベース UI で追加）と `body: Body`
- * （= serializeBlocksToMarkdown(blocks) の派生、後方互換と検索インデックス用）
- * の両方を含む（domain-events.md L55–56）。 */
+/** Note ファイルが保存された。 */
 export type NoteFileSaved = {
   readonly kind: "note-file-saved";
   readonly noteId: NoteId;
-  readonly blocks: ReadonlyArray<Block>;
-  /** `serializeBlocksToMarkdown(blocks)` の派生。Vault がファイルに書く文字列。 */
   readonly body: Body;
   readonly frontmatter: Frontmatter;
   /** TagInventory 増分計算のため Curate に旧値を渡す。 */
@@ -108,15 +101,10 @@ export type SaveNoteSource =
   | "curate-frontmatter-edit-outside-editor";
 
 /** Note 保存依頼（Domain Event Carrying Command）。
- * payload には `blocks: Block[]`（ブロックベース UI で追加）と `body: Body`
- * （= serializeBlocksToMarkdown(blocks) の派生、Vault が直接ファイルに書く）
- * の両方を含む（domain-events.md L115–116）。
- * 個別ブロックの差分は載せず、Note 全体スナップショットを送る。 */
+ * payload は Note 全体スナップショットを送る。 */
 export type SaveNoteRequested = {
   readonly kind: "save-note-requested";
   readonly noteId: NoteId;
-  readonly blocks: ReadonlyArray<Block>;
-  /** `serializeBlocksToMarkdown(blocks)` の派生。Vault が直接ファイルに書く文字列。 */
   readonly body: Body;
   readonly frontmatter: Frontmatter;
   readonly previousFrontmatter: Frontmatter | null;
@@ -134,13 +122,10 @@ export type EmptyNoteDiscarded = {
 // Curate Context 発行
 // ──────────────────────────────────────────────────────────────────────
 
-/** 過去ノートのいずれかのブロックにフォーカスが入った（Block Focus 取得の上位）。
- * `blockId` はフォーカス対象ブロック（ブロックベース UI 化により追加、
- * domain-events.md L142）。 */
+/** 過去ノートにフォーカスが入った。 */
 export type PastNoteSelected = {
   readonly kind: "past-note-selected";
   readonly noteId: NoteId;
-  readonly blockId: BlockId;
   readonly snapshot: NoteFileSnapshot;
   readonly occurredOn: Timestamp;
 };

@@ -15,7 +15,7 @@ import type {
   SaveNoteRequested,
 } from "../shared/events.js";
 import type {
-  BlockFocusRequest,
+  NoteFocusRequest,
   ClipboardText,
   CurrentSessionDecision,
   DirtyEditingSession,
@@ -42,12 +42,6 @@ import type { CaptureDeps } from "./ports.js";
 //   出力: Result<ValidatedSaveRequest | EmptyNoteDiscarded, SaveValidationError>
 // ──────────────────────────────────────────────────────────────────────
 
-/**
- * 全ブロックが空 paragraph のみ（`note.isEmpty()`）の場合は EmptyNoteDiscarded
- * ルートに分岐する。失敗時の InvariantViolated は SaveError.validation に集約。
- * `ValidatedSaveRequest.blocks` と `body = serializeBlocksToMarkdown(blocks)` を
- * 同時にセットする責務もここに含む。
- */
 export type PrepareSaveRequest = (
   deps: CaptureDeps,
 ) => (
@@ -61,8 +55,6 @@ export type PrepareSaveRequest = (
 /**
  * Vault に SaveNoteRequested を渡し、NoteFileSaved | NoteSaveFailed の
  * いずれかを受け取る境界関数。Vault 側 (Rust) との橋渡し。
- * Vault は受け取った `blocks` ではなく `body`（派生 Markdown 文字列）を
- * 直接ファイルに書き込む。
  */
 export type DispatchSaveRequest = (
   deps: CaptureDeps,
@@ -70,9 +62,6 @@ export type DispatchSaveRequest = (
   request: ValidatedSaveRequest,
 ) => Promise<Result<NoteFileSaved, NoteSaveFailed>>;
 
-/** CaptureAutoSave 全体（Capture 側）。
- * 入力 `state` の current note は `Block[]` ベースの最新 snapshot を保持しており、
- * 保存時に `serializeBlocksToMarkdown` で Markdown に直列化される。 */
 export type CaptureAutoSave = (
   deps: CaptureDeps,
 ) => (
@@ -81,20 +70,15 @@ export type CaptureAutoSave = (
 ) => Promise<Result<NoteFileSaved, SaveError>>;
 
 // ──────────────────────────────────────────────────────────────────────
-// Workflow 3: EditPastNoteStart（ブロックベース UI 化、aggregates.md L315 / L326）
-// Step 1: classifyCurrentSession (pure) — 同一 Note 内移動 vs 別 Note 移動を区別
-// Step 2: flushCurrentSession (CaptureAutoSave 呼び出し、same-note は skip)
-// Step 3: startNewSession (in-memory write、focusedBlockId をセット)
-// 入力は `BlockFocusRequest{noteId, blockId, snapshot?}`。
+// Workflow 3: EditPastNoteStart（単一 Markdown 本文モデル）
+// Step 1: classifyCurrentSession (pure)
+// Step 2: flushCurrentSession (CaptureAutoSave 呼び出し)
+// Step 3: startNewSession (in-memory write)
 // ──────────────────────────────────────────────────────────────────────
 
-// Sprint 2 delta — currentNote provided by pipeline orchestrator from EditPastNoteStartInput.
-// Per behavioral-spec.md Type Contract Delta 1 (FIND-EPNS-S2-002 resolution):
-// currentNote is passed explicitly so classifyCurrentSession remains referentially transparent.
-// null iff currentState.status === 'idle' (no active note).
 export type ClassifyCurrentSession = (
   current: EditingSessionState,
-  request: BlockFocusRequest,
+  request: NoteFocusRequest,
   currentNote: Note | null,
 ) => CurrentSessionDecision;
 
@@ -105,22 +89,20 @@ export type FlushCurrentSession = (
 ) => Promise<Result<FlushedCurrentSession, SaveError>>;
 
 /** 別 Note の場合は snapshot を Note Aggregate にハイドレートし、
- * EditingSessionState を `editing(noteId, focusedBlockId=blockId)` に。
- * 同一ノート内移動なら `focusedBlockId` のみ更新（既存 note を継続使用）。 */
+ * EditingSessionState を `editing(noteId)` に。 */
 export type StartNewSession = (
   deps: CaptureDeps,
-) => (request: BlockFocusRequest) => NewSession;
+) => (request: NoteFocusRequest) => NewSession;
 
 export type EditPastNoteStart = (
   deps: CaptureDeps,
 ) => (
   current: EditingSessionState,
-  request: BlockFocusRequest,
+  request: NoteFocusRequest,
 ) => Promise<Result<NewSession, SwitchError>>;
 
 // ──────────────────────────────────────────────────────────────────────
-// Workflow 6: CopyBody（Pure 寄り）
-// `bodyForClipboard(note)` が内部で `serializeBlocksToMarkdown(note.blocks)` を呼ぶ。
+// Workflow 6: CopyBody
 // ──────────────────────────────────────────────────────────────────────
 
 export type CopyBody = (
@@ -131,10 +113,6 @@ export type CopyBody = (
 // Workflow 8: HandleSaveFailure
 // ──────────────────────────────────────────────────────────────────────
 
-// REQ-HSF-011: Widened signature — accepts (stage, state, decision).
-// `stage` carries the failure event context (for logging/error propagation).
-// `state` carries the transition targets (currentNoteId, pendingNextFocus).
-// Callers that pass only (stage, decision) produce a TypeScript compilation error.
 export type HandleSaveFailure = (
   deps: CaptureDeps,
 ) => (
@@ -145,7 +123,6 @@ export type HandleSaveFailure = (
 
 // ──────────────────────────────────────────────────────────────────────
 // SaveNoteRequested 発行ヘルパー（型レベル）。
-// Capture/Curate が共通発行できる Public Event の構築シグネチャ。
 // ──────────────────────────────────────────────────────────────────────
 
 export type BuildSaveNoteRequested = (
