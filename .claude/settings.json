@@ -1,13 +1,14 @@
 {
+  "enabledPlugins": {
+    "vcsdd@vcsdd-claude-code": true
+  },
   "extraKnownMarketplaces": {
     "vcsdd-claude-code": {
       "source": {
-        "source": "github",
-        "repo": "sc30gsw/vcsdd-claude-code"
+        "repo": "sc30gsw/vcsdd-claude-code",
+        "source": "github"
       }
     }
   },
-  "enabledPlugins": {
-    "vcsdd@vcsdd-claude-code": true
-  }
+  "hooks": {}
 }
