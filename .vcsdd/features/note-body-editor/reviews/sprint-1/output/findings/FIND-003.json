@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-003",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "editor_update_note_body unconditionally sets is_dirty = true at editor.rs:728 without detecting whether a false→true transition actually occurred. REQ-002 item 4 specifies: 'If this is the first update for this noteId (isDirty transitions false→true), emit an editing_session_state_changed event.' REQ-004 item 5 adds: 'When isDirty transitions (true→false or false→true), emit editing_session_state_changed ... No event emitted on redundant updates (keystroke when already dirty).' The current implementation lacks transition detection logic — it always sets is_dirty = true regardless of prior state. This means even though events aren't being emitted (FIND-001), the code has no mechanism to distinguish between the first keystroke (which should trigger an event) and subsequent keystrokes (which should not).",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "721-729",
+    "snippet": "let entry = map.entry(note_id).or_insert(InMemoryNoteBody {\n    body: String::new(),\n    is_dirty: false,\n    last_saved_body: String::new(),\n});\nentry.body = body;\nentry.is_dirty = true; // <-- unconditionally true, no transition check"
+  },
+  "expected": "Before setting is_dirty=true, capture the prior is_dirty value. If prior was false, this is a false→true transition that should trigger event emission. If prior was already true, the update should be a no-op for is_dirty (it stays true) and no event should be emitted.",
+  "routeToPhase": "2b"
+}

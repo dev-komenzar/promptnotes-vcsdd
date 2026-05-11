@@ -1,0 +1,5 @@
+new-feature-tests: FAIL
+regression-baseline: N/A (existing tests not affected by new test files)
+rust-tests: COMPILATION FAILURE (36 errors - undeclared types: NoteBodyStore, InMemoryNoteBody, validate_no_control_chars)
+typescript-tests: FAIL (module not found - feedRowEditMode module doesn't exist yet)
+sprint: 1

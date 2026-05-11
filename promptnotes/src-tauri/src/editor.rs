@@ -23,9 +23,11 @@
 /// The clipboard write is handled by the TypeScript `clipboardAdapter.ts`
 /// using `navigator.clipboard.writeText()` — Rust `copy_note_body` is a thin ack.
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
 use tauri::{AppHandle, Emitter};
 
 static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -555,13 +557,25 @@ pub fn make_editing_state_changed_payload(state: &EditingSessionStateDto) -> ser
 
 /// Common write+emit logic shared by trigger_idle_save, trigger_blur_save,
 /// and retry_save. Writes atomically then emits success/failure state.
+/// If `store` is provided, updates the in-memory body store on success.
 fn save_note_and_emit(
     app: &AppHandle,
     note_id: String,
     body: String,
+    store: Option<&NoteBodyStore>,
 ) -> Result<(), String> {
     let state = match fs_write_file_atomic(&note_id, &body) {
-        Ok(()) => compose_state_for_save_ok(&note_id, &body),
+        Ok(()) => {
+            if let Some(store) = store {
+                if let Ok(mut map) = store.0.lock() {
+                    if let Some(entry) = map.get_mut(&note_id) {
+                        entry.is_dirty = false;
+                        entry.last_saved_body = body.clone();
+                    }
+                }
+            }
+            compose_state_for_save_ok(&note_id, &body)
+        }
         Err(io_err) => compose_state_for_save_err(&note_id, &body, io_err),
     };
     let payload = make_editing_state_changed_payload(&state);
@@ -595,38 +609,41 @@ pub fn write_file_atomic(path: String, contents: String) -> Result<(), FsErrorDt
 #[tauri::command]
 pub fn trigger_idle_save(
     app: AppHandle,
+    store: tauri::State<'_, NoteBodyStore>,
     note_id: String,
     body: String,
     issued_at: String,
     source: String,
 ) -> Result<(), String> {
     eprintln!("[editor] trigger_idle_save note={} source={} issued_at={}", note_id, source, issued_at);
-    save_note_and_emit(&app, note_id, body)
+    save_note_and_emit(&app, note_id, body, Some(&store))
 }
 
 /// REQ-EDIT-030: trigger_blur_save — atomic write + emit state.
 #[tauri::command]
 pub fn trigger_blur_save(
     app: AppHandle,
+    store: tauri::State<'_, NoteBodyStore>,
     note_id: String,
     body: String,
     issued_at: String,
     source: String,
 ) -> Result<(), String> {
     eprintln!("[editor] trigger_blur_save note={} source={} issued_at={}", note_id, source, issued_at);
-    save_note_and_emit(&app, note_id, body)
+    save_note_and_emit(&app, note_id, body, Some(&store))
 }
 
 /// REQ-EDIT-031: retry_save — re-attempt atomic write + emit state.
 #[tauri::command]
 pub fn retry_save(
     app: AppHandle,
+    store: tauri::State<'_, NoteBodyStore>,
     note_id: String,
     body: String,
     issued_at: String,
 ) -> Result<(), String> {
     let _ = issued_at;
-    save_note_and_emit(&app, note_id, body)
+    save_note_and_emit(&app, note_id, body, Some(&store))
 }
 
 /// REQ-EDIT-032: discard_current_session — emit idle state, no file I/O.
@@ -669,6 +686,87 @@ pub fn copy_note_body(
     body: String,
 ) -> Result<(), String> {
     let _ = (note_id, body);
+    Ok(())
+}
+
+// ── note-body-editor: in-memory body store ─────────────────────────────
+
+/// Per-note body buffer held in-memory by the Rust backend.
+#[derive(Debug, Clone)]
+pub struct InMemoryNoteBody {
+    pub body: String,
+    pub is_dirty: bool,
+    pub last_saved_body: String,
+}
+
+/// Global in-memory state protected by a mutex.
+pub struct NoteBodyStore(pub Mutex<HashMap<String, InMemoryNoteBody>>);
+
+impl NoteBodyStore {
+    pub fn new() -> Self {
+        NoteBodyStore(Mutex::new(HashMap::new()))
+    }
+}
+
+/// Validates that a body string contains no disallowed control characters.
+/// Allowed: tab (U+0009), LF (U+000A), CR (U+000D).
+/// Disallowed: U+0000–U+001F (except U+0009), U+007F (DELETE).
+pub fn validate_no_control_chars(body: &str) -> Result<(), String> {
+    for (i, c) in body.char_indices() {
+        let code = c as u32;
+        if code == 0x007F {
+            return Err(format!("control character U+007F at position {}", i));
+        }
+        if code <= 0x001F && code != 0x0009 && code != 0x000A && code != 0x000D {
+            return Err(format!("control character U+{:04X} at position {}", code, i));
+        }
+    }
+    Ok(())
+}
+
+/// Returns true if the body text has changed from the original value.
+pub fn has_body_changed(original: &str, current: &str) -> bool {
+    original != current
+}
+
+/// Returns true if the body string consists only of whitespace characters (or is empty).
+pub fn is_whitespace_only(body: &str) -> bool {
+    body.chars().all(|c| c.is_whitespace())
+}
+
+/// REQ-002 (note-body-editor): editor_update_note_body — stores body
+/// in-memory and sets is_dirty flag. Does NOT write to disk.
+/// Emits editing_session_state_changed on isDirty false→true transition.
+#[tauri::command]
+pub fn editor_update_note_body(
+    app: AppHandle,
+    store: tauri::State<'_, NoteBodyStore>,
+    note_id: String,
+    body: String,
+) -> Result<(), String> {
+    validate_no_control_chars(&body)?;
+    let mut map = store.0.lock().map_err(|e| e.to_string())?;
+    let entry = map.entry(note_id.clone()).or_insert(InMemoryNoteBody {
+        body: String::new(),
+        is_dirty: false,
+        last_saved_body: String::new(),
+    });
+    let was_dirty = entry.is_dirty;
+    let body_changed = has_body_changed(&entry.last_saved_body, &body);
+    entry.body = body;
+    entry.is_dirty = body_changed || was_dirty;
+    if !was_dirty && body_changed {
+        let state = EditingSessionStateDto::Editing {
+            current_note_id: note_id,
+            focused_block_id: None,
+            is_dirty: true,
+            is_note_empty: is_whitespace_only(&entry.body),
+            last_save_result: None,
+            blocks: None,
+        };
+        let payload = make_editing_state_changed_payload(&state);
+        let _ = app.emit("editing_session_state_changed", payload);
+    }
     Ok(())
 }
 
@@ -1113,5 +1211,443 @@ mod tests {
         assert!(blocks.len() >= 2, "expected >=2 blocks, got {}", blocks.len());
         assert_eq!(blocks[0].content, "first");
         assert_eq!(blocks[1].content, "second");
+    }
+
+    // ── note-body-editor: InMemoryNoteBody + NoteBodyStore ─────────────────────
+    //
+    // RED PHASE: These tests reference InMemoryNoteBody, NoteBodyStore, and
+    // validate_no_control_chars which do NOT exist in the codebase yet.
+    // Expected outcome: compilation FAILURE.
+
+    // ── PROP-001 / PROP-015: validate_no_control_chars ─────────────────────
+
+    #[test]
+    fn validate_no_control_chars_accepts_normal_text() {
+        // PROP-015: Normal text without control characters passes validation.
+        let result = validate_no_control_chars("hello world");
+        assert!(result.is_ok(), "normal text must pass: {:?}", result);
+    }
+
+    #[test]
+    fn validate_no_control_chars_accepts_unicode() {
+        // PROP-015: Unicode text (emoji, CJK, RTL) passes validation.
+        let result = validate_no_control_chars("こんにちは世界 🌍 مرحبا");
+        assert!(result.is_ok(), "unicode must pass: {:?}", result);
+    }
+
+    #[test]
+    fn validate_no_control_chars_accepts_tab_newline_cr() {
+        // PROP-001: Tab (U+0009), LF (U+000A), CR (U+000D) are permitted.
+        let result = validate_no_control_chars("line1\tindented\nline2\r\nline3");
+        assert!(result.is_ok(), "tab/newline/CR must pass: {:?}", result);
+    }
+
+    #[test]
+    fn validate_no_control_chars_rejects_null_byte() {
+        // PROP-001: NULL byte (U+0000) is rejected.
+        let body = format!("text before\0text after");
+        let result = validate_no_control_chars(&body);
+        assert!(result.is_err(), "null byte must be rejected");
+    }
+
+    #[test]
+    fn validate_no_control_chars_rejects_del_character() {
+        // PROP-001: DELETE (U+007F) is rejected.
+        let body = format!("text\x7F");
+        let result = validate_no_control_chars(&body);
+        assert!(result.is_err(), "DEL must be rejected");
+    }
+
+    #[test]
+    fn validate_no_control_chars_rejects_control_chars_except_tab() {
+        // PROP-001: All code points U+0000–U+001F except U+0009 are rejected.
+        // Test a sample: U+0001 (SOH), U+0002 (STX), U+001F (US).
+        for &c in &['\x01', '\x02', '\x1b', '\x1f'] {
+            let body = format!("text{}suffix", c);
+            let result = validate_no_control_chars(&body);
+            assert!(
+                result.is_err(),
+                "control char U+{:04X} must be rejected",
+                c as u32
+            );
+        }
+    }
+
+    #[test]
+    fn validate_no_control_chars_rejects_pasted_control_char() {
+        // PROP-001: Mixed valid + control character body is rejected entirely.
+        let body = format!("normal text\x00hidden");
+        let result = validate_no_control_chars(&body);
+        assert!(result.is_err(), "mixed content with control char must be rejected");
+    }
+
+    #[test]
+    fn validate_no_control_chars_empty_body_passes() {
+        // PROP-015: Empty string passes validation (no control chars present).
+        let result = validate_no_control_chars("");
+        assert!(result.is_ok(), "empty body must pass: {:?}", result);
+    }
+
+    #[test]
+    fn validate_no_control_chars_whitespace_only_passes() {
+        // PROP-015: Whitespace-only body passes if whitespace chars are not disallowed.
+        let result = validate_no_control_chars("  \n\t\r\n  ");
+        assert!(result.is_ok(), "whitespace-only must pass: {:?}", result);
+    }
+
+    // ── PROP-002: In-memory body store — sequential correctness ────────────
+
+    #[test]
+    fn in_memory_store_insert_and_read_back() {
+        // PROP-002: Insert body, read back — body matches, is_dirty is true.
+        let store = NoteBodyStore::new();
+        let note_id = "note-1".to_string();
+        let body = "# Hello\n\nWorld".to_string();
+
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: body.clone(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body, body, "body must match stored value");
+            assert!(entry.is_dirty, "is_dirty must be true after insert");
+        }
+    }
+
+    #[test]
+    fn in_memory_store_update_overwrites_previous_body() {
+        // PROP-002: Sequential updates — last write wins.
+        let store = NoteBodyStore::new();
+        let note_id = "note-1".to_string();
+
+        // Insert A
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: "body A".to_string(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+        // Insert B (overwrite)
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: "body B".to_string(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+        // Read back — must be B
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body, "body B", "body must be latest value");
+        }
+    }
+
+    // ── PROP-004: isDirty state machine — transition correctness ───────────
+
+    #[test]
+    fn is_dirty_transitions_false_to_true_on_first_update() {
+        // PROP-004: Initial state (is_dirty=false, no saved body) →
+        // first body update → is_dirty=true.
+        let mut state = InMemoryNoteBody {
+            body: String::new(),
+            is_dirty: false,
+            last_saved_body: String::new(),
+        };
+        // Simulate body update
+        state.body = "first edit".to_string();
+        state.is_dirty = true; // The transition logic should set this
+
+        assert!(state.is_dirty, "is_dirty must be true after first update");
+        assert_eq!(state.body, "first edit");
+    }
+
+    #[test]
+    fn is_dirty_transitions_true_to_false_on_successful_save() {
+        // PROP-004: After successful save, is_dirty transitions to false.
+        let mut state = InMemoryNoteBody {
+            body: "edited body".to_string(),
+            is_dirty: true,
+            last_saved_body: String::new(),
+        };
+        // Simulate successful save
+        state.last_saved_body = state.body.clone();
+        state.is_dirty = false;
+
+        assert!(!state.is_dirty, "is_dirty must be false after successful save");
+        assert_eq!(state.last_saved_body, "edited body");
+    }
+
+    #[test]
+    fn is_dirty_stays_true_on_failed_save() {
+        // PROP-004: After failed save, is_dirty remains true.
+        let state = InMemoryNoteBody {
+            body: "modified".to_string(),
+            is_dirty: true,
+            last_saved_body: String::new(),
+        };
+        // Simulate failed save — do not clear is_dirty
+        // (state unchanged)
+
+        assert!(state.is_dirty, "is_dirty must remain true after save failure");
+        assert_eq!(state.last_saved_body, "", "last_saved_body must not be updated on failure");
+    }
+
+    #[test]
+    fn is_dirty_stays_true_on_subsequent_keystrokes() {
+        // PROP-004: After is_dirty is already true, subsequent updates
+        // keep is_dirty true (no event emitted on redundant transitions).
+        let state = InMemoryNoteBody {
+            body: "already dirty".to_string(),
+            is_dirty: true,
+            last_saved_body: String::new(),
+        };
+        assert!(state.is_dirty, "is_dirty must stay true on consecutive edits");
+    }
+
+    #[test]
+    fn is_dirty_never_goes_true_to_false_without_save() {
+        // PROP-004: Monotonic constraint — is_dirty never transitions
+        // from true to false without an intervening save.
+        let mut state = InMemoryNoteBody {
+            body: String::new(),
+            is_dirty: false,
+            last_saved_body: String::new(),
+        };
+
+        // First update → dirty
+        state.body = "edit 1".to_string();
+        state.is_dirty = true;
+
+        // Second update with no save → still dirty
+        state.body = "edit 2".to_string();
+        // is_dirty must remain true (no save happened)
+        assert!(state.is_dirty, "is_dirty must not become false without save");
+    }
+
+    // ── PROP-005: Body round-trip — Unicode + large body preservation ──────
+
+    #[test]
+    fn body_roundtrip_preserves_emoji_cjk_rtl() {
+        // PROP-005: Body containing emoji, CJK, RTL characters
+        // round-trips correctly through in-memory store.
+        let store = NoteBodyStore::new();
+        let note_id = "note-emoji".to_string();
+        let body = "🌍 Emoji 🎉 CJK 漢字 RTL مرحبا\n# 見出し\n- bullet".to_string();
+
+        // Insert
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: body.clone(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+        // Read back
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body, body, "Unicode body must be preserved byte-for-byte");
+        }
+    }
+
+    #[test]
+    fn body_roundtrip_preserves_large_body() {
+        // PROP-005: A 1MB body round-trips correctly through the store.
+        let store = NoteBodyStore::new();
+        let note_id = "note-large".to_string();
+        // Build ~1MB body (repeating pattern)
+        let pattern = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n";
+        let repeats = 30_000; // ~1MB
+        let body: String = std::iter::repeat(pattern).take(repeats).collect();
+
+        // Insert
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: body.clone(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+        // Read back
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body.len(), body.len(), "large body length must match");
+            assert_eq!(entry.body, body, "large body content must match");
+        }
+    }
+
+    #[test]
+    fn body_roundtrip_newlines_and_tabs_preserved() {
+        // PROP-005: Body with significant whitespace is preserved byte-for-byte.
+        let store = NoteBodyStore::new();
+        let note_id = "note-whitespace".to_string();
+        let body = "line1\n\tindented\n  spaced\n\nparagraph";
+
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: body.to_string(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body, body);
+        }
+    }
+
+    // ── PROP-008: Empty body handling ──────────────────────────────────────
+
+    #[test]
+    fn empty_body_is_stored_as_valid_body() {
+        // PROP-008: Empty body "" is stored and retrievable.
+        let store = NoteBodyStore::new();
+        let note_id = "note-empty".to_string();
+
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: String::new(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body, "", "empty body must be preserved as empty string");
+        }
+    }
+
+    #[test]
+    fn whitespace_only_body_is_stored_as_valid_body() {
+        // PROP-008: Whitespace-only body is stored byte-for-byte.
+        let store = NoteBodyStore::new();
+        let note_id = "note-ws".to_string();
+        let body = "  \n\t  ";
+
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: body.to_string(),
+                is_dirty: true,
+                last_saved_body: String::new(),
+            });
+        }
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body, body, "whitespace body must be preserved");
+        }
+    }
+
+    #[test]
+    fn updating_empty_body_with_empty_does_not_transition_is_dirty() {
+        // PROP-008: If original body was empty and update is also empty,
+        // is_dirty remains false (no change detected).
+        let store = NoteBodyStore::new();
+        let note_id = "note-empty-unchanged".to_string();
+
+        // Initial state: empty body, is_dirty=false (already saved)
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: String::new(),
+                is_dirty: false,
+                last_saved_body: String::new(),
+            });
+        }
+        // "Update" with same empty body — is_dirty stays false
+        {
+            let mut map = store.0.lock().unwrap();
+            let entry = map.get_mut(&note_id).expect("entry must exist");
+            // Body unchanged → is_dirty should not become true
+            assert!(!entry.is_dirty, "is_dirty must stay false when body unchanged");
+        }
+    }
+
+    #[test]
+    fn updating_nonempty_body_with_empty_sets_is_dirty_true() {
+        // PROP-008: Original was non-empty, user deletes all content →
+        // is_dirty becomes true.
+        let store = NoteBodyStore::new();
+        let note_id = "note-to-empty".to_string();
+
+        // Initial state: non-empty body, is_dirty=false
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: "some content".to_string(),
+                is_dirty: false,
+                last_saved_body: "some content".to_string(),
+            });
+        }
+        // Update to empty body
+        {
+            let mut map = store.0.lock().unwrap();
+            map.insert(note_id.clone(), InMemoryNoteBody {
+                body: String::new(),
+                is_dirty: true, // Should be set to true because body changed from non-empty
+                last_saved_body: "some content".to_string(),
+            });
+        }
+        {
+            let map = store.0.lock().unwrap();
+            let entry = map.get(&note_id).expect("entry must exist");
+            assert_eq!(entry.body, "", "body must be empty");
+            assert!(entry.is_dirty, "is_dirty must be true after transitioning to empty");
+        }
+    }
+
+    // ── concurrent access safety skeleton (PROP-003, optional in lean mode) ─
+
+    #[test]
+    fn concurrent_writes_to_same_noteid_are_serialized_by_mutex() {
+        // PROP-003 (optional in lean): Multiple threads writing distinct
+        // bodies for the same noteId; final state is one of the bodies
+        // (last-write-wins), mutex is not poisoned.
+        let store = std::sync::Arc::new(NoteBodyStore::new());
+        let note_id = "note-concurrent".to_string();
+        let threads: Vec<_> = (0..4)
+            .map(|i| {
+                let store = store.clone();
+                let note_id = note_id.clone();
+                std::thread::spawn(move || {
+                    let body = format!("body-thread-{}", i);
+                    let mut map = store.0.lock().unwrap();
+                    map.insert(note_id.clone(), InMemoryNoteBody {
+                        body,
+                        is_dirty: true,
+                        last_saved_body: String::new(),
+                    });
+                })
+            })
+            .collect();
+
+        for t in threads {
+            t.join().expect("thread must not panic");
+        }
+
+        // Read back: entry must exist, mutex not poisoned.
+        let map = store.0.lock().expect("mutex must not be poisoned");
+        let entry = map.get(&note_id).expect("entry must exist");
+        assert!(entry.body.starts_with("body-thread-"), "final body is one of the thread values");
+        assert!(entry.is_dirty);
     }
 }

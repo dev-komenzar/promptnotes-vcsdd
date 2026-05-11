@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-001",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "editor_update_note_body does not emit editing_session_state_changed event on isDirty transition. REQ-002 item 4 states: 'If this is the first update for this noteId (isDirty transitions false→true), emit an editing_session_state_changed event with status editing and isDirty: true.' The command at editor.rs:715-730 has no AppHandle parameter in its signature — (store: tauri::State<'_, NoteBodyStore>, note_id: String, body: String) — making Tauri event emission impossible. Without the AppHandle, the command cannot call app.emit(). REQ-004 item 5 also requires event emission on transitions, which is precluded by the missing AppHandle.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "714-730",
+    "snippet": "pub fn editor_update_note_body(\n    store: tauri::State<'_, NoteBodyStore>,\n    note_id: String,\n    body: String,\n) -> Result<(), String> {\n    validate_no_control_chars(&body)?;\n    let mut map = store.0.lock().map_err(|e| e.to_string())?;\n    let entry = map.entry(note_id).or_insert(InMemoryNoteBody {\n        body: String::new(),\n        is_dirty: false,\n        last_saved_body: String::new(),\n    });\n    entry.body = body;\n    entry.is_dirty = true;\n    Ok(())\n}"
+  },
+  "expected": "Command signature should include app: AppHandle parameter. Before setting is_dirty=true, check if it was previously false (transition detection). When a false→true transition is detected, emit editing_session_state_changed with Editing variant and isDirty:true.",
+  "routeToPhase": "2b"
+}

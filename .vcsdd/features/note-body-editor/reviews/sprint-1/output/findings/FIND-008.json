@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-008",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "high",
+  "description": "No test covers the full save integration pipeline: editor_update_note_body → trigger_idle_save/trigger_blur_save → verify isDirty transitions to false. REQ-004 requires that after a successful save via REQ-007, 'isDirty = false'. REQ-007 requires that 'After a successful save, update the in-memory map: store the saved body as last-saved body, set isDirty = false.' None of the existing tests exercise this cross-command flow. The tests in note_body_editor_handlers.rs manually update the store after simulated saves (e.g., lines 65-70: 'entry.is_dirty = false; entry.last_saved_body = body.clone();'), which does not verify the actual integration between the two commands through the Tauri layer.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/note_body_editor_handlers.rs",
+    "lineRange": "64-70",
+    "snippet": "{\n    let mut map = store.0.lock().unwrap();\n    let entry = map.get_mut(&note_id).expect(\"entry must exist\");\n    entry.is_dirty = false;\n    entry.last_saved_body = body.clone();\n}"
+  },
+  "expected": "Add an integration test that: (1) calls editor_update_note_body with a body, (2) verifies isDirty=true in the store, (3) calls trigger_idle_save or trigger_blur_save with the same noteId and body, (4) verifies isDirty=false in the store and last_saved_body matches. Also add a test that verifies isDirty stays true when save fails. Both tests should exercise the actual command functions or the Tauri IPC test harness.",
+  "routeToPhase": "2a"
+}

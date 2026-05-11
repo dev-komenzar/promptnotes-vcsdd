@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-006",
+  "dimension": "edge_case_coverage",
+  "category": "test_quality",
+  "severity": "medium",
+  "description": "The PROP-007 save-failure test at note_body_editor_handlers.rs:93-132 uses a non-deterministic failure path (/root/should-fail-permission.md). The test branches on whether the write succeeded or failed (lines 120-128: 'if write_result.is_err() { ... } else { ... }'), weakening the failure-path assertion. If the test is run as root, the write to /root/ succeeds, and the test silently validates the success path instead of the failure path it claims to test. A test designed to verify 'isDirty preserved on failed save' must consistently exercise the failure path, not have a built-in escape hatch.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/note_body_editor_handlers.rs",
+    "lineRange": "113-128",
+    "snippet": "let write_result = fs_write_file_atomic(&note_id, &body);\n{\n    let map = store.0.lock().unwrap();\n    let entry = map.get(&note_id).expect(\"entry must exist\");\n    if write_result.is_err() {\n        assert!(entry.is_dirty, ...);\n    } else {\n        assert!(!entry.is_dirty, ...);\n    }\n}"
+  },
+  "expected": "Use a reliable failure mechanism, such as: (a) write to a path inside a directory with permissions 000, (b) use a mock/trait-based filesystem abstraction, (c) set the target path to a read-only filesystem path that is guaranteed to fail regardless of user. The test should assert exactly one outcome (failure) and fail hard if the precondition isn't met.",
+  "routeToPhase": "2a"
+}

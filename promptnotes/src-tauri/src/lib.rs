@@ -273,6 +273,7 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .manage(editor::NoteBodyStore::new())
         .invoke_handler(tauri::generate_handler![
             greet,
             try_vault_path,
@@ -300,6 +301,8 @@ pub fn run() {
             editor::request_new_note,
             // ui-tag-chip: tag chip save
             editor::write_file_atomic,
+            // note-body-editor: in-memory body update
+            editor::editor_update_note_body,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

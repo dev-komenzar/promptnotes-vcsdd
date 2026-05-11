@@ -1,0 +1,7 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+rust-unit-tests: 80 passed (editor.rs tests including new note-body-editor tests)
+rust-integration-tests: 10 passed (note_body_editor_handlers.rs)
+rust-regression: 18 (feed_handlers) + 22 (editor_wire_sprint8) + 19 (editor_handlers) = 59 passed
+total-rust-tests: 149 passed, 0 failed
+sprint: 1

@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-007",
+  "dimension": "implementation_soundness",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "trigger_idle_save and trigger_blur_save (editor.rs:598-620) do not accept tauri::State<NoteBodyStore> and do not pass it to save_note_and_emit. Because save_note_and_emit also lacks store access (FIND-002), the entire save pipeline is disconnected from the in-memory isDirty tracking. After a successful save through the existing save commands, isDirty never transitions back to false. This means the isDirty flag set by editor_update_note_body is a write-only value — it goes to true on first edit but can never be cleared through the application's actual save flow. The only way isDirty could be cleared is through direct HashMap manipulation (as done in tests). This makes the isDirty tracking functionally useless at runtime.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "597-620",
+    "snippet": "#[tauri::command]\npub fn trigger_idle_save(\n    app: AppHandle,\n    note_id: String,\n    body: String,\n    issued_at: String,\n    source: String,\n) -> Result<(), String> {\n    eprintln!(...);\n    save_note_and_emit(&app, note_id, body)\n}\n\n#[tauri::command]\npub fn trigger_blur_save(\n    app: AppHandle,\n    note_id: String,\n    body: String,\n    issued_at: String,\n    source: String,\n) -> Result<(), String> {\n    eprintln!(...);\n    save_note_and_emit(&app, note_id, body)\n}"
+  },
+  "expected": "Both trigger_idle_save and trigger_blur_save should accept store: tauri::State<'_, NoteBodyStore> and pass it to save_note_and_emit. save_note_and_emit should update store's entry for the noteId on successful write: set is_dirty = false, set last_saved_body = body.",
+  "routeToPhase": "2b"
+}

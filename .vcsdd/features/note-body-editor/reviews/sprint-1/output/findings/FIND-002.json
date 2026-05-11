@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-002",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "save_note_and_emit does not update NoteBodyStore after successful save. REQ-004 item 2 states: 'After save_note_and_emit succeeds, update the in-memory map for that noteId: store the saved body as the last-saved body and set isDirty = false.' REQ-007 item 4 states the same. The save_note_and_emit function at editor.rs:560-572 performs fs_write_file_atomic and emits editing_session_state_changed, but never accesses NoteBodyStore to clear is_dirty. The function signature (app: &AppHandle, note_id: String, body: String) provides no access to the in-memory store. Consequently, after any save — idle or blur — isDirty never transitions back to false through the actual application flow.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "558-572",
+    "snippet": "fn save_note_and_emit(\n    app: &AppHandle,\n    note_id: String,\n    body: String,\n) -> Result<(), String> {\n    let state = match fs_write_file_atomic(&note_id, &body) {\n        Ok(()) => compose_state_for_save_ok(&note_id, &body),\n        Err(io_err) => compose_state_for_save_err(&note_id, &body, io_err),\n    };\n    let payload = make_editing_state_changed_payload(&state);\n    app.emit(\"editing_session_state_changed\", payload)\n        .map_err(|e| e.to_string())\n}"
+  },
+  "expected": "save_note_and_emit should accept tauri::State<NoteBodyStore> (or a reference to the store) and, on successful fs_write_file_atomic, update the entry: set is_dirty = false, set last_saved_body = body.",
+  "routeToPhase": "2b"
+}

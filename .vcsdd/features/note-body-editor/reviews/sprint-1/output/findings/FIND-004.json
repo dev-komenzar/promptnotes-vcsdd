@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-004",
+  "dimension": "purity_boundary",
+  "category": "spec_gap",
+  "severity": "high",
+  "description": "Two pure functions listed in the Purity Boundary Analysis are not implemented: (1) has_body_changed(original: string, current: string) → boolean — behavioral-spec.md:102; (2) is_whitespace_only(body: string) → boolean — behavioral-spec.md:103. The verification-architecture.md assigns them IDs PURE-002 and PURE-003 respectively (lines 36-37). Neither function exists in editor.rs or anywhere else in the codebase. The spec's purity boundary analysis explicitly expects these as pure, side-effect-free functions that can be tested with unit tests without mocking. Their absence means the pure core is incompletely implemented, and any code that needs body-change detection or whitespace-only detection would either re-implement these predicates inline or rely on ad-hoc checks.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/editor.rs",
+    "lineRange": "679-710",
+    "snippet": "// Only InMemoryNoteBody, NoteBodyStore, and validate_no_control_chars are defined.\n// has_body_changed and is_whitespace_only are absent from the entire file (1612 lines)."
+  },
+  "expected": "Implement pub fn has_body_changed(original: &str, current: &str) -> bool and pub fn is_whitespace_only(body: &str) -> bool as pure functions in editor.rs, with corresponding #[test] unit tests.",
+  "routeToPhase": "2b"
+}

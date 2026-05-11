@@ -1,0 +1,14 @@
+{
+  "findingId": "FIND-005",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "high",
+  "description": "Integration tests in note_body_editor_handlers.rs bypass the actual editor_update_note_body Tauri command and manipulate NoteBodyStore directly via store.0.lock().unwrap(). PROP-006 (lines 38-86), PROP-007 (lines 93-132, 135-173), and PROP-010 (lines 180-210, 213-303, 259-303) all insert InMemoryNoteBody entries directly into the HashMap instead of calling the Tauri command through the IPC layer. This means the tests do not verify: (a) the actual IPC wire contract (argument names, serialization), (b) that validate_no_control_chars is invoked through the command path, (c) that the Tauri State injection works correctly, (d) that event emission (editing_session_state_changed) works when hooked up. These are not integration tests — they are unit tests that happen to live in a tests/ directory.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/note_body_editor_handlers.rs",
+    "lineRange": "47-58",
+    "snippet": "{\n    let mut map = store.0.lock().unwrap();\n    map.insert(\n        note_id.clone(),\n        InMemoryNoteBody {\n            body: body.clone(),\n            is_dirty: true,\n            last_saved_body: String::new(),\n        },\n    );\n}"
+  },
+  "expected": "Integration tests should invoke the actual Tauri command through the IPC layer (using tauri::test::assert_ipc_response or a Tauri test harness that exercises #[tauri::command] functions). At minimum, tests should call editor_update_note_body() directly as a Rust function (since it's pub) rather than bypassing it to manipulate the store.",
+  "routeToPhase": "2a"
+}
