@@ -580,10 +580,31 @@ fn save_note_and_emit(
     };
     let payload = make_editing_state_changed_payload(&state);
     app.emit("editing_session_state_changed", payload)
-        .map_err(|e| e.to_string())
-}
+        .map_err(|e| e.to_string())?;
 
-// ── Tauri commands ────────────────────────────────────────────────────────────
+    if matches!(state, EditingSessionStateDto::Editing { .. }) {
+        if let Ok(Some(vault_path)) = crate::settings_load_impl() {
+            let (visible_note_ids, note_metadata) =
+                crate::feed::scan_vault_feed(&vault_path);
+            let feed_snapshot = crate::feed::FeedDomainSnapshotDto {
+                editing: crate::feed::idle_editing(),
+                feed: crate::feed::FeedSubDto {
+                    visible_note_ids,
+                    filter_applied: false,
+                },
+                delete: crate::feed::no_delete(),
+                note_metadata,
+                cause: crate::feed::CauseDto::NoteFileSaved {
+                    saved_note_id: note_id.clone(),
+                },
+            };
+            app.emit("feed_state_changed", feed_snapshot)
+                .map_err(|e| e.to_string())?;
+        }
+    }
+
+    Ok(())
+}
 
 /// REQ-EDIT-028: edit_note_body — thin acknowledgement, no side effects.
 /// The body buffer is owned by the TS editorReducer; Rust just acks.

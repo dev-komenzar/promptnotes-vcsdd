@@ -293,6 +293,11 @@
     // SortDirectionToggled returns commands:[] — no dispatch needed
   }
 
+  function handleEditorExit(noteId: string): void {
+    const result = feedReducer(currentViewState, { kind: 'FeedRowEditorExited', noteId });
+    currentViewState = result.state;
+  }
+
   onDestroy(() => {
     unsubscribe();
   });
@@ -387,6 +392,7 @@
         onTagAddClick={handleTagAddClick}
         onTagInputCommit={handleTagInputCommit}
         onTagInputCancel={handleTagInputCancel}
+        onEditorExit={handleEditorExit}
       />
     {/each}
   {/if}

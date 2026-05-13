@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-305",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "severity": "low",
+  "description": "The property test file at promptnotes/src/lib/feed/__tests__/feedRowEditMode.prop.test.ts imports from 'bun:test' (line 14) but the test infrastructure for this project (as evidenced by vitest.config.ts, the *.vitest.ts naming convention, and the vitest imports in other test files) uses vitest. There is no bunfig.toml or bun test runner configuration visible. The file name feedRowEditMode.prop.test.ts does not match the *.vitest.ts pattern used by other test files (e.g., FeedRow.dom.vitest.ts, feedRowEditMode.vitest.ts). This mismatch means the property tests may never be executed in CI, leaving REQ-003's fast-check property tests un-run.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedRowEditMode.prop.test.ts",
+    "lineRange": "14-19",
+    "snippet": "import { describe, test, expect } from 'bun:test';\nimport * as fc from 'fast-check';\n\nimport { validate_no_control_chars } from '$lib/feed/feedRowEditMode';"
+  },
+  "additionalEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/__tests__/dom/feedRowEditMode.vitest.ts",
+      "lineRange": "18-19",
+      "description": "Contrast: other test files import from 'vitest' and use *.vitest.ts naming"
+    }
+  ],
+  "routeToPhase": "2a",
+  "remediationHint": "Either rename the file to feedRowEditMode.prop.vitest.ts and change imports to vitest (if fast-check is compatible), or document in vitest.config.ts that *.prop.test.ts files are excluded from vitest and add a bun test script in package.json."
+}

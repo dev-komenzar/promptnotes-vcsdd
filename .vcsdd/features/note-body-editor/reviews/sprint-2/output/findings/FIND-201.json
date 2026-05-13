@@ -1,0 +1,30 @@
+{
+  "findingId": "FIND-201",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "unmountCodeMirrorForNote bypassed on Escape and blur exit: exitEditMode clears currentEditingNoteId to null before the $effect cleanup fires unmountCodeMirrorForNote, causing the guard check at feedRowEditMode.ts:173-176 to fail. The EditorView is never destroyed, leaking DOM event listeners, internal CodeMirror state, and violating REQ-005 item 2 ('Unmount (destroy) the CodeMirror EditorView instance — clean up DOM node, remove event listeners, free memory').",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/feedRowEditMode.ts",
+    "lineRange": "169-189",
+    "snippet": "export function unmountCodeMirrorForNote(container, noteId): void {\n  if (currentEditingNoteId === noteId && currentEditorContainer === container && currentEditorView) {\n    // ... destroy\n  }\n}"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "198-201",
+      "description": "handleEditorEscape calls exitInlineEdit(noteId) which nullifies currentEditingNoteId BEFORE $effect cleanup (line 211-214) runs unmountCodeMirrorForNote"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "191-196",
+      "description": "handleEditorBlur wraps exitInlineEdit in setTimeout, causing same timing issue: currentEditingNoteId cleared before unmountCodeMirrorForNote fires"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/feedRowEditMode.ts",
+      "lineRange": "216-221",
+      "description": "exitEditMode unconditionally nullifies currentEditingNoteId at line 218 before the Svelte $effect re-evaluates"
+    }
+  ],
+  "routeToPhase": "2b"
+}

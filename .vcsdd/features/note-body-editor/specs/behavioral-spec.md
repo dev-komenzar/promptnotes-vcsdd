@@ -74,6 +74,7 @@ The `note-body-editor` feature adds inline body editing to the feed row. This is
 - The Rust command `editor_update_note_body` only holds in-memory state (body + isDirty); it does NOT write files
 - File persistence is triggered by the existing debounce/blur mechanics calling `trigger_idle_save` / `trigger_blur_save`
 - The existing `edit_note_body` at `editor.rs:577-585` is currently a no-op; this feature gives it real behavior
+- **NFR-001**: FeedRow container uses `<div role="button" tabindex="0">` instead of `<button>` to permit interactive child elements (contenteditable via CodeMirror, `<input>` for tags). Keyboard activation (Space/Enter) is handled explicitly via `onkeydown`. When in edit mode (`isEditingThisRow === true`), `tabindex="-1"` and `onclick`/`onkeydown` handlers are removed to prevent any activation interfering with CodeMirror input.
 
 ---
 
@@ -302,6 +303,7 @@ The note-taker navigates the feed list and wants to make a quick text correction
    a. Writes the body to the `.md` file atomically via `fs_write_file_atomic`
    b. Emits `editing_session_state_changed` with `status: 'editing'`, `isDirty: false`, `lastSaveResult: 'success'` on success
    c. Emits `editing_session_state_changed` with `status: 'save-failed'` on error
+   d. **Emits `feed_state_changed`** with `CauseDto::NoteFileSaved` on success — scans the vault directory to rebuild `noteMetadata` so the feed list reflects the updated body immediately
 4. **(Rust)**: After a successful save, update the in-memory map: store the saved body as "last-saved body", set `isDirty = false`
 
 **Edge Cases**:

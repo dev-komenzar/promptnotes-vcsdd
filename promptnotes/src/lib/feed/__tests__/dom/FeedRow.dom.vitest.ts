@@ -85,54 +85,73 @@ afterEach(() => {
 
 // ── PROP-FEED-013: Row click → dispatchSelectPastNote ─────────────────────────
 
-describe('PROP-FEED-013 / REQ-FEED-005: row click dispatches SelectPastNote', () => {
-  test('row click in idle+ready state calls dispatchSelectPastNote 1×', () => {
+describe('PROP-FEED-013 / REQ-FEED-005: row click enters inline edit mode', () => {
+  test('row click in idle+ready state does NOT call dispatchSelectPastNote (inline edit replaces old EditorPanel flow)', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'ready' });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const rowButton = target.querySelector('button[data-testid="feed-row-button"]') as HTMLButtonElement | null;
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLElement | null;
     expect(rowButton).not.toBeNull();
     rowButton!.click();
     flushSync();
 
-    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(1);
-    // FIND-S2-05: adapter now takes (noteId, vaultPath, issuedAt).
-    // FeedRow fallback path passes '' for vaultPath (unknown at this level).
-    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledWith('note-001', '', expect.any(String));
+    expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(0);
 
     unmount(app);
   });
 
-  test('row click in saving state does NOT call dispatchSelectPastNote (EC-FEED-004)', () => {
+  test('row click in idle+ready state shows inline-codemirror-editor (PROP-FEED-013b)', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'ready' });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLElement | null;
+    expect(rowButton).not.toBeNull();
+    rowButton!.click();
+    flushSync();
+
+    const editorEl = target.querySelector('[data-testid="inline-codemirror-editor"]');
+    expect(editorEl).not.toBeNull();
+
+    const previewEl = target.querySelector('[data-testid="row-body-preview"]');
+    expect(previewEl?.classList.contains('hidden')).toBe(true);
+
+    unmount(app);
+  });
+
+  test('row click in saving state does NOT enter edit mode (EC-FEED-004)', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({ editingStatus: 'saving', loadingStatus: 'ready' });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const rowButton = target.querySelector('button[data-testid="feed-row-button"]') as HTMLButtonElement | null;
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLElement | null;
     expect(rowButton).not.toBeNull();
     rowButton!.click();
     flushSync();
 
     expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(0);
+    expect(target.querySelector('[data-testid="inline-codemirror-editor"]')).toBeNull();
 
     unmount(app);
   });
 
-  test('row click in switching state does NOT call dispatchSelectPastNote (EC-FEED-005)', () => {
+  test('row click in switching state does NOT enter edit mode (EC-FEED-005)', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({ editingStatus: 'switching', loadingStatus: 'ready' });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const rowButton = target.querySelector('button[data-testid="feed-row-button"]') as HTMLButtonElement | null;
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLElement | null;
     expect(rowButton).not.toBeNull();
     rowButton!.click();
     flushSync();
 
     expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(0);
+    expect(target.querySelector('[data-testid="inline-codemirror-editor"]')).toBeNull();
 
     unmount(app);
   });
@@ -143,24 +162,25 @@ describe('PROP-FEED-013 / REQ-FEED-005: row click dispatches SelectPastNote', ()
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const rowButton = target.querySelector('button[data-testid="feed-row-button"]');
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]');
     expect(rowButton?.getAttribute('aria-disabled')).toBe('true');
 
     unmount(app);
   });
 
-  test('row click in loading state does NOT call dispatchSelectPastNote (EC-FEED-015)', () => {
+  test('row click in loading state does NOT enter edit mode (EC-FEED-015)', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'loading' });
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const rowButton = target.querySelector('button[data-testid="feed-row-button"]') as HTMLButtonElement | null;
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLElement | null;
     expect(rowButton).not.toBeNull();
     rowButton!.click();
     flushSync();
 
     expect(adapter.dispatchSelectPastNote).toHaveBeenCalledTimes(0);
+    expect(target.querySelector('[data-testid="inline-codemirror-editor"]')).toBeNull();
 
     unmount(app);
   });
@@ -175,7 +195,7 @@ describe('PROP-FEED-014 / REQ-FEED-010: disabled delete button when editing same
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLButtonElement | null;
+    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLElement | null;
     expect(deleteBtn).not.toBeNull();
     expect(deleteBtn!.disabled).toBe(true);
     expect(deleteBtn!.getAttribute('aria-disabled')).toBe('true');
@@ -189,7 +209,7 @@ describe('PROP-FEED-014 / REQ-FEED-010: disabled delete button when editing same
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLButtonElement | null;
+    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLElement | null;
     expect(deleteBtn).not.toBeNull();
     deleteBtn!.click();
     flushSync();
@@ -205,7 +225,7 @@ describe('PROP-FEED-014 / REQ-FEED-010: disabled delete button when editing same
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLButtonElement | null;
+    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLElement | null;
     expect(deleteBtn).not.toBeNull();
     expect(deleteBtn!.disabled).toBe(false);
 
@@ -222,7 +242,7 @@ describe('PROP-FEED-015 / REQ-FEED-011: valid delete button click dispatches Req
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLButtonElement | null;
+    const deleteBtn = target.querySelector('[data-testid="delete-button"]') as HTMLElement | null;
     expect(deleteBtn).not.toBeNull();
     deleteBtn!.click();
     flushSync();
@@ -283,15 +303,16 @@ describe('PROP-FEED-023 / REQ-FEED-009: pending-switch-indicator when pendingNex
 // ── DOM element presence ──────────────────────────────────────────────────────
 
 describe('FeedRow DOM structure requirements', () => {
-  test('row uses <button> element (REQ-FEED-015 / NFR-FEED-001)', () => {
+  test('row uses div[role="button"] element (NFR-001)', () => {
     const adapter = makeMockAdapter();
     const viewState = makeViewState();
     const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
     flushSync();
 
-    const rowButton = target.querySelector('button[data-testid="feed-row-button"]');
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]');
     expect(rowButton).not.toBeNull();
-    expect(rowButton?.tagName).toBe('BUTTON');
+    expect(rowButton?.tagName).toBe('DIV');
+    expect(rowButton?.getAttribute('role')).toBe('button');
 
     unmount(app);
   });
@@ -835,4 +856,125 @@ describe('PROP-FEED-S4-015 / REQ-FEED-026: showPendingSwitch uses pendingNextFoc
 
     unmount(app);
   });
+});
+
+// ── note-body-editor: Space/Enter key in CodeMirror does not trigger button ───
+
+describe('note-body-editor: keyboard events in inline editor do not activate parent button', () => {
+  function getCmEditorEl(): Element | null {
+    return target.querySelector('.cm-editor');
+  }
+
+  function getCmContentEl(): HTMLElement | null {
+    return target.querySelector('.cm-content') as HTMLElement | null;
+  }
+
+  test('keydown Space on CodeMirror does not exit edit mode (REQ-001)', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'ready' });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement | null;
+    expect(rowButton).not.toBeNull();
+
+    rowButton!.click();
+    flushSync();
+
+    const cmContent = getCmContentEl();
+    expect(cmContent).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    cmContent!.dispatchEvent(event);
+    flushSync();
+
+    expect(getCmEditorEl()).not.toBeNull();
+
+    unmount(app);
+  });
+
+  test('keydown Enter on CodeMirror does not exit edit mode', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'ready' });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]') as HTMLButtonElement | null;
+    expect(rowButton).not.toBeNull();
+
+    rowButton!.click();
+    flushSync();
+
+    const cmContent = getCmContentEl();
+    expect(cmContent).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    cmContent!.dispatchEvent(event);
+    flushSync();
+
+    expect(getCmEditorEl()).not.toBeNull();
+
+    unmount(app);
+  });
+
+  test('keydown Escape on CodeMirror editor exits edit mode', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'ready' });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]');
+    expect(rowButton).not.toBeNull();
+
+    rowButton!.click();
+    flushSync();
+
+    const cmContent = getCmContentEl();
+    expect(cmContent).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    cmContent!.dispatchEvent(event);
+    flushSync();
+
+    expect(getCmEditorEl()).toBeNull();
+
+    unmount(app);
+  });
+
+  test('Space keydown on div[role=button] itself triggers handleRowClick (NFR-001)', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'ready' });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const rowButton = target.querySelector('[data-testid="feed-row-button"]');
+    expect(rowButton).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    rowButton!.dispatchEvent(event);
+    flushSync();
+
+    expect(getCmEditorEl()).not.toBeNull();
+
+    unmount(app);
+  });
+
+  test('Space keydown on child element does NOT trigger handleRowClick (FIND-301)', () => {
+    const adapter = makeMockAdapter();
+    const viewState = makeViewState({ editingStatus: 'idle', loadingStatus: 'ready' });
+    const app = mount(FeedRow, { target, props: { ...BASE_PROPS, viewState, adapter } });
+    flushSync();
+
+    const previewEl = target.querySelector('[data-testid="row-body-preview"]');
+    expect(previewEl).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    previewEl!.dispatchEvent(event);
+    flushSync();
+
+    expect(getCmEditorEl()).toBeNull();
+
+    unmount(app);
+  });
+
 });

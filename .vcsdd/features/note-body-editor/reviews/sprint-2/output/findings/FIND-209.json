@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-209",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "high",
+  "description": "triggerBlurSave sends unvalidated body containing control characters to Rust. handleEditorChange sets lastEditorBody = newBody (FeedRow.svelte:155) BEFORE calling validate_no_control_chars (line 156). If validation fails, the function returns at line 159, leaving lastEditorBody containing control characters. Later, when $effect cleanup fires triggerBlurSave (line 212), it sends lastEditorBody via invoke('trigger_blur_save', ...) at line 183-188 — bypassing the control-character pre-filter that only guards editor_update_note_body. This means control characters (U+0000-U+001F excluding tab, plus U+007F) can reach the Rust backend and potentially the file system through the blur save path, violating REQ-003.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "154-159, 181-189",
+    "snippet": "function handleEditorChange(newBody: string): void {\n  lastEditorBody = newBody;              // ← RAW body, may contain control chars\n  const result = validate_no_control_chars(newBody);\n  if (!result.ok) {\n    validationHintVisible = true;\n    return;                              // ← lastEditorBody still contains control chars\n  }\n  // ...\n}\n\nfunction triggerBlurSave(): void {\n  clearAllTimers();\n  invoke('trigger_blur_save', {\n    noteId,\n    body: lastEditorBody,                // ← UNVALIDATED, may contain control chars\n    issuedAt: nowIso(),\n    source: 'capture-blur',\n  });\n}"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": ".vcsdd/features/note-body-editor/specs/behavioral-spec.md",
+      "lineRange": "196-202",
+      "description": "REQ-003 edge case: 'Paste of text containing control characters: Rejected same as typed input'"
+    }
+  ],
+  "routeToPhase": "2b"
+}

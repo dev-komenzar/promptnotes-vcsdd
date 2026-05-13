@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-203",
+  "dimension": "edge_case_coverage",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "No dynamic import fallback for CodeMirror module load failure. REQ-001 edge case states: 'If CodeMirror modules fail to import (dynamic import error), fall back: do not enter edit mode, log error to console, no crash.' The implementation uses static imports at feedRowEditMode.ts:13-15 for EditorView, EditorState, and markdown(). If any of these fail at bundle time or runtime, the entire module fails to load with no graceful fallback. A dynamic import() with try/catch is required to satisfy this edge case.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/feedRowEditMode.ts",
+    "lineRange": "13-15",
+    "snippet": "import { EditorView, keymap } from '@codemirror/view';\nimport { EditorState } from '@codemirror/state';\nimport { markdown } from '@codemirror/lang-markdown';"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": ".vcsdd/features/note-body-editor/specs/behavioral-spec.md",
+      "lineRange": "145-146",
+      "description": "Spec edge case: 'If CodeMirror modules fail to import (dynamic import error), fall back: do not enter edit mode, log error to console, no crash'"
+    }
+  ],
+  "routeToPhase": "2b"
+}

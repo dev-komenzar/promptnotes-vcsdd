@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-302",
+  "dimension": "spec_fidelity",
+  "category": "test_coverage",
+  "severity": "high",
+  "description": "NFR-001 specifies: 'Keyboard activation (Space/Enter) is handled explicitly via onkeydown.' The test file FeedRow.dom.vitest.ts contains only negative tests (lines 862-943: 'keydown Space on CodeMirror does not exit edit mode', 'keydown Enter on CodeMirror does not exit edit mode') that verify Space/Enter within CodeMirror does NOT trigger the parent button during edit mode. There is NO positive test verifying that pressing Space or Enter on the div[role='button'] (when NOT in edit mode) correctly triggers handleRowClick / enterEditMode. This leaves the positive keyboard-activation path untested.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+    "lineRange": "862-943",
+    "snippet": "describe('note-body-editor: keyboard events in inline editor do not activate parent button', () => { ... })"
+  },
+  "additionalEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+      "lineRange": "88-123",
+      "description": "PROP-FEED-013b tests CLICK to enter edit mode, but no parallel test for keyboard Space/Enter activation"
+    }
+  ],
+  "routeToPhase": "2a",
+  "remediationHint": "Add a test that mounts FeedRow with editingStatus='idle', focuses the div[role='button'] (or dispatches keydown event with key=' ' on the element), and asserts that inline-codemirror-editor appears in the DOM. Add a parallel test for key='Enter'."
+}

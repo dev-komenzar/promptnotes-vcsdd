@@ -1,0 +1,25 @@
+{
+  "findingId": "FIND-208",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "medium",
+  "description": "fast-check fc.string() generates printable ASCII only, missing required Unicode coverage for PROP-009. The property test at feedRowEditMode.prop.test.ts:46 uses fc.string({ minLength: 0, maxLength: 200 }) which defaults to generating characters from the printable ASCII range (0x20-0x7E). PROP-009 and PROP-015 require 'Randomized string generation covering Unicode edge cases' including 'surrogate pairs, CJK, emoji, RTL characters.' The current test cannot detect false negatives for non-ASCII characters that might be incorrectly flagged as control characters.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedRowEditMode.prop.test.ts",
+    "lineRange": "46-50",
+    "snippet": "const arbCleanString = fc.string({\n  minLength: 0,\n  maxLength: 200,\n  // Exclude characters that would make the test non-deterministic\n});"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": ".vcsdd/features/note-body-editor/specs/verification-architecture.md",
+      "lineRange": "60-69",
+      "description": "PROP-001 strategy: 'Generate random String values from a Unicode character universe'"
+    },
+    {
+      "filePath": ".vcsdd/features/note-body-editor/specs/verification-architecture.md",
+      "lineRange": "240-243",
+      "description": "Tier 1: 'fast-check (TypeScript): Randomized string generation covering Unicode edge cases'"
+    }
+  ],
+  "routeToPhase": "2a"
+}

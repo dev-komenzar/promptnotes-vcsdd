@@ -24,6 +24,16 @@
     timestampLabel,
   } from './feedRowPredicates.js';
   import { nowIso } from './clockHelpers.js';
+  import {
+    subscribeToEditState,
+    getEditingNoteId,
+    enterEditMode as enterInlineEdit,
+    exitEditMode as exitInlineEdit,
+    mountCodeMirrorForNote,
+    unmountCodeMirrorForNote,
+    validate_no_control_chars,
+  } from './feedRowEditMode.js';
+  import { invoke } from '@tauri-apps/api/core';
 
   interface Props {
     noteId: string;
@@ -41,16 +51,20 @@
     onTagAddClick?: (noteId: string) => void;
     onTagInputCommit?: (noteId: string, rawTag: string) => void;
     onTagInputCancel?: () => void;
+    onEditorExit?: (noteId: string) => void;
   }
 
-  const { noteId, body, createdAt, updatedAt, tags, viewState, adapter, tagInventory, onRowClick, onDeleteClick, onTagRemove, onTagAddClick, onTagInputCommit, onTagInputCancel }: Props = $props();
+  const { noteId, body, createdAt, updatedAt, tags, viewState, adapter, tagInventory, onRowClick, onDeleteClick, onTagRemove, onTagAddClick, onTagInputCommit, onTagInputCancel, onEditorExit }: Props = $props();
 
   const locale = 'ja-JP';
 
   const createdAtLabel = $derived(timestampLabel(createdAt, locale));
   const updatedAtLabel = $derived(timestampLabel(updatedAt, locale));
   const previewLines = $derived(bodyPreviewLines(body, 2));
-  const deleteDisabled = $derived(isDeleteButtonDisabled(noteId, viewState.editingStatus, viewState.editingNoteId));
+  const deleteDisabled = $derived(
+    isEditingThisRow ||
+    isDeleteButtonDisabled(noteId, viewState.editingStatus, viewState.editingNoteId)
+  );
 
   /**
    * FIND-006 fix / REQ-FEED-026: showPendingSwitch requires BOTH pendingNextFocus.noteId match AND
@@ -95,15 +109,124 @@
     deleteDisabled ? '編集を終了してから削除してください' : undefined
   );
 
+  let editorContainer = $state<HTMLDivElement | undefined>(undefined);
+  let editingTick = $state(0);
+  let lastEditorBody = $state(body);
+  let validationHintVisible = $state(false);
+
+  let ipcDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let idleSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function clearIpcDebounce(): void {
+    if (ipcDebounceTimer !== null) {
+      clearTimeout(ipcDebounceTimer);
+      ipcDebounceTimer = null;
+    }
+  }
+
+  function clearIdleSave(): void {
+    if (idleSaveTimer !== null) {
+      clearTimeout(idleSaveTimer);
+      idleSaveTimer = null;
+    }
+  }
+
+  function clearAllTimers(): void {
+    clearIpcDebounce();
+    clearIdleSave();
+  }
+
+  $effect(() => {
+    return subscribeToEditState(() => editingTick++);
+  });
+
+  $effect(() => {
+    if (!getEditingNoteId() || getEditingNoteId() !== noteId) {
+      lastEditorBody = body;
+    }
+  });
+
+  const isEditingThisRow = $derived.by(() => {
+    void editingTick;
+    return getEditingNoteId() === noteId;
+  });
+
+  function handleEditorChange(newBody: string): void {
+    lastEditorBody = newBody;
+    const result = validate_no_control_chars(newBody);
+    if (!result.ok) {
+      validationHintVisible = true;
+      return;
+    }
+    validationHintVisible = false;
+
+    clearIpcDebounce();
+    ipcDebounceTimer = setTimeout(() => {
+      ipcDebounceTimer = null;
+      invoke('editor_update_note_body', { noteId, body: newBody });
+    }, 100);
+
+    clearIdleSave();
+    idleSaveTimer = setTimeout(() => {
+      idleSaveTimer = null;
+      invoke('trigger_idle_save', {
+        noteId,
+        body: newBody,
+        issuedAt: nowIso(),
+        source: 'capture-idle',
+      });
+    }, 2000);
+  }
+
+  function triggerBlurSave(): void {
+    clearAllTimers();
+    const result = validate_no_control_chars(lastEditorBody);
+    if (!result.ok) return;
+    invoke('trigger_blur_save', {
+      noteId,
+      body: lastEditorBody,
+      issuedAt: nowIso(),
+      source: 'capture-blur',
+    });
+  }
+
+  function handleEditorBlur(): void {
+    setTimeout(() => {
+      exitInlineEdit(noteId);
+      onEditorExit?.(noteId);
+    }, 0);
+  }
+
+  function handleEditorEscape(): void {
+    exitInlineEdit(noteId);
+    onEditorExit?.(noteId);
+  }
+
+  $effect(() => {
+    const container = editorContainer;
+    if (isEditingThisRow && container) {
+      mountCodeMirrorForNote(container, noteId, body, {
+        onChange: handleEditorChange,
+        onBlur: handleEditorBlur,
+        onEscape: handleEditorEscape,
+      });
+      return () => {
+        triggerBlurSave();
+        unmountCodeMirrorForNote(container, noteId);
+      };
+    }
+  });
+
   function handleRowClick(): void {
     if (rowDisabled) return;
-    if (onRowClick) {
-      onRowClick(noteId);
-    } else {
-      // Fallback direct call: vaultPath is unknown here.
-      // In practice this branch is not reached when FeedList uses the FIND-008 command bus.
-      adapter.dispatchSelectPastNote(noteId, '', nowIso());
+    if (
+      viewState.editingStatus !== 'idle' &&
+      viewState.editingNoteId === noteId &&
+      getEditingNoteId() !== noteId
+    ) {
+      return;
     }
+    enterInlineEdit(noteId);
   }
 
   function handleDeleteClick(): void {
@@ -183,10 +306,19 @@
   data-row-note-id={noteId}
 >
   <div class="row-layout">
-    <button
+    <div
       data-testid="feed-row-button"
+      role="button"
+      tabindex={isEditingThisRow ? -1 : (rowDisabled ? -1 : 0)}
       aria-disabled={rowDisabled ? 'true' : 'false'}
-      onclick={handleRowClick}
+      onclick={isEditingThisRow ? undefined : handleRowClick}
+      onkeydown={isEditingThisRow ? undefined : ((e: KeyboardEvent) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          handleRowClick();
+        }
+      })}
       class="row-button"
     >
       <div
@@ -202,11 +334,25 @@
       <div
         data-testid="row-body-preview"
         class="row-body-preview"
+        class:hidden={isEditingThisRow}
       >
         {#each previewLines as line}
           <div>{line}</div>
         {/each}
       </div>
+
+      {#if isEditingThisRow}
+        <div
+          bind:this={editorContainer}
+          data-testid="inline-codemirror-editor"
+          class="row-body-editor"
+        ></div>
+        {#if validationHintVisible}
+          <div data-testid="inline-editor-validation-hint" class="validation-hint">
+            制御文字は入力できません
+          </div>
+        {/if}
+      {/if}
 
       {#if tags.length > 0}
         <div class="tag-list">
@@ -289,7 +435,7 @@
           切り替え中...
         </span>
       {/if}
-    </button>
+    </div>
 
     <button
       data-testid="delete-button"
@@ -358,6 +504,40 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     margin-bottom: 6px;
+  }
+
+  .row-body-preview.hidden {
+    display: none;
+  }
+
+  .row-body-editor {
+    margin-bottom: 6px;
+  }
+
+  .row-body-editor :global(.cm-editor) {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+  }
+
+  .row-body-editor :global(.cm-editor.cm-focused) {
+    border-color: #097fe8;
+    box-shadow: 0 0 0 2px rgba(9,127,232,0.15);
+  }
+
+  .row-body-editor :global(.cm-scroller) {
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .row-body-editor :global(.cm-content) {
+    padding: 8px 12px;
+  }
+
+  .validation-hint {
+    font-size: 12px;
+    color: #dd5b00;
+    margin-top: 4px;
   }
 
   .tag-list {

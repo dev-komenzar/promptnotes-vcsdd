@@ -141,7 +141,9 @@ export type FeedAction =
   // ui-filter-search extensions:
   | { kind: 'SearchApplied';           query: string }
   | { kind: 'SearchCleared' }
-  | { kind: 'SortDirectionToggled' };
+  | { kind: 'SortDirectionToggled' }
+  // note-body-editor extensions:
+  | { kind: 'FeedRowEditorExited';     noteId: string };
 
 // ── FeedCommand ───────────────────────────────────────────────────────────────
 

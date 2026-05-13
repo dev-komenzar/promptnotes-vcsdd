@@ -1,0 +1,31 @@
+{
+  "findingId": "FIND-301",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "Space/Enter keydown events from child interactive elements (tag input, tag-add button, tag-remove button, autocomplete items) bubble to the div[role='button'] and trigger its onkeydown handler, which calls e.preventDefault() (blocking normal input) and handleRowClick() (accidentally entering edit mode). This is a direct regression from the previous <button> element, which only activated on Space/Enter when the button itself had focus. With the explicit onkeydown handler on the div[role='button'], ALL Space/Enter keydown events from child elements are captured regardless of focus target.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "310-321",
+    "snippet": "onkeydown={isEditingThisRow ? undefined : ((e: KeyboardEvent) => {\n  if (e.key === ' ' || e.key === 'Enter') {\n    e.preventDefault();\n    handleRowClick();\n  }\n})}"
+  },
+  "additionalEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "380-390",
+      "description": "tag-input is a child of the div[role='button']; its keydown events bubble to the parent handler"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "364-373",
+      "description": "tag-remove <button> child has e.stopPropagation() only for click events (line 369), NOT for keydown events"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "420-428",
+      "description": "tag-add <button> child has e.stopPropagation() only for click events (line 425), NOT for keydown events"
+    }
+  ],
+  "routeToPhase": "2b",
+  "remediationHint": "The onkeydown handler should check e.target to avoid capturing events from child interactive elements (input, button, select, textarea). Alternative: use e.currentTarget === e.target check, or add stopPropagation to keydown handlers on child inputs/buttons."
+}

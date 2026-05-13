@@ -352,6 +352,14 @@ export function feedReducer(state: FeedViewState, action: FeedAction): FeedReduc
       return { state: { ...state, sortDirection: nextDir, visibleNoteIds: nextVisible }, commands: [] };
     }
 
+    case 'FeedRowEditorExited': {
+      const nextState: FeedViewState = {
+        ...state,
+        editingNoteId: null,
+      };
+      return { state: nextState, commands: [] };
+    }
+
     default: {
       const _exhaustive: never = action;
       void _exhaustive;

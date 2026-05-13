@@ -1,0 +1,126 @@
+{
+  "sprintNumber": 2,
+  "feature": "note-body-editor",
+  "overallVerdict": "FAIL",
+  "timestamp": "2026-05-11T12:00:00Z",
+  "iteration": 2,
+  "dimensions": [
+    {
+      "name": "spec_fidelity",
+      "verdict": "FAIL",
+      "findings": ["FIND-202", "FIND-209"],
+      "evidence": [
+        {
+          "type": "review",
+          "description": "REQ-006: No concurrent edit guard blocking feed row click when EditorPanel edits the same note (FIND-202)"
+        },
+        {
+          "type": "review",
+          "description": "REQ-003: triggerBlurSave sends lastEditorBody without control-character validation, bypassing the pre-filter that guards only editor_update_note_body (FIND-209)"
+        },
+        {
+          "type": "review",
+          "description": "REQ-002: 100ms IPC debounce added (FIND-001 FIXED) — ipcDebounceTimer in FeedRow.svelte:163-167"
+        },
+        {
+          "type": "review",
+          "description": "REQ-007: 2000ms idle save debounce added (FIND-002 FIXED) — idleSaveTimer in FeedRow.svelte:169-178"
+        },
+        {
+          "type": "review",
+          "description": "REQ-005: try/catch around EditorView.destroy() added (FIND-003 FIXED) — feedRowEditMode.ts:107-111, 178-182"
+        },
+        {
+          "type": "review",
+          "description": "REQ-005: blur-save moved into $effect cleanup — triggerBlurSave before unmount (FIND-004 FIXED, FIND-005 partially fixed but see FIND-201)"
+        }
+      ]
+    },
+    {
+      "name": "edge_case_coverage",
+      "verdict": "FAIL",
+      "findings": ["FIND-203"],
+      "evidence": [
+        {
+          "type": "review",
+          "description": "REQ-001 edge case: No dynamic import fallback for CodeMirror module load failure — static imports at feedRowEditMode.ts:13-15 (FIND-203, previously FIND-009)"
+        },
+        {
+          "type": "review",
+          "description": "REQ-005 edge case 'Blur while save is in progress': No guard checks editingStatus before triggering blur save"
+        }
+      ]
+    },
+    {
+      "name": "implementation_correctness",
+      "verdict": "FAIL",
+      "findings": ["FIND-201", "FIND-204"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/feedRowEditMode.ts:169-189",
+          "description": "unmountCodeMirrorForNote guard (line 173-176) fails because exitEditMode clears currentEditingNoteId before $effect cleanup runs — EditorView.destroy() never called on Escape/blur exit, violating REQ-005 item 2 (FIND-201)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:191-196",
+          "description": "handleEditorBlur wraps exit in setTimeout (line 192), and mountCodeMirrorForNote's blur listener already wraps in setTimeout (feedRowEditMode.ts:145) — redundant double-setTimeout creates fragile timing (FIND-204)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:154-179",
+          "description": "handleEditorChange sets lastEditorBody = newBody at line 155 BEFORE control-char validation at line 156. If validation fails, return at line 159 leaves lastEditorBody containing control chars, which triggerBlurSave at line 185 sends unvalidated to Rust via trigger_blur_save"
+        }
+      ]
+    },
+    {
+      "name": "structural_integrity",
+      "verdict": "FAIL",
+      "findings": ["FIND-205"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/FeedRow.svelte:36",
+          "description": "FeedRow.svelte imports invoke directly from @tauri-apps/api/core and calls invoke('editor_update_note_body', ...) at line 166, invoke('trigger_idle_save', ...) at line 172, invoke('trigger_blur_save', ...) at line 183 — bypassing the TauriFeedAdapter command bus pattern used by all other feed operations (FIND-205, previously FIND-011)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/tauriFeedAdapter.ts:10-16",
+          "description": "Adapter CMD const has no entries for editor_update_note_body, trigger_idle_save, or trigger_blur_save"
+        }
+      ]
+    },
+    {
+      "name": "verification_readiness",
+      "verdict": "FAIL",
+      "findings": ["FIND-206", "FIND-207", "FIND-208"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/feedRowEditMode.prop.test.ts",
+          "description": "Tests only cover validate_no_control_chars (PROP-009). No debounce timer tests exist for 100ms IPC debounce or 2000ms idle save (FIND-206)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/dom/feedRowEditMode.vitest.ts",
+          "description": "Tests still carry RED PHASE headers (lines 4, 9, 20, 57, 70, 107, 192) and extensive try/catch wrappers that swallow genuine runtime exceptions — should have been updated for GREEN phase (FIND-207, previously FIND-007)"
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/__tests__/feedRowEditMode.prop.test.ts:46",
+          "description": "fc.string() generates printable ASCII by default, not full Unicode. PROP-009 requires 'Randomized string generation covering Unicode edge cases' — surrogate pairs, CJK, emoji, RTL are not exercised (FIND-208, previously FIND-010)"
+        },
+        {
+          "type": "review",
+          "description": "No integration test covers the full edit-mode lifecycle: click→mount→type→blur→save→unmount chain. Tests cover pure functions and mount/unmount in isolation only (previously FIND-012)"
+        }
+      ]
+    }
+  ],
+  "convergenceSignals": {
+    "findingCount": 9,
+    "allCriteriaEvaluated": false,
+    "evaluatedCriteria": [],
+    "duplicateFindings": []
+  }
+}

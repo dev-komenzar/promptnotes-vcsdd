@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-207",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "high",
+  "description": "RED-phase test artifacts persist in DOM test file. feedRowEditMode.vitest.ts still carries RED PHASE headers (lines 4, 9, 20, 57, 70, 107, 192) stating 'Expected outcome: ALL tests FAIL' and 'These imports will FAIL because the modules/functions do not exist yet.' Every test wraps function calls in try/catch blocks that swallow exceptions. Now that the implementation exists (GREEN phase), these try/catch wrappers mask real runtime exceptions — a genuine bug in mountCodeMirrorForNote or unmountCodeMirrorForNote would be silently swallowed, and tests would fail with misleading 'expected null not to be null' errors instead of surfacing the actual exception.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/feedRowEditMode.vitest.ts",
+    "lineRange": "1-10, 56-76",
+    "snippet": "// Phase 2a (RED phase):\n// Expected outcome: ALL tests FAIL\n// ...\ntry {\n  await mountCodeMirrorForNote(container, noteId, initialBody);\n} catch (_) {\n  // Expected to fail in Red phase\n}\nexpect(editorEl).not.toBeNull();"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/__tests__/dom/feedRowEditMode.vitest.ts",
+      "lineRange": "78-93, 194-221",
+      "description": "Additional try/catch wrappers in double-mount, enterEditMode, exitEditMode tests"
+    }
+  ],
+  "routeToPhase": "2a"
+}

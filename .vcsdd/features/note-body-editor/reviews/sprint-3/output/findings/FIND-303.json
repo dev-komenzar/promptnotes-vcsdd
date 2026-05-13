@@ -1,0 +1,26 @@
+{
+  "findingId": "FIND-303",
+  "dimension": "edge_case_coverage",
+  "category": "spec_gap",
+  "severity": "medium",
+  "description": "When the body contains control characters and the user triggers a blur exit, triggerBlurSave() (FeedRow.svelte:181-191) calls validate_no_control_chars(lastEditorBody). If validation fails, it returns silently without saving. The $effect cleanup (lines 214-216) then calls unmountCodeMirrorForNote(), destroying the editor and losing ALL unsaved changes, including valid text typed before inserting the control character. The spec REQ-003 states 'The existing CodeMirror content is NOT reverted' but provides no guidance for this blur-save-discard scenario. Either the spec should address this edge case, or the implementation should prevent unmount when the body fails validation (keeping the editor open so the user can remove control characters).",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "181-191",
+    "snippet": "function triggerBlurSave(): void {\n  clearAllTimers();\n  const result = validate_no_control_chars(lastEditorBody);\n  if (!result.ok) return;\n  invoke('trigger_blur_save', { ... });\n}"
+  },
+  "additionalEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "213-216",
+      "description": "$effect cleanup unconditionally calls triggerBlurSave() then unmountCodeMirrorForNote()"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "154-179",
+      "description": "handleEditorChange sets lastEditorBody (line 155) BEFORE validation; lastEditorBody may contain control characters"
+    }
+  ],
+  "routeToPhase": "2b",
+  "remediationHint": "Option A (spec): Add edge case to REQ-005: 'When blur/exit with control chars in body, keep editor mounted, show validation hint, and prevent unmount.' Option B (impl): In triggerBlurSave, if validation fails, set validationHintVisible=true and return false; in the effect cleanup, check return value and skip unmount if save was blocked."
+}

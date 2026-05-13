@@ -1,0 +1,21 @@
+{
+  "findingId": "FIND-304",
+  "dimension": "spec_fidelity",
+  "category": "test_quality",
+  "severity": "medium",
+  "description": "The test at FeedRow.dom.vitest.ts:878 incorrectly types the queried element as 'HTMLButtonElement | null' when the element is now a <div> (HTMLDivElement) after the Sprint 3 replacement of <button> with <div role='button'>. While this does not cause a runtime error (both have click()), it indicates the test was merely updated with a new data-testid selector but the type annotation was not updated to reflect the changed element type. This suggests the test is testing the data-testid presence rather than the structural change from <button> to <div>, making it a tautological test.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+    "lineRange": "878-881",
+    "snippet": "const rowButton = target.querySelector('[data-testid=\"feed-row-button\"]') as HTMLButtonElement | null;\nexpect(rowButton).not.toBeNull();\nrowButton!.click();"
+  },
+  "additionalEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/__tests__/dom/FeedRow.dom.vitest.ts",
+      "lineRange": "306-318",
+      "description": "Test 'row uses div[role=\"button\"] element (NFR-001)' does verify tagName and role, but the other tests still carry stale HTMLButtonElement type assertions"
+    }
+  ],
+  "routeToPhase": "2a",
+  "remediationHint": "Update all type assertions in FeedRow.dom.vitest.ts from 'HTMLButtonElement' to 'HTMLDivElement' (or use 'HTMLElement') to accurately reflect the div[role='button'] element type, and add assertions for the div's onkeydown behavior."
+}

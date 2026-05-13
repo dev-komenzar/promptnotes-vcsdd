@@ -1,0 +1,25 @@
+{
+  "findingId": "FIND-205",
+  "dimension": "structural_integrity",
+  "category": "purity_boundary",
+  "severity": "medium",
+  "description": "Body-editor IPC calls bypass the feedReducer→adapter command bus pattern. FeedRow.svelte directly imports invoke from @tauri-apps/api/core (line 36) and makes three direct IPC calls: editor_update_note_body (line 166), trigger_idle_save (line 172), and trigger_blur_save (line 183). All other feed operations (select-past-note, request-note-deletion, confirm-note-deletion, add-tag-via-chip, remove-tag-via-chip, filter operations) flow through the feedReducer emission → FeedList dispatchCommand → TauriFeedAdapter pattern. The body-editor IPC creates a parallel effect path that is not governed by the reducer's state machine, making the effectful shell harder to audit and test.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+    "lineRange": "36,163-189",
+    "snippet": "import { invoke } from '@tauri-apps/api/core';\n// ...\ninvoke('editor_update_note_body', { noteId, body: newBody });\ninvoke('trigger_idle_save', { ... });\ninvoke('trigger_blur_save', { ... });"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/tauriFeedAdapter.ts",
+      "lineRange": "10-16",
+      "description": "Adapter CMD const has no entries for body-editor IPC commands"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/feedReducer.ts",
+      "lineRange": "1-369",
+      "description": "feedReducer has no action variants or command outputs for inline body editing operations"
+    }
+  ],
+  "routeToPhase": "2c"
+}

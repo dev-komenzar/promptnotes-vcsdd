@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-204",
+  "dimension": "implementation_correctness",
+  "category": "test_quality",
+  "severity": "medium",
+  "description": "Redundant double-setTimeout pattern in blur handler creates fragile timing. mountCodeMirrorForNote wraps the blur callback in setTimeout(0) (feedRowEditMode.ts:142-152), and handleEditorBlur adds another setTimeout(0) wrapping exitInlineEdit/onEditorExit (FeedRow.svelte:191-196). This double-deferral means the blur→exit path runs 2 macrotasks after the actual blur event, creating a race window between the $effect cleanup (which fires synchronously on state change) and the delayed exit calls. When combined with FIND-201, this contributes to the unmount bypass and EditorView leak.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/feedRowEditMode.ts",
+    "lineRange": "142-152",
+    "snippet": "view.dom.addEventListener('blur', () => {\n  setTimeout(() => {\n    if (currentEditorView === view) {\n      callbacks?.onBlur?.();\n    }\n  }, 0);\n}, { once: false });"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "191-196",
+      "snippet": "function handleEditorBlur(): void {\n  setTimeout(() => {\n    exitInlineEdit(noteId);\n    onEditorExit?.(noteId);\n  }, 0);\n}"
+    }
+  ],
+  "routeToPhase": "2c"
+}

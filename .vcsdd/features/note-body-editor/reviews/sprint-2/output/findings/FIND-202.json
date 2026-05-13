@@ -1,0 +1,30 @@
+{
+  "findingId": "FIND-202",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "severity": "critical",
+  "description": "Concurrent edit guard not implemented per REQ-006. REQ-006 requires blocking feed row click when the full EditorPanel is editing the same note: 'When editingNoteId === noteId AND editingStatus === \"editing\", the row is considered rowDisabled. The click does NOT enter edit mode.' The isFeedRowClickBlocked function at feedRowPredicates.ts:17-26 only checks editingStatus ∈ {'saving','switching'} and loadingStatus === 'loading'. It does not block when editingStatus === 'editing' with a matching noteId. No per-row guard exists in handleRowClick (FeedRow.svelte:218-221) beyond the generic rowDisabled check.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/feedRowPredicates.ts",
+    "lineRange": "17-26",
+    "snippet": "export function isFeedRowClickBlocked(editingStatus, loadingStatus): boolean {\n  return (editingStatus === 'saving' || editingStatus === 'switching' || loadingStatus === 'loading');\n}"
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "97-99",
+      "description": "rowDisabled derives from isFeedRowClickBlocked only — no per-row editingNoteId match check"
+    },
+    {
+      "filePath": "promptnotes/src/lib/feed/FeedRow.svelte",
+      "lineRange": "218-221",
+      "description": "handleRowClick only checks rowDisabled, not concurrent EditorPanel conflict"
+    },
+    {
+      "filePath": ".vcsdd/features/note-body-editor/specs/behavioral-spec.md",
+      "lineRange": "278-279",
+      "description": "Spec requirement: 'When editingNoteId === noteId AND editingStatus === \"editing\", the row is considered rowDisabled'"
+    }
+  ],
+  "routeToPhase": "2b"
+}

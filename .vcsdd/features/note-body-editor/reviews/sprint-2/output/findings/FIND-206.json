@@ -1,0 +1,25 @@
+{
+  "findingId": "FIND-206",
+  "dimension": "verification_readiness",
+  "category": "test_coverage",
+  "severity": "high",
+  "description": "Zero test coverage for debounce timer logic. The 100ms IPC debounce (ipcDebounceTimer) and 2000ms idle save debounce (idleSaveTimer) are implemented in FeedRow.svelte:163-178 but have no corresponding tests. REQ-002 acceptance criteria require verifying 'IPC calls for the same noteId are serialized' and debounce correctness. REQ-007 acceptance criteria require verifying 'After 2 seconds of idle typing, trigger_idle_save is invoked' and 'If blur occurs within 2 seconds of typing, the idle timer is cancelled and only blur save fires'. None of these behaviors are covered by the existing test suite.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedRowEditMode.prop.test.ts",
+    "lineRange": "1-217",
+    "description": "Covers only validate_no_control_chars (PROP-009). No debounce tests."
+  },
+  "secondaryEvidence": [
+    {
+      "filePath": "promptnotes/src/lib/feed/__tests__/dom/feedRowEditMode.vitest.ts",
+      "lineRange": "1-328",
+      "description": "Covers only mount/unmount idempotency (PROP-011, PROP-012). No debounce or timer tests."
+    },
+    {
+      "filePath": ".vcsdd/features/note-body-editor/specs/behavioral-spec.md",
+      "lineRange": "324-328",
+      "description": "Acceptance criteria: 'After 2 seconds of idle typing, trigger_idle_save is invoked', 'If blur occurs within 2 seconds, the idle timer is cancelled and only blur save fires'"
+    }
+  ],
+  "routeToPhase": "2a"
+}
