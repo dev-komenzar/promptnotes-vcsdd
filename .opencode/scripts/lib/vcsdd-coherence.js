@@ -666,11 +666,17 @@ function escapeMd(s) {
 
 /**
  * Build adjacency map from CEG edges (sourceId -> Set<targetId>).
+ *
+ * Excludes `must_review` edges: these are review-trigger conventions (CoDD
+ * semantic — "when A changes, review B"), not structural dependencies. They
+ * are surfaced via getConventionEdges() and must not participate in cycle
+ * detection, which targets ill-formed dependency relationships only.
  */
 function buildAdjacency(ceg) {
   const adj = new Map();
   for (const edge of ceg.edges) {
     if (!edge.isActive) continue;
+    if (edge.relation === 'must_review') continue;
     if (!adj.has(edge.sourceId)) adj.set(edge.sourceId, new Set());
     adj.get(edge.sourceId).add(edge.targetId);
     if (!adj.has(edge.targetId)) adj.set(edge.targetId, new Set());

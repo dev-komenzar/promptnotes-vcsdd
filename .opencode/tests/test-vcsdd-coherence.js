@@ -846,6 +846,36 @@ const inactiveCycleCeg = makeCeg(
 );
 assertEqual(detectCycles(inactiveCycleCeg), [], 'inactive edges do not form cycles');
 
+section('detectCycles — must_review edges are excluded (GAP-5)');
+
+// must_review is a review-trigger convention, not a structural dependency.
+// CoDD upstream: "module:X implements req:X" + "req:X must_review module:X"
+// must not be reported as a cycle (the two edges have different semantics).
+const mustReviewCycleCeg = makeCeg(
+  [{ id: 'req:X' }, { id: 'module:X' }],
+  [
+    { ...makeEdge('module:X', 'req:X', 0.9), relation: 'implements' },
+    { ...makeEdge('req:X', 'module:X', 0.9), relation: 'must_review' },
+  ],
+);
+assertEqual(
+  detectCycles(mustReviewCycleCeg), [],
+  'must_review back-edge does not form a structural cycle',
+);
+
+// Sanity: ONLY must_review is excluded. A genuine structural cycle that
+// happens to include must_review-typed nodes is still detected when the
+// participating edges are not must_review.
+const realCycleCeg = makeCeg(
+  [{ id: 'p' }, { id: 'q' }],
+  [
+    makeEdge('p', 'q', 0.9),   // depends_on
+    makeEdge('q', 'p', 0.9),   // depends_on
+  ],
+);
+const realCycles = detectCycles(realCycleCeg);
+assert(realCycles.length === 1, 'non-must_review back-edge still produces a cycle');
+
 // ══════════════════════════════════════════════════════════════════════════════
 // 8. validateCoherence — reference integrity + cycle detection
 // ══════════════════════════════════════════════════════════════════════════════
