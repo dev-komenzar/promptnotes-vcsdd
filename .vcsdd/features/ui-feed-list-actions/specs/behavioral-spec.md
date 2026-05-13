@@ -595,12 +595,15 @@ pure core モジュール (`feedRowPredicates.ts`, `feedReducer.ts`, `deleteConf
 **Behavior**:
 - Lists all `.md` files in `vault_path` (non-recursive, same as `fs_list_markdown`).
 - For each file, reads the content and extracts `createdAt`, `updatedAt`, `tags` from YAML frontmatter if present; falls back to file modification time / empty values if absent.
-- Returns a snapshot with `cause.kind = "InitialLoad"`, `editing.status = "idle"`, `feed.filterApplied = false`.
+- ~~Returns a snapshot with `cause.kind = "InitialLoad"`, `editing.status = "idle"`, `feed.filterApplied = false`.~~ **Sprint 5 amendment**: `editing.status` は `"editing"` になる。`editing.current_note_id` は新規採番された NoteId になる (REQ-FEED-028 参照)。`cause.kind = "InitialLoad"` および `feed.filterApplied = false` は不変。
 - Errors from unreadable files are skipped (best-effort: partial list is returned).
 
 **Acceptance Criteria**:
 - `feed_initial_state` with a valid vault path containing `.md` files returns `Ok(FeedDomainSnapshotDto)` with `noteMetadata` populated.
-- `feed_initial_state` with an empty vault directory returns `Ok(FeedDomainSnapshotDto)` with `feed.visibleNoteIds = []`.
+- <!-- OLD (Sprint 2, superseded by Sprint 5 REQ-FEED-028): `feed_initial_state` with an empty vault directory returns `Ok(FeedDomainSnapshotDto)` with `feed.visibleNoteIds = []` --> **Superseded by Sprint 5 REQ-FEED-028**: `feed_initial_state` with an empty vault directory returns `Ok(FeedDomainSnapshotDto)` with `feed.visibleNoteIds.len() == 1` (新規 auto-create ノート 1 件が先頭に追加される)。
+
+> **Resolution (FIND-S5-SPEC-006)**: Sprint 2 の AC `visibleNoteIds = []` を Sprint 5 REQ-FEED-028 で supersede する。strike-through + Superseded annotation を付与した。`editing.status = "idle"` の記述も sprint-5 amendment で明示的に上書きした。
+
 - `feed_initial_state` with a non-existent vault path returns `Err(String)`.
 
 **Known tradeoffs (Phase 6 acknowledged)**:
@@ -897,3 +900,156 @@ Sprint 5 (`tag-chip-update` block migration) で実施し、その際に本 spec
 
 `apply-filter-or-search` の検索対象も現状 `NoteRowMetadata.body` (派生 Markdown 文字列) のまま維持する。
 完全な block payload 化 (blocks フィールドで検索) は Sprint 5 の `tag-chip-update` / `apply-filter-or-search` block migration 時に決定する。
+
+---
+
+## Sprint 5 Extensions
+
+### Sprint 5 Rationale
+
+Sprint 4 で確立した block-aware DTO は、`note-body-editor` フィーチャー (Sprint 4 完了時点で Block 廃止 → 単一 `body` 文字列への逆移行) の完了に伴い廃止済みである。Sprint 5 は `body: string` ベースの DTO を前提に進行し、`parse_markdown_to_blocks` 経路は参照しない。
+
+`note-body-editor` フィーチャーとの連携完了に伴い、TypeScript 側 `promptnotes/src/lib/domain/app-startup/initialize-capture.ts` に実装されていた auto-create ロジック (新規空ノートの NoteId 採番 + `InitialUIState` 構築) を Rust 側 `feed_initial_state` ハンドラに統合する。これにより、アプリ初回マウント時点で 1 件の空ノートが編集対象として可視化された状態が保証される。Sprint 4 で確立した block-aware DTO は Sprint 4 完了時点で逆移行 (Block 削除) 済みのため、Sprint 5 は `body: string` ベースで進行する。
+
+---
+
+### REQ-FEED-028: `feed_initial_state` — 新規空ノート auto-create
+
+**EARS**: WHEN `feed_initial_state(vault_path)` が **AppShell の `Configured` 状態マウント時に初めて** 呼ばれ、かつ `editing.currentNoteId == None` である THE SYSTEM SHALL 新規 NoteId を採番し、空 body の Note エントリを `note_metadata` および `visibleNoteIds` の先頭に追加し、`editing.status = "editing"`、`editing.current_note_id = 新規NoteId` として `FeedDomainSnapshotDto` を返す。
+
+> **Resolution (FIND-S5-SPEC-003)**: EARS を first-call 条件に絞る。`+page.svelte` は `Configured` 状態マウント時に 1 回だけ `feed_initial_state` を呼ぶ (re-render では呼ばない)。Rust ハンドラ自体は idempotency を保証しない — フロントエンド側の単一呼出し保証が前提。re-invoke 時のセマンティクスは REQ-FEED-029 の call-site 制約で担保する。
+
+**Vault Scan Semantics**:
+
+> **Resolution (FIND-S5-SPEC-011)**: scan_vault_feed の挙動を明示する。
+
+- **拡張子**: 大文字小文字区別なし (case-insensitive) — `.md`、`.MD`、`.Md` いずれも対象とする (実装は `ext.eq_ignore_ascii_case("md")`)
+- **再帰**: 非再帰 — `vault_path` 直下のみスキャンする。サブディレクトリは無視 (REQ-FEED-022 の `non-recursive` 制約を継承)
+- **隠しファイル**: dot-prefixed ファイル (`.foo.md`) は除外する (basename が `.` で始まるものを skip)
+- **シンボリックリンク**: follow しない — `DirEntry::file_type()` で `is_file()` が true のもののみ対象とする
+- **stem 衝突**: 大文字小文字違いのファイル (`Foo.md` と `foo.md`) は、stem 比較を lowercase で行うため同一 NoteId とみなされ collision suffix が付与される
+- **stem 計算**: `Path::file_stem()` を使用する (`foo.bak.md` → `foo.bak`)
+
+**Detailed Behavior**:
+
+> **Resolution (FIND-S5-SPEC-002)**: existing_ids の namespace と scan_vault_feed の namespace の asymmetry を明示する。`scan_vault_feed` は現在 full path を key として使用する。Sprint 5 では `existing_ids` (collision check 専用) は stem ベース、`visible_note_ids`/`note_metadata` は引き続き full path ベースのまま維持する。namespace 非対称性は意図的であり、collision check の目的のみに stem を使用する。
+
+1. vault scan: `std::fs::read_dir(vault_path)` で `.md` ファイルを収集する (上記 Vault Scan Semantics に従う)
+2. 既存 NoteId 集合構築 (collision check 専用): `HashSet<String>` に **lowercase stem** を格納する (`existing_ids`)。stem は `Path::file_stem().to_string_lossy().to_lowercase()` で得る。`scan_vault_feed` が返す `visible_note_ids` (full path) とは別 namespace である。新規 NoteId は stem 形式 (`YYYY-MM-DD-HHmmss-SSS`) で採番されるため、full path と自然に衝突しない。
+3. Clock 取得: `SystemTime::now()` を UTC Unix ミリ秒 (`now_ms: i64`) に変換する
+4. NoteId 採番: `next_available_note_id(now_ms, &existing_ids)` (pure 関数) を呼び出す
+   - フォーマット: `YYYY-MM-DD-HHmmss-SSS` (UTC) — TS `nextAvailableNoteId` と完全一致
+   - 衝突時: `-1`, `-2`, ... suffix を付与してループ (TS の `nextAvailableNoteId` と同一アルゴリズム)
+5. 新規 `NoteRowMetadataDto` 構築: `{ body: "", created_at: now_ms, updated_at: now_ms, tags: [] }`
+6. 戻り値 DTO 組み立て:
+   - `visible_note_ids = [新規ID] + 既存の visible_note_ids`  (既存ノートを末尾に append)。既存ノートの ID は full path のまま。新規ノートの ID は stem 形式。
+   - `note_metadata` に新規 NoteId のエントリを追加
+   - `editing = EditingSubDto { status: "editing", current_note_id: Some(新規ID), pending_next_focus: None }`
+   - `cause.kind = "InitialLoad"` (既存動作を維持)
+7. **ファイル I/O は scan のみ**: 新規 `.md` ファイルは作成しない。`capture-auto-save` ハンドラが初回 save 時に作成する責務を持つ
+
+**Edge Cases**:
+- 空 vault: `existing_ids` が空集合 → `visible_note_ids = [新規ID]`、`note_metadata` に 1 エントリのみ
+- 大量 (>100) 既存ファイル: scan + collision check が O(n) で完了すること (NFR-FEED-006 参照)
+- 衝突: base `YYYY-MM-DD-HHmmss-SSS` が `existing_ids` に含まれる場合、`-1`、`-2`、... suffix をループして非衝突 ID を採番する。TS `nextAvailableNoteId` と同一ロジック
+- `SystemTime::now()` 失敗: Rust の `SystemTime::UNIX_EPOCH.elapsed()` は現実的な環境では panic しないため、Sprint 5 では考慮不要
+
+**Acceptance Criteria**:
+- 空 vault に対して `feed_initial_state` を呼ぶと `visible_note_ids.len() == 1`、`note_metadata.len() == 1`、`editing.current_note_id == Some(visible_note_ids[0])` となる (Rust unit test)
+- 既存 1 件 vault に対して呼ぶと `visible_note_ids.len() == 2`、`visible_note_ids[0]` が新規 ID、`visible_note_ids[1]` が既存 ID となる (Rust unit test)
+- 既存 NoteId と衝突する base が生成された場合、`-1` suffix が付与される (Rust unit test、Clock 固定 + 既存 ID 1 件)
+- `editing.status == "editing"` および `editing.current_note_id` が新規 ID であること (Rust unit test)
+- 新規 NoteId に対応する `.md` ファイルが vault に作成されていないこと (Rust integration test — `std::fs::read_dir` で確認)
+- TS フロントエンド側で `feed_initial_state` レスポンスを受け取った直後、`feedReducer` の `DomainSnapshotReceived` アクションが `editingNoteId` を新規 ID に設定する (vitest)
+
+**Traceability**:
+
+> **Resolution (FIND-S5-SPEC-001)**: パスを実在する実装ファイルに修正した。
+
+- `promptnotes/src/lib/domain/app-startup/initialize-capture.ts:46-73` — `initializeCaptureSession` (auto-create logic 移植元)
+- `promptnotes/src/lib/domain/app-startup/initialize-capture.ts:86-104` — `nextAvailableNoteId` (NoteId 採番アルゴリズム移植元)
+- `docs/domain/workflows.md` Workflow 1 (AppStartup)
+
+---
+
+### REQ-FEED-029: 初回マウント時の編集モード即時開始 (ctrl+N 等価動作)
+
+> **Resolution (FIND-S5-SPEC-003, call-site discipline)**: `+page.svelte` は `Configured` 状態マウント時の `onMount` / `$effect` 内で **1 回だけ** `feed_initial_state` を呼ぶ。re-render、Svelte reactivity update、route-level remount は `feed_initial_state` を再呼出しせず、既存の `FeedViewState` を保持する。この規約により EARS の first-call 条件が実装レベルで保証される。
+
+**EARS**: WHEN AppShell が `Configured` 状態でマウントされ `feed_initial_state` の結果を **初めて** 受け取る THE SYSTEM SHALL FeedRow は新規 NoteId の行で CodeMirror エディタを即座にマウントし、フォーカスを与えなければならない。
+
+**Scope Limitation (PN-knv)**:
+
+> **Resolution (FIND-S5-SPEC-005)**: Sprint 5 の PN-knv スコープを明示する。
+
+Sprint 5 が PN-knv から実装するのは「初回マウント時の新規ノート auto-create + 即編集モード」部分のみである。具体的には以下を Sprint 5 のスコープとする:
+- `feed_initial_state` が `editing.status = "editing"` で新規 NoteId を返すこと (REQ-FEED-028)
+- FeedRow がその NoteId で CodeMirror をマウントし、フォーカスを与えること (本 REQ)
+
+以下は **Sprint 5 スコープ外** であり、将来 sprint (Sprint 6 候補) へ deferral する:
+- `ctrl+N` キーバインドのイベントリスナー実装
+- セッション実行中の ctrl+N による「追加の新規ノート作成」(2 件目以降の auto-create)
+- キーバインド経由での `feed_initial_state` 相当コマンドの再呼出し
+
+**Relationship to Existing Requirements**:
+
+`note-body-editor` フィーチャー側の `FeedRow.svelte` が実装する `{#if editingNoteId === noteId}` マウントロジックに基づく。REQ-FEED-028 により `feed_initial_state` が `editing.status = "editing"`、`editing.current_note_id = 新規NoteId` を返すため、`feedReducer` の `DomainSnapshotReceived` アクション処理後に `FeedViewState.editingNoteId === visibleNoteIds[0]` が成立し、FeedRow の条件が自動的に真になる。
+
+**Acceptance Criteria**:
+- 初回マウント時、`editingNoteId === visibleNoteIds[0]` のため FeedRow の `{#if editingNoteId === noteId}` 条件が真となり CodeMirror がマウントされる (Svelte integration test)
+- CodeMirror エディタにフォーカスが当たる (`document.activeElement` 検証)
+- `+page.svelte` が `feed_initial_state` を呼ぶのは mount 時の 1 回のみであること (re-render で再呼出しされないこと) (vitest / Svelte component test)
+
+**Edge Cases**:
+- `feedReducer` が `DomainSnapshotReceived` を受け取る前の一瞬: `editingNoteId === null` のため CodeMirror は未マウント。スナップショット受信後に即座にマウントされる
+
+**Traceability**:
+
+> **Resolution (FIND-S5-SPEC-001)**: パスを実在する実装ファイルに修正した。
+
+- `promptnotes/src/lib/domain/app-startup/initialize-capture.ts:46-73` — `initializeCaptureSession` (auto-create logic)
+- `docs/domain/workflows.md` Workflow 1 (AppStartup)
+- `note-body-editor` フィーチャー `FeedRow.svelte` `{#if editingNoteId === noteId}` ロジック
+
+---
+
+### EC-FEED-016 Amendment (Sprint 5)
+
+Sprint 4 amendment: `compose_state_for_select_past_note(note_id, None)` 時の `focused_block_id: null`、`is_note_empty: true` 挙動を規定済み。**この Sprint 4 amendment は Sprint 5 以降も存続する** — `select_past_note` 経由で note_id が note_metadata に存在しない race condition (ファイルが scan と emit の間に削除される) は依然として起こりうる。
+
+Sprint 5 **追加** amendment (`feed_initial_state` 経路のみ):
+
+> **Resolution (FIND-S5-SPEC-004)**: Sprint 5 amendment のスコープを `feed_initial_state` 経路に限定する。「Sprint 5 では起きない」という従前の記述は `feed_initial_state` 経路に限定した主張であり、`select_past_note` 経路の race condition は Sprint 4 amendment の仕様が引き続き適用される。
+
+`feed_initial_state` 初回呼出し時に emit される `editingNoteId` は、常に `note_metadata` に `body: ""` エントリとして存在する。FeedRow 側はこのケースを通常の `editing` 状態として扱う。`note-body-editor` フィーチャーの CodeMirror は空 body で起動する。
+
+要約:
+- `feed_initial_state` 経由の editingNoteId: 常に `note_metadata` に対応エントリが存在する (REQ-FEED-028 の Acceptance Criteria により保証)
+- `select_past_note` 経由の editingNoteId: race condition により note_metadata に存在しない可能性がある — Sprint 4 amendment の挙動 (`blocks: None`、`focused_block_id: None`) が適用される
+
+---
+
+### REQ-FEED-022 Amendment (Sprint 5)
+
+> **Resolution (FIND-S5-SPEC-006)**: 矛盾する AC を明示的に retire し、変更点を line-cited で記述する。
+
+**変更点**:
+
+1. **`editing.status`**: Sprint 2 の REQ-FEED-022 Behavior line (`editing.status = "idle"`) を Sprint 5 で上書きする。`feed_initial_state` は Sprint 5 以降 `editing.status = "editing"` を返す。
+2. **`feed.visibleNoteIds` (空 vault 時)**: Sprint 2 の AC `visibleNoteIds = []` を Sprint 5 REQ-FEED-028 が supersede する。空 vault でも `visibleNoteIds.len() == 1` となる。この変更は REQ-FEED-022 Behavior section の strike-through および "Superseded" annotation として記録済み (上記)。
+
+**維持される点**: `cause.kind = "InitialLoad"`、`feed.filterApplied = false`、non-existent vault → `Err(String)` は Sprint 5 でも不変。
+
+初回マウント時の `DomainSnapshotReceived` アクションが `editingStatus: "editing"` で `FeedViewState` を更新するため、FeedRow の delete button disabled 判定が `editingNoteId === rowNoteId` かつ `editingStatus ∈ {'editing','saving','switching','save-failed'}` で評価されることを確認すること。
+
+---
+
+### Traceability Table (Sprint 5 追加行)
+
+> **Resolution (FIND-S5-SPEC-001)**: パスを実在する実装ファイルに修正した。`docs/domain/code/ts/...` パスは存在しない。正しいパスは `promptnotes/src/...`。
+
+| REQ ID | Source Reference | Sprint |
+|--------|-----------------|--------|
+| REQ-FEED-028 | `promptnotes/src/lib/domain/app-startup/initialize-capture.ts:46-73` (`initializeCaptureSession` — auto-create logic 移植元), `promptnotes/src/lib/domain/app-startup/initialize-capture.ts:86-104` (`nextAvailableNoteId` — NoteId 採番アルゴリズム移植元), `docs/domain/workflows.md` Workflow 1 (AppStartup) | 5 |
+| REQ-FEED-029 | `promptnotes/src/lib/domain/app-startup/initialize-capture.ts:46-73` (`initializeCaptureSession`), `docs/domain/workflows.md` Workflow 1 (AppStartup) | 5 |
+| REQ-FEED-029 | `docs/domain/code/ts/src/lib/domain/app-startup/initialize-capture.ts:46-73`, `docs/domain/workflows.md` Workflow 1 (AppStartup), `note-body-editor` FeedRow.svelte `{#if editingNoteId === noteId}` | 5 |

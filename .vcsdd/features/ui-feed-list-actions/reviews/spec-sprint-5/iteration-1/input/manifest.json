@@ -1,0 +1,36 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "1c",
+  "sprint": 5,
+  "iteration": 1,
+  "reviewType": "spec",
+  "mode": "strict",
+  "timestamp": "2026-05-13T03:45:00.000Z",
+  "scope": {
+    "sprintRationale": "TS initialize-capture.ts (auto-create new empty note on session start) ロジックを Rust feed_initial_state に統合し、初回マウント時点で 1 件の空ノートが editing 状態として可視化されることを保証する。",
+    "bdTasksCovered": ["PN-2r3", "PN-5im", "PN-knv"],
+    "scopeIsAdditive": true,
+    "note": "behavioral-spec.md および verification-architecture.md は Sprint 5 amendment セクション (## Sprint 5 Extensions / ## 14. Sprint 5 Verification Extensions) を末尾に追記する形で patch されている。既存 REQ-FEED-001..027 / PROP-FEED-001..PROP-FEED-S4-016 は変更されていない。"
+  },
+  "artifactsToReview": [
+    ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md"
+  ],
+  "newRequirements": [
+    "REQ-FEED-028 (feed_initial_state — 新規空ノート auto-create)",
+    "REQ-FEED-029 (初回マウント時の編集モード即時開始)"
+  ],
+  "amendments": [
+    "EC-FEED-016 Sprint 5 amendment",
+    "REQ-FEED-022 Sprint 5 amendment (editing.status の挙動変更注記)"
+  ],
+  "newProofObligations": [
+    "PROP-FEED-S5-001 (next_available_note_id 決定性 / tier 2 / required)",
+    "PROP-FEED-S5-002 (next_available_note_id 非衝突 / tier 2 / required)",
+    "PROP-FEED-S5-003 (ID フォーマット適合 / tier 2 / required)",
+    "PROP-FEED-S5-004 (feed_initial_state 不変条件 / tier 1 / required)",
+    "PROP-FEED-S5-005 (TS/Rust ID parity / tier 1 / not required)"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "freshContext": true
+}

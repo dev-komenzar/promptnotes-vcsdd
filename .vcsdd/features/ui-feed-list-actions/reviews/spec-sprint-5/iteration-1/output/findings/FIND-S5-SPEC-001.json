@@ -1,0 +1,12 @@
+{
+  "id": "FIND-S5-SPEC-001",
+  "severity": "high",
+  "dimension": "spec_fidelity",
+  "title": "Traceability cites non-existent path docs/domain/code/ts/src/lib/domain/app-startup/initialize-capture.ts",
+  "location": "behavioral-spec.md:948-949, behavioral-spec.md:971, behavioral-spec.md:995-996",
+  "description": "REQ-FEED-028 / REQ-FEED-029 / Traceability Table all cite `docs/domain/code/ts/src/lib/domain/app-startup/initialize-capture.ts:46-73` and `:86-104` as the canonical move-from source for auto-create logic and `nextAvailableNoteId`. That path does NOT exist in the repository (Read attempt returned 'File does not exist'). The actual TypeScript implementation lives at `promptnotes/src/lib/domain/app-startup/initialize-capture.ts` (which I verified contains the cited line ranges: 46-73 = `initializeCaptureSession`, 86-104 = `nextAvailableNoteId`). Other Sprint 4 docs in this spec do correctly cite `docs/domain/code/ts/src/shared/note.ts` and `docs/domain/code/ts/src/shared/blocks.ts` (those paths DO exist). The Sprint 5 traceability rows therefore point reviewers and implementers to a bogus location. This is not cosmetic: the canonical path discipline established for `docs/domain/code/ts/...` artifacts is what makes the verification-architecture purity boundary auditable. A wrong path breaks PROP-FEED-S5-005 (TS/Rust parity) because the comparison snapshot cannot be located deterministically.",
+  "evidence": "behavioral-spec.md:948 — `- \\`docs/domain/code/ts/src/lib/domain/app-startup/initialize-capture.ts:46-73\\` — auto-create logic (移植元)`\nbehavioral-spec.md:949 — `- \\`docs/domain/code/ts/src/lib/domain/app-startup/initialize-capture.ts:86-104\\` — \\`nextAvailableNoteId\\` (NoteId 採番アルゴリズム移植元)`\nbehavioral-spec.md:995-996 — Traceability Table rows repeat the same dead paths\nVerified by Read: `/home/takuya/.../docs/domain/code/ts/src/lib/domain/app-startup/initialize-capture.ts` → File does not exist. `/home/takuya/.../promptnotes/src/lib/domain/app-startup/initialize-capture.ts` → 155 lines, function ranges match.",
+  "remediation": "Replace every occurrence of `docs/domain/code/ts/src/lib/domain/app-startup/initialize-capture.ts` with `promptnotes/src/lib/domain/app-startup/initialize-capture.ts` in behavioral-spec.md lines 948-949, 971, 995-996. If a canonical kernel copy is required under `docs/domain/code/ts/...`, copy the file there first, then keep the citation; otherwise rewrite the path.",
+  "routeToPhase": "1a",
+  "category": "spec_ambiguity"
+}

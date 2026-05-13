@@ -1,0 +1,12 @@
+{
+  "id": "FIND-S5-SPEC-009",
+  "severity": "medium",
+  "dimension": "verification_readiness",
+  "title": "PROP-FEED-S5-002 (non-collision) has no upper bound on `existing` set size — proptest will explore unbounded sets and is operationally undefined",
+  "location": "verification-architecture.md:707 (PROP-FEED-S5-002)",
+  "description": "PROP-FEED-S5-002 states: 'next_available_note_id 非衝突 — 戻り値 ID は `existing` に含まれない. 任意の `existing: HashSet<String>` に対して成立する'. proptest's `any::<HashSet<String>>()` is bounded by the per-strategy default size, but the property as stated has a degenerate case: if `existing` happens to contain *every* possible base ID and every collision suffix `-1..-MAX_USIZE`, the helper's loop at TS:98-103 (and presumably Rust) never terminates. This is a real concern because: (a) the spec gives no termination argument; (b) proptest could in principle generate a HashSet that contains all `i ∈ [1..N]` suffixes plus the base for some N — at which point the helper hangs and the test times out. The spec must either (i) bound the maximum size of `existing` (e.g., `existing.len() < 1_000_000`), or (ii) prove termination by an explicit obligation (e.g., add a `PROP-FEED-S5-006: next_available_note_id terminates for any `existing` with `len < usize::MAX`). The latter is trivial to argue (the loop iterator is `i: usize`, monotonically increasing, and `existing.len() <= usize::MAX` guarantees a non-collision exists at `i = existing.len() + 1` at worst), but the spec does not state it.",
+  "evidence": "verification-architecture.md:707 — '任意の existing: HashSet<String> に対して成立する' (no bound)\npromptnotes/src/lib/domain/app-startup/initialize-capture.ts:98-103 — `for (let i = 1; ; i++)` — unbounded loop with no termination invariant\nproptest default strategies for HashSet sample up to ~256 elements; pathological generation is unlikely but not impossible",
+  "remediation": "Add an explicit bound to PROP-FEED-S5-002: 'For any `existing: HashSet<String>` with `existing.len() < N` (e.g., N = 1024), `next_available_note_id(now_ms, &existing) ∉ existing`'. Or add a separate PROP-FEED-S5-006 establishing termination. Either is acceptable; both are missing.",
+  "routeToPhase": "1b",
+  "category": "verification_tool_mismatch"
+}

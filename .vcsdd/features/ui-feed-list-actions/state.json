@@ -2,7 +2,7 @@
   "featureName": "ui-feed-list-actions",
   "mode": "strict",
   "language": "typescript",
-  "currentPhase": "complete",
+  "currentPhase": "1b",
   "phaseHistory": [
     {
       "from": "init",
@@ -392,6 +392,43 @@
       "timestamp": "2026-05-09T18:45:00.000Z",
       "reason": "Phase 6 Sprint 4 PASS: four-dimensional convergence achieved — Phase 1c finding diminishment 11→3→0, Phase 3 finding diminishment 3→2→0 (both monotonically decreasing, critical+high=0 at final iter), all 16 Sprint 4 findings have valid path/line specificity, all 6 recommended block-migration actions addressed (action 5 approved deferred, action 6 substantially covered via compose_select_past_note extraction), 0 duplicate findings, 45/45 beads resolved. Tests: cargo 19 PASS, bun 1964 PASS, vitest 225 PASS.",
       "sprint": 4
+    },
+    {
+      "from": "complete",
+      "to": "1a",
+      "timestamp": "2026-05-13T03:00:00.000Z",
+      "reason": "Sprint 5: feed_initial_state を新規ノート auto-create に拡張 (PN-2r3) + spec/verification 拡張 (PN-5im) + ctrl+N 動作確定 (PN-knv)。TS initialize-capture.ts ロジックを Rust に移植。",
+      "sprint": 4,
+      "nextSprintHint": 5
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-13T03:30:00.000Z",
+      "reason": "Sprint 5 spec patch: REQ-FEED-028/029 appended; verification-architecture Sprint 5 section appended",
+      "sprint": 5
+    },
+    {
+      "from": "1b",
+      "to": "1c",
+      "timestamp": "2026-05-13T04:05:00.000Z",
+      "reason": "Sprint 5 Phase 1c entry for adversary spec review",
+      "sprint": 5
+    },
+    {
+      "from": "1c",
+      "to": "1a",
+      "timestamp": "2026-05-13T04:10:00.000Z",
+      "reason": "Phase 1c sprint-5 iter-1 FAIL routing: 11 findings (critical=0, high=3, medium=8). spec_fidelity (7) → 1a, verification_readiness (4) → 1b. Return to earliest impacted phase (1a) for spec text fixes; verification-architecture amendments follow in 1b.",
+      "sprint": 5,
+      "iteration": "1c-sprint-5-iter-1"
+    },
+    {
+      "from": "1a",
+      "to": "1b",
+      "timestamp": "2026-05-13T04:30:00.000Z",
+      "reason": "Sprint 5 iter-2 spec rework: all 11 FIND-S5-SPEC-001..011 addressed; behavioral-spec.md (7 findings: FIND-001/002/003/004/005/006/011) + verification-architecture.md (4 findings: FIND-007/008/009/010) patched",
+      "sprint": 5
     }
   ],
   "iterations": {
@@ -410,7 +447,8 @@
     "1c-sprint-3": 1,
     "1a-sprint-4": 0,
     "1c-sprint-4": 3,
-    "3-sprint-4": 3
+    "3-sprint-4": 3,
+    "1c-sprint-5": 1
   },
   "proofObligations": [
     {
@@ -1353,6 +1391,138 @@
         "externalId": "FIND-S4-IMPL-iter2-002",
         "resolvedAt": "2026-05-09T15:30:00.000Z",
         "resolvedInIter": "3-sprint-4-iter-3"
+      },
+      {
+        "beadId": "BEAD-046",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-001.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-001",
+        "routeToPhase": "1a",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-047",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-002.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-002",
+        "routeToPhase": "1a",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-048",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-003.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-003",
+        "routeToPhase": "1a",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-049",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-004.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-004",
+        "routeToPhase": "1a",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-050",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-005.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-005",
+        "routeToPhase": "1a",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-051",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-006.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-006",
+        "routeToPhase": "1a",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-052",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-007.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-007",
+        "routeToPhase": "1b",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-053",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-008.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-008",
+        "routeToPhase": "1b",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-054",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-009.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-009",
+        "routeToPhase": "1b",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-055",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-010.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-010",
+        "routeToPhase": "1b",
+        "sprint": 5
+      },
+      {
+        "beadId": "BEAD-056",
+        "type": "adversary-finding",
+        "artifactPath": ".vcsdd/features/ui-feed-list-actions/reviews/spec-sprint-5/iteration-1/output/findings/FIND-S5-SPEC-011.json",
+        "status": "open",
+        "linkedBeads": [],
+        "createdAt": "2026-05-13T04:05:30.000Z",
+        "createdInPhase": "1c",
+        "externalId": "FIND-S5-SPEC-011",
+        "routeToPhase": "1a",
+        "sprint": 5
       }
     ]
   },
@@ -1972,9 +2142,46 @@
           ]
         }
       }
+    },
+    "1c-sprint-5": {
+      "iter-1": {
+        "verdict": "FAIL",
+        "timestamp": "2026-05-13T04:00:00.000Z",
+        "reviewedBy": "adversary",
+        "freshContext": true,
+        "dimensions": {
+          "spec_fidelity": {
+            "verdict": "FAIL",
+            "findings": [
+              "FIND-S5-SPEC-001",
+              "FIND-S5-SPEC-002",
+              "FIND-S5-SPEC-003",
+              "FIND-S5-SPEC-004",
+              "FIND-S5-SPEC-005",
+              "FIND-S5-SPEC-006",
+              "FIND-S5-SPEC-011"
+            ]
+          },
+          "verification_readiness": {
+            "verdict": "FAIL",
+            "findings": [
+              "FIND-S5-SPEC-007",
+              "FIND-S5-SPEC-008",
+              "FIND-S5-SPEC-009",
+              "FIND-S5-SPEC-010"
+            ]
+          }
+        },
+        "severityCounts": {
+          "critical": 0,
+          "high": 3,
+          "medium": 8,
+          "low": 0
+        }
+      }
     }
   },
-  "sprintCount": 4,
+  "sprintCount": 5,
   "createdAt": "2026-05-04T09:45:13.224Z",
-  "updatedAt": "2026-05-09T18:45:00.000Z"
+  "updatedAt": "2026-05-13T04:30:00.000Z"
 }

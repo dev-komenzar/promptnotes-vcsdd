@@ -1,0 +1,12 @@
+{
+  "id": "FIND-S5-SPEC-004",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "title": "EC-FEED-016 Sprint 5 amendment makes a sweeping 'note_metadata entry always exists for editingNoteId' claim that contradicts the Sprint 4 amendment's race-condition scope",
+  "location": "behavioral-spec.md:977-981 (EC-FEED-016 Sprint 5 amendment) vs. behavioral-spec.md:696 (EC-FEED-016 Sprint 4 amendment)",
+  "description": "The Sprint 4 amendment for EC-FEED-016 (lines 472, 696) defines the case 'note_id not found in `note_metadata`' for `select_past_note` — a race where the file is deleted between scan and emit. That case remains live. The Sprint 5 amendment (line 981) ends with: 'note_metadata に対応エントリが存在しない NoteId が editingNoteId にセットされることは Sprint 5 では起きない (REQ-FEED-028 の Acceptance Criteria により保証)'. The wording 'Sprint 5 では起きない' is unscoped — read literally, it asserts the case is globally unreachable, which contradicts the Sprint 4 race that lives on for `select_past_note`. The amendment is presumably trying to say 'the *new* feed_initial_state path does not produce orphan editingNoteId', but the prose conflates the new path with all paths. This is a real consistency hazard for the implementer who reads only the latest amendment.",
+  "evidence": "behavioral-spec.md:472 — 'EC-FEED-016 | `select_past_note` で `note_id` が `note_metadata` に存在しない | Sprint 4 amendment: `compose_state_for_select_past_note` は `blocks: None`・`focused_block_id: None` で emit'\nbehavioral-spec.md:696 — Sprint 4 amendment retains race semantics: 'note_id not found in note_metadata (e.g., file deleted between scan and emit)'\nbehavioral-spec.md:981 — 'note_metadata に対応エントリが存在しない NoteId が editingNoteId にセットされることは Sprint 5 では起きない'",
+  "remediation": "Rephrase the Sprint 5 EC-FEED-016 amendment to scope its claim explicitly: '`feed_initial_state` 経由 で emit される editingNoteId は常に `note_metadata` に対応エントリを持つ. `select_past_note` 経由のレースケース (file deleted between scan and emit) は Sprint 4 amendment の仕様が引き続き適用される.' This avoids the read-as-global-no-orphan misinterpretation.",
+  "routeToPhase": "1a",
+  "category": "spec_ambiguity"
+}

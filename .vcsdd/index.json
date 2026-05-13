@@ -94,8 +94,8 @@
       "createdAt": "2026-05-04T09:45:13.224Z",
       "mode": "strict",
       "language": "typescript",
-      "currentPhase": "complete",
-      "updatedAt": "2026-05-09T18:45:00.000Z"
+      "currentPhase": "1b",
+      "updatedAt": "2026-05-13T04:30:00.000Z"
     },
     "ui-tag-chip": {
       "status": "active",
@@ -112,8 +112,7 @@
       "language": "typescript",
       "currentPhase": "2a",
       "updatedAt": "2026-05-06T07:30:01.000Z"
-    }
-  },
+    },
     "note-body-editor": {
       "status": "active",
       "createdAt": "2026-05-11T00:00:00.000Z",
@@ -123,5 +122,5 @@
       "updatedAt": "2026-05-11T07:10:00.000Z"
     }
   },
-  "activeFeature": "note-body-editor"
+  "activeFeature": "ui-feed-list-actions"
 }

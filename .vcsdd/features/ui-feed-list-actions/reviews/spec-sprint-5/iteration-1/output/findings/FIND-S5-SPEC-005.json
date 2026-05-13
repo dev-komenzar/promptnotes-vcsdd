@@ -1,0 +1,12 @@
+{
+  "id": "FIND-S5-SPEC-005",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "title": "REQ-FEED-029 claims to deliver PN-knv ctrl+N functionality but explicitly defers the shortcut to a future sprint without naming a target",
+  "location": "behavioral-spec.md:954-965 (REQ-FEED-029) — note manifest claim that bdTasksCovered includes PN-knv",
+  "description": "The manifest (.../input/manifest.json line 11) declares `bdTasksCovered: [\"PN-2r3\", \"PN-5im\", \"PN-knv\"]`. PN-knv per the manifest scope describes 'ctrl+N で新規ノート作成 + 即編集モード'. REQ-FEED-029 line 965 says: 'PN-knv で要求された「ctrl+N で新規ノート作成 + 即編集モード」は、初回マウント時の auto-create と同じ経路で達成される. 将来 sprint でショートカットを追加する場合、feed_initial_state 相当のコマンドを再呼び出しすることで同等動作が得られる (将来 sprint への注記)'. This is a punt: the spec covers only initial-mount auto-create. ctrl+N as a keybinding to create a *second* (or Nth) new note during the session is not implemented; it is explicitly deferred. The manifest should either: (a) drop PN-knv from `bdTasksCovered` because Sprint 5 does not deliver the keybinding, or (b) the spec should include an explicit REQ for the ctrl+N keybinding so that the task is closed. As written, the manifest claims coverage while the spec text disclaims it — a traceability inconsistency between the review input and the deliverable.",
+  "evidence": "manifest.json:11 — `\"bdTasksCovered\": [\"PN-2r3\", \"PN-5im\", \"PN-knv\"]`\nbehavioral-spec.md:965 — '将来 sprint でショートカットを追加する場合' (explicit future deferral)\nNo `keydown` or `keyboard shortcut` handler is specified in any Sprint 5 REQ.",
+  "remediation": "Either remove PN-knv from manifest `bdTasksCovered` and add a follow-up beads issue for the ctrl+N keybinding, OR add a REQ-FEED-030 specifying the keybinding behavior (e.g., 'WHEN focus is in the document body AND user presses ctrl+N THE SYSTEM SHALL invoke a Rust handler equivalent to feed_initial_state with the current vault_path and replace editing.current_note_id with the new NoteId'). Also clarify the relationship between a session-running ctrl+N and the unconditional new-ID-on-every-call semantics flagged in FIND-S5-SPEC-003.",
+  "routeToPhase": "1a",
+  "category": "spec_gap"
+}

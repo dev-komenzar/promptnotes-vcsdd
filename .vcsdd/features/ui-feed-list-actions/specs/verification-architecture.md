@@ -673,3 +673,89 @@ Sprint 3 tests `test_select_past_note_editing_payload_contains_body` must be **r
 | REQ-FEED-026 | PROP-FEED-S4-005, PROP-FEED-S4-006, PROP-FEED-S4-007, PROP-FEED-S4-008, PROP-FEED-S4-015 | 0 + 2 + Integration | tsc, grep, fast-check, vitest+jsdom |
 | REQ-FEED-027 | PROP-FEED-S4-009, PROP-FEED-S4-010, PROP-FEED-S4-011 | 0 + 1 | grep, cargo test, tsc |
 | REQ-FEED-024 (S4) | PROP-FEED-S4-012, PROP-FEED-S4-013, PROP-FEED-S4-014 | 1 | cargo test (unit, AppHandle-free) |
+
+---
+
+## 14. Sprint 5 Verification Extensions
+
+> **Sprint**: 5
+> **Scope**: `feed_initial_state` 新規ノート auto-create (REQ-FEED-028) + 初回マウント即編集モード (REQ-FEED-029) + EC-FEED-016 Sprint 5 amendment。
+>
+> **Note on Sprint 4 parse_markdown_to_blocks**: Sprint 5 では `Note.body` は string 単体型で固定されており、`parse_markdown_to_blocks` 経路は廃止済みである (`note-body-editor` Sprint 完了)。Sprint 4 §13 の PROP-FEED-S4-016 は Sprint 4 gate で証明済みであり、Sprint 5 以降は参照のみ。
+
+### Sprint 5 Purity Boundary Extensions
+
+既存 §2 Purity Boundary Map への追加:
+
+**Pure Core (追加)**:
+
+| Module | 層 | 主な exports | Forbidden APIs |
+|--------|---|-------------|----------------|
+| `next_available_note_id` (Rust 純関数、`feed.rs` 内または専用モジュール) | pure | `next_available_note_id(now_ms: i64, existing: &HashSet<String>) -> String` — 決定的。同一 `(now_ms, existing)` に対して必ず同一 ID を返す。`SystemTime`、`fs::read_dir`、乱数を呼ばない | `std::time::*`, `std::fs::*`, `rand::*` 等すべての effectful API |
+
+**Effectful Shell (追加)**:
+
+| Module | 層 | 理由 |
+|--------|---|------|
+| `feed_initial_state` (Rust Tauri handler 全体) | impure | `std::fs::read_dir` (vault scan) + `SystemTime::now()` (Clock 取得) + `serde_json` serialize + Tauri return。`next_available_note_id` を pure core として内部から呼び出す |
+
+### Sprint 5 Proof Obligations
+
+| PROP-ID | REQ-ID | Description | Tier | Tool | Required | Pure/Shell |
+|---------|--------|-------------|------|------|----------|-----------|
+| PROP-FEED-S5-001 | REQ-FEED-028 | `next_available_note_id` 決定性 — fixed `now_ms` + fixed `existing` ⇒ 同一 ID が返される。proptest または手動 unit test (fixed Clock + fixed HashSet) で検証 | 2 | proptest / cargo test | true | pure |
+| PROP-FEED-S5-002 | REQ-FEED-028 | `next_available_note_id` 非衝突 — 戻り値 ID は `existing` に含まれない。`existing.len() < 1_024` の任意の `existing: HashSet<String>` に対して成立する。proptest strategy は `HashSet` サイズを 1_024 以下に bound する。**終端性**: `existing` は有限集合なので `-N` suffix loop は必ず終端する — 最悪でも `N == existing.len() + 1` で終了する (i ∈ 1..=existing.len()+1 の範囲で候補を網羅できる)。 | 2 | proptest | true | pure |
+| PROP-FEED-S5-003 | REQ-FEED-028 | ID フォーマット適合 — 戻り値 ID が `^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}(-\d+)?$` にマッチする。**入力 domain**: `now_ms ∈ [0, 253_402_300_800_000)` (年 0001 〜 9999 UTC; 上限は Year 9999-12-31 UTC midnight)。負値 (`now_ms < 0`) および Year 10000+ (`now_ms >= 253_402_300_800_000`) は **未定義動作 (panic 許容)**。proptest strategy は `0i64..253_402_300_800_000` を使用する。 | 2 | proptest | true | pure |
+| PROP-FEED-S5-004 | REQ-FEED-028, REQ-FEED-029 | `feed_initial_state` 不変条件 — 戻り値 `visible_note_ids[0] == editing.current_note_id.unwrap()` かつ `note_metadata.contains_key(visible_note_ids[0])` かつ `editing.status == "editing"` | 1 | cargo test (Rust integration test) | true | shell |
+| PROP-FEED-S5-005 | REQ-FEED-028 | TS/Rust NoteId フォーマット parity — Rust `next_available_note_id` と TS `nextAvailableNoteId` が同一 `(now_ms, existing)` 入力に対して同一出力を返す。最低 4 ペアの fixed snapshot: (a) 基底ケース (衝突なし・一桁時刻フィールド), (b) 衝突 `-1` suffix, (c) 衝突 `-10` suffix, (d) UTC エッジ: `now_ms == 0` (Unix epoch)。各ペアは cargo test fixture と vitest fixture が同一入力 JSON を参照する。 | 1 | 手動スナップショット比較 (cargo test + vitest 共有 JSON fixture) | **true** | pure (cross-language) |
+
+> **Resolution (FIND-S5-SPEC-007)**: PROP-FEED-S5-005 を `required: false` → `required: true` に変更した。TS/Rust parity は Sprint 5 の核心義務であり、Sprint 4 PROP-FEED-S4-016 と同等の格付けにする。スナップショット数を 1 件 → 4 件に拡張した。exhaustive fast-check parity 検証は将来 sprint (Sprint 6 候補) へ deferral する; 解除条件は「proptest による `(now_ms, existing)` 全範囲での parity テストがパスする」。
+
+> **Resolution (FIND-S5-SPEC-008)**: PROP-FEED-S5-003 の入力 domain を `0i64..253_402_300_800_000` に bound した。負値・Year 10000+ は panic 許容として明記した。
+
+> **Resolution (FIND-S5-SPEC-009)**: PROP-FEED-S5-002 に `existing.len() < 1_024` の上限 bound を追加し、終端性の証明スケッチを 1 文付加した。
+
+### Sprint 5 Rust Test Strategy
+
+> **Resolution (FIND-S5-SPEC-010)**: test fixture の契約を明記した。Clock 注入の是非、tempdir の使い方、seeded file format、no-file-created の確認手順を具体化した。
+
+**File**: `promptnotes/src-tauri/tests/feed_handlers.rs` (Sprint 2/3/4 からの継続ファイル)
+
+**Test Fixture Contract**:
+
+- **vault 生成**: 各 integration test は `tempfile::TempDir` (`tempfile` crate) で独立した一時ディレクトリを生成する。`tempfile` は Rust test fixtures の標準 crate であり `Cargo.toml` の `[dev-dependencies]` に追加する。
+- **既存ノートの seed**: "既存 1 件" テストでは、vault 内に `2020-01-01-000000-000.md` というファイルを `std::fs::write` で書き込む。ファイル内容は最小限の body 1 行 (`"hello world\n"`) とし、YAML frontmatter は不要 (parse_frontmatter_metadata は frontmatter なしでも fallback 値で動作する)。stem は `2020-01-01-000000-000` となり、collision check 用 `existing_ids` に lowercase で格納される。
+- **Clock 注入の是非**: Sprint 5 では `feed_initial_state` 内で `SystemTime::now()` を直接呼ぶため、Clock の dependency injection は**導入しない**。`next_available_note_id` は `now_ms: i64` 引数で外部から注入できる (pure 関数) ため、unit test は `now_ms` を固定値で渡す。`feed_initial_state` 全体の integration test では wall clock の非決定性を許容し、`visible_note_ids[0]` が `^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}(-\d+)?$` にマッチすること (正規表現アサート) のみを確認する。
+- **no-file-created の確認**: `feed_initial_state` 呼び出し**前**に `std::fs::read_dir(&vault)` でファイル数 `before_count` を取得し、呼び出し**後**に再度取得した `after_count` と等しいことを assert する (`assert_eq!(before_count, after_count)`).
+
+新規追加テスト:
+1. `test_next_available_note_id_deterministic` — PROP-FEED-S5-001: 固定 `now_ms = 1_577_836_800_000` + 空 `existing` で 2 回呼んだ結果が等しい
+2. `test_next_available_note_id_no_collision` — PROP-FEED-S5-002: `existing` に base ID `"2020-01-01-000000-000"` を入れた場合に `-1` suffix が付与される (固定 Clock、衝突 1 件)
+3. `test_next_available_note_id_format` — PROP-FEED-S5-003: `now_ms = 1_577_836_800_000` (2020-01-01 00:00:00 UTC) で戻り値 ID が `^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}(-\d+)?$` にマッチする (regex check)
+4. `test_feed_initial_state_empty_vault` — PROP-FEED-S5-004 ケース 1: `tempfile::tempdir()` で生成した空 vault で `visible_note_ids.len() == 1`、`note_metadata.len() == 1`、`editing.status == "editing"`、`editing.current_note_id == Some(visible_note_ids[0])`。`visible_note_ids[0]` が正規表現にマッチすることも確認。
+5. `test_feed_initial_state_existing_one_note` — PROP-FEED-S5-004 ケース 2: vault に `2020-01-01-000000-000.md` (body: `"hello world\n"`) を seed してから `feed_initial_state` を呼ぶ。`visible_note_ids.len() == 2`、`visible_note_ids[0]` が新規 ID (stem 形式、正規表現マッチ)。
+6. `test_feed_initial_state_no_file_created` — PROP-FEED-S5-004: `before_count` / `after_count` 比較で vault のファイル数が増えていないことを確認。
+
+### Sprint 5 TS Test Strategy
+
+**Files affected**:
+- `promptnotes/src/lib/feed/__tests__/feedReducer.test.ts` — `DomainSnapshotReceived` with `editing.status: "editing"` + new `currentNoteId` が `FeedViewState.editingNoteId` に正しく mirror される example-based test を追加 (REQ-FEED-028 の TS 側 Acceptance Criteria)
+
+### Sprint 5 Verification Tier Table
+
+> **Resolution (FIND-S5-SPEC-007)**: PROP-FEED-S5-005 の Required を `false` → `true` に変更した。
+
+| Sprint | PROP-ID | REQ-ID | Tier | Tool | Required |
+|--------|---------|--------|------|------|----------|
+| 5 | PROP-FEED-S5-001 | REQ-FEED-028 | 2 | proptest / cargo test | true |
+| 5 | PROP-FEED-S5-002 | REQ-FEED-028 | 2 | proptest | true |
+| 5 | PROP-FEED-S5-003 | REQ-FEED-028 | 2 | proptest | true |
+| 5 | PROP-FEED-S5-004 | REQ-FEED-028, REQ-FEED-029 | 1 | cargo test (integration) | true |
+| 5 | PROP-FEED-S5-005 | REQ-FEED-028 | 1 | 手動スナップショット (cargo test + vitest 共有 JSON fixture, 4 ペア) | **true** |
+
+### Sprint 5 Coverage Matrix Additions
+
+| ID | PROP-FEED-S5-XXX | Tier | Test path |
+|----|-----------------|------|-----------|
+| REQ-FEED-028 | PROP-FEED-S5-001, PROP-FEED-S5-002, PROP-FEED-S5-003, PROP-FEED-S5-004, PROP-FEED-S5-005 | 2 + 1 | `promptnotes/src-tauri/tests/feed_handlers.rs` (Rust unit + integration), proptest, 手動スナップショット |
+| REQ-FEED-029 | PROP-FEED-S5-004 | 1 | `promptnotes/src-tauri/tests/feed_handlers.rs` (integration), `feedReducer.test.ts` (vitest) |
