@@ -290,15 +290,9 @@ pub fn run() {
             feed::cancel_note_deletion,
             feed::fs_trash_file,
             feed::feed_initial_state,
-            // Sprint 2: ui-editor Rust handlers (REQ-EDIT-028..035)
-            editor::edit_note_body,
+            // note-body-editor: capture-auto-save pipeline (REQ-EDIT-029, REQ-EDIT-030)
             editor::trigger_idle_save,
             editor::trigger_blur_save,
-            editor::retry_save,
-            editor::discard_current_session,
-            editor::cancel_switch,
-            editor::copy_note_body,
-            editor::request_new_note,
             // ui-tag-chip: tag chip save
             editor::write_file_atomic,
             // note-body-editor: in-memory body update

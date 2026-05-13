@@ -1,15 +1,12 @@
-/// editor.rs — Rust backend handlers for ui-editor Sprint 8.
+/// editor.rs — Rust backend handlers for note-body-editor.
 ///
-/// REQ-EDIT-028: edit_note_body command
 /// REQ-EDIT-029: trigger_idle_save command
 /// REQ-EDIT-030: trigger_blur_save command
-/// REQ-EDIT-031: retry_save command
-/// REQ-EDIT-032: discard_current_session command
-/// REQ-EDIT-033: cancel_switch command
-/// REQ-EDIT-034: copy_note_body command
-/// REQ-EDIT-035: request_new_note command
 /// REQ-EDIT-036: editing_session_state_changed event emit rules
 /// REQ-EDIT-037: fs_write_file_atomic implementation
+///
+/// note-body-editor: editor_update_note_body command (in-memory body buffer + isDirty)
+/// ui-tag-chip: write_file_atomic command (tag chip atomic save)
 ///
 /// Sprint 8 IPC wire contract:
 /// REQ-IPC-001..020 — EditingSessionStateDto is now a 5-arm tagged enum.
@@ -19,9 +16,6 @@
 /// here. The Rust side is responsible only for:
 ///   1. Performing OS-level I/O (file write, file creation)
 ///   2. Emitting `editing_session_state_changed` events with typed payloads
-///
-/// The clipboard write is handled by the TypeScript `clipboardAdapter.ts`
-/// using `navigator.clipboard.writeText()` — Rust `copy_note_body` is a thin ack.
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::Write;
@@ -606,19 +600,6 @@ fn save_note_and_emit(
     Ok(())
 }
 
-/// REQ-EDIT-028: edit_note_body — thin acknowledgement, no side effects.
-/// The body buffer is owned by the TS editorReducer; Rust just acks.
-#[tauri::command]
-pub fn edit_note_body(
-    note_id: String,
-    new_body: String,
-    issued_at: String,
-    dirty: bool,
-) -> Result<(), String> {
-    let _ = (note_id, new_body, issued_at, dirty);
-    Ok(())
-}
-
 /// ui-tag-chip: Exposes fs_write_file_atomic as a Tauri command for tag chip saves.
 /// Accepts a file path and the complete markdown content (frontmatter + body).
 #[tauri::command]
@@ -652,62 +633,6 @@ pub fn trigger_blur_save(
 ) -> Result<(), String> {
     eprintln!("[editor] trigger_blur_save note={} source={} issued_at={}", note_id, source, issued_at);
     save_note_and_emit(&app, note_id, body, Some(&store))
-}
-
-/// REQ-EDIT-031: retry_save — re-attempt atomic write + emit state.
-#[tauri::command]
-pub fn retry_save(
-    app: AppHandle,
-    store: tauri::State<'_, NoteBodyStore>,
-    note_id: String,
-    body: String,
-    issued_at: String,
-) -> Result<(), String> {
-    let _ = issued_at;
-    save_note_and_emit(&app, note_id, body, Some(&store))
-}
-
-/// REQ-EDIT-032: discard_current_session — emit idle state, no file I/O.
-/// REQ-IPC-016: emits the Idle variant (only {"status":"idle"}).
-#[tauri::command]
-pub fn discard_current_session(
-    app: AppHandle,
-    note_id: String,
-    issued_at: String,
-) -> Result<(), String> {
-    let _ = (note_id, issued_at);
-    let state = compose_state_idle();
-    let payload = make_editing_state_changed_payload(&state);
-    app.emit("editing_session_state_changed", payload)
-        .map_err(|e| e.to_string())
-}
-
-/// REQ-EDIT-033: cancel_switch — emit editing state, preserve dirty flag.
-/// REQ-IPC-015: isDirty: true, focusedBlockId: null.
-#[tauri::command]
-pub fn cancel_switch(
-    app: AppHandle,
-    note_id: String,
-    issued_at: String,
-) -> Result<(), String> {
-    let _ = issued_at;
-    let state = compose_state_for_cancel_switch(&note_id);
-    let payload = make_editing_state_changed_payload(&state);
-    app.emit("editing_session_state_changed", payload)
-        .map_err(|e| e.to_string())
-}
-
-/// REQ-EDIT-034: copy_note_body — thin acknowledgement.
-/// Clipboard write is handled by TS clipboardAdapter.ts (navigator.clipboard API).
-/// Rust does NOT access the OS clipboard.
-/// Parameter shape matches TS adapter: `{ noteId: string; body: string }` only.
-#[tauri::command]
-pub fn copy_note_body(
-    note_id: String,
-    body: String,
-) -> Result<(), String> {
-    let _ = (note_id, body);
-    Ok(())
 }
 
 // ── note-body-editor: in-memory body store ─────────────────────────────
@@ -789,63 +714,6 @@ pub fn editor_update_note_body(
         let _ = app.emit("editing_session_state_changed", payload);
     }
     Ok(())
-}
-
-/// REQ-EDIT-035: request_new_note — generate new note ID, create empty .md file
-/// with frontmatter, emit editing state.
-/// REQ-IPC-018: emits Editing with isNoteEmpty: true, isDirty: false.
-///
-/// Vault path is read from settings via `settings_load_impl()`.
-#[tauri::command]
-pub fn request_new_note(
-    app: AppHandle,
-    source: String,
-    issued_at: String,
-) -> Result<(), String> {
-    let _ = (source, issued_at);
-
-    // Read vault path from settings
-    let vault_path = crate::settings_load_impl()
-        .map_err(|_| "Failed to read vault settings".to_string())?
-        .ok_or_else(|| "Vault not configured".to_string())?;
-
-    // Generate unique note ID using timestamp nanos
-    let now_ns = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_err(|_| "System clock error".to_string())?
-        .as_nanos();
-    let note_path = format!("{}/{}.md", vault_path.trim_end_matches('/'), now_ns);
-
-    // Current epoch ms for frontmatter
-    let now_ms = now_ns as i64 / 1_000_000;
-
-    // Create the .md file atomically with frontmatter
-    let contents = generate_frontmatter(now_ms);
-    fs_write_file_atomic(&note_path, &contents)
-        .map_err(|e| format!("Failed to create new note: {:?}", e))?;
-
-    // Emit editing state for the new note (REQ-IPC-018)
-    let state = compose_state_for_request_new_note(&note_path);
-    let payload = make_editing_state_changed_payload(&state);
-    app.emit("editing_session_state_changed", payload)
-        .map_err(|e| e.to_string())?;
-
-    // Emit feed_state_changed so the feed sidebar refreshes with the new note
-    let (visible_note_ids, note_metadata) = crate::feed::scan_vault_feed(&vault_path);
-    let feed_snapshot = crate::feed::FeedDomainSnapshotDto {
-        editing: crate::feed::idle_editing(),
-        feed: crate::feed::FeedSubDto {
-            visible_note_ids,
-            filter_applied: false,
-        },
-        delete: crate::feed::no_delete(),
-        note_metadata,
-        cause: crate::feed::CauseDto::NoteFileSaved {
-            saved_note_id: note_path,
-        },
-    };
-    app.emit("feed_state_changed", feed_snapshot)
-        .map_err(|e| e.to_string())
 }
 
 // ── Unit tests ────────────────────────────────────────────────────────────────
