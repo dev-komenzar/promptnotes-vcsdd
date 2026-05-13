@@ -1,13 +1,13 @@
-/// note_id.rs — Pure helper: next_available_note_id
-///
-/// PROP-003: next_available_note_id(preferred, existingIds) returns NoteId ∉ existingIds
-/// PROP-022: next_available_note_id is deterministic — same inputs → same output
-///
-/// Covers: REQ-011
-///
-/// The actual implementation is in docs/domain/code/rust/src/vault/ports.rs
-/// and currently `todo!()`. These tests are Phase 2a Red phase tests — they
-/// will fail until Phase 2b implements the function.
+// note_id.rs — Pure helper: next_available_note_id
+//
+// PROP-003: next_available_note_id(preferred, existingIds) returns NoteId ∉ existingIds
+// PROP-022: next_available_note_id is deterministic — same inputs → same output
+//
+// Covers: REQ-011
+//
+// The actual implementation is in docs/domain/code/rust/src/vault/ports.rs
+// and currently `todo!()`. These tests are Phase 2a Red phase tests — they
+// will fail until Phase 2b implements the function.
 
 // Re-export the pure helper from the domain crate so tests can target it.
 pub use promptnotes_domain::vault::ports::next_available_note_id;

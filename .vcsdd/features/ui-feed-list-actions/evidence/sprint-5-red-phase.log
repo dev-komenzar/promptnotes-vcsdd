@@ -1,0 +1,142 @@
+new-feature-tests: FAIL
+regression-baseline: PASS
+sprint: 5
+phase: 2a
+red-test-count: 9
+red-test-list:
+  - test_next_available_note_id_deterministic
+  - test_next_available_note_id_format
+  - test_next_available_note_id_collision_suffix
+  - test_next_available_note_id_non_collision_property
+  - test_feed_initial_state_empty_vault_auto_create
+  - test_feed_initial_state_existing_one_note_prepends_new
+  - test_feed_initial_state_no_md_file_created_with_auto_create
+  - test_next_available_note_id_ts_parity_snapshot (Rust unit)
+  - feedReducer.sprint5.test.ts DomainSnapshotReceived with auto-created note (TS bun:test — 4 tests PASS as designed; mirror contract already holds)
+
+regression-baseline-detail:
+  cargo-test-feed-handlers: 19 passed (before Sprint 5 tests added)
+  bun-test: 1809 pass, 4 skip, 4 todo, 0 fail (before Sprint 5 TS tests)
+  vitest-run: N/A (vitest not configured in this project; bun:test is the test runner)
+
+red-evidence-summary:
+  Rust new tests: COMPILE ERROR (exit code 101)
+  Error count: 10 compile errors
+  Root cause: `next_available_note_id` does not exist in `promptnotes_lib::feed`
+  Affected tests (compile error):
+    - test_next_available_note_id_deterministic (lines 851-852)
+    - test_next_available_note_id_format (line 873)
+    - test_next_available_note_id_collision_suffix (lines 900, 913)
+    - test_next_available_note_id_non_collision_property (line 937)
+    - test_next_available_note_id_ts_parity_snapshot (lines 1142, 1154, 1171, 1180)
+  Additional runtime-FAIL tests (would fail if compiled):
+    - test_feed_initial_state_empty_vault_auto_create
+        (current: editing.status="idle", visible_note_ids=[] -> assert_eq!(len,1) FAIL)
+    - test_feed_initial_state_existing_one_note_prepends_new
+        (current: no auto-create -> assert_eq!(len,2) FAIL)
+    - test_feed_initial_state_no_md_file_created_with_auto_create
+        (current: editing.current_note_id=None -> .expect() panic -> FAIL)
+
+  TS new tests (4 tests in feedReducer.sprint5.test.ts): PASS
+    Rationale: feedReducer already mirrors editing.currentNoteId -> editingNoteId.
+    The TS tests document the contract that the Rust implementation must satisfy.
+    Per spec, "既存 GREEN テストは PASS のまま" — TS tests pass because the
+    feedReducer reducer is correct and the tests verify the expected post-Sprint-5
+    contract. The RED condition is on the Rust Tauri handler side.
+
+post-sprint5-bun-test:
+  1813 pass, 4 skip, 4 todo, 0 fail
+  Ran 1821 tests across 155 files.
+  (4 new Sprint 5 TS tests added to regression baseline)
+
+---raw output---
+=== cargo test --test feed_handlers (Sprint 5 new tests — FAIL) ===
+
+   Compiling promptnotes v0.1.0 (promptnotes/src-tauri)
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+   --> tests/feed_handlers.rs:851:38
+    |
+851 |     let id1 = promptnotes_lib::feed::next_available_note_id(now_ms, &existing);
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+   --> tests/feed_handlers.rs:852:38
+    |
+852 |     let id2 = promptnotes_lib::feed::next_available_note_id(now_ms, &existing);
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+   --> tests/feed_handlers.rs:873:37
+    |
+873 |     let id = promptnotes_lib::feed::next_available_note_id(now_ms, &existing);
+    |                                     ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+   --> tests/feed_handlers.rs:900:41
+    |
+900 |     let id_one = promptnotes_lib::feed::next_available_note_id(now_ms, &existing_one);
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+   --> tests/feed_handlers.rs:913:41
+    |
+913 |     let id_two = promptnotes_lib::feed::next_available_note_id(now_ms, &existing_two);
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+   --> tests/feed_handlers.rs:937:45
+    |
+937 |         let result = promptnotes_lib::feed::next_available_note_id(now_ms, &existing);
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+    --> tests/feed_handlers.rs:1142:39
+     |
+1142 |     let id_a = promptnotes_lib::feed::next_available_note_id(now_2020, &existing_empty);
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+    --> tests/feed_handlers.rs:1154:39
+     |
+1154 |     let id_b = promptnotes_lib::feed::next_available_note_id(now_2020, &existing_one);
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+    --> tests/feed_handlers.rs:1171:39
+     |
+1171 |     let id_c = promptnotes_lib::feed::next_available_note_id(now_2020, &existing_ten);
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+error[E0425]: cannot find function `next_available_note_id` in module `promptnotes_lib::feed`
+    --> tests/feed_handlers.rs:1180:39
+     |
+1180 |     let id_d = promptnotes_lib::feed::next_available_note_id(0i64, &existing_empty);
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^ not found in `promptnotes_lib::feed`
+
+warning: unused import: `DeleteSubDto`
+   --> tests/feed_handlers.rs:448:83
+    |
+448 |     use promptnotes_lib::feed::{EditingSubDto, FeedDomainSnapshotDto, FeedSubDto, DeleteSubDto, CauseDto};
+    |                                                                                   ^^^^^^^^^^^^
+
+error: could not compile `promptnotes` (test "feed_handlers") due to 10 previous errors; 1 warning emitted
+
+=== bun test (regression baseline — PASS) ===
+
+bun test v1.3.11 (af24e281)
+
+ 1809 pass (baseline before Sprint 5 TS tests)
+ 4 skip
+ 4 todo
+ 0 fail
+
+=== bun test (with Sprint 5 TS tests — PASS) ===
+
+bun test v1.3.11 (af24e281)
+
+ 1813 pass
+ 4 skip
+ 4 todo
+ 0 fail
+ 32135 expect() calls
+Ran 1821 tests across 155 files. [14.26s]

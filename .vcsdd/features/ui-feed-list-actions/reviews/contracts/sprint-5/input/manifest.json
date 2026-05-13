@@ -1,0 +1,38 @@
+{
+  "reviewType": "contract",
+  "featureName": "ui-feed-list-actions",
+  "sprintNumber": 5,
+  "negotiationRound": 1,
+  "iteration": 2,
+  "mode": "strict",
+  "timestamp": "2026-05-13T06:15:00.000Z",
+  "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+  "contractDigest": "7a30dafd08e8767591be8bf51a5e2ec0f4e0528296a774f46a1671df52c178dc",
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+      ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src-tauri/tests/feed_handlers.rs",
+      "promptnotes/src/lib/feed/__tests__/feedReducer.sprint5.test.ts"
+    ],
+    "source": [
+      "promptnotes/src-tauri/src/feed.rs",
+      "promptnotes/src-tauri/src/editor.rs"
+    ]
+  },
+  "evidenceArtifacts": [
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-red-phase.log",
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-green-phase.log"
+  ],
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "freshContext": true,
+  "guidance": "Sprint 5 contract criteria CRIT-S5-001..007 が (a) binary-evaluable で (b) spec/verification-architecture と整合し (c) 既に Green になっている Phase 2b/2c artifact 群と矛盾しないことを確認する。Phase 3 (adversarial review) が判断する PASS/FAIL 基準と sprint contract が乖離していないかを審査する。"
+}

@@ -1,86 +1,77 @@
-/// editor_wire_sprint8.rs — Sprint 8 Red-phase tests for the Rust IPC wire contract.
-///
-/// VCSDD Phase 2a (Red): These tests MUST FAIL to compile because the new
-/// `EditingSessionStateDto` enum, `BlockTypeDto`, `DtoBlock`, `PendingNextFocusDto`,
-/// `compose_state_*` helpers, and `make_editing_state_changed_payload` (new
-/// single-argument form) do NOT exist in `src/editor.rs` yet.
-///
-/// Phase 2b (Green) will introduce them and all tests here must then pass.
-///
-/// Proof obligations verified here:
-///   PROP-IPC-001 — 5-variant exhaustive match (Tier 0 compile-time)
-///   PROP-IPC-002 — Idle serializes to exactly {"status":"idle"}
-///   PROP-IPC-003 — kebab-case discriminant in each variant
-///   PROP-IPC-004 — Editing key-set equality (with/without blocks)
-///   PROP-IPC-005 — SaveFailed key-set equality (with/without blocks)
-///   PROP-IPC-005 (null literals) — priorFocusedBlockId/pendingNextFocus always serialized null
-///   PROP-IPC-006 — Switching key-set equality
-///   PROP-IPC-007 — SaveErrorDto.reason skip_serializing_if None / present when Some
-///   PROP-IPC-008 — blocks optionality (None=absent, Some([])="blocks":[], Some([...])=array)
-///   PROP-IPC-009 — make_editing_state_changed_payload wraps in {"state": ...}
-///   PROP-IPC-010 — round-trip over 14-fixture cover set
-///   PROP-IPC-013 — compose_state_idle → Idle
-///   PROP-IPC-014 — compose_state_for_cancel_switch → Editing fields
-///   PROP-IPC-015 — compose_state_for_request_new_note → Editing is_note_empty:true
-///   PROP-IPC-016 — compose_state_for_save_ok / compose_state_for_save_err
-///   PROP-IPC-017 — compose_state_for_select_past_note
-///   PROP-IPC-018 — BlockTypeDto 9-variant exhaustive match (Tier 0 compile-time)
-///   PROP-IPC-019 — BlockTypeDto round-trip (valid and invalid)
-///
-/// Spec REQ / EC coverage map (CRIT-800 / CRIT-801):
-///   REQ-IPC-001 (5-arm union)               — prop_ipc_001
-///   REQ-IPC-002 (currentNoteId on non-idle)  — prop_ipc_004 / 005 / 006 (per-variant key-set)
-///   REQ-IPC-003 (isNoteEmpty on non-idle)    — prop_ipc_004 / 005 / 006
-///   REQ-IPC-004 (Editing exact key set)      — prop_ipc_004
-///   REQ-IPC-005 (Saving exact key set)       — prop_ipc_006_saving_key_set_equality
-///   REQ-IPC-006 (Switching exact key set)    — prop_ipc_006
-///   REQ-IPC-007 (SaveFailed exact key set)   — prop_ipc_005
-///   REQ-IPC-008 (PendingNextFocusDto shape)  — prop_ipc_006
-///   REQ-IPC-009 (DtoBlock + BlockTypeDto)    — prop_ipc_018 / prop_ipc_019
-///   REQ-IPC-010 (SaveErrorDto skip-when-None)— prop_ipc_007
-///   REQ-IPC-011 (blocks optionality)         — prop_ipc_008
-///   REQ-IPC-012 (state wrapper)              — prop_ipc_009
-///   REQ-IPC-013 (caller-site contract)       — prop_ipc_013..017 + wire_audit.sh PROP-IPC-012
-///   REQ-IPC-014 (select_past_note Editing)   — prop_ipc_017
-///   REQ-IPC-015 (cancel_switch Editing)      — prop_ipc_014
-///   REQ-IPC-016 (discard idle-only)          — prop_ipc_013
-///   REQ-IPC-017 (save Ok/Err variants)       — prop_ipc_016
-///   REQ-IPC-018 (request_new_note Editing)   — prop_ipc_015
-///   REQ-IPC-019 (TS↔Rust shape)              — editorStateChannelWireFixtures.dom.vitest.ts
-///   REQ-IPC-020 (round-trip preservation)    — prop_ipc_010
-///
-///   EC-IPC-001 (save success → editing)      — prop_ipc_016
-///   EC-IPC-002 (validation reason None)      — prop_ipc_007
-///   EC-IPC-003 (fs+permission reason Some)   — prop_ipc_007
-///   EC-IPC-004 (blocks=None key absent)      — prop_ipc_008
-///   EC-IPC-005 (blocks=Some([]) emits [])    — prop_ipc_008
-///   EC-IPC-006 (priorFocusedBlockId null)    — prop_ipc_005_save_failed_null_literals_present
-///   EC-IPC-007 (focusedBlockId null)         — prop_ipc_004 (with focused_block_id: None fixture)
-///   EC-IPC-008 (pendingNextFocus null)       — prop_ipc_005_save_failed_null_literals_present
-///   EC-IPC-009 (idle narrowing)              — prop_ipc_002 + TS fixture test
-///   EC-IPC-010 (select_past_note empty body) — prop_ipc_017
-///   EC-IPC-011 (vault scan miss)             — feed_handlers.rs::test_select_past_note_nonexistent_body_is_empty
-///   EC-IPC-012 (cancel without save-failed)  — prop_ipc_014 (focused_block_id=None always)
-///   EC-IPC-013 (whitespace-only body)        — ec_ipc_013_whitespace_only_body_is_not_empty
-///   EC-IPC-014 (emit-before-subscribe)       — DOCUMENTATION-ONLY edge case; runtime obligation on EditorPanel mount order
+//! editor_wire_sprint8.rs — Sprint 8 Red-phase tests for the Rust IPC wire contract.
+//!
+//! VCSDD Phase 2a (Red): These tests MUST FAIL to compile because the new
+//! `EditingSessionStateDto` enum, `BlockTypeDto`, `DtoBlock`, `PendingNextFocusDto`,
+//! `compose_state_*` helpers, and `make_editing_state_changed_payload` (new
+//! single-argument form) do NOT exist in `src/editor.rs` yet.
+//!
+//! Phase 2b (Green) will introduce them and all tests here must then pass.
+//!
+//! Proof obligations verified here:
+//!   PROP-IPC-001 — 5-variant exhaustive match (Tier 0 compile-time)
+//!   PROP-IPC-002 — Idle serializes to exactly {"status":"idle"}
+//!   PROP-IPC-003 — kebab-case discriminant in each variant
+//!   PROP-IPC-004 — Editing key-set equality (with/without blocks)
+//!   PROP-IPC-005 — SaveFailed key-set equality (with/without blocks)
+//!   PROP-IPC-005 (null literals) — priorFocusedBlockId/pendingNextFocus always serialized null
+//!   PROP-IPC-006 — Switching key-set equality
+//!   PROP-IPC-007 — SaveErrorDto.reason skip_serializing_if None / present when Some
+//!   PROP-IPC-008 — blocks optionality (None=absent, Some([])="blocks":[], Some([...])=array)
+//!   PROP-IPC-009 — make_editing_state_changed_payload wraps in {"state": ...}
+//!   PROP-IPC-010 — round-trip over 14-fixture cover set
+//!   PROP-IPC-013 — compose_state_idle → Idle
+//!   PROP-IPC-014 — compose_state_for_cancel_switch → Editing fields
+//!   PROP-IPC-015 — compose_state_for_request_new_note → Editing is_note_empty:true
+//!   PROP-IPC-016 — compose_state_for_save_ok / compose_state_for_save_err
+//!   PROP-IPC-017 — compose_state_for_select_past_note
+//!   PROP-IPC-018 — BlockTypeDto 9-variant exhaustive match (Tier 0 compile-time)
+//!   PROP-IPC-019 — BlockTypeDto round-trip (valid and invalid)
+//!
+//! Spec REQ / EC coverage map (CRIT-800 / CRIT-801):
+//!   REQ-IPC-001 (5-arm union)               — prop_ipc_001
+//!   REQ-IPC-002 (currentNoteId on non-idle)  — prop_ipc_004 / 005 / 006 (per-variant key-set)
+//!   REQ-IPC-003 (isNoteEmpty on non-idle)    — prop_ipc_004 / 005 / 006
+//!   REQ-IPC-004 (Editing exact key set)      — prop_ipc_004
+//!   REQ-IPC-005 (Saving exact key set)       — prop_ipc_006_saving_key_set_equality
+//!   REQ-IPC-006 (Switching exact key set)    — prop_ipc_006
+//!   REQ-IPC-007 (SaveFailed exact key set)   — prop_ipc_005
+//!   REQ-IPC-008 (PendingNextFocusDto shape)  — prop_ipc_006
+//!   REQ-IPC-009 (DtoBlock + BlockTypeDto)    — prop_ipc_018 / prop_ipc_019
+//!   REQ-IPC-010 (SaveErrorDto skip-when-None)— prop_ipc_007
+//!   REQ-IPC-011 (blocks optionality)         — prop_ipc_008
+//!   REQ-IPC-012 (state wrapper)              — prop_ipc_009
+//!   REQ-IPC-013 (caller-site contract)       — prop_ipc_013..017 + wire_audit.sh PROP-IPC-012
+//!   REQ-IPC-014 (select_past_note Editing)   — prop_ipc_017
+//!   REQ-IPC-015 (cancel_switch Editing)      — prop_ipc_014
+//!   REQ-IPC-016 (discard idle-only)          — prop_ipc_013
+//!   REQ-IPC-017 (save Ok/Err variants)       — prop_ipc_016
+//!   REQ-IPC-018 (request_new_note Editing)   — prop_ipc_015
+//!   REQ-IPC-019 (TS↔Rust shape)              — editorStateChannelWireFixtures.dom.vitest.ts
+//!   REQ-IPC-020 (round-trip preservation)    — prop_ipc_010
+//!
+//!   EC-IPC-001 (save success → editing)      — prop_ipc_016
+//!   EC-IPC-002 (validation reason None)      — prop_ipc_007
+//!   EC-IPC-003 (fs+permission reason Some)   — prop_ipc_007
+//!   EC-IPC-004 (blocks=None key absent)      — prop_ipc_008
+//!   EC-IPC-005 (blocks=Some([]) emits [])    — prop_ipc_008
+//!   EC-IPC-006 (priorFocusedBlockId null)    — prop_ipc_005_save_failed_null_literals_present
+//!   EC-IPC-007 (focusedBlockId null)         — prop_ipc_004 (with focused_block_id: None fixture)
+//!   EC-IPC-008 (pendingNextFocus null)       — prop_ipc_005_save_failed_null_literals_present
+//!   EC-IPC-009 (idle narrowing)              — prop_ipc_002 + TS fixture test
+//!   EC-IPC-010 (select_past_note empty body) — prop_ipc_017
+//!   EC-IPC-011 (vault scan miss)             — feed_handlers.rs::test_select_past_note_nonexistent_body_is_empty
+//!   EC-IPC-012 (cancel without save-failed)  — prop_ipc_014 (focused_block_id=None always)
+//!   EC-IPC-013 (whitespace-only body)        — ec_ipc_013_whitespace_only_body_is_not_empty
+//!   EC-IPC-014 (emit-before-subscribe)       — DOCUMENTATION-ONLY edge case; runtime obligation on EditorPanel mount order
 
 // Phase 2a: import NEW Sprint-8 symbols that do NOT exist yet.
 // This import triggers a compile error ("cannot find type `EditingSessionStateDto`
 // in module `promptnotes_lib::editor`") until Phase 2b adds them.
 use promptnotes_lib::editor::{
-    BlockTypeDto,
-    DtoBlock,
-    EditingSessionStateDto,
-    FsErrorDto,
-    PendingNextFocusDto,
-    SaveErrorDto,
-    compose_state_for_cancel_switch,
-    compose_state_for_request_new_note,
-    compose_state_for_save_err,
-    compose_state_for_save_ok,
-    compose_state_for_select_past_note,
-    compose_state_idle,
-    make_editing_state_changed_payload,
+    compose_state_for_cancel_switch, compose_state_for_request_new_note,
+    compose_state_for_save_err, compose_state_for_save_ok, compose_state_for_select_past_note,
+    compose_state_idle, make_editing_state_changed_payload, BlockTypeDto, DtoBlock,
+    EditingSessionStateDto, FsErrorDto, PendingNextFocusDto, SaveErrorDto,
 };
 
 use std::collections::BTreeSet;
@@ -159,7 +150,12 @@ fn prop_ipc_002_idle_serializes_status_only() {
     let state = compose_state_idle();
     let value = serde_json::to_value(&state).expect("serialize Idle");
     let obj = value.as_object().expect("must be object");
-    assert_eq!(obj.len(), 1, "Idle must have exactly one key, got: {:?}", obj.keys().collect::<Vec<_>>());
+    assert_eq!(
+        obj.len(),
+        1,
+        "Idle must have exactly one key, got: {:?}",
+        obj.keys().collect::<Vec<_>>()
+    );
     assert_eq!(
         obj.get("status").and_then(|v| v.as_str()),
         Some("idle"),
@@ -485,15 +481,11 @@ fn prop_ipc_006_switching_key_set_equality() {
         .keys()
         .cloned()
         .collect();
-    let expected_keys: BTreeSet<String> = [
-        "status",
-        "currentNoteId",
-        "pendingNextFocus",
-        "isNoteEmpty",
-    ]
-    .iter()
-    .map(|s| s.to_string())
-    .collect();
+    let expected_keys: BTreeSet<String> =
+        ["status", "currentNoteId", "pendingNextFocus", "isNoteEmpty"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
     assert_eq!(
         actual_keys, expected_keys,
         "Switching (blocks:None) key set mismatch.\nGot: {:?}\nExpected: {:?}",
@@ -505,10 +497,19 @@ fn prop_ipc_006_switching_key_set_equality() {
         .as_object()
         .and_then(|o| o.get("pendingNextFocus"))
         .expect("pendingNextFocus must be present");
-    assert!(pending.is_object(), "pendingNextFocus must be an object, not null");
+    assert!(
+        pending.is_object(),
+        "pendingNextFocus must be an object, not null"
+    );
     let pending_obj = pending.as_object().unwrap();
-    assert!(pending_obj.contains_key("noteId"), "pendingNextFocus must have noteId");
-    assert!(pending_obj.contains_key("blockId"), "pendingNextFocus must have blockId");
+    assert!(
+        pending_obj.contains_key("noteId"),
+        "pendingNextFocus must have noteId"
+    );
+    assert!(
+        pending_obj.contains_key("blockId"),
+        "pendingNextFocus must have blockId"
+    );
 
     // With blocks
     let switching_with_blocks = EditingSessionStateDto::Switching {
@@ -673,7 +674,10 @@ fn prop_ipc_009_helper_wraps_in_state() {
     // The "state" value must itself be an object with status:"idle"
     let inner = obj.get("state").expect("state key must exist");
     assert_eq!(
-        inner.as_object().and_then(|o| o.get("status")).and_then(|v| v.as_str()),
+        inner
+            .as_object()
+            .and_then(|o| o.get("status"))
+            .and_then(|v| v.as_str()),
         Some("idle")
     );
 }
@@ -691,7 +695,6 @@ fn wire_fixtures() -> Vec<EditingSessionStateDto> {
     vec![
         // F01 — Idle
         EditingSessionStateDto::Idle,
-
         // F02 — Editing, blocks:None, focused_block_id:None, is_dirty:false, is_note_empty:true
         EditingSessionStateDto::Editing {
             current_note_id: "n1".to_string(),
@@ -701,7 +704,6 @@ fn wire_fixtures() -> Vec<EditingSessionStateDto> {
             last_save_result: None,
             blocks: None,
         },
-
         // F03 — Editing, blocks:Some([]), focused_block_id:Some("blk-1"), is_dirty:true, last_save_result:Some("success")
         EditingSessionStateDto::Editing {
             current_note_id: "n1".to_string(),
@@ -711,7 +713,6 @@ fn wire_fixtures() -> Vec<EditingSessionStateDto> {
             last_save_result: Some("success".to_string()),
             blocks: Some(vec![]),
         },
-
         // F04 — Editing, blocks:Some([Paragraph,Heading1,Code,Divider])
         EditingSessionStateDto::Editing {
             current_note_id: "n1".to_string(),
@@ -720,105 +721,161 @@ fn wire_fixtures() -> Vec<EditingSessionStateDto> {
             is_note_empty: false,
             last_save_result: None,
             blocks: Some(vec![
-                DtoBlock { id: "b1".to_string(), block_type: BlockTypeDto::Paragraph, content: "para".to_string() },
-                DtoBlock { id: "b2".to_string(), block_type: BlockTypeDto::Heading1, content: "title".to_string() },
-                DtoBlock { id: "b3".to_string(), block_type: BlockTypeDto::Code, content: "fn f() {}".to_string() },
-                DtoBlock { id: "b4".to_string(), block_type: BlockTypeDto::Divider, content: "".to_string() },
+                DtoBlock {
+                    id: "b1".to_string(),
+                    block_type: BlockTypeDto::Paragraph,
+                    content: "para".to_string(),
+                },
+                DtoBlock {
+                    id: "b2".to_string(),
+                    block_type: BlockTypeDto::Heading1,
+                    content: "title".to_string(),
+                },
+                DtoBlock {
+                    id: "b3".to_string(),
+                    block_type: BlockTypeDto::Code,
+                    content: "fn f() {}".to_string(),
+                },
+                DtoBlock {
+                    id: "b4".to_string(),
+                    block_type: BlockTypeDto::Divider,
+                    content: "".to_string(),
+                },
             ]),
         },
-
         // F05 — Saving, blocks:None
         EditingSessionStateDto::Saving {
             current_note_id: "n1".to_string(),
             is_note_empty: false,
             blocks: None,
         },
-
         // F06 — Saving, blocks:Some([Paragraph])
         EditingSessionStateDto::Saving {
             current_note_id: "n1".to_string(),
             is_note_empty: false,
-            blocks: Some(vec![
-                DtoBlock { id: "b1".to_string(), block_type: BlockTypeDto::Paragraph, content: "text".to_string() },
-            ]),
+            blocks: Some(vec![DtoBlock {
+                id: "b1".to_string(),
+                block_type: BlockTypeDto::Paragraph,
+                content: "text".to_string(),
+            }]),
         },
-
         // F07 — Switching, blocks:None
         EditingSessionStateDto::Switching {
             current_note_id: "n1".to_string(),
-            pending_next_focus: PendingNextFocusDto { note_id: "n2".to_string(), block_id: "blk-1".to_string() },
+            pending_next_focus: PendingNextFocusDto {
+                note_id: "n2".to_string(),
+                block_id: "blk-1".to_string(),
+            },
             is_note_empty: false,
             blocks: None,
         },
-
         // F08 — Switching, blocks:Some([])
         EditingSessionStateDto::Switching {
             current_note_id: "n1".to_string(),
-            pending_next_focus: PendingNextFocusDto { note_id: "n2".to_string(), block_id: "blk-1".to_string() },
+            pending_next_focus: PendingNextFocusDto {
+                note_id: "n2".to_string(),
+                block_id: "blk-1".to_string(),
+            },
             is_note_empty: false,
             blocks: Some(vec![]),
         },
-
         // F09 — SaveFailed, blocks:None, both nullables None, reason:Some(permission)
         EditingSessionStateDto::SaveFailed {
             current_note_id: "n1".to_string(),
             prior_focused_block_id: None,
             pending_next_focus: None,
-            last_save_error: SaveErrorDto { kind: "fs".to_string(), reason: Some(FsErrorDto { kind: "permission".to_string() }) },
+            last_save_error: SaveErrorDto {
+                kind: "fs".to_string(),
+                reason: Some(FsErrorDto {
+                    kind: "permission".to_string(),
+                }),
+            },
             is_note_empty: false,
             blocks: None,
         },
-
         // F10 — SaveFailed, blocks:None, prior_focused_block_id:Some, pending:None, reason:disk-full
         EditingSessionStateDto::SaveFailed {
             current_note_id: "n1".to_string(),
             prior_focused_block_id: Some("blk-1".to_string()),
             pending_next_focus: None,
-            last_save_error: SaveErrorDto { kind: "fs".to_string(), reason: Some(FsErrorDto { kind: "disk-full".to_string() }) },
+            last_save_error: SaveErrorDto {
+                kind: "fs".to_string(),
+                reason: Some(FsErrorDto {
+                    kind: "disk-full".to_string(),
+                }),
+            },
             is_note_empty: false,
             blocks: None,
         },
-
         // F11 — SaveFailed, blocks:None, both Some, reason:lock
         EditingSessionStateDto::SaveFailed {
             current_note_id: "n1".to_string(),
             prior_focused_block_id: Some("blk-1".to_string()),
-            pending_next_focus: Some(PendingNextFocusDto { note_id: "n2".to_string(), block_id: "blk-1".to_string() }),
-            last_save_error: SaveErrorDto { kind: "fs".to_string(), reason: Some(FsErrorDto { kind: "lock".to_string() }) },
+            pending_next_focus: Some(PendingNextFocusDto {
+                note_id: "n2".to_string(),
+                block_id: "blk-1".to_string(),
+            }),
+            last_save_error: SaveErrorDto {
+                kind: "fs".to_string(),
+                reason: Some(FsErrorDto {
+                    kind: "lock".to_string(),
+                }),
+            },
             is_note_empty: false,
             blocks: None,
         },
-
         // F12 — SaveFailed, blocks:None, validation error (reason:None), is_note_empty:true
         EditingSessionStateDto::SaveFailed {
             current_note_id: "n1".to_string(),
             prior_focused_block_id: None,
             pending_next_focus: None,
-            last_save_error: SaveErrorDto { kind: "validation".to_string(), reason: None },
+            last_save_error: SaveErrorDto {
+                kind: "validation".to_string(),
+                reason: None,
+            },
             is_note_empty: true,
             blocks: None,
         },
-
         // F13 — SaveFailed, blocks:Some([]), pending:Some, reason:unknown
         EditingSessionStateDto::SaveFailed {
             current_note_id: "n1".to_string(),
             prior_focused_block_id: None,
-            pending_next_focus: Some(PendingNextFocusDto { note_id: "n2".to_string(), block_id: "blk-1".to_string() }),
-            last_save_error: SaveErrorDto { kind: "fs".to_string(), reason: Some(FsErrorDto { kind: "unknown".to_string() }) },
+            pending_next_focus: Some(PendingNextFocusDto {
+                note_id: "n2".to_string(),
+                block_id: "blk-1".to_string(),
+            }),
+            last_save_error: SaveErrorDto {
+                kind: "fs".to_string(),
+                reason: Some(FsErrorDto {
+                    kind: "unknown".to_string(),
+                }),
+            },
             is_note_empty: false,
             blocks: Some(vec![]),
         },
-
         // F14 — SaveFailed, blocks:Some([Heading2,Bullet]), prior:Some, pending:None, reason:not-found
         EditingSessionStateDto::SaveFailed {
             current_note_id: "n1".to_string(),
             prior_focused_block_id: Some("blk-1".to_string()),
             pending_next_focus: None,
-            last_save_error: SaveErrorDto { kind: "fs".to_string(), reason: Some(FsErrorDto { kind: "not-found".to_string() }) },
+            last_save_error: SaveErrorDto {
+                kind: "fs".to_string(),
+                reason: Some(FsErrorDto {
+                    kind: "not-found".to_string(),
+                }),
+            },
             is_note_empty: false,
             blocks: Some(vec![
-                DtoBlock { id: "b1".to_string(), block_type: BlockTypeDto::Heading2, content: "sub".to_string() },
-                DtoBlock { id: "b2".to_string(), block_type: BlockTypeDto::Bullet, content: "item".to_string() },
+                DtoBlock {
+                    id: "b1".to_string(),
+                    block_type: BlockTypeDto::Heading2,
+                    content: "sub".to_string(),
+                },
+                DtoBlock {
+                    id: "b2".to_string(),
+                    block_type: BlockTypeDto::Bullet,
+                    content: "item".to_string(),
+                },
             ]),
         },
     ]
@@ -833,7 +890,8 @@ fn prop_ipc_010_round_trip_cover_set() {
         let deserialized: EditingSessionStateDto =
             serde_json::from_str(&serialized).expect("deserialize");
         assert_eq!(
-            fixture, deserialized,
+            fixture,
+            deserialized,
             "Round-trip failed for fixture F{:02}. JSON: {}",
             idx + 1,
             serialized
@@ -864,20 +922,27 @@ fn prop_ipc_018_block_type_dto_nine_variants() {
     let to_str = |v: &BlockTypeDto| -> &'static str {
         match v {
             BlockTypeDto::Paragraph => "paragraph",
-            BlockTypeDto::Heading1  => "heading-1",
-            BlockTypeDto::Heading2  => "heading-2",
-            BlockTypeDto::Heading3  => "heading-3",
-            BlockTypeDto::Bullet    => "bullet",
-            BlockTypeDto::Numbered  => "numbered",
-            BlockTypeDto::Code      => "code",
-            BlockTypeDto::Quote     => "quote",
-            BlockTypeDto::Divider   => "divider",
+            BlockTypeDto::Heading1 => "heading-1",
+            BlockTypeDto::Heading2 => "heading-2",
+            BlockTypeDto::Heading3 => "heading-3",
+            BlockTypeDto::Bullet => "bullet",
+            BlockTypeDto::Numbered => "numbered",
+            BlockTypeDto::Code => "code",
+            BlockTypeDto::Quote => "quote",
+            BlockTypeDto::Divider => "divider",
         }
     };
 
     let expected = [
-        "paragraph", "heading-1", "heading-2", "heading-3",
-        "bullet", "numbered", "code", "quote", "divider",
+        "paragraph",
+        "heading-1",
+        "heading-2",
+        "heading-3",
+        "bullet",
+        "numbered",
+        "code",
+        "quote",
+        "divider",
     ];
 
     for (variant, expected_str) in all_variants.iter().zip(expected.iter()) {
@@ -911,8 +976,7 @@ fn prop_ipc_019_block_type_dto_round_trip_valid() {
         let re_serialized = serde_json::to_string(&parsed)
             .unwrap_or_else(|_| panic!("Should serialize block type: {}", s));
         assert_eq!(
-            re_serialized,
-            json_str,
+            re_serialized, json_str,
             "Round-trip failed for block type '{}'",
             s
         );
@@ -923,9 +987,9 @@ fn prop_ipc_019_block_type_dto_round_trip_valid() {
 #[test]
 fn prop_ipc_019_block_type_dto_invalid_strings() {
     let invalid_strings = [
-        "\"hedaing-1\"",  // typo
-        "\"Paragraph\"",  // wrong case
-        "\"\"",           // empty
+        "\"hedaing-1\"", // typo
+        "\"Paragraph\"", // wrong case
+        "\"\"",          // empty
     ];
 
     for invalid in &invalid_strings {
@@ -949,10 +1013,13 @@ fn prop_ipc_013_compose_idle() {
     let state = compose_state_idle();
     match &state {
         EditingSessionStateDto::Idle => {}
-        other => panic!("Expected Idle, got a different variant; status in JSON: {}", {
-            let v = serde_json::to_value(other).unwrap();
-            v["status"].as_str().unwrap_or("?").to_string()
-        }),
+        other => panic!(
+            "Expected Idle, got a different variant; status in JSON: {}",
+            {
+                let v = serde_json::to_value(other).unwrap();
+                v["status"].as_str().unwrap_or("?").to_string()
+            }
+        ),
     }
 }
 
@@ -1065,7 +1132,9 @@ fn prop_ipc_016_compose_save_ok_and_err() {
     }
 
     // Save Err
-    let fs_err = FsErrorDto { kind: "permission".to_string() };
+    let fs_err = FsErrorDto {
+        kind: "permission".to_string(),
+    };
     let err_state = compose_state_for_save_err("/v/n.md", "draft", fs_err);
     match err_state {
         EditingSessionStateDto::SaveFailed {
@@ -1097,7 +1166,7 @@ fn prop_ipc_016_compose_save_ok_and_err() {
 /// Sprint 4: signature is (note_id, Option<Vec<DtoBlock>>).
 #[test]
 fn prop_ipc_017_compose_select_past_note() {
-    use promptnotes_lib::editor::{parse_markdown_to_blocks};
+    use promptnotes_lib::editor::parse_markdown_to_blocks;
 
     // Non-empty body: parse to blocks, pass Some(blocks) → isNoteEmpty:false
     let blocks_non_empty = parse_markdown_to_blocks("# Hello").expect("parse must succeed");
@@ -1114,7 +1183,10 @@ fn prop_ipc_017_compose_select_past_note() {
             assert_eq!(current_note_id, "note-1");
             assert!(!is_note_empty, "non-empty blocks → isNoteEmpty:false");
             assert!(!is_dirty);
-            assert!(focused_block_id.is_some(), "focused_block_id must be Some for non-empty blocks");
+            assert!(
+                focused_block_id.is_some(),
+                "focused_block_id must be Some for non-empty blocks"
+            );
             assert_eq!(last_save_result, None);
             assert!(blocks.is_some(), "blocks must be Some for non-empty input");
         }
@@ -1187,7 +1259,9 @@ fn print_wire_fixtures() {
     // Determine output path relative to this test file's manifest directory.
     // CARGO_MANIFEST_DIR is set by cargo at test time.
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    let fixtures_dir = std::path::Path::new(manifest_dir).join("tests").join("fixtures");
+    let fixtures_dir = std::path::Path::new(manifest_dir)
+        .join("tests")
+        .join("fixtures");
     std::fs::create_dir_all(&fixtures_dir).expect("create fixtures dir");
     let out_path = fixtures_dir.join("wire-fixtures.json");
     std::fs::write(&out_path, &json).expect("write wire-fixtures.json");

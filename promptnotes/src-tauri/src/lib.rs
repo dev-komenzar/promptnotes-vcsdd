@@ -239,7 +239,7 @@ fn fs_list_markdown(path: String) -> Result<Vec<String>, VaultConfigErrorDto> {
         .flatten()
         .filter_map(|entry| {
             let file_path = entry.path();
-            if file_path.extension().map_or(false, |ext| ext == "md") {
+            if file_path.extension().is_some_and(|ext| ext == "md") {
                 file_path.to_str().map(|s| s.to_string())
             } else {
                 None

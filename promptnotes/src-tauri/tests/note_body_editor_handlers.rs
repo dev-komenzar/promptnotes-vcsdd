@@ -1,18 +1,17 @@
-/// note_body_editor_handlers.rs — Integration tests for note-body-editor feature.
-///
-/// Phase 2a (RED phase):
-///   PROP-006: isDirty reset on successful save
-///   PROP-007: isDirty preserved on failed save
-///   PROP-010: editing_session_state_changed event emission on isDirty transition
-///
-/// RED PHASE: These tests reference InMemoryNoteBody, NoteBodyStore, and
-/// editor_update_note_body which do NOT exist yet in promptnotes_lib::editor.
-/// Expected outcome: compilation FAILURE.
+//! note_body_editor_handlers.rs — Integration tests for note-body-editor feature.
+//!
+//! Phase 2a (RED phase):
+//!   PROP-006: isDirty reset on successful save
+//!   PROP-007: isDirty preserved on failed save
+//!   PROP-010: editing_session_state_changed event emission on isDirty transition
+//!
+//! RED PHASE: These tests reference InMemoryNoteBody, NoteBodyStore, and
+//! editor_update_note_body which do NOT exist yet in promptnotes_lib::editor.
+//! Expected outcome: compilation FAILURE.
 
 use promptnotes_lib::editor::{
-    EditingSessionStateDto, FsErrorDto, fs_write_file_atomic,
-    make_editing_state_changed_payload, compose_state_for_save_ok,
-    compose_state_for_save_err,
+    compose_state_for_save_err, compose_state_for_save_ok, fs_write_file_atomic,
+    make_editing_state_changed_payload, EditingSessionStateDto, FsErrorDto,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -21,14 +20,10 @@ use promptnotes_lib::editor::{
 // In Phase 2b, when these are added to promptnotes_lib::editor, compilation succeeds.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-use promptnotes_lib::editor::{
-    InMemoryNoteBody,
-    NoteBodyStore,
-    editor_update_note_body,
-    validate_no_control_chars,
-};
+use promptnotes_lib::editor::{validate_no_control_chars, InMemoryNoteBody, NoteBodyStore};
 
-use std::sync::{Arc, Mutex};
+#[allow(unused_imports)]
+use promptnotes_lib::editor::editor_update_note_body;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PROP-006: isDirty reset on successful save
@@ -73,8 +68,14 @@ fn prop006_is_dirty_resets_on_successful_save() {
     {
         let map = store.0.lock().unwrap();
         let entry = map.get(&note_id).expect("entry must exist");
-        assert!(!entry.is_dirty, "is_dirty must be false after successful save");
-        assert_eq!(entry.last_saved_body, body, "last_saved_body must match saved body");
+        assert!(
+            !entry.is_dirty,
+            "is_dirty must be false after successful save"
+        );
+        assert_eq!(
+            entry.last_saved_body, body,
+            "last_saved_body must match saved body"
+        );
         assert_eq!(entry.body, body, "body must match saved body");
     }
 
@@ -118,12 +119,21 @@ fn prop007_is_dirty_preserved_on_failed_save() {
         let entry = map.get(&note_id).expect("entry must exist");
 
         if write_result.is_err() {
-            assert!(entry.is_dirty, "is_dirty must remain true after failed save");
-            assert_eq!(entry.last_saved_body, "", "last_saved_body must not be updated on failure");
+            assert!(
+                entry.is_dirty,
+                "is_dirty must remain true after failed save"
+            );
+            assert_eq!(
+                entry.last_saved_body, "",
+                "last_saved_body must not be updated on failure"
+            );
         }
         // If save somehow succeeded (running as root), is_dirty should be false
         else {
-            assert!(!entry.is_dirty, "is_dirty must be false after successful save");
+            assert!(
+                !entry.is_dirty,
+                "is_dirty must be false after successful save"
+            );
         }
     }
 
@@ -161,14 +171,20 @@ fn prop007_is_dirty_preserved_after_failed_save_state_is_save_failed() {
     let json = serde_json::to_string(&payload).expect("serialize");
 
     // The state must reflect save-failed
-    assert!(json.contains("save-failed"), "must contain save-failed status");
+    assert!(
+        json.contains("save-failed"),
+        "must contain save-failed status"
+    );
     assert!(json.contains("disk-full"), "must contain error reason");
 
     // Store is_dirty must still be true
     {
         let map = store.0.lock().unwrap();
         let entry = map.get(&note_id).expect("entry must exist");
-        assert!(entry.is_dirty, "is_dirty must remain true after save failure event");
+        assert!(
+            entry.is_dirty,
+            "is_dirty must remain true after save failure event"
+        );
     }
 }
 
@@ -225,7 +241,7 @@ fn prop010_is_dirty_transition_false_to_true_emits_event() {
     let state = EditingSessionStateDto::Editing {
         current_note_id: "/vault/n.md".to_string(),
         focused_block_id: None,
-        is_dirty: true,       // The key assertion: first keystroke sets dirty
+        is_dirty: true, // The key assertion: first keystroke sets dirty
         is_note_empty: false,
         last_save_result: None,
         blocks: None,
@@ -295,8 +311,11 @@ fn prop010_no_event_on_redundant_dirty_transition() {
         entry.body = "second edit".to_string();
         // is_dirty stays true (was already true)
 
-        assert!(entry.is_dirty, "is_dirty must remain true on redundant update");
-        
+        assert!(
+            entry.is_dirty,
+            "is_dirty must remain true on redundant update"
+        );
+
         // In Phase 2b: also assert that no event was emitted
         // (requires event listener spy on AppHandle)
     }
@@ -316,11 +335,11 @@ fn prop001_validate_no_control_chars_integration_baseline() {
     assert!(result.is_ok(), "clean body must pass validation");
 
     // Body with NULL byte fails
-    let result = validate_no_control_chars(&format!("clean\0bad"));
+    let result = validate_no_control_chars("clean\0bad");
     assert!(result.is_err(), "body with NULL must be rejected");
 
     // Body with DELETE character fails
-    let result = validate_no_control_chars(&format!("text\x7f"));
+    let result = validate_no_control_chars("text\x7f");
     assert!(result.is_err(), "body with DEL must be rejected");
 
     // Tab, LF, CR are all permitted
@@ -344,7 +363,12 @@ fn prop015_validate_no_control_chars_no_false_positives() {
 
     for case in &valid_cases {
         let result = validate_no_control_chars(case);
-        assert!(result.is_ok(), "valid text must pass: {:?} → {:?}", case, result);
+        assert!(
+            result.is_ok(),
+            "valid text must pass: {:?} → {:?}",
+            case,
+            result
+        );
     }
 }
 

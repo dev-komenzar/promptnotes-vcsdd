@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-CONTRACT-006",
+  "severity": "medium",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "title": "Negotiated trade-offs §5 (clippy/fmt scope creep) が allowedScope を後付けで拡張しており、Sprint 5 のスコープ規律を弱める",
+  "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md:69",
+  "description": "Negotiated trade-offs §5 は『Phase 2c の clippy/fmt 厳格化のため editor.rs / editor_wire_sprint8.rs 等の既存 lint 違反箇所も style only で修正. 挙動変更ゼロ』と記述し、Sprint 5 の `artifactsTouched` (sprint-5.md:18) を `editor.rs, lib.rs, tests/` まで広げている. しかし: (a) この変更は本来 Sprint 5 のスコープ (REQ-FEED-028/029 の auto-create) と無関係, (b) CRIT-S5-006 が `cargo clippy --tests -- -D warnings exits 0` を passThreshold としているため、editor.rs 等の既存 lint 違反を Sprint 5 contract の合格条件に取り込んでしまっている, (c) 'style only' であることを binary-evaluable に検証する手段が contract にない (例: `git diff --stat editor.rs` の純テキスト変更のみ等のアサート). これは retroactive scope expansion. evidence/sprint-5-green-phase.log:69 が 'Existing clippy issues in editor.rs, domain/mod.rs, domain/vault/mod.rs, tests/ fixed' と明示しており、契約スコープ外の修正が gating 条件に紛れ込んでいる. canonical な VCSDD では scope discipline を維持し、無関係な lint 修正は別 sprint または別 PR にする.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+    "lineRange": "18 and 69",
+    "snippet": "artifactsTouched ... promptnotes/src-tauri/{editor.rs, lib.rs, tests/}: cargo fmt + clippy lint 対応 (Sprint 5 strict ゲートのため; 挙動変更なし)\n... 5. **scope creep許容**: ... editor.rs / editor_wire_sprint8.rs 等の既存 lint 違反箇所も style only で修正."
+  },
+  "remediation": "(a) artifactsTouched から `editor.rs, lib.rs, tests/` を除外し、別 bd タスク (例えば 'tech-debt: clippy strict mode migration') として切り出す, または (b) 残すなら 'style only' の binary-evaluable check (例: `git diff editor.rs` に対する `cargo expand` 出力 hash の不変性, あるいは behavior test suite が editor 関連で variance ゼロ) を CRIT-S5-006 passThreshold に追加する. 現状は契約レビューで gating を弱めている."
+}

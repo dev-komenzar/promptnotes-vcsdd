@@ -1,0 +1,33 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "1c",
+  "sprint": 5,
+  "iteration": 2,
+  "reviewType": "spec",
+  "mode": "strict",
+  "timestamp": "2026-05-13T04:35:00.000Z",
+  "priorIteration": {
+    "iteration": 1,
+    "verdict": "FAIL",
+    "severityCounts": {"critical": 0, "high": 3, "medium": 8, "low": 0},
+    "findingsResolved": [
+      "FIND-S5-SPEC-001", "FIND-S5-SPEC-002", "FIND-S5-SPEC-003",
+      "FIND-S5-SPEC-004", "FIND-S5-SPEC-005", "FIND-S5-SPEC-006",
+      "FIND-S5-SPEC-007", "FIND-S5-SPEC-008", "FIND-S5-SPEC-009",
+      "FIND-S5-SPEC-010", "FIND-S5-SPEC-011"
+    ]
+  },
+  "scope": {
+    "sprintRationale": "TS initialize-capture.ts ロジックを Rust feed_initial_state に統合し、初回マウント時点で 1 件の空ノートが editing 状態として可視化される。iter-1 で指摘された 11 findings 全件解消の rework が完了。",
+    "bdTasksCovered": ["PN-2r3", "PN-5im", "PN-knv"],
+    "scopeIsAdditive": true,
+    "iter2Changes": "behavioral-spec.md: 996 → 1055 行 (+59) / verification-architecture.md: 744 → 761 行 (+17)。各 finding に Resolution ブロックを追加し、対応する spec text を修正。"
+  },
+  "artifactsToReview": [
+    ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md"
+  ],
+  "reviewDimensions": ["spec_fidelity", "verification_readiness"],
+  "freshContext": true,
+  "reviewGuidance": "iter-1 findings の Resolution が spec text として well-formed か検証する。再発 / 解消不足 / 副作用的に新たな矛盾を発生させた箇所があれば新規 finding として記録。iter-1 で raised された懸念以外の領域 (Sprint 4 既存 REQ との連動) も総点検する。"
+}

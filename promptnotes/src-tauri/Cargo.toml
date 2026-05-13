@@ -31,4 +31,8 @@ promptnotes_domain = { path = "../../docs/domain/code/rust" }
 # Property-based testing for VCSDD Tier 1 proof obligations
 # (e.g., next_available_note_id purity / collision avoidance).
 proptest = "1"
+# Temporary directory creation for integration tests (Sprint 5 vault isolation).
+tempfile = "3"
+# Regular expression matching for NoteId format assertions (Sprint 5 PROP-FEED-S5-003).
+regex = "1"
 

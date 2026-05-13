@@ -1,0 +1,191 @@
+{
+  "feature": "ui-feed-list-actions",
+  "phase": "3",
+  "sprint": 5,
+  "iteration": 1,
+  "timestamp": "2026-05-13T08:00:00.000Z",
+  "reviewContext": {
+    "reviewType": "implementation",
+    "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+    "contractDigest": "d24322f0a07c7046a0ce03d54b5645bfdab3cbf4257b5f2962a8122447ced771",
+    "freshContext": true,
+    "mode": "strict"
+  },
+  "contractCriteriaAudit": {
+    "CRIT-S5-001": "PASS",
+    "CRIT-S5-002": "PASS",
+    "CRIT-S5-003": "PASS",
+    "CRIT-S5-004": "PASS",
+    "CRIT-S5-005": "PASS",
+    "CRIT-S5-006": "PASS",
+    "CRIT-S5-007": "PASS"
+  },
+  "dimensions": {
+    "spec_fidelity": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "504-517",
+          "description": "next_available_note_id pure pub fn: base = format_base_id(now_ms); if !existing.contains(&base) return base; loop -N until non-collision."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "530-578",
+          "description": "compose_initial_snapshot_with_autocreate constructs existing_ids from lowercase stems, prepends new_id to visible_note_ids, inserts new metadata, sets editing.status=editing, current_note_id=Some(new_id), pending_next_focus=None, cause=InitialLoad."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "589-607",
+          "description": "feed_initial_state validates vault_path (read_dir → map_err), calls scan_vault_feed, reads SystemTime::now() into now_ms, delegates to compose_initial_snapshot_with_autocreate. EARS first-call discipline is delegated to +page.svelte per spec Resolution FIND-S5-SPEC-003 (line 920)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src/lib/feed/feedReducer.ts",
+          "lineRange": "57-61",
+          "description": "DomainSnapshotReceived mirrors editing.status → editingStatus, editing.currentNoteId → editingNoteId, editing.pendingNextFocus → pendingNextFocus (REQ-FEED-029)."
+        },
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-green-phase.log",
+          "description": "All 8 Sprint 5 cargo tests + 4 TS feedReducer.sprint5 tests PASS; CRIT-S5-001 / CRIT-S5-004 / CRIT-S5-007 named tests confirmed in log lines 17-44."
+        }
+      ]
+    },
+    "edge_case_coverage": {
+      "verdict": "PASS",
+      "findings": ["FIND-S5-IMPL-001"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
+          "lineRange": "1266-1404",
+          "description": "Three vault-scan-semantics edge-case tests: dot-file exclusion (test_feed_initial_state_excludes_dot_md_files), symlink exclusion (test_feed_initial_state_excludes_symlink_md_files #[cfg(unix)]), non-recursive scan (test_feed_initial_state_ignores_subdirectory_md_files)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
+          "lineRange": "1031-1140",
+          "description": "Empty-vault + existing-one-note edge cases tested (test_feed_initial_state_empty_vault_auto_create, test_feed_initial_state_existing_one_note_prepends_new)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
+          "lineRange": "966-995",
+          "description": "Collision -1 and -2 suffix edge cases tested via fixed Clock (test_next_available_note_id_collision_suffix)."
+        }
+      ]
+    },
+    "implementation_correctness": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "456-492",
+          "description": "format_base_id uses Hinnant Z algorithm — pure, deterministic, no SystemTime/fs/RNG. Algorithm traced for now_ms=0 → '1970-01-01-000000-000' and now_ms=1577836800000 → '2020-01-01-000000-000', matching TS formatBaseId (initialize-capture.ts:112-126) which uses new Date().getUTC*()."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "504-517",
+          "description": "next_available_note_id: no SystemTime/fs/RNG/println; takes &HashSet<String> by reference; termination bound is existing.len()+1 iterations (proven by spec PROP-FEED-S5-002)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "404-421",
+          "description": "scan_vault_feed Sprint 5 semantics: dot-file filter (line 408-414), file_type().is_file() symlink/dir filter (line 416), case-insensitive .md extension via eq_ignore_ascii_case (line 421). All 3 grep patterns from CRIT-S5-005 confirmed: one hit each."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "46-52",
+          "description": "EditingSubDto carries pending_next_focus: Option<PendingNextFocusDto> (NOT pending_next_note_id). PendingNextFocusDto defined in editor.rs:47-53 with note_id + block_id fields."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "271-296",
+          "description": "Sprint 4 compose_select_past_note path intact: parse_markdown_to_blocks + compose_state_for_select_past_note unchanged; Sprint 5 code added without disturbing this code path. Regression covered by prop_s4_017 and the 7 PROP-FEED-S4-* tests passing in green log."
+        }
+      ]
+    },
+    "structural_integrity": {
+      "verdict": "PASS",
+      "findings": [],
+      "evidence": [
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-green-phase.log",
+          "lineRange": "1-8",
+          "description": "Quality gate summary: cargo-test-feed-handlers=27, bun-test=1813, cargo-clippy=0 warnings (-D warnings), cargo-fmt=diff 0."
+        },
+        {
+          "type": "test-output",
+          "location": ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-contract-fix.log",
+          "lineRange": "82-97",
+          "description": "Post-fix totals: cargo 160 PASS (80 unit + 18 editor + 22 note_body_editor + 30 feed_handlers + 10 note_body_editor_handlers), bun 1813 PASS, clippy/fmt clean."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/src/feed.rs",
+          "lineRange": "519-607",
+          "description": "Clean structural separation: compose_initial_snapshot_with_autocreate (pure orchestration), feed_initial_state (effectful shell). Matches contract CRIT-S5-007 grep requirement."
+        }
+      ]
+    },
+    "verification_readiness": {
+      "verdict": "PASS",
+      "findings": ["FIND-S5-IMPL-002"],
+      "evidence": [
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
+          "lineRange": "1003-1019",
+          "description": "test_next_available_note_id_non_collision_property uses proptest macro with strategies now_ms ∈ 0i64..253_402_300_800_000i64 (per PROP-FEED-S5-003 domain) and existing in hash_set('[a-zA-Z0-9\\-]{1,40}', 0..=1023) (per PROP-FEED-S5-002 |existing|<1024 bound)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
+          "lineRange": "942-959",
+          "description": "test_next_available_note_id_format uses regex ^\\d{4}-\\d{2}-\\d{2}-\\d{6}-\\d{3}$ — matches TS canonical format (initialize-capture.ts:125 backtick template)."
+        },
+        {
+          "type": "file",
+          "location": "promptnotes/src-tauri/tests/feed_handlers.rs",
+          "lineRange": "1207-1255",
+          "description": "test_next_available_note_id_ts_parity_snapshot covers all 4 named cases: base (2020-01-01 00:00:00), -1 collision, -10 collision, Unix epoch (now_ms=0 → 1970-01-01-000000-000). Expected values traced manually against TS formatBaseId via new Date(epochMillis).getUTC*()."
+        }
+      ]
+    }
+  },
+  "overallVerdict": "PASS",
+  "reviewer": "adversary",
+  "freshContext": true,
+  "severityCounts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2
+  },
+  "convergenceSignals": {
+    "findingCount": 2,
+    "allCriteriaEvaluated": true,
+    "evaluatedCriteria": [
+      "CRIT-S5-001",
+      "CRIT-S5-002",
+      "CRIT-S5-003",
+      "CRIT-S5-004",
+      "CRIT-S5-005",
+      "CRIT-S5-006",
+      "CRIT-S5-007"
+    ],
+    "duplicateFindings": []
+  }
+}

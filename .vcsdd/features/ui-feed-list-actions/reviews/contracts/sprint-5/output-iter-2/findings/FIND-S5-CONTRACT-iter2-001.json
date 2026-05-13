@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-CONTRACT-iter2-001",
+  "severity": "low",
+  "dimension": "structural_integrity",
+  "category": "spec_gap",
+  "title": "styleOnlyRefactorFootprint の 2 パスが存在しない (src/editor_wire_sprint8.rs / src/note_body_editor_handlers.rs は tests/ 配下)",
+  "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md:20-22",
+  "description": "styleOnlyRefactorFootprint セクションに以下 2 パスが列挙されている:\n  - `promptnotes/src-tauri/src/editor_wire_sprint8.rs`\n  - `promptnotes/src-tauri/src/note_body_editor_handlers.rs`\nしかし実ファイル系の確認では `src/` 配下にこれらは存在せず、それぞれ `promptnotes/src-tauri/tests/editor_wire_sprint8.rs` および `promptnotes/src-tauri/tests/note_body_editor_handlers.rs` として `tests/` 配下に置かれている (cargo integration test ファイル)。\n\nこの styleOnlyRefactorFootprint セクションは FIND-S5-CONTRACT-006 の resolution として artifactsTouched から style-only スコープを分離するために新設されたセクションであり、列挙されたパスの正確性がそのまま section の binary-evaluability に直結する。Phase 3 reviewer が `git diff promptnotes/src-tauri/src/editor_wire_sprint8.rs` を実行すると 'No such file or directory' で返るため、'behavior change zero' を path-by-path で機械的に確認する手順が壊れる。\n\n影響範囲:\n- 同セクションの 19/21 行目 (editor.rs / lib.rs) は正しいパス\n- 23 行目 'promptnotes/src-tauri/tests/: cargo fmt 対応' エントリが tests/ 配下を包括的にカバーするため、削除しても styleOnlyRefactorFootprint の意図は維持される\n- CRIT-S5-001..007 の passThreshold はいずれも styleOnlyRefactorFootprint に依存しないため、Sprint 5 ゲート評価そのものはブロックされない\n\nしたがって severity は low (cosmetic / documentation accuracy)。ただし FIND-S5-CONTRACT-006 を真に解消するには path 正確性が必要。",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+    "lineRange": "20-22",
+    "snippet": "  - promptnotes/src-tauri/src/editor_wire_sprint8.rs: cargo fmt + clippy lint 対応 (挙動変更なし)\n  - promptnotes/src-tauri/src/lib.rs: cargo fmt + clippy lint 対応 (挙動変更なし)\n  - promptnotes/src-tauri/src/note_body_editor_handlers.rs: cargo fmt + clippy lint 対応 (挙動変更なし)"
+  },
+  "remediation": "styleOnlyRefactorFootprint の 2 行を次のいずれかで修正する:\n  (a) `src/editor_wire_sprint8.rs` → `tests/editor_wire_sprint8.rs`、`src/note_body_editor_handlers.rs` → `tests/note_body_editor_handlers.rs` に書き換える、または\n  (b) 既存の `promptnotes/src-tauri/tests/: cargo fmt 対応` エントリで包括されているので、個別エントリ自体を削除する。\nどちらの修正でも実装/テスト/Sprint 5 ゲートに影響はない。"
+}

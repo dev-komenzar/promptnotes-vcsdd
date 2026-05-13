@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-CONTRACT-003",
+  "severity": "high",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "title": "Vault Scan Semantics の dot-file 除外 / symlink 非 follow が contract criteria でカバーされていない",
+  "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md:41-44",
+  "description": "behavioral-spec.md:922-931 の Vault Scan Semantics は 5 項目を spec している: (1) 拡張子 case-insensitive, (2) 非再帰, (3) dot-file 除外, (4) symlink 非 follow, (5) lowercase stem collision namespace. CRIT-S5-005 の passThreshold は (1) と (5) のみを binary-evaluable にしている (`eq_ignore_ascii_case('md')` の grep + collision check の lowercase stem 動作). (3) dot-file 除外と (4) symlink 非 follow は passThreshold に明記されておらず、これらを検証するテストも feed_handlers.rs には存在しない. 実装 (feed.rs:404-429) を読むと、`scan_vault_feed` は dot-file をフィルタしておらず、`DirEntry::file_type().is_file()` も呼んでいない. つまり `.foo.md` ファイルが vault にあれば visible_note_ids に含まれてしまうし、`.md` 拡張子のディレクトリ (`mydir.md/`) が `read_to_string` で失敗して silently skip されるのみで、symlink については OS 依存挙動になる. 契約が spec を緩めて gating している.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "394-432",
+    "snippet": "for entry in read_dir.flatten() { let file_path = entry.path(); if file_path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case(\"md\")) { ... } } — no dot-file filter, no file_type() check"
+  },
+  "remediation": "CRIT-S5-005 passThreshold に少なくとも以下のテストを必須化する: (a) `.foo.md` という dot-file を seed した vault で feed_initial_state を呼び、`visible_note_ids` に `.foo.md` が含まれないこと, (b) `mydir.md/` というディレクトリを seed した vault で同じく除外されること, (c) symlink を seed した vault で is_file() で除外されること (Linux/macOS では tempfile + std::os::unix::fs::symlink で可能). spec の Resolution (FIND-S5-SPEC-011) を契約が裏切らないようにする."
+}

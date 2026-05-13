@@ -1,0 +1,69 @@
+target-feature-tests: PASS
+regression-baseline: PASS
+sprint: 5
+phase: 2c
+cargo-test-feed-handlers: 27 passed (19 prior + 8 new)
+bun-test: 1813 pass
+cargo-clippy: 0 warnings (with -D warnings)
+cargo-fmt: diff 0
+
+---raw output---
+
+=== cargo test --test feed_handlers ===
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running tests/feed_handlers.rs (target/debug/deps/feed_handlers-084bc50ff2f8651c)
+
+running 27 tests
+test fs_trash_file_impl_nonexistent_returns_ok ... ok
+test fs_trash_file_impl_existing_file_returns_ok ... ok
+test prop_s4_002_compose_with_empty_blocks_vec_is_note_empty_true ... ok
+test prop_s4_012_payload_chain_no_body_field ... ok
+test prop_s4_001_compose_with_blocks_populates_focused_block_id ... ok
+test prop_s4_010_feed_domain_snapshot_pending_next_focus_round_trip ... ok
+test prop_s4_005_editing_sub_dto_has_pending_next_focus_field ... ok
+test prop_s4_016_parse_markdown_to_blocks_basic_cases ... ok
+test prop_s4_014_payload_chain_none_blocks_gives_null_focused_and_empty ... ok
+test prop_s4_003_compose_with_none_blocks_gives_empty_state ... ok
+test prop_s4_013_payload_chain_focused_block_id_matches_first_block ... ok
+test prop_s4_016b_canonical_two_block_snapshot ... ok
+test test_next_available_note_id_collision_suffix ... ok
+test test_next_available_note_id_deterministic ... ok
+test test_feed_initial_state_empty_vault_auto_create ... ok
+test test_next_available_note_id_ts_parity_snapshot ... ok
+test test_feed_initial_state_no_md_file_created_with_auto_create ... ok
+test prop_s4_017_compose_select_past_note_returns_well_formed_result ... ok
+test test_select_past_note_nonexistent_body_is_empty ... ok
+test trash_error_dto_serializes_permission_kind ... ok
+test trash_error_dto_serializes_unknown_kind_no_detail ... ok
+test trash_error_dto_serializes_unknown_kind_with_detail ... ok
+test test_select_past_note_editing_payload_contains_body ... ok
+test test_select_past_note_emits_editing_session_state_changed ... ok
+test test_next_available_note_id_format ... ok
+test test_feed_initial_state_existing_one_note_prepends_new ... ok
+test test_next_available_note_id_non_collision_property ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.33s
+
+=== bun test ===
+ 1813 pass
+ 4 skip
+ 4 todo
+ 0 fail
+ 32141 expect() calls
+Ran 1821 tests across 155 files. [14.06s]
+
+=== cargo clippy --tests -- -D warnings ===
+    Checking promptnotes v0.1.0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
+(no warnings)
+
+=== cargo fmt --check ===
+(no diff — exit 0)
+
+=== Phase 2c Refactor summary ===
+- format_base_id: private fn (not pub), pure UNIX epoch decomposition using Z algorithm
+- next_available_note_id: pub (required by test) — pure, deterministic
+- compose_initial_snapshot_with_autocreate: pure fn extracted from feed_initial_state
+- feed_initial_state: thin effectful shell (SystemTime + scan_vault_feed + delegate to pure fn)
+- Existing clippy issues in editor.rs, domain/mod.rs, domain/vault/mod.rs, tests/ fixed
+- scan_vault_feed: ext check migrated to eq_ignore_ascii_case per spec (case-insensitive .md)

@@ -1,0 +1,58 @@
+{
+  "reviewType": "contract",
+  "featureName": "ui-feed-list-actions",
+  "sprintNumber": 5,
+  "negotiationRound": 2,
+  "iteration": 3,
+  "mode": "strict",
+  "timestamp": "2026-05-13T07:00:00.000Z",
+  "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+  "contractDigest": "d24322f0a07c7046a0ce03d54b5645bfdab3cbf4257b5f2962a8122447ced771",
+  "priorIteration": {
+    "iteration": 2,
+    "negotiationRound": 1,
+    "verdict": "FAIL",
+    "severityCounts": {"critical": 0, "high": 3, "medium": 3, "low": 0},
+    "findingsResolved": [
+      "FIND-S5-CONTRACT-001 (CodeMirror mount / focus AC partial gating)",
+      "FIND-S5-CONTRACT-002 (feedReducer test assertions claim/reality mismatch)",
+      "FIND-S5-CONTRACT-003 (Vault Scan Semantics edge case coverage)",
+      "FIND-S5-CONTRACT-004 (scan_vault_feed implementation bug — dot-file + symlink)",
+      "FIND-S5-CONTRACT-005 ('atomic insertion' claim unverifiable)",
+      "FIND-S5-CONTRACT-006 (scope creep into editor.rs and unrelated files)"
+    ]
+  },
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+      ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src-tauri/tests/feed_handlers.rs",
+      "promptnotes/src/lib/feed/__tests__/feedReducer.sprint5.test.ts"
+    ],
+    "source": [
+      "promptnotes/src-tauri/src/feed.rs"
+    ]
+  },
+  "evidenceArtifacts": [
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-red-phase.log",
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-green-phase.log",
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-contract-fix.log"
+  ],
+  "iter2Changes": {
+    "implementation": "feed.rs:406-418 に dot-file + symlink/非regular-file フィルタを追加",
+    "tests": "feed_handlers.rs に 3 件追加 (dot-file / symlink / subdirectory exclusion)",
+    "vitest": "feedReducer.sprint5.test.ts に pendingNextFocus / editingNoteId===visibleNoteIds[0] アサーションを追加",
+    "contractRevisions": "CRIT-S5-004/005/006/007 改訂、styleOnlyRefactorFootprint セクション分離、negotiationRound 2、Trade-off §1 拡張"
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "freshContext": true,
+  "guidance": "iter-1 で raised された 6 findings の resolution が contract document として well-formed か (passThreshold が binary-evaluable か、claim と実テスト内容が一致するか、scope 分離が誠実か) を検証する。Sprint 5 機能スコープと style-only scope creep を分離する `styleOnlyRefactorFootprint` セクションを妥当性審査する。"
+}

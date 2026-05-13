@@ -1,0 +1,57 @@
+{
+  "reviewType": "implementation",
+  "featureName": "ui-feed-list-actions",
+  "sprintNumber": 5,
+  "iteration": 1,
+  "mode": "strict",
+  "timestamp": "2026-05-13T07:30:00.000Z",
+  "contractPath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+  "contractDigest": "d24322f0a07c7046a0ce03d54b5645bfdab3cbf4257b5f2962a8122447ced771",
+  "contractReviewVerdict": {
+    "iteration": 3,
+    "negotiationRound": 2,
+    "overallVerdict": "PASS",
+    "verdictPath": ".vcsdd/features/ui-feed-list-actions/reviews/contracts/sprint-5/output-iter-2/verdict.json"
+  },
+  "scope": {
+    "sprintRationale": "Sprint 5 — feed_initial_state auto-create. TS initialize-capture.ts ロジックを Rust に移植。AppShell マウント時に 1 件の空ノートが editing 状態で可視化される。PN-2r3 / PN-5im / PN-knv 一括カバー。",
+    "bdTasksCovered": ["PN-2r3", "PN-5im", "PN-knv"],
+    "newRequirements": ["REQ-FEED-028", "REQ-FEED-029"],
+    "amendments": ["EC-FEED-016 Sprint 5", "REQ-FEED-022 Sprint 5"],
+    "newProofObligations": ["PROP-FEED-S5-001", "PROP-FEED-S5-002", "PROP-FEED-S5-003", "PROP-FEED-S5-004", "PROP-FEED-S5-005"]
+  },
+  "artifactsToReview": {
+    "spec": [
+      ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+      ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md"
+    ],
+    "tests": [
+      "promptnotes/src-tauri/tests/feed_handlers.rs",
+      "promptnotes/src/lib/feed/__tests__/feedReducer.sprint5.test.ts"
+    ],
+    "source": [
+      "promptnotes/src-tauri/src/feed.rs",
+      "promptnotes/src-tauri/src/editor.rs",
+      "promptnotes/src/lib/feed/feedReducer.ts"
+    ]
+  },
+  "evidenceArtifacts": [
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-red-phase.log",
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-green-phase.log",
+    ".vcsdd/features/ui-feed-list-actions/evidence/sprint-5-contract-fix.log"
+  ],
+  "testBaseline": {
+    "cargo": "160 PASS (157 prior + 3 vault-scan-semantics)",
+    "bun": "1813 PASS",
+    "clippy": "0 warnings (--tests -D warnings)",
+    "fmt": "clean (--check exits 0)"
+  },
+  "reviewDimensions": [
+    "spec_fidelity",
+    "edge_case_coverage",
+    "implementation_correctness",
+    "structural_integrity",
+    "verification_readiness"
+  ],
+  "freshContext": true
+}

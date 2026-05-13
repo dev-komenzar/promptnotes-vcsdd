@@ -1,0 +1,55 @@
+Sprint 5 Security Audit — cargo audit output
+Feature: ui-feed-list-actions
+Date: 2026-05-13
+Working directory: promptnotes/src-tauri/
+
+--- Tool availability ---
+
+cargo-audit: NOT INSTALLED
+  Install: cargo install cargo-audit
+  Degradation: cargo-audit not available; security audit performed via alternative checks (grep, clippy, dependency review).
+
+--- Alternative security checks performed ---
+
+1. unsafe block count (grep -c "unsafe" src/feed.rs):
+   Result: 0
+   Verdict: CLEAN — zero unsafe blocks in production feed.rs
+
+2. panic/unwrap patterns in production code (grep -nE "\.unwrap\(\)|panic!|todo!|unimplemented!" src/feed.rs):
+   Result: 0 hits in production code paths
+   Note: Test code within #[cfg(test)] and integration tests uses .unwrap() and .expect() as test assertions — acceptable per policy.
+   Verdict: CLEAN — zero panic vectors in production paths
+
+3. cargo clippy --tests -- -D warnings:
+   Output: Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.22s
+   Verdict: CLEAN — 0 warnings
+
+4. cargo fmt --check:
+   Output: (no output = clean)
+   Verdict: CLEAN — code is properly formatted
+
+5. IPC safety analysis (vault_path path traversal):
+   feed_initial_state receives vault_path: String, passes to Path::new(&vault_path) -> std::fs::read_dir().
+   scan_vault_feed receives vault_path: &str, passes to Path::new(vault_path) -> std::fs::read_dir().
+   No path sanitization against relative paths (../) or absolute path injection.
+   RISK (existing, known): vault_path is supplied by the Tauri frontend via invoke(); Tauri's IPC sandbox
+   restricts which commands can be called, but vault_path content itself is not validated on the Rust side.
+   A malicious vault_path such as "../../etc" could cause read_dir to list arbitrary directories.
+   MITIGATION (noted): This is a desktop-app trust boundary; the frontend supplies vault_path from
+   app settings (user-chosen directory). Not an active attack vector in the current threat model.
+   This risk was present in prior sprints and is unchanged. No new vulnerability introduced by Sprint 5.
+   CLASSIFICATION: residual risk, pre-existing, acknowledged.
+
+6. Dependency review (Cargo.toml [dev-dependencies]):
+   proptest = "1"  — property testing framework, no known CVEs
+   tempfile = "3"  — temporary file creation, no known CVEs
+   regex = "1"     — regex engine, no known CVEs
+   Note: cargo-audit not installed; this review is manual/grep-based.
+
+--- Verdict ---
+cargo-audit: DEGRADED (not installed; alternative checks performed)
+unsafe blocks: 0 (CLEAN)
+panic/unwrap in production code: 0 (CLEAN)
+clippy -D warnings: 0 warnings (CLEAN)
+cargo fmt: CLEAN
+IPC path traversal: residual risk, pre-existing, no new exposure in Sprint 5

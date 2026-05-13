@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-CONTRACT-005",
+  "severity": "medium",
+  "dimension": "implementation_correctness",
+  "category": "test_quality",
+  "title": "CRIT-S5-007 passThreshold が atomicity を verify するテストを要求しない (Phase 3 で半実装を pass させうる)",
+  "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md:50-54",
+  "description": "CRIT-S5-007 description は 'feed_initial_state 実装が note_metadata.insert(new_id, ...) を visible_note_ids prepend と原子的に行う' と書いている. 'atomicity' を強い文言で要求しているが、passThreshold は 'cargo test test_feed_initial_state_*_auto_create 全 PASS' のみ. atomicity の原子性 (片方だけ書き込んで panic する race condition がない) は単純な PASS テストでは検証不可能である. 既存テスト `test_feed_initial_state_no_md_file_created_with_auto_create` は note_metadata.contains_key(new_id) と editing.current_note_id == Some(new_id) を別々に assert するが、'もし片方が失敗した場合の挙動' を gate していない. Sprint 5 は単一スレッドなので実用上は問題ないが、契約が約束する 'atomicity' は実テストでは保証されていない. これは契約の言葉が実態より強い (overpromise) パターン.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/feed_handlers.rs",
+    "lineRange": "1155-1190",
+    "snippet": "assert_eq!(before_count, after_count, ...);\nlet new_id = snap.editing.current_note_id.expect(...);\nassert!(snap.note_metadata.contains_key(&new_id), ...);"
+  },
+  "remediation": "passThreshold の description から 'atomic' を削除し、'note_metadata に new_id が必ず含まれかつ editing.current_note_id == Some(new_id) かつ visible_note_ids[0] == new_id が同時に成立する' に変更する. 'atomicity' が必要なら独立した invariant test (panic injection / partial-write simulation) を追加する."
+}

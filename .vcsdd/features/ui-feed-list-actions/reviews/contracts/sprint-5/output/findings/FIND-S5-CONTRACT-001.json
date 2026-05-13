@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-CONTRACT-001",
+  "severity": "high",
+  "dimension": "spec_fidelity",
+  "category": "spec_gap",
+  "title": "CRIT-S5-004 passThreshold は REQ-FEED-029 の核心 AC をテストでカバーできていない",
+  "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md:35-39",
+  "description": "REQ-FEED-029 (behavioral-spec.md:998-1001) の Acceptance Criteria は 3 項目: (1) FeedRow の `{#if editingNoteId === noteId}` 条件が真となり CodeMirror がマウントされる (Svelte integration test 指定), (2) CodeMirror エディタにフォーカスが当たる (`document.activeElement` 検証), (3) `+page.svelte` が `feed_initial_state` を呼ぶのは mount 時の 1 回のみ (re-render で再呼出しされない). CRIT-S5-004 の passThreshold は `feedReducer.sprint5.test.ts` の 4 ユニットテストのみで、(2) のフォーカス検証も (3) の `+page.svelte` 単一呼出し保証も含まれない. つまり Phase 3 で 4 テスト PASS だけで CRIT-S5-004 が合格しても、CodeMirror が実際にマウントされるか、フォーカスが当たるか、re-render で `feed_initial_state` が再呼出しされないか、はどれも検証されない. これは spec が要求するゲートを契約が緩めている.",
+  "evidence": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md",
+    "lineRange": "35-39",
+    "snippet": "passThreshold: vitest feedReducer.sprint5.test.ts — 4 tests PASS (editingNoteId mirror / visibleNoteIds[0] == editingNoteId / cause.kind InitialLoad maintained / pendingNextFocus null)"
+  },
+  "remediation": "CRIT-S5-004 を 2 つに分割するか、passThreshold に Svelte component test (`+page.svelte` + `FeedRow.svelte` のマウント時 1 回呼出し + CodeMirror focus 確認) を追加する. それらが Sprint 5 では deferred なら、Negotiated trade-offs に明示し、REQ-FEED-029 の AC のうち 2/3 を後続 sprint へ deferral する旨を記述する. 現状の契約は spec AC をテストレベルで強制していない."
+}

@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-S5-IMPL-002",
+  "dimension": "verification_readiness",
+  "category": "test_quality",
+  "severity": "low",
+  "description": "PROP-FEED-S5-005 case (a) is labelled in verification-architecture.md:710 as '基底ケース (衝突なし・一桁時刻フィールド)' — the discriminating attribute of case (a) is supposed to be a single-digit time field that exercises the pad2/pad3 zero-padding behavior of format_base_id / TS formatBaseId. However, the chosen now_ms = 1_577_836_800_000 corresponds to 2020-01-01 00:00:00.000 UTC, where the hour, minute, second, and millisecond fields are all 0 and therefore pad to '00' / '000' via the same code path as any zero-valued field. A genuine single-digit-time-field probe would use, e.g., now_ms = 1_577_869_625_023 (2020-01-01 09:07:05.023 UTC) so that h=9, m=7, s=5, ms=23 would each exercise distinct two-digit padding outcomes ('09', '07', '05', '023'). The current case (a) does not differentiate format_base_id's pad behavior from the trivial all-zero case. Because Rust's format! macro {:02} / {:03} and TS String.padStart(2,'0') / padStart(3,'0') are both standard and well-tested in their respective stdlibs, the risk of a parity divergence in single-digit padding is genuinely low, but the spec explicitly called for this discriminator and the test does not deliver on it. Severity is LOW because the parity gate is still useful (the other 3 cases cover Unix epoch, -1, -10), and the contract CRIT-S5-003 passThreshold says 'PASS (4 cases)' without naming case (a)'s discriminator specifically. Recommended action: in Sprint 6+ or as tech-debt, add a 5th parity case with a fully-mixed h/m/s/ms time to actually exercise the pad2/pad3 padding boundary; or replace case (a)'s now_ms with one producing single-digit time fields.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/tests/feed_handlers.rs",
+    "lineRange": "1210-1219",
+    "snippet": "// ── Case (a): base case — no collision ────────────────────────────────────\nlet now_2020: i64 = 1_577_836_800_000; // 2020-01-01 00:00:00.000 UTC\nlet existing_empty: HashSet<String> = HashSet::new();\n\nlet id_a = promptnotes_lib::feed::next_available_note_id(now_2020, &existing_empty);\nassert_eq!(\n    id_a, \"2020-01-01-000000-000\",\n    \"base case: expected '2020-01-01-000000-000', got '{}'\",\n    id_a\n);"
+  },
+  "specReference": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/verification-architecture.md",
+    "lineRange": "710",
+    "quote": "(a) 基底ケース (衝突なし・一桁時刻フィールド), (b) 衝突 -1 suffix, (c) 衝突 -10 suffix, (d) UTC エッジ: now_ms == 0 (Unix epoch)"
+  },
+  "routeToPhase": "deferred",
+  "blocking": false,
+  "remediationSuggestion": "Either change case (a)'s now_ms to a value such as 1_577_869_625_023 (2020-01-01 09:07:05.023 UTC) with expected output '2020-01-01-090705-023', or add a 5th case explicitly named 'single-digit-time-field' alongside the existing 4. Both approaches honor the spec's intent that case (a) discriminates pad2/pad3 padding behavior between TS String.padStart and Rust format!({:02}/{:03})."
+}

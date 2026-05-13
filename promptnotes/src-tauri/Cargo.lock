@@ -2781,11 +2781,13 @@ version = "0.1.0"
 dependencies = [
  "promptnotes_domain",
  "proptest",
+ "regex",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+ "tempfile",
 ]
 
 [[package]]

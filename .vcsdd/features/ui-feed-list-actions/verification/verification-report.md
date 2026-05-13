@@ -127,3 +127,101 @@ Coverage via `bun run test:dom -- --coverage` (DOM-only, undercounts pure module
 - Type check: PASS (0 feed production errors)
 - Coverage: 94-100% lines (pure modules via bun test), below threshold on vitest DOM-only path (toolchain split)
 - Phase 5 gate: PASS
+
+---
+
+## Sprint 5 Verification
+
+### Feature: ui-feed-list-actions | Sprint: 5 | Date: 2026-05-13
+
+### Tools used
+
+- cargo test (with proptest) — Sprint 5 proof obligations
+- cargo audit — NOT INSTALLED; degraded to alternative checks (grep, clippy, manual dep review)
+- cargo clippy --tests -- -D warnings — production-grade lint
+- cargo fmt --check — style
+- grep-based purity audit — boundary verification
+
+### Proof Obligations
+
+| ID | Tier | Required | Status | Tool | Evidence |
+|----|------|----------|--------|------|---------|
+| PROP-FEED-S5-001 | 2 | true | proved | cargo test (determinism) | tests/feed_handlers.rs::test_next_available_note_id_deterministic |
+| PROP-FEED-S5-002 | 2 | true | proved | cargo test + proptest | tests/feed_handlers.rs::test_next_available_note_id_non_collision_property |
+| PROP-FEED-S5-003 | 2 | true | proved | cargo test + regex | tests/feed_handlers.rs::test_next_available_note_id_format |
+| PROP-FEED-S5-004 | 1 | true | proved | cargo test (4 invariants + 2 edge cases) | tests/feed_handlers.rs::test_feed_initial_state_{empty_vault,existing_one_note,no_md_file,excludes_dot,excludes_symlink,ignores_subdir} |
+| PROP-FEED-S5-005 | 1 | true | proved | cargo test (4 named snapshot cases) | tests/feed_handlers.rs::test_next_available_note_id_ts_parity_snapshot |
+
+### Results
+
+#### PROP-FEED-S5-001: next_available_note_id determinism
+- **Tool**: cargo test
+- **Command**: `cargo test --test feed_handlers -- test_next_available_note_id_deterministic`
+- **Result**: PASS
+- **Evidence**: Fixed now_ms=1_577_836_800_000, empty existing set → id1 == id2 asserted. 0 failures.
+
+#### PROP-FEED-S5-002: next_available_note_id non-collision (proptest)
+- **Tool**: cargo test + proptest
+- **Command**: `cargo test --test feed_handlers -- test_next_available_note_id_non_collision_property test_next_available_note_id_collision_suffix`
+- **Result**: PASS
+- **Evidence**: proptest generates now_ms ∈ [0, 253_402_300_800_000), existing up to 1023 random strings; asserts result not in existing. Collision suffix test: base taken → -1, base+-1 taken → -2.
+
+#### PROP-FEED-S5-003: ID format compliance (regex)
+- **Tool**: cargo test + regex crate
+- **Command**: `cargo test --test feed_handlers -- test_next_available_note_id_format`
+- **Result**: PASS
+- **Evidence**: now_ms=1_577_836_800_000, empty existing → id matches `^\d{4}-\d{2}-\d{2}-\d{6}-\d{3}$`.
+
+#### PROP-FEED-S5-004: feed_initial_state invariants (4 core + 2 scan edge cases)
+- **Tool**: cargo test
+- **Command**: `cargo test --test feed_handlers -- test_feed_initial_state_empty_vault_auto_create test_feed_initial_state_existing_one_note_prepends_new test_feed_initial_state_no_md_file_created_with_auto_create test_feed_initial_state_excludes_dot_md_files test_feed_initial_state_excludes_symlink_md_files test_feed_initial_state_ignores_subdirectory_md_files`
+- **Result**: PASS (all 6 tests)
+- **Evidence**:
+  - empty vault → visible_note_ids.len()==1, note_metadata.len()==1, editing.status=="editing"
+  - 1 existing note → 2 visible notes, [0] is new auto-created, [1] is existing path
+  - no .md file written to disk (before_count == after_count)
+  - dot-file (.hidden.md) excluded from scan
+  - symlink (link.md) excluded from scan
+  - subdirectory .md (sub/nested.md) excluded (non-recursive scan)
+
+#### PROP-FEED-S5-005: TS/Rust NoteId format parity (4 named edge cases)
+- **Tool**: cargo test
+- **Command**: `cargo test --test feed_handlers -- test_next_available_note_id_ts_parity_snapshot`
+- **Result**: PASS
+- **Evidence**:
+  - now_ms=1_577_836_800_000, empty → "2020-01-01-000000-000"
+  - now_ms=1_577_836_800_000, base taken → "2020-01-01-000000-000-1"
+  - now_ms=1_577_836_800_000, base + -1..-9 taken → "2020-01-01-000000-000-10"
+  - now_ms=0, empty → "1970-01-01-000000-000"
+
+### Full test run output
+
+```
+running 11 tests
+test test_feed_initial_state_empty_vault_auto_create ... ok
+test test_next_available_note_id_deterministic ... ok
+test test_next_available_note_id_collision_suffix ... ok
+test test_feed_initial_state_excludes_dot_md_files ... ok
+test test_next_available_note_id_ts_parity_snapshot ... ok
+test test_feed_initial_state_no_md_file_created_with_auto_create ... ok
+test test_feed_initial_state_excludes_symlink_md_files ... ok
+test test_feed_initial_state_ignores_subdirectory_md_files ... ok
+test test_next_available_note_id_format ... ok
+test test_feed_initial_state_existing_one_note_prepends_new ... ok
+test test_next_available_note_id_non_collision_property ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 7.70s
+```
+
+### Summary (Sprint 5)
+
+- Required obligations: 5
+- Proved: 5
+- Failed: 0
+- Skipped: 0
+- cargo test: 11/11 PASS (Sprint 5 scope; 19 non-S5 tests filtered out)
+- cargo clippy -D warnings: 0 warnings
+- cargo fmt --check: CLEAN
+- cargo audit: NOT INSTALLED (degraded to grep + clippy + manual dep review)
+- Purity audit: CLEAN (format_base_id, next_available_note_id, compose_initial_snapshot_with_autocreate have zero I/O hits)
+- Phase 5 Sprint 5 gate: PASS

@@ -198,9 +198,10 @@ pub fn fs_write_file_atomic(target_path: &str, contents: &str) -> Result<(), FsE
         let mut file = std::fs::File::create(&temp_path).map_err(|e| FsErrorDto {
             kind: io_error_to_fs_kind(e.kind()),
         })?;
-        file.write_all(contents.as_bytes()).map_err(|e| FsErrorDto {
-            kind: io_error_to_fs_kind(e.kind()),
-        })?;
+        file.write_all(contents.as_bytes())
+            .map_err(|e| FsErrorDto {
+                kind: io_error_to_fs_kind(e.kind()),
+            })?;
         file.sync_all().map_err(|e| FsErrorDto {
             kind: io_error_to_fs_kind(e.kind()),
         })?;
@@ -261,7 +262,11 @@ pub fn compose_state_for_save_ok(note_id: &str, body: &str) -> EditingSessionSta
 
 /// PROP-IPC-016 — Returns SaveFailed after a write error.
 /// priorFocusedBlockId: null, pendingNextFocus: null.
-pub fn compose_state_for_save_err(note_id: &str, body: &str, fs_err: FsErrorDto) -> EditingSessionStateDto {
+pub fn compose_state_for_save_err(
+    note_id: &str,
+    body: &str,
+    fs_err: FsErrorDto,
+) -> EditingSessionStateDto {
     EditingSessionStateDto::SaveFailed {
         current_note_id: note_id.to_string(),
         prior_focused_block_id: None,
@@ -578,8 +583,7 @@ fn save_note_and_emit(
 
     if matches!(state, EditingSessionStateDto::Editing { .. }) {
         if let Ok(Some(vault_path)) = crate::settings_load_impl() {
-            let (visible_note_ids, note_metadata) =
-                crate::feed::scan_vault_feed(&vault_path);
+            let (visible_note_ids, note_metadata) = crate::feed::scan_vault_feed(&vault_path);
             let feed_snapshot = crate::feed::FeedDomainSnapshotDto {
                 editing: crate::feed::idle_editing(),
                 feed: crate::feed::FeedSubDto {
@@ -617,7 +621,10 @@ pub fn trigger_idle_save(
     issued_at: String,
     source: String,
 ) -> Result<(), String> {
-    eprintln!("[editor] trigger_idle_save note={} source={} issued_at={}", note_id, source, issued_at);
+    eprintln!(
+        "[editor] trigger_idle_save note={} source={} issued_at={}",
+        note_id, source, issued_at
+    );
     save_note_and_emit(&app, note_id, body, Some(&store))
 }
 
@@ -631,7 +638,10 @@ pub fn trigger_blur_save(
     issued_at: String,
     source: String,
 ) -> Result<(), String> {
-    eprintln!("[editor] trigger_blur_save note={} source={} issued_at={}", note_id, source, issued_at);
+    eprintln!(
+        "[editor] trigger_blur_save note={} source={} issued_at={}",
+        note_id, source, issued_at
+    );
     save_note_and_emit(&app, note_id, body, Some(&store))
 }
 
@@ -654,6 +664,12 @@ impl NoteBodyStore {
     }
 }
 
+impl Default for NoteBodyStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Validates that a body string contains no disallowed control characters.
 /// Allowed: tab (U+0009), LF (U+000A), CR (U+000D).
 /// Disallowed: U+0000–U+001F (except U+0009), U+007F (DELETE).
@@ -664,7 +680,10 @@ pub fn validate_no_control_chars(body: &str) -> Result<(), String> {
             return Err(format!("control character U+007F at position {}", i));
         }
         if code <= 0x001F && code != 0x0009 && code != 0x000A && code != 0x000D {
-            return Err(format!("control character U+{:04X} at position {}", code, i));
+            return Err(format!(
+                "control character U+{:04X} at position {}",
+                code, i
+            ));
         }
     }
     Ok(())
@@ -744,12 +763,32 @@ mod tests {
             blocks: None,
         };
         let json = serde_json::to_string(&state).expect("serialize");
-        assert!(json.contains("\"currentNoteId\""), "camelCase currentNoteId: {}", json);
-        assert!(json.contains("\"focusedBlockId\""), "camelCase focusedBlockId: {}", json);
+        assert!(
+            json.contains("\"currentNoteId\""),
+            "camelCase currentNoteId: {}",
+            json
+        );
+        assert!(
+            json.contains("\"focusedBlockId\""),
+            "camelCase focusedBlockId: {}",
+            json
+        );
         assert!(json.contains("\"isDirty\""), "camelCase isDirty: {}", json);
-        assert!(json.contains("\"isNoteEmpty\""), "camelCase isNoteEmpty: {}", json);
-        assert!(json.contains("\"lastSaveResult\""), "camelCase lastSaveResult: {}", json);
-        assert!(!json.contains("\"blocks\""), "blocks absent when None: {}", json);
+        assert!(
+            json.contains("\"isNoteEmpty\""),
+            "camelCase isNoteEmpty: {}",
+            json
+        );
+        assert!(
+            json.contains("\"lastSaveResult\""),
+            "camelCase lastSaveResult: {}",
+            json
+        );
+        assert!(
+            !json.contains("\"blocks\""),
+            "blocks absent when None: {}",
+            json
+        );
     }
 
     #[test]
@@ -759,7 +798,11 @@ mod tests {
             reason: None,
         };
         let json = serde_json::to_string(&err).expect("serialize");
-        assert!(!json.contains("\"reason\""), "reason absent when None: {}", json);
+        assert!(
+            !json.contains("\"reason\""),
+            "reason absent when None: {}",
+            json
+        );
     }
 
     #[test]
@@ -771,7 +814,11 @@ mod tests {
             }),
         };
         let json = serde_json::to_string(&err).expect("serialize");
-        assert!(json.contains("\"reason\""), "reason present when Some: {}", json);
+        assert!(
+            json.contains("\"reason\""),
+            "reason present when Some: {}",
+            json
+        );
         assert!(json.contains("\"disk-full\""));
     }
 
@@ -829,10 +876,7 @@ mod tests {
 
     #[test]
     fn io_error_to_fs_kind_unknown() {
-        assert_eq!(
-            io_error_to_fs_kind(std::io::ErrorKind::NotFound),
-            "unknown"
-        );
+        assert_eq!(io_error_to_fs_kind(std::io::ErrorKind::NotFound), "unknown");
     }
 
     #[test]
@@ -916,7 +960,11 @@ mod tests {
         assert!(lines[2].starts_with("updatedAt: 1700000000000"));
         assert_eq!(lines[3], "tags: []");
         assert_eq!(lines[4], "---");
-        assert_eq!(lines.len(), 6, "Must have empty line after --- (body placeholder)");
+        assert_eq!(
+            lines.len(),
+            6,
+            "Must have empty line after --- (body placeholder)"
+        );
     }
 
     // ── make_editing_state_changed_payload (singular form) ────────────────
@@ -926,7 +974,11 @@ mod tests {
         let state = compose_state_idle();
         let payload = make_editing_state_changed_payload(&state);
         let json = serde_json::to_string(&payload).expect("serialize");
-        assert!(json.starts_with("{\"state\":"), "Must wrap in state: {}", json);
+        assert!(
+            json.starts_with("{\"state\":"),
+            "Must wrap in state: {}",
+            json
+        );
     }
 
     #[test]
@@ -941,7 +993,9 @@ mod tests {
 
     #[test]
     fn make_payload_save_failed_state() {
-        let fs_err = FsErrorDto { kind: "permission".to_string() };
+        let fs_err = FsErrorDto {
+            kind: "permission".to_string(),
+        };
         let state = compose_state_for_save_err("/v/n.md", "draft", fs_err);
         let payload = make_editing_state_changed_payload(&state);
         let json = serde_json::to_string(&payload).expect("serialize");
@@ -960,7 +1014,11 @@ mod tests {
     fn compose_save_ok_is_dirty_false() {
         let state = compose_state_for_save_ok("/v/n.md", "body");
         match state {
-            EditingSessionStateDto::Editing { is_dirty, last_save_result, .. } => {
+            EditingSessionStateDto::Editing {
+                is_dirty,
+                last_save_result,
+                ..
+            } => {
                 assert!(!is_dirty);
                 assert_eq!(last_save_result.as_deref(), Some("success"));
             }
@@ -992,7 +1050,12 @@ mod tests {
     fn compose_select_past_note_none_gives_empty_state() {
         let state = compose_state_for_select_past_note("n1", None);
         match state {
-            EditingSessionStateDto::Editing { blocks, focused_block_id, is_note_empty, .. } => {
+            EditingSessionStateDto::Editing {
+                blocks,
+                focused_block_id,
+                is_note_empty,
+                ..
+            } => {
                 assert_eq!(blocks, None);
                 assert_eq!(focused_block_id, None);
                 assert!(is_note_empty);
@@ -1003,10 +1066,19 @@ mod tests {
 
     #[test]
     fn compose_select_past_note_some_blocks_populates_focused() {
-        let b = vec![DtoBlock { id: "b1".to_string(), block_type: BlockTypeDto::Paragraph, content: "hi".to_string() }];
+        let b = vec![DtoBlock {
+            id: "b1".to_string(),
+            block_type: BlockTypeDto::Paragraph,
+            content: "hi".to_string(),
+        }];
         let state = compose_state_for_select_past_note("n1", Some(b.clone()));
         match state {
-            EditingSessionStateDto::Editing { blocks, focused_block_id, is_note_empty, .. } => {
+            EditingSessionStateDto::Editing {
+                blocks,
+                focused_block_id,
+                is_note_empty,
+                ..
+            } => {
                 assert_eq!(blocks, Some(b));
                 assert_eq!(focused_block_id, Some("b1".to_string()));
                 assert!(!is_note_empty);
@@ -1097,7 +1169,11 @@ mod tests {
     #[test]
     fn parse_markdown_to_blocks_multiple_paragraphs() {
         let blocks = parse_markdown_to_blocks("first\n\nsecond").expect("Ok");
-        assert!(blocks.len() >= 2, "expected >=2 blocks, got {}", blocks.len());
+        assert!(
+            blocks.len() >= 2,
+            "expected >=2 blocks, got {}",
+            blocks.len()
+        );
         assert_eq!(blocks[0].content, "first");
         assert_eq!(blocks[1].content, "second");
     }
@@ -1134,7 +1210,7 @@ mod tests {
     #[test]
     fn validate_no_control_chars_rejects_null_byte() {
         // PROP-001: NULL byte (U+0000) is rejected.
-        let body = format!("text before\0text after");
+        let body = "text before\0text after".to_string();
         let result = validate_no_control_chars(&body);
         assert!(result.is_err(), "null byte must be rejected");
     }
@@ -1142,7 +1218,7 @@ mod tests {
     #[test]
     fn validate_no_control_chars_rejects_del_character() {
         // PROP-001: DELETE (U+007F) is rejected.
-        let body = format!("text\x7F");
+        let body = "text\x7F".to_string();
         let result = validate_no_control_chars(&body);
         assert!(result.is_err(), "DEL must be rejected");
     }
@@ -1165,9 +1241,12 @@ mod tests {
     #[test]
     fn validate_no_control_chars_rejects_pasted_control_char() {
         // PROP-001: Mixed valid + control character body is rejected entirely.
-        let body = format!("normal text\x00hidden");
+        let body = "normal text\x00hidden".to_string();
         let result = validate_no_control_chars(&body);
-        assert!(result.is_err(), "mixed content with control char must be rejected");
+        assert!(
+            result.is_err(),
+            "mixed content with control char must be rejected"
+        );
     }
 
     #[test]
@@ -1195,11 +1274,14 @@ mod tests {
 
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: body.clone(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: body.clone(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
 
         {
@@ -1219,20 +1301,26 @@ mod tests {
         // Insert A
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: "body A".to_string(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: "body A".to_string(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         // Insert B (overwrite)
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: "body B".to_string(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: "body B".to_string(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         // Read back — must be B
         {
@@ -1273,7 +1361,10 @@ mod tests {
         state.last_saved_body = state.body.clone();
         state.is_dirty = false;
 
-        assert!(!state.is_dirty, "is_dirty must be false after successful save");
+        assert!(
+            !state.is_dirty,
+            "is_dirty must be false after successful save"
+        );
         assert_eq!(state.last_saved_body, "edited body");
     }
 
@@ -1288,8 +1379,14 @@ mod tests {
         // Simulate failed save — do not clear is_dirty
         // (state unchanged)
 
-        assert!(state.is_dirty, "is_dirty must remain true after save failure");
-        assert_eq!(state.last_saved_body, "", "last_saved_body must not be updated on failure");
+        assert!(
+            state.is_dirty,
+            "is_dirty must remain true after save failure"
+        );
+        assert_eq!(
+            state.last_saved_body, "",
+            "last_saved_body must not be updated on failure"
+        );
     }
 
     #[test]
@@ -1301,7 +1398,10 @@ mod tests {
             is_dirty: true,
             last_saved_body: String::new(),
         };
-        assert!(state.is_dirty, "is_dirty must stay true on consecutive edits");
+        assert!(
+            state.is_dirty,
+            "is_dirty must stay true on consecutive edits"
+        );
     }
 
     #[test]
@@ -1321,7 +1421,10 @@ mod tests {
         // Second update with no save → still dirty
         state.body = "edit 2".to_string();
         // is_dirty must remain true (no save happened)
-        assert!(state.is_dirty, "is_dirty must not become false without save");
+        assert!(
+            state.is_dirty,
+            "is_dirty must not become false without save"
+        );
     }
 
     // ── PROP-005: Body round-trip — Unicode + large body preservation ──────
@@ -1337,17 +1440,23 @@ mod tests {
         // Insert
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: body.clone(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: body.clone(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         // Read back
         {
             let map = store.0.lock().unwrap();
             let entry = map.get(&note_id).expect("entry must exist");
-            assert_eq!(entry.body, body, "Unicode body must be preserved byte-for-byte");
+            assert_eq!(
+                entry.body, body,
+                "Unicode body must be preserved byte-for-byte"
+            );
         }
     }
 
@@ -1359,16 +1468,19 @@ mod tests {
         // Build ~1MB body (repeating pattern)
         let pattern = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n";
         let repeats = 30_000; // ~1MB
-        let body: String = std::iter::repeat(pattern).take(repeats).collect();
+        let body: String = pattern.repeat(repeats);
 
         // Insert
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: body.clone(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: body.clone(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         // Read back
         {
@@ -1388,11 +1500,14 @@ mod tests {
 
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: body.to_string(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: body.to_string(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         {
             let map = store.0.lock().unwrap();
@@ -1411,16 +1526,22 @@ mod tests {
 
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: String::new(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: String::new(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         {
             let map = store.0.lock().unwrap();
             let entry = map.get(&note_id).expect("entry must exist");
-            assert_eq!(entry.body, "", "empty body must be preserved as empty string");
+            assert_eq!(
+                entry.body, "",
+                "empty body must be preserved as empty string"
+            );
         }
     }
 
@@ -1433,11 +1554,14 @@ mod tests {
 
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: body.to_string(),
-                is_dirty: true,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: body.to_string(),
+                    is_dirty: true,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         {
             let map = store.0.lock().unwrap();
@@ -1456,18 +1580,24 @@ mod tests {
         // Initial state: empty body, is_dirty=false (already saved)
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: String::new(),
-                is_dirty: false,
-                last_saved_body: String::new(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: String::new(),
+                    is_dirty: false,
+                    last_saved_body: String::new(),
+                },
+            );
         }
         // "Update" with same empty body — is_dirty stays false
         {
             let mut map = store.0.lock().unwrap();
             let entry = map.get_mut(&note_id).expect("entry must exist");
             // Body unchanged → is_dirty should not become true
-            assert!(!entry.is_dirty, "is_dirty must stay false when body unchanged");
+            assert!(
+                !entry.is_dirty,
+                "is_dirty must stay false when body unchanged"
+            );
         }
     }
 
@@ -1481,26 +1611,35 @@ mod tests {
         // Initial state: non-empty body, is_dirty=false
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: "some content".to_string(),
-                is_dirty: false,
-                last_saved_body: "some content".to_string(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: "some content".to_string(),
+                    is_dirty: false,
+                    last_saved_body: "some content".to_string(),
+                },
+            );
         }
         // Update to empty body
         {
             let mut map = store.0.lock().unwrap();
-            map.insert(note_id.clone(), InMemoryNoteBody {
-                body: String::new(),
-                is_dirty: true, // Should be set to true because body changed from non-empty
-                last_saved_body: "some content".to_string(),
-            });
+            map.insert(
+                note_id.clone(),
+                InMemoryNoteBody {
+                    body: String::new(),
+                    is_dirty: true, // Should be set to true because body changed from non-empty
+                    last_saved_body: "some content".to_string(),
+                },
+            );
         }
         {
             let map = store.0.lock().unwrap();
             let entry = map.get(&note_id).expect("entry must exist");
             assert_eq!(entry.body, "", "body must be empty");
-            assert!(entry.is_dirty, "is_dirty must be true after transitioning to empty");
+            assert!(
+                entry.is_dirty,
+                "is_dirty must be true after transitioning to empty"
+            );
         }
     }
 
@@ -1520,11 +1659,14 @@ mod tests {
                 std::thread::spawn(move || {
                     let body = format!("body-thread-{}", i);
                     let mut map = store.0.lock().unwrap();
-                    map.insert(note_id.clone(), InMemoryNoteBody {
-                        body,
-                        is_dirty: true,
-                        last_saved_body: String::new(),
-                    });
+                    map.insert(
+                        note_id.clone(),
+                        InMemoryNoteBody {
+                            body,
+                            is_dirty: true,
+                            last_saved_body: String::new(),
+                        },
+                    );
                 })
             })
             .collect();
@@ -1536,7 +1678,10 @@ mod tests {
         // Read back: entry must exist, mutex not poisoned.
         let map = store.0.lock().expect("mutex must not be poisoned");
         let entry = map.get(&note_id).expect("entry must exist");
-        assert!(entry.body.starts_with("body-thread-"), "final body is one of the thread values");
+        assert!(
+            entry.body.starts_with("body-thread-"),
+            "final body is one of the thread values"
+        );
         assert!(entry.is_dirty);
     }
 }

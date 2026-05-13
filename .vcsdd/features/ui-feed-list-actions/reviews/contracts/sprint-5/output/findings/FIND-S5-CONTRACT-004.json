@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-CONTRACT-004",
+  "severity": "high",
+  "dimension": "implementation_correctness",
+  "category": "requirement_mismatch",
+  "title": "実装の scan_vault_feed が spec の Vault Scan Semantics に違反しており、CRIT-S5-005 passThreshold は binary-evaluable でない",
+  "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md:42-44",
+  "description": "behavioral-spec.md:922-931 で spec された Vault Scan Semantics (Resolution FIND-S5-SPEC-011) のうち、'隠しファイル: dot-prefixed ファイルは除外する' および 'シンボリックリンク: follow しない — DirEntry::file_type() で is_file() が true のもののみ対象' は実装 feed.rs:404-429 に存在しない. しかし contract sprint-5.md:42 の CRIT-S5-005 description は 'Vault Scan Semantics 適合 — 拡張子 case-insensitive `.md`, 非再帰, dot-file 除外, symlink 非 follow, lowercase stem collision namespace' と書いており、spec と一致するように見える. これは description と passThreshold が乖離している: description は 5 項目すべてに言及するが、passThreshold は (1)(5) のみ. さらに passThreshold は '手動 grep + 関連 cargo test PASS' という非 binary-evaluable な記述を含む — どの test が '関連' なのか明示されていない. Phase 3 reviewer がこの contract を gating として使うとき、CRIT-S5-005 は PASS と判定されうるが実装には dot-file / symlink バグが残る.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "404-409",
+    "snippet": "for entry in read_dir.flatten() {\n    let file_path = entry.path();\n    if file_path\n        .extension()\n        .is_some_and(|ext| ext.eq_ignore_ascii_case(\"md\"))\n    { ..."
+  },
+  "remediation": "(a) passThreshold を 'cargo test test_scan_vault_excludes_dot_files AND test_scan_vault_skips_symlinks AND test_scan_vault_case_insensitive_md PASS' のように具体的なテスト名で記述する, (b) '手動 grep' を削除し、機械的に検証可能な assertion (例: source grep `is_some_and.*eq_ignore_ascii_case.*md` が 1 件 hit, かつ file_name starts_with '.' を skip する分岐が存在することの grep) に置き換える. 現状のままだと Phase 3 reviewer の主観に依存する."
+}

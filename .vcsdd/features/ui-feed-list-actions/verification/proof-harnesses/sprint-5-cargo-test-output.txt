@@ -1,0 +1,52 @@
+Sprint 5 Proof Obligations — cargo test output
+Feature: ui-feed-list-actions
+Date: 2026-05-13
+Command: cargo test --test feed_handlers -- test_next_available_note_id_deterministic test_next_available_note_id_format test_next_available_note_id_collision_suffix test_next_available_note_id_non_collision_property test_next_available_note_id_ts_parity_snapshot test_feed_initial_state_empty_vault_auto_create test_feed_initial_state_existing_one_note_prepends_new test_feed_initial_state_no_md_file_created_with_auto_create test_feed_initial_state_excludes_dot_md_files test_feed_initial_state_excludes_symlink_md_files test_feed_initial_state_ignores_subdirectory_md_files
+Working directory: promptnotes/src-tauri/
+
+--- Raw output ---
+
+   Compiling promptnotes v0.1.0 (/home/takuya/ghq/github.com/dev-komenzar/promptnotes-vcsdd/promptnotes/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.45s
+     Running tests/feed_handlers.rs (target/debug/deps/feed_handlers-084bc50ff2f8651c)
+
+running 11 tests
+test test_feed_initial_state_empty_vault_auto_create ... ok
+test test_next_available_note_id_deterministic ... ok
+test test_next_available_note_id_collision_suffix ... ok
+test test_feed_initial_state_excludes_dot_md_files ... ok
+test test_next_available_note_id_ts_parity_snapshot ... ok
+test test_feed_initial_state_no_md_file_created_with_auto_create ... ok
+test test_feed_initial_state_excludes_symlink_md_files ... ok
+test test_feed_initial_state_ignores_subdirectory_md_files ... ok
+test test_next_available_note_id_format ... ok
+test test_feed_initial_state_existing_one_note_prepends_new ... ok
+test test_next_available_note_id_non_collision_property ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 7.70s
+
+--- Proof obligation mapping ---
+
+PROP-FEED-S5-001 (Tier 2, determinism):
+  test_next_available_note_id_deterministic ... ok
+
+PROP-FEED-S5-002 (Tier 2, non-collision, proptest):
+  test_next_available_note_id_non_collision_property ... ok
+  test_next_available_note_id_collision_suffix ... ok
+
+PROP-FEED-S5-003 (Tier 2, format, regex):
+  test_next_available_note_id_format ... ok
+
+PROP-FEED-S5-004 (Tier 1, feed_initial_state invariants, 4 tests):
+  test_feed_initial_state_empty_vault_auto_create ... ok
+  test_feed_initial_state_existing_one_note_prepends_new ... ok
+  test_feed_initial_state_no_md_file_created_with_auto_create ... ok
+  test_feed_initial_state_excludes_dot_md_files ... ok
+  test_feed_initial_state_excludes_symlink_md_files ... ok
+  test_feed_initial_state_ignores_subdirectory_md_files ... ok
+
+PROP-FEED-S5-005 (Tier 1, TS/Rust parity snapshot, 4 named edge cases):
+  test_next_available_note_id_ts_parity_snapshot ... ok
+
+--- Verdict ---
+11/11 tests PASS. All Sprint 5 required proof obligations: PROVED.

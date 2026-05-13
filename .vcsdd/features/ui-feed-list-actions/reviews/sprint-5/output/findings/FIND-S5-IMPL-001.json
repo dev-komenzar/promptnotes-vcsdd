@@ -1,0 +1,20 @@
+{
+  "findingId": "FIND-S5-IMPL-001",
+  "dimension": "edge_case_coverage",
+  "category": "test_coverage",
+  "severity": "low",
+  "description": "Vault Scan Semantics §stem collision (behavioral-spec.md:930) explicitly enumerates the edge case where Foo.md and foo.md share a lowercase stem and therefore collide in the existing_ids HashSet used by next_available_note_id. The implementation at feed.rs:537-545 correctly applies to_string_lossy().to_lowercase() to each path stem, so the behavior is realized. However, no Rust test exercises this case. On a case-sensitive filesystem (Linux ext4 — the CI environment) it would be feasible to write a test that seeds both Foo.md and foo.md in a tempdir, asserts that scan_vault_feed returns 2 entries, and asserts that the auto-create new_id has a -N collision suffix when the wall-clock-derived base happens to overlap with the stem. The contract CRIT-S5-005 passThreshold lists 3 specific cargo tests (dot-file / symlink / subdirectory) plus 3 grep patterns; stem-collision is not gated by any CRIT. Severity is LOW because (a) behavior is verifiably correct by code-read, (b) the lowercase normalization is a small, hard-to-regress mechanism, and (c) the missing test is auxiliary rather than blocking. Recommended action: add a follow-up test in Sprint 6+ or as tech-debt, but not a blocker for Phase 5 hardening.",
+  "evidence": {
+    "filePath": "promptnotes/src-tauri/src/feed.rs",
+    "lineRange": "537-545",
+    "snippet": "let existing_ids: HashSet<String> = existing_visible_ids\n    .iter()\n    .map(|full_path| {\n        Path::new(full_path)\n            .file_stem()\n            .map(|s| s.to_string_lossy().to_lowercase())\n            .unwrap_or_default()\n    })\n    .collect();"
+  },
+  "specReference": {
+    "filePath": ".vcsdd/features/ui-feed-list-actions/specs/behavioral-spec.md",
+    "lineRange": "930",
+    "quote": "stem 衝突: 大文字小文字違いのファイル (Foo.md と foo.md) は、stem 比較を lowercase で行うため同一 NoteId とみなされ collision suffix が付与される"
+  },
+  "routeToPhase": "deferred",
+  "blocking": false,
+  "remediationSuggestion": "Add a test like test_feed_initial_state_lowercase_stem_collision that seeds Foo.md + foo.md (Linux only), asserts visible_note_ids contains both full paths, and asserts that if now_ms produces a base matching the seeded stems' lowercase form, the resulting new_id carries a -N suffix. Alternatively, add a focused unit test that calls compose_initial_snapshot_with_autocreate directly with existing_visible_ids = ['/v/Foo.md', '/v/foo.md'] and verifies existing_ids contains exactly one element 'foo'."
+}

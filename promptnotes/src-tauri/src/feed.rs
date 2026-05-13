@@ -1,23 +1,24 @@
-/// feed.rs — Rust backend handlers for ui-feed-list-actions Sprint 2.
-///
-/// REQ-FEED-019: fs_trash_file command
-/// REQ-FEED-020: select_past_note, request_note_deletion,
-///               confirm_note_deletion, cancel_note_deletion handlers
-/// REQ-FEED-021: feed_state_changed event emit rules
-/// REQ-FEED-022: feed_initial_state command
-///
-/// All DTOs use `#[serde(rename_all = "camelCase")]` to match the TypeScript
-/// FeedDomainSnapshot type in `src/lib/feed/types.ts`.
-///
-/// Design: this module is a thin IPC shell. No domain logic is re-implemented
-/// here. State management is client-side (TypeScript feedReducer). The Rust
-/// side is responsible only for:
-///   1. Performing OS-level I/O (file deletion, file listing)
-///   2. Emitting `feed_state_changed` events with typed payloads
+//! feed.rs — Rust backend handlers for ui-feed-list-actions Sprint 2.
+//!
+//! REQ-FEED-019: fs_trash_file command
+//! REQ-FEED-020: select_past_note, request_note_deletion,
+//!               confirm_note_deletion, cancel_note_deletion handlers
+//! REQ-FEED-021: feed_state_changed event emit rules
+//! REQ-FEED-022: feed_initial_state command
+//!
+//! All DTOs use `#[serde(rename_all = "camelCase")]` to match the TypeScript
+//! FeedDomainSnapshot type in `src/lib/feed/types.ts`.
+//!
+//! Design: this module is a thin IPC shell. No domain logic is re-implemented
+//! here. State management is client-side (TypeScript feedReducer). The Rust
+//! side is responsible only for:
+//!   1. Performing OS-level I/O (file deletion, file listing)
+//!   2. Emitting `feed_state_changed` events with typed payloads
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Emitter};
 
 // ── TrashErrorDto ─────────────────────────────────────────────────────────────
@@ -183,7 +184,11 @@ fn make_note_deleted_snapshot(note_id: &str, vault_path: &str) -> FeedDomainSnap
 ///
 /// FIND-S2-06: vault_path populates the feed so deletion failure does not clear
 /// the TS client's feed list.
-fn make_deletion_failed_snapshot(note_id: &str, err: &TrashErrorDto, vault_path: &str) -> FeedDomainSnapshotDto {
+fn make_deletion_failed_snapshot(
+    note_id: &str,
+    err: &TrashErrorDto,
+    vault_path: &str,
+) -> FeedDomainSnapshotDto {
     let (reason, detail) = match err {
         TrashErrorDto::Permission => ("permission".to_string(), None),
         TrashErrorDto::Lock => ("lock".to_string(), None),
@@ -267,15 +272,18 @@ pub fn compose_select_past_note(note_id: &str, vault_path: &str) -> SelectPastNo
     let snapshot = make_editing_state_changed_snapshot(note_id, vault_path);
 
     // REQ-FEED-024 amendment / REQ-FEED-025: Parse body into blocks.
-    let blocks: Option<Vec<crate::editor::DtoBlock>> = if snapshot.note_metadata.contains_key(note_id) {
-        let body = snapshot.note_metadata.get(note_id).map(|m| m.body.as_str()).unwrap_or("");
-        match crate::editor::parse_markdown_to_blocks(body) {
-            Ok(b) => Some(b),
-            Err(_) => None, // EC-FEED-016: BlockParseError → fallback to None
-        }
-    } else {
-        None // note not found in vault
-    };
+    let blocks: Option<Vec<crate::editor::DtoBlock>> =
+        if snapshot.note_metadata.contains_key(note_id) {
+            let body = snapshot
+                .note_metadata
+                .get(note_id)
+                .map(|m| m.body.as_str())
+                .unwrap_or("");
+            // EC-FEED-016: BlockParseError → fallback to None
+            crate::editor::parse_markdown_to_blocks(body).ok()
+        } else {
+            None // note not found in vault
+        };
 
     // REQ-FEED-024 / REQ-IPC-014: Compose block-aware editor state.
     let editor_state = crate::editor::compose_state_for_select_past_note(note_id, blocks);
@@ -395,7 +403,23 @@ pub fn scan_vault_feed(vault_path: &str) -> (Vec<String>, HashMap<String, NoteRo
 
     for entry in read_dir.flatten() {
         let file_path = entry.path();
-        if file_path.extension().map_or(false, |ext| ext == "md") {
+        // Sprint 5 vault scan semantics (REQ-FEED-028 / FIND-S5-SPEC-011):
+        // - exclude dot-files (dot-prefixed file name)
+        if file_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .is_some_and(|n| n.starts_with('.'))
+        {
+            continue;
+        }
+        // - exclude symlinks and non-regular files (is_file() is false for symlinks in Rust std)
+        if !entry.file_type().is_ok_and(|ft| ft.is_file()) {
+            continue;
+        }
+        if file_path
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+        {
             let note_id = match file_path.to_str() {
                 Some(s) => s.to_string(),
                 None => continue,
@@ -420,24 +444,129 @@ pub fn scan_vault_feed(vault_path: &str) -> (Vec<String>, HashMap<String, NoteRo
     (visible_note_ids, note_metadata)
 }
 
-/// REQ-FEED-022: feed_initial_state — scan vault dir and return initial snapshot.
-///
-/// Scans `vault_path` for `.md` files, reads each file to extract frontmatter
-/// (createdAt, updatedAt, tags), and returns a FeedDomainSnapshotDto.
-///
-/// Frontmatter parsing: minimal YAML block detection.
-/// Files that fail to parse are included with default metadata (best-effort).
-#[tauri::command]
-pub fn feed_initial_state(vault_path: String) -> Result<FeedDomainSnapshotDto, String> {
-    let dir = Path::new(&vault_path);
-    // Validate directory is readable before delegating to scan_vault_feed.
-    std::fs::read_dir(dir)
-        .map_err(|e| format!("Cannot read vault directory '{}': {}", vault_path, e))?;
+// ── NoteId generation (pure core) ────────────────────────────────────────────
 
-    let (visible_note_ids, note_metadata) = scan_vault_feed(&vault_path);
+/// Convert a UNIX epoch millisecond timestamp into a `YYYY-MM-DD-HHmmss-SSS` string (UTC).
+///
+/// Pure: no side effects, no I/O, deterministic for any fixed `now_ms`.
+/// Mirrors TypeScript `formatBaseId` in `initialize-capture.ts:112-126`.
+///
+/// Input domain: `now_ms ∈ [0, 253_402_300_800_000)` (Year 0001..9999 UTC).
+/// Negative values and Year 10000+ are outside the defined input domain.
+fn format_base_id(now_ms: i64) -> String {
+    // Days-per-month table (non-leap year); index 0 unused, 1 = Jan … 12 = Dec.
+    const DAYS_IN_MONTH: [u32; 13] = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-    Ok(FeedDomainSnapshotDto {
-        editing: idle_editing(),
+    // ── Split milliseconds into whole seconds + ms remainder ──────────────────
+    let total_secs = now_ms / 1_000;
+    let ms = (now_ms % 1_000) as u32;
+
+    // ── Time-of-day components ─────────────────────────────────────────────────
+    let secs_of_day = (total_secs % 86_400) as u32;
+    let h = secs_of_day / 3_600;
+    let m = (secs_of_day % 3_600) / 60;
+    let s = secs_of_day % 60;
+
+    // ── Civil date from days since Unix epoch (1970-01-01) ────────────────────
+    // Algorithm: Z algorithm (Howard Hinnant's civil date from days)
+    // Reference: https://howardhinnant.github.io/date_algorithms.html
+    let z = total_secs / 86_400 + 719_468; // shift epoch to 0000-03-01
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097; // day-of-era [0, 146_096]
+    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365; // year-of-era [0, 399]
+    let y_shifted = yoe + era * 400; // year relative to 0000-03-01 epoch
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100); // day-of-year (March-based) [0, 365]
+    let mp = (5 * doy + 2) / 153; // month (March=0 .. Feb=11)
+    let d = doy - (153 * mp + 2) / 5 + 1; // day [1, 31]
+    let mo = if mp < 10 { mp + 3 } else { mp - 9 }; // month [1, 12]
+    let yr = if mo <= 2 { y_shifted + 1 } else { y_shifted }; // year
+
+    // Validate range — outside [1, 9999] would produce wrong output, but spec
+    // says inputs in [0, 253_402_300_800_000) are always valid.
+    let _ = DAYS_IN_MONTH; // referenced to avoid unused-variable warning in simple cases
+
+    format!(
+        "{:04}-{:02}-{:02}-{:02}{:02}{:02}-{:03}",
+        yr, mo, d, h, m, s, ms
+    )
+}
+
+/// Allocate the next non-colliding NoteId for a given wall-clock instant.
+///
+/// Pure: accepts `now_ms` and `existing` by value/reference — no SystemTime calls.
+/// Deterministic: same `(now_ms, existing)` always returns the same ID.
+///
+/// Format: `YYYY-MM-DD-HHmmss-SSS` (no collision) or `YYYY-MM-DD-HHmmss-SSS-N` (N ≥ 1).
+/// Mirrors TypeScript `nextAvailableNoteId` in `initialize-capture.ts:86-104`.
+///
+/// Termination: `existing` is finite, so the loop always halts in at most
+/// `existing.len() + 1` iterations.
+pub fn next_available_note_id(now_ms: i64, existing: &HashSet<String>) -> String {
+    let base = format_base_id(now_ms);
+    if !existing.contains(&base) {
+        return base;
+    }
+    let mut i: u32 = 1;
+    loop {
+        let candidate = format!("{}-{}", base, i);
+        if !existing.contains(&candidate) {
+            return candidate;
+        }
+        i += 1;
+    }
+}
+
+// ── Initial-state composition (pure) ─────────────────────────────────────────
+
+/// Pure orchestration for `feed_initial_state`: given an already-scanned vault
+/// snapshot and a wall-clock `now_ms`, compose the full `FeedDomainSnapshotDto`
+/// with the auto-created note prepended.
+///
+/// REQ-FEED-028: no file I/O is performed here — the caller is responsible for
+/// the vault scan and the clock read. This function is deterministic for fixed inputs.
+///
+/// `existing_visible_ids` and `existing_metadata` come from `scan_vault_feed`.
+/// `now_ms` is the UTC Unix millisecond timestamp from `SystemTime::now()`.
+fn compose_initial_snapshot_with_autocreate(
+    existing_visible_ids: Vec<String>,
+    existing_metadata: HashMap<String, NoteRowMetadataDto>,
+    now_ms: i64,
+) -> FeedDomainSnapshotDto {
+    // Build collision-check set using lowercase stems from full paths.
+    // REQ-FEED-028 Detailed Behavior §2: collision namespace uses stem, not full path.
+    let existing_ids: HashSet<String> = existing_visible_ids
+        .iter()
+        .map(|full_path| {
+            Path::new(full_path)
+                .file_stem()
+                .map(|s| s.to_string_lossy().to_lowercase())
+                .unwrap_or_default()
+        })
+        .collect();
+
+    let new_id = next_available_note_id(now_ms, &existing_ids);
+
+    let new_metadata = NoteRowMetadataDto {
+        body: String::new(),
+        created_at: now_ms,
+        updated_at: now_ms,
+        tags: Vec::new(),
+    };
+
+    // Prepend new ID to visible list; keep existing notes after it.
+    let mut visible_note_ids = Vec::with_capacity(existing_visible_ids.len() + 1);
+    visible_note_ids.push(new_id.clone());
+    visible_note_ids.extend(existing_visible_ids);
+
+    let mut note_metadata = existing_metadata;
+    note_metadata.insert(new_id.clone(), new_metadata);
+
+    FeedDomainSnapshotDto {
+        editing: EditingSubDto {
+            status: "editing".to_string(),
+            current_note_id: Some(new_id),
+            pending_next_focus: None,
+        },
         feed: FeedSubDto {
             visible_note_ids,
             filter_applied: false,
@@ -445,7 +574,36 @@ pub fn feed_initial_state(vault_path: String) -> Result<FeedDomainSnapshotDto, S
         delete: no_delete(),
         note_metadata,
         cause: CauseDto::InitialLoad,
-    })
+    }
+}
+
+/// REQ-FEED-022 (Sprint 5 supersede) / REQ-FEED-028: feed_initial_state.
+///
+/// Scans `vault_path` for `.md` files, auto-creates a new empty note
+/// (in-memory only — no `.md` file is written), and returns a snapshot
+/// with `editing.status = "editing"` and `editing.current_note_id` set
+/// to the new NoteId.
+///
+/// Frontmatter parsing: minimal YAML block detection (best-effort).
+/// Files that fail to parse are included with default metadata.
+#[tauri::command]
+pub fn feed_initial_state(vault_path: String) -> Result<FeedDomainSnapshotDto, String> {
+    let dir = Path::new(&vault_path);
+    std::fs::read_dir(dir)
+        .map_err(|e| format!("Cannot read vault directory '{}': {}", vault_path, e))?;
+
+    let (existing_visible_ids, existing_metadata) = scan_vault_feed(&vault_path);
+
+    let now_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as i64)
+        .unwrap_or(0);
+
+    Ok(compose_initial_snapshot_with_autocreate(
+        existing_visible_ids,
+        existing_metadata,
+        now_ms,
+    ))
 }
 
 /// Parse minimal frontmatter from markdown content.
@@ -477,13 +635,22 @@ fn parse_frontmatter_metadata(content: &str, fallback_ms: i64) -> NoteRowMetadat
         let (end_pos, body_skip) = match (end_lf, end_crlf) {
             (Some(a), Some(b)) => {
                 // Pick the earlier occurrence; if tied prefer LF.
-                if a <= b { (a, 5usize) } else { (b, 6usize) }
+                if a <= b {
+                    (a, 5usize)
+                } else {
+                    (b, 6usize)
+                }
             }
             (Some(a), None) => (a, 5usize),
             (None, Some(b)) => (b, 6usize),
             (None, None) => {
                 // No closing delimiter found — treat whole content as body.
-                return NoteRowMetadataDto { body, created_at, updated_at, tags };
+                return NoteRowMetadataDto {
+                    body,
+                    created_at,
+                    updated_at,
+                    tags,
+                };
             }
         };
 
@@ -493,7 +660,11 @@ fn parse_frontmatter_metadata(content: &str, fallback_ms: i64) -> NoteRowMetadat
         // FIND-S2-03: state-machine parser that tracks the current YAML key so
         // multi-line list items are only collected when key == "tags".
         #[derive(PartialEq)]
-        enum YamlKey { Tags, Other, None }
+        enum YamlKey {
+            Tags,
+            Other,
+            None,
+        }
         let mut current_key = YamlKey::None;
 
         for line in fm.lines() {
@@ -510,10 +681,10 @@ fn parse_frontmatter_metadata(content: &str, fallback_ms: i64) -> NoteRowMetadat
                 if let Ok(ms) = val.parse::<i64>() {
                     updated_at = ms;
                 }
-            } else if line.starts_with("tags:") {
+            } else if let Some(after_tags) = line.strip_prefix("tags:") {
                 current_key = YamlKey::Tags;
                 // tags: [tag1, tag2] inline form.
-                let after_colon = line["tags:".len()..].trim();
+                let after_colon = after_tags.trim();
                 if after_colon.starts_with('[') && after_colon.ends_with(']') {
                     let inner = &after_colon[1..after_colon.len() - 1];
                     tags = inner
@@ -524,10 +695,14 @@ fn parse_frontmatter_metadata(content: &str, fallback_ms: i64) -> NoteRowMetadat
                     // Inline form consumed; list items below do not belong here.
                     current_key = YamlKey::Other;
                 }
-            } else if line.starts_with("- ") {
+            } else if let Some(list_item) = line.strip_prefix("- ") {
                 // FIND-S2-03: only collect list items when we are inside the tags key.
                 if current_key == YamlKey::Tags {
-                    let tag = line[2..].trim().trim_matches('"').trim_matches('\'').to_string();
+                    let tag = list_item
+                        .trim()
+                        .trim_matches('"')
+                        .trim_matches('\'')
+                        .to_string();
                     if !tag.is_empty() {
                         tags.push(tag);
                     }
@@ -563,7 +738,11 @@ mod tests {
     fn trash_error_dto_permission_serializes() {
         let err = TrashErrorDto::Permission;
         let json = serde_json::to_string(&err).expect("serialize failed");
-        assert!(json.contains("\"permission\""), "Expected 'permission' in: {}", json);
+        assert!(
+            json.contains("\"permission\""),
+            "Expected 'permission' in: {}",
+            json
+        );
     }
 
     #[test]
@@ -572,7 +751,11 @@ mod tests {
             detail: Some("disk-full".to_string()),
         };
         let json = serde_json::to_string(&err).expect("serialize failed");
-        assert!(json.contains("\"unknown\""), "Expected 'unknown' in: {}", json);
+        assert!(
+            json.contains("\"unknown\""),
+            "Expected 'unknown' in: {}",
+            json
+        );
         assert!(json.contains("disk-full"), "Expected detail in: {}", json);
     }
 
@@ -598,13 +781,41 @@ mod tests {
         let json = serde_json::to_string(&snapshot).expect("serialize failed");
         // Verify camelCase field names
         assert!(json.contains("\"editing\""), "Expected 'editing': {}", json);
-        assert!(json.contains("\"currentNoteId\""), "Expected 'currentNoteId': {}", json);
-        assert!(json.contains("\"pendingNextFocus\""), "Expected 'pendingNextFocus': {}", json);
-        assert!(json.contains("\"visibleNoteIds\""), "Expected 'visibleNoteIds': {}", json);
-        assert!(json.contains("\"filterApplied\""), "Expected 'filterApplied': {}", json);
-        assert!(json.contains("\"activeDeleteModalNoteId\""), "Expected 'activeDeleteModalNoteId': {}", json);
-        assert!(json.contains("\"noteMetadata\""), "Expected 'noteMetadata': {}", json);
-        assert!(json.contains("\"InitialLoad\""), "Expected 'InitialLoad': {}", json);
+        assert!(
+            json.contains("\"currentNoteId\""),
+            "Expected 'currentNoteId': {}",
+            json
+        );
+        assert!(
+            json.contains("\"pendingNextFocus\""),
+            "Expected 'pendingNextFocus': {}",
+            json
+        );
+        assert!(
+            json.contains("\"visibleNoteIds\""),
+            "Expected 'visibleNoteIds': {}",
+            json
+        );
+        assert!(
+            json.contains("\"filterApplied\""),
+            "Expected 'filterApplied': {}",
+            json
+        );
+        assert!(
+            json.contains("\"activeDeleteModalNoteId\""),
+            "Expected 'activeDeleteModalNoteId': {}",
+            json
+        );
+        assert!(
+            json.contains("\"noteMetadata\""),
+            "Expected 'noteMetadata': {}",
+            json
+        );
+        assert!(
+            json.contains("\"InitialLoad\""),
+            "Expected 'InitialLoad': {}",
+            json
+        );
     }
 
     #[test]
@@ -613,8 +824,16 @@ mod tests {
             deleted_note_id: "abc-123".to_string(),
         };
         let json = serde_json::to_string(&cause).expect("serialize failed");
-        assert!(json.contains("\"NoteFileDeleted\""), "Expected 'NoteFileDeleted': {}", json);
-        assert!(json.contains("\"deletedNoteId\""), "Expected 'deletedNoteId': {}", json);
+        assert!(
+            json.contains("\"NoteFileDeleted\""),
+            "Expected 'NoteFileDeleted': {}",
+            json
+        );
+        assert!(
+            json.contains("\"deletedNoteId\""),
+            "Expected 'deletedNoteId': {}",
+            json
+        );
         assert!(json.contains("abc-123"), "Expected note id: {}", json);
     }
 
@@ -687,7 +906,10 @@ mod tests {
         // immediately after without a leading "\r\n".
         let content = "---\r\ncreatedAt: 1234\r\n---\r\n# Body\r\nText here.";
         let meta = parse_frontmatter_metadata(content, 0);
-        assert_eq!(meta.created_at, 1234, "createdAt must be parsed from CRLF frontmatter");
+        assert_eq!(
+            meta.created_at, 1234,
+            "createdAt must be parsed from CRLF frontmatter"
+        );
         assert!(
             !meta.body.starts_with('\r'),
             "Body must not start with CR; got: {:?}",
@@ -729,7 +951,10 @@ mod tests {
         let file_path = "/tmp/promptnotes-find-s2-01-test.md";
         // note_id may be any opaque string — here we use a different value.
         let note_id = "note-abc-123";
-        assert_ne!(note_id, file_path, "note_id must differ from file_path in this test");
+        assert_ne!(
+            note_id, file_path,
+            "note_id must differ from file_path in this test"
+        );
 
         // Create the file using file_path (not note_id).
         {
@@ -738,11 +963,19 @@ mod tests {
         }
         // Deleting via file_path must succeed.
         let result = fs_trash_file_impl(file_path);
-        assert!(result.is_ok(), "fs_trash_file_impl with file_path must succeed: {:?}", result);
+        assert!(
+            result.is_ok(),
+            "fs_trash_file_impl with file_path must succeed: {:?}",
+            result
+        );
         // Attempting to delete via note_id must NOT accidentally delete
         // a file (it should return Ok for not-found).
         let result2 = fs_trash_file_impl(note_id);
-        assert!(result2.is_ok(), "Not-found note_id must return Ok: {:?}", result2);
+        assert!(
+            result2.is_ok(),
+            "Not-found note_id must return Ok: {:?}",
+            result2
+        );
         // Cleanup
         let _ = std::fs::remove_file(file_path);
     }
@@ -768,7 +1001,10 @@ mod tests {
             snapshot.feed.visible_note_ids
         );
         assert_eq!(snapshot.editing.status, "editing");
-        assert_eq!(snapshot.editing.current_note_id, Some("note-abc".to_string()));
+        assert_eq!(
+            snapshot.editing.current_note_id,
+            Some("note-abc".to_string())
+        );
 
         // Cleanup
         let _ = std::fs::remove_file(&note_path);
@@ -789,12 +1025,20 @@ mod tests {
         let snapshot = make_note_deleted_snapshot("deleted-note-id", tmp_dir);
         // The snapshot must contain remaining.md's path, not deletedNoteId.
         assert!(
-            snapshot.feed.visible_note_ids.iter().any(|id| id.contains("remaining")),
+            snapshot
+                .feed
+                .visible_note_ids
+                .iter()
+                .any(|id| id.contains("remaining")),
             "visibleNoteIds must contain remaining notes after deletion; got: {:?}",
             snapshot.feed.visible_note_ids
         );
         assert!(
-            !snapshot.feed.visible_note_ids.iter().any(|id| id == "deleted-note-id"),
+            !snapshot
+                .feed
+                .visible_note_ids
+                .iter()
+                .any(|id| id == "deleted-note-id"),
             "deleted-note-id (logical ID) must not appear in visibleNoteIds"
         );
 

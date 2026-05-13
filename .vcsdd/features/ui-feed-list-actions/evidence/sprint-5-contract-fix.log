@@ -1,0 +1,97 @@
+# Sprint 5 Contract Review iter-1 FAIL Fix — Evidence Log
+# timestamp: 2026-05-13T07:00:00.000Z
+# feature: ui-feed-list-actions
+# phase: 2c (re-work within phase)
+# findings addressed: FIND-S5-CONTRACT-001, FIND-S5-CONTRACT-002, FIND-S5-CONTRACT-003,
+#                     FIND-S5-CONTRACT-004, FIND-S5-CONTRACT-005, FIND-S5-CONTRACT-006
+
+## Implementation Fix: scan_vault_feed dot-file / symlink exclusion (FIND-S5-CONTRACT-004)
+
+### Before (feed.rs:404-408, Sprint 5 iter-1):
+```rust
+for entry in read_dir.flatten() {
+    let file_path = entry.path();
+    if file_path
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+    {
+```
+No dot-file filter. No file_type() check. Symlinks would be followed.
+
+### After (feed.rs:404-422, Sprint 5 contract-fix):
+```rust
+for entry in read_dir.flatten() {
+    let file_path = entry.path();
+    // Sprint 5 vault scan semantics (REQ-FEED-028 / FIND-S5-SPEC-011):
+    // - exclude dot-files (dot-prefixed file name)
+    if file_path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .is_some_and(|n| n.starts_with('.'))
+    {
+        continue;
+    }
+    // - exclude symlinks and non-regular files (is_file() is false for symlinks in Rust std)
+    if !entry.file_type().is_ok_and(|ft| ft.is_file()) {
+        continue;
+    }
+    if file_path
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("md"))
+    {
+```
+Dot-files skipped. Symlinks (and directories) skipped via file_type().is_file() gate.
+
+## New Cargo Tests Added (FIND-S5-CONTRACT-003)
+
+Added to: promptnotes/src-tauri/tests/feed_handlers.rs
+
+1. test_feed_initial_state_excludes_dot_md_files
+   - Creates TempDir with .hidden.md + regular.md
+   - Asserts .hidden.md absent from note_metadata and visible_note_ids
+   - Asserts regular.md present in note_metadata
+
+2. test_feed_initial_state_excludes_symlink_md_files  [#[cfg(unix)]]
+   - Creates TempDir with target.md (real file) + link.md (symlink -> target.md)
+   - Asserts link.md absent from note_metadata and visible_note_ids
+   - Asserts target.md present in note_metadata
+
+3. test_feed_initial_state_ignores_subdirectory_md_files
+   - Creates TempDir with sub/nested.md
+   - Asserts sub/nested.md absent (non-recursive scan gate)
+
+## TS Assertions Added (FIND-S5-CONTRACT-002)
+
+Modified: promptnotes/src/lib/feed/__tests__/feedReducer.sprint5.test.ts
+
+- Test 1: added expect(result.state.pendingNextFocus).toBeNull()
+- Test 3: added expect(result.state.pendingNextFocus).toBeNull()
+- Test 2: added explicit expect(result.state.editingNoteId).toBe(result.state.visibleNoteIds[0])
+
+## Contract Changes (FIND-S5-CONTRACT-001/002/005/006)
+
+Modified: .vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md
+- negotiationRound: 1 -> 2
+- CRIT-S5-004: passThreshold rewritten to match actual assertions; focus/+page.svelte AC(2)(3) deferral to note-body-editor explicitly stated
+- CRIT-S5-005: passThreshold now names 3 cargo test functions + grep patterns (binary-evaluable)
+- CRIT-S5-007: "atomicity" removed; replaced with "pure function" description; passThreshold lists concrete assertions
+- Negotiated trade-offs §1: extended to cover focus/+page.svelte deferral
+- Negotiated trade-offs §5: rewritten to document style-only footprint; artifactsTouched separated from styleOnlyRefactorFootprint
+
+## Test Count Comparison
+
+### Before fix (Sprint 5 iter-1 baseline):
+cargo test: 157 PASS (80 unit + 18 editor + 22 note_body_editor + 27 feed_handlers + 10 note_body_editor_handlers)
+bun test:  1813 PASS
+
+### After fix (Sprint 5 contract-fix):
+cargo test: 160 PASS (80 + 18 + 22 + 30 + 10)
+  - feed_handlers: 27 -> 30 (+3 new vault scan semantics tests)
+bun test:  1813 PASS (feedReducer.sprint5.test.ts: 4 tests, 12 expect() calls — same test count, added 3 assertions)
+
+## Quality Gate Results
+
+cargo clippy --tests -- -D warnings: EXIT 0 (no warnings)
+cargo fmt --check:                   EXIT 0 (clean)
+cargo test (all):                    160 PASS, 0 FAIL
+bun test:                            1813 PASS, 0 FAIL

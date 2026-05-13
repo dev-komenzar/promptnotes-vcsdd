@@ -1,0 +1,15 @@
+{
+  "id": "FIND-S5-CONTRACT-002",
+  "severity": "medium",
+  "dimension": "spec_fidelity",
+  "category": "requirement_mismatch",
+  "title": "CRIT-S5-004 passThreshold が言及する 'cause.kind InitialLoad maintained' / 'pendingNextFocus null' は実テストにアサーションが存在しない",
+  "location": ".vcsdd/features/ui-feed-list-actions/contracts/sprint-5.md:39",
+  "description": "CRIT-S5-004 の passThreshold は 4 テストの内訳として 'cause.kind InitialLoad maintained' と 'pendingNextFocus null' を挙げている. しかし `promptnotes/src/lib/feed/__tests__/feedReducer.sprint5.test.ts` を読むと、これら 2 項目に対する明示的な `expect()` アサーションは存在しない. snapshot ヘルパー (`makeAutoCreateSnapshot`) は `pendingNextFocus: null` および `cause: { kind: 'InitialLoad' }` を入力として埋め込むが、reducer の出力に対する検証は `editingNoteId` / `editingStatus` / `visibleNoteIds[0]` / `visibleNoteIds.length` のみ. Phase 3 reviewer が 'passThreshold に記載のすべてが asserted されているか' を判定したとき、契約と実装が乖離している.",
+  "evidence": {
+    "filePath": "promptnotes/src/lib/feed/__tests__/feedReducer.sprint5.test.ts",
+    "lineRange": "117-170",
+    "snippet": "tests assert editingNoteId, editingStatus, visibleNoteIds[0], visibleNoteIds.length — but not result.state output for pendingNextFocus or cause.kind"
+  },
+  "remediation": "(a) passThreshold の文言を実テストと一致させる (cause.kind / pendingNextFocus の主張を削除), または (b) `expect(result.state.pendingNextFocus).toBeNull()` と (reducer の出力に cause は無いので) snapshot の cause.kind 経由でコマンド emit に関する assertion を追加する. どちらにせよ契約と実装の一致を取る必要がある."
+}
