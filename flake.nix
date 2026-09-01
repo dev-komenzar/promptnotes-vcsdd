@@ -13,7 +13,16 @@
   outputs = { self, nixpkgs, flake-utils, rust-overlay }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        overlays = [ (import rust-overlay) ];
+        # apm-cli (nixpkgs) は upstream の pyproject.toml が依存に `websockets` を宣言しているのに
+        # nixpkgs の dependencies から漏れており、pythonRuntimeDepsCheckHook でビルドに失敗する。
+        # そのため依存を補ってビルドするためのオーバーレイを当てる（nixpkgs 側の修正が入るまでの暫定対応）。
+        apmCliOverlay = final: prev: {
+          apm-cli = prev.apm-cli.overridePythonAttrs (old: {
+            dependencies = (old.dependencies or []) ++ [ final.python3Packages.websockets ];
+          });
+        };
+
+        overlays = [ (import rust-overlay) apmCliOverlay ];
         pkgs = import nixpkgs { inherit system overlays; };
 
         # Rust toolchain (stable + rustfmt + clippy + rust-analyzer)
@@ -87,6 +96,7 @@
             # Misc dev utilities
             jq
             git
+            apm-cli
           ] ++ tauriRuntimeDeps ++ tauriBuildDeps ++ tauriTooling ++ tauriBundlingDeps;
 
           shellHook = ''
